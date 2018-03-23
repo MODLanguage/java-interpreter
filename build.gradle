@@ -1,0 +1,37 @@
+group 'MODL'
+version '0.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'antlr'
+
+apply plugin: 'application'
+mainClassName = "uk.modl.server.ModlServer"
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+// https://mvnrepository.com/artifact/org.antlr/antlr4
+    compile group: 'org.antlr', name: 'antlr4', version: '4.7'
+
+
+// https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.2'
+
+
+// https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server
+    compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.8.v20171121'
+
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-text
+    compile group: 'org.apache.commons', name: 'commons-text', version: '1.2'
+
+}
+
+sourceSets {
+    main.java.srcDirs = ['src/main/java', 'src/main/gen']
+}
