@@ -1,5 +1,5 @@
 # Minimal Object Description Language (MODL) Interpreter
-This Java interpreter is based on the ![MODL ANTLR4 Grammar](https://github.com/MODLanguage/grammar-antlr4) and the ![MODL Specification](http://www.modl.uk/specification).
+This Java interpreter is based on the [MODL ANTLR4 Grammar](https://github.com/MODLanguage/grammar-antlr4) and the [MODL Specification](http://www.modl.uk).
 
 It doesn't include an API for accessing the MODL object yet (coming soon) but does provide the option of converting the MODL object to JSON – which can then be accessed using the Java JSON API. To convert MODL to a JSON string: 
 
@@ -9,7 +9,7 @@ String json = ConfigInterpreter.parseToJson(input);
 ```
 
 ## HTTP Wrapper
-This library includes a useful HTTP wrapper service which converts MODL to JSON. You'll need ![Gradle](https://gradle.org/). Once you've downloaded the repository you can run:
+This library includes a useful HTTP wrapper service which converts MODL to JSON. You'll need [Gradle](https://gradle.org/). Once you've downloaded the repository you can run:
 
     ./gradlew run
     
