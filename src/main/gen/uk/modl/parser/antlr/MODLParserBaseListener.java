@@ -1,4 +1,4 @@
-// Generated from /Users/alex/code/NUM/MODL/MODL_grammar/src/main/java/uk/modl/parser/antlr/MODLParser.g4 by ANTLR 4.7
+// Generated from /Users/alex/code/NUM/MODL/java-interpreter/src/main/java/uk/modl/parser/antlr/MODLParser.g4 by ANTLR 4.7
 package uk.modl.parser.antlr;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -71,6 +71,18 @@ public class MODLParserBaseListener implements MODLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitPair(MODLParser.PairContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterValue_item(MODLParser.Value_itemContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitValue_item(MODLParser.Value_itemContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -191,18 +203,6 @@ public class MODLParserBaseListener implements MODLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitValue_conditional_return(MODLParser.Value_conditional_returnContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterValue_item(MODLParser.Value_itemContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitValue_item(MODLParser.Value_itemContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
