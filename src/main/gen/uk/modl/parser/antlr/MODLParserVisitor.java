@@ -113,6 +113,12 @@ public interface MODLParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCondition_test(MODLParser.Condition_testContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link MODLParser#operator}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitOperator(MODLParser.OperatorContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link MODLParser#condition}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

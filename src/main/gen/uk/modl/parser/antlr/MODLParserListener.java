@@ -178,6 +178,16 @@ public interface MODLParserListener extends ParseTreeListener {
 	 */
 	void exitCondition_test(MODLParser.Condition_testContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link MODLParser#operator}.
+	 * @param ctx the parse tree
+	 */
+	void enterOperator(MODLParser.OperatorContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link MODLParser#operator}.
+	 * @param ctx the parse tree
+	 */
+	void exitOperator(MODLParser.OperatorContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link MODLParser#condition}.
 	 * @param ctx the parse tree
 	 */
