@@ -30,6 +30,8 @@ import java.util.List;
 
 public class ParserTest2 extends TestCase {
         final static List<Object[]> expected =  Arrays.asList(new Object[][]{
+                {"?=\"A\":B:C\n" +
+                        "first_letter=%0","{ \"first_letter\" : \"A\" }"},
                 {"_test=123\n" +
                         "object(\n" +
                         "  print_test = %test.test\n" +

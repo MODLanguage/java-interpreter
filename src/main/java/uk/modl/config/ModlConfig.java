@@ -64,15 +64,11 @@ public class ModlConfig {
         }
         if (structure.getPair().getKey().equals("*class") || structure.getPair().getKey().equals("*c")) {
             loadConfigStructure(structure);
-        }
-        if (structure.getPair().getKey().equals("*method") || structure.getPair().getKey().equals("*m")) {
+        } else if (structure.getPair().getKey().equals("*method") || structure.getPair().getKey().equals("*m")) {
             loadVariableMethod(structure, variableMethods);
-        }
-        if (structure.getPair().getKey().equals("*vm") || structure.getPair().getKey().equals("*variable_map")) {
+        } else if (structure.getPair().getKey().equals("*vm") || structure.getPair().getKey().equals("*variable_map")) {
             loadConfigVariable(structure.getPair().getMap().getMapItems());
-        }
-//        if (structure.getPair().getKey().equals("*v") || structure.getPair().getKey().equals("*var")) {
-        if (structure.getPair().getKey().equals("?")) {
+        } else if (structure.getPair().getKey().equals("?")) {
             if (structure.getPair().getArray() != null) {
                 loadConfigNumberedVariablesArray(structure.getPair().getArray().getArrayItems());
             } else {
@@ -81,7 +77,8 @@ public class ModlConfig {
         } else {
             if (structure.getPair().getKey().startsWith("_")) {
                 loadConfigVar(structure.getPair().getKey().replaceFirst("_",""), structure.getPair());
-
+            } else if (structure.getPair().getKey().startsWith("*")) {
+                throw new RuntimeException("Unrecognised configuration instruction : " + structure.getPair().getKey());
             }
         }
     }
@@ -175,7 +172,11 @@ public class ModlConfig {
             }
         }
         else {
-            numberedVariables.put(paramNum++, val.getString().string);
+            if (val.getString() != null) {
+                numberedVariables.put(paramNum++, val.getString().string);
+            } else if (val.getQuoted() != null) {
+                numberedVariables.put(paramNum++, val.getQuoted().string);
+            }
         }
         return paramNum;
     }
