@@ -323,7 +323,12 @@ Replace the part originally found (including graves) with the transformed subjec
                     subject = variableMethods.get(methodString).apply(subject + "," + paramsString);
 
                 } else {
-                    subject = variableMethods.get(method).apply(subject);
+                    if (variableMethods.get(method) == null) {
+                        // Nothing to do - leave it alone!
+                        subject = subject + "." + method;
+                    } else {
+                        subject = variableMethods.get(method).apply(subject);
+                    }
                 }
             }
         }

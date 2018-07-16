@@ -30,6 +30,10 @@ import java.util.List;
 
 public class ParserTest2 extends TestCase {
         final static List<Object[]> expected =  Arrays.asList(new Object[][]{
+                {"_test=123\n" +
+                        "object(\n" +
+                        "  print_test = %test.test\n" +
+                        ")", "{\"object\":{\"print_test\":\"123.test\"}}"},
                 {"test=100%",
                         "{\"test\":\"100%\"}"},
                 {"*c(\n" +
@@ -44,10 +48,10 @@ public class ParserTest2 extends TestCase {
                         "m=in:2018-03-22:hi",
                         "{\n" +
                                 "  \"message\" : {\n" +
-                                "    \"method\" : \"sms\",\n" +
                                 "    \"direction\" : \"in\",\n" +
                                 "    \"date_time\" : \"2018-03-22\",\n" +
-                                "    \"message\" : \"hi\"\n" +
+                                "    \"message\" : \"hi\",\n" +
+                                "    \"method\" : \"sms\"\n" +
                                 "  }\n" +
                                 "}"},
                 {"test=`test`",
