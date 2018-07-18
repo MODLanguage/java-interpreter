@@ -30,6 +30,34 @@ import java.util.List;
 
 public class ParserTest2 extends TestCase {
         final static List<Object[]> expected =  Arrays.asList(new Object[][]{
+                {"?=0:1:2\n" +
+                        "zero=%0\n" +
+                        "one=%1\n" +
+                        "two=%2", "[\n" +
+                        "    {\n" +
+                        "        \"zero\": \"0\"\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "        \"one\": \"1\"\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "        \"two\": \"2\"\n" +
+                        "    }\n" +
+                        "]"},
+                {"?=a:b:c\n" +
+                        "zero=%0\n" +
+                        "one=%1\n" +
+                        "two=%2\n", "[\n" +
+                        "    {\n" +
+                        "        \"zero\": \"a\"\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "        \"one\": \"b\"\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "        \"two\": \"c\"\n" +
+                        "    }\n" +
+                        "]"},
                 {"_co = gb\n" +
                         "test = {\n" +
                         "  co = gb?\n" +

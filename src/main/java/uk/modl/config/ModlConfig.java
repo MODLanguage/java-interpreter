@@ -176,6 +176,8 @@ public class ModlConfig {
                 numberedVariables.put(paramNum++, val.getString().string);
             } else if (val.getQuoted() != null) {
                 numberedVariables.put(paramNum++, val.getQuoted().string);
+            } else if (val.getNumber() != null) {
+                numberedVariables.put(paramNum++, val.getNumber().string);
             }
         }
         return paramNum;
