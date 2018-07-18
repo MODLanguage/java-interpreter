@@ -1121,7 +1121,7 @@ public class ConfigInterpreter {
                 return conditionalEquals(key.toString(), val);
             }
             if (conditionOperator.equals("!=")) {
-                return !(key.toString().equals(val));
+                return !conditionalEquals(key.toString(), val);
             }
             Float valFloat = new Float(val.toString());
             Float keyFloat = new Float(key.toString());
