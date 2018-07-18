@@ -30,6 +30,23 @@ import java.util.List;
 
 public class ParserTest2 extends TestCase {
         final static List<Object[]> expected =  Arrays.asList(new Object[][]{
+                {"_co = gb\n" +
+                        "test = {\n" +
+                        "  co = gb?\n" +
+                        "    UK\n" +
+                        "  /?\n" +
+                        "    Other\n" +
+                        "}",
+                        "{\"test\" : \"UK\" }"},
+                {"?=0:1:2\n" +
+                        "result={\n" +
+                        "%1>1?\n" +
+                        "  yes\n" +
+                        "/?\n" +
+                        "  no\n" +
+                        "}", "{\n" +
+                        "  \"result\":\"no\"\n" +
+                        "}"},
                 {"test=()", "{\n" +
                         "  \"test\":{}\n" +
                         "}"},
@@ -106,15 +123,6 @@ public class ParserTest2 extends TestCase {
                         "        \"two\": \"c\"\n" +
                         "    }\n" +
                         "]"},
-                {"_co = gb\n" +
-                        "test = {\n" +
-                        "  co = gb?\n" +
-                        "    UK\n" +
-                        "  /?\n" +
-                        "    Other\n" +
-                        "}",
-                        "{\"test\" : \"UK\" }"},
-
                 {"_num1 = 5\n" +
                         "_num2 = 2\n" +
                         "\n" +

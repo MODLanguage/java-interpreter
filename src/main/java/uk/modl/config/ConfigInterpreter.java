@@ -1190,9 +1190,12 @@ public class ConfigInterpreter {
         return null;
     }
 
-    private String transformConditionalArgument(String keyString) {
+    private String transformConditionalArgument(String origKeyString) {
         StringTransformer stringTransformer = new StringTransformer(modlConfig, stringPairs, variableMethods);
-        keyString = stringTransformer.runObjectReferencing("%" + keyString, "%" + keyString, false);
+        String keyString = stringTransformer.runObjectReferencing("%" + origKeyString, "%" + origKeyString, false);
+        if (keyString.equals("%" + origKeyString) && origKeyString.startsWith("%")) {
+            keyString = stringTransformer.runObjectReferencing(origKeyString, origKeyString, false);
+        }
         if (keyString.equals("%"+keyString)) {
             throw new RuntimeException("Couldn't find conditional key");
         }
