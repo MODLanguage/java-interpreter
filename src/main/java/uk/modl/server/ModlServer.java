@@ -43,6 +43,7 @@ public class ModlServer extends AbstractHandler
         // TODO Take POST request
 
         response.setContentType("application/json;charSet=UTF-8");
+        response.addHeader("Access-Control-Allow-Origin", "*");
         String modlInput = request.getParameter("modl");
         ModlObject modlObject = null;
         try {
