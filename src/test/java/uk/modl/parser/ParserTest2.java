@@ -30,6 +30,17 @@ import java.util.List;
 
 public class ParserTest2 extends TestCase {
         final static List<Object[]> expected =  Arrays.asList(new Object[][]{
+                {"_num1 = 2\n" +
+                        "_num2 = 1000\n" +
+                        "\n" +
+                        "result={\n" +
+                        "  num1>num2?\n" +
+                        "    num1 is bigger\n" +
+                        "  /?\n" +
+                        "    num1 is not bigger\n" +
+                        "}\n", "{\n" +
+                        "    \"result\": \"num1 is not bigger\"\n" +
+                        "}"},
                 {"?=0:1:2\n" +
                         "zero=%0\n" +
                         "one=%1\n" +

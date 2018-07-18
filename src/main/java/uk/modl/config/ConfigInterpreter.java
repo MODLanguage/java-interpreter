@@ -1121,17 +1121,19 @@ public class ConfigInterpreter {
             if (conditionOperator.equals("!=")) {
                 return !(key.toString().equals(val));
             }
+            Float valFloat = new Float(val.toString());
+            Float keyFloat = new Float(key.toString());
             if (conditionOperator.equals(">")) {
-                return key.compareTo(val.toString()) > 0;
+                return keyFloat.compareTo(valFloat) > 0;
             }
             if (conditionOperator.equals("<")) {
-                return key.compareTo(val.toString()) < 0;
+                return keyFloat.compareTo(valFloat) < 0;
             }
             if (conditionOperator.equals("<=")) {
-                return key.compareTo(val.toString()) <= 0;
+                return keyFloat.compareTo(valFloat) <= 0;
             }
             if (conditionOperator.equals(">=")) {
-                return key.compareTo(val.toString()) >= 0;
+                return keyFloat.compareTo(valFloat) >= 0;
             }
         }
         return false;
