@@ -134,6 +134,13 @@ public class Interpreter {
         value.setNullVal(interpret(modlObject, parsedValue.getNullVal()));
         value.setString(interpret(modlObject, parsedValue.getString()));
 
+        if (parsedValue.getMap() != null && value.getMap() == null) {
+            value.setMap(modlObject.new Map());
+        }
+        if (parsedValue.getArray() != null && value.getArray() == null) {
+            value.setArray(modlObject.new Array());
+        }
+
         return value;
     }
 

@@ -96,6 +96,10 @@ public class ModlJsonSerializer extends JsonSerializer<ModlObject> {
             }
             gen.writeEndObject();
         }
+        else {
+            gen.writeStartObject();
+            gen.writeEndObject();
+        }
     }
 
     private void serialize(ModlObject.MapItem mapItem, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
@@ -116,6 +120,9 @@ public class ModlJsonSerializer extends JsonSerializer<ModlObject> {
             for (ModlObject.ArrayItem arrayItem : array.getArrayItems()) {
                 serialize(arrayItem, gen, serializers, false);
             }
+            gen.writeEndArray();
+        } else {
+            gen.writeStartArray();
             gen.writeEndArray();
         }
     }

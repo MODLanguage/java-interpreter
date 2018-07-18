@@ -30,6 +30,43 @@ import java.util.List;
 
 public class ParserTest2 extends TestCase {
         final static List<Object[]> expected =  Arrays.asList(new Object[][]{
+                {"test=()", "{\n" +
+                        "  \"test\":{}\n" +
+                        "}"},
+                {"test=[]", "{\n" +
+                        "  \"test\":[]\n" +
+                        "}"},
+                {"test(\n" +
+                        "  empty_array=[]\n" +
+                        "  empty_map=()\n" +
+                        ")\n", "{\n" +
+                        "  \"test\": {\n" +
+                        "    \"empty_array\":[],\n" +
+                        "    \"empty_map\":{}\n" +
+                        "  }\n" +
+                        "}"},
+                {"test(\n" +
+                        "  map(\n" +
+                        "    array[]\n" +
+                        "  )\n" +
+                        "  array[\n" +
+                        "    map()\n" +
+                        "    array[1;2;3]\n" +
+                        "  ]\n" +
+                        ")\n", "{\n" +
+                        "  \"test\": {\n" +
+                        "    \"map\": {\n" +
+                        "      \"array\": []\n" +
+                        "    },\n" +
+                        "    \"array\": [{\n" +
+                        "        \"map\": {}\n" +
+                        "      },\n" +
+                        "      {\n" +
+                        "        \"array\": [1, 2, 3]\n" +
+                        "      }\n" +
+                        "    ]\n" +
+                        "  }\n" +
+                        "}"},
                 {"_num1 = 2\n" +
                         "_num2 = 1000\n" +
                         "\n" +

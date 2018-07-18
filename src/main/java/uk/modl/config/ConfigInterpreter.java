@@ -866,11 +866,13 @@ public class ConfigInterpreter {
         }
         ModlObject.Array array = modlObject.new Array();
 
-        for (ModlObject.ArrayItem originalArrayItem : originalArray.getArrayItems()) {
-            List<ModlObject.ArrayItem> arrayItems = interpret(modlObject, originalArrayItem);
-            if (arrayItems != null) {
-                for (ModlObject.ArrayItem arrayItem : arrayItems) {
-                    array.addArrayItem(arrayItem);
+        if (originalArray.getArrayItems() != null) {
+            for (ModlObject.ArrayItem originalArrayItem : originalArray.getArrayItems()) {
+                List<ModlObject.ArrayItem> arrayItems = interpret(modlObject, originalArrayItem);
+                if (arrayItems != null) {
+                    for (ModlObject.ArrayItem arrayItem : arrayItems) {
+                        array.addArrayItem(arrayItem);
+                    }
                 }
             }
         }
