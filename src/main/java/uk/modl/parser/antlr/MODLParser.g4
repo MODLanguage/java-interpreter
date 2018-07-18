@@ -33,14 +33,14 @@ structure
 map
   // ( key = value; key = value )
   : LBRAC NEWLINE*
-        map_item (SC? NEWLINE* map_item )* NEWLINE*
+        ( map_item (SC? NEWLINE* map_item )* NEWLINE* )?
     RBRAC
   ;
 
 array
   // [ item; item ]
   : LSBRAC NEWLINE*
-        array_item (SC? NEWLINE* array_item )* SC? NEWLINE*
+        ( array_item (SC? NEWLINE* array_item )* SC? NEWLINE* )?
     RSBRAC
   ;
 
@@ -133,7 +133,7 @@ value_conditional
     ;
 
 condition_test
-  // country=gb|us?
+  // country=gb|language=en?
   : EXCLAM? ( condition | condition_group ) (( AMP | PIPE ) EXCLAM? ( condition | condition_group ) )*
   ;
 
