@@ -30,6 +30,26 @@ import java.util.List;
 
 public class ParserTest2 extends TestCase {
         final static List<Object[]> expected =  Arrays.asList(new Object[][]{
+                {"_co = gb\n" +
+                        "test = {\n" +
+                        "  co = gb?\n" +
+                        "    UK\n" +
+                        "  /?\n" +
+                        "    Other\n" +
+                        "}",
+                        "{\"test\" : \"UK\" }"},
+
+                {"_num1 = 5\n" +
+                        "_num2 = 2\n" +
+                        "\n" +
+                        "result={\n" +
+                        "  num1>num2?\n" +
+                        "    num1 is bigger\n" +
+                        "  /?\n" +
+                        "    num1 is not bigger\n" +
+                        "}", "{\n" +
+                        "    \"result\": \"num1 is bigger\"\n" +
+                        "}"},
                 {"*class(\n" +
                         "  *id=p\n" +
                         "  *name=person\n" +
@@ -342,14 +362,6 @@ public class ParserTest2 extends TestCase {
                         "    \"make\" : \"Bentley\"\n" +
                         "  }\n" +
                         "}"},
-                {"_co = gb\n" +
-                        "test = {\n" +
-                        "  co = gb?\n" +
-                        "    UK\n" +
-                        "  /?\n" +
-                        "    Other\n" +
-                        "}",
-                        "{\"test\" : \"UK\" }"},
                 {/* nested conditionals */
                         "_co=at\n" +
                                 " _l=de\n" +

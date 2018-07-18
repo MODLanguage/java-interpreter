@@ -1110,12 +1110,16 @@ public class ConfigInterpreter {
             // Get the basic Java primitive out of the value
             // Then cast it to Object
             // Then do whatever the conditionOperator says!
-            Object val = getObjectFromValueForCondition(values.get(0));
+            Object valObj = getObjectFromValueForCondition(values.get(0));
+            String val = transformConditionalArgument(valObj.toString());
+            if (val.startsWith("%")) {
+                val = val.substring(1, val.length());
+            }
             if (conditionOperator.equals("=")) {
-                return conditionalEquals(key, val);
+                return conditionalEquals(key.toString(), val);
             }
             if (conditionOperator.equals("!=")) {
-                return !(key.equals(val));
+                return !(key.toString().equals(val));
             }
             if (conditionOperator.equals(">")) {
                 return key.compareTo(val.toString()) > 0;
