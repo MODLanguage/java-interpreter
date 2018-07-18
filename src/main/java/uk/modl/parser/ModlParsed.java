@@ -19,6 +19,8 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 package uk.modl.parser;
 
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import uk.modl.parser.antlr.MODLParser;
 import uk.modl.parser.antlr.MODLParserBaseListener;
 
@@ -273,6 +275,8 @@ public class ModlParsed extends MODLParserBaseListener {
             } else {
                 if (ctx.STRING() != null) {
                     key = ctx.STRING().toString();
+                } else if (ctx.QUOTED() != null) {
+                    key = ctx.QUOTED().toString().replaceAll("\"", "");
                 }
                 valueItems =  new LinkedList<>();
                 ctx.value_item().forEach(val -> {
@@ -326,17 +330,89 @@ public class ModlParsed extends MODLParserBaseListener {
     }
 
     public class ConditionTest extends MODLParserBaseListener implements ValueObject {
-        String string;
-
-        public ConditionTest(String string) {
-            this.string = string;
-        }
-
-        public ConditionTest() {}
+        java.util.List<org.apache.commons.lang3.tuple.ImmutablePair<SubCondition, ImmutablePair<java.lang.String, Boolean>>> subConditionList = new LinkedList<>();
 
         @Override
         public void enterCondition_test(MODLParser.Condition_testContext ctx) {
-          string = new String(ctx.getText());
+            if (ctx.children.size() > 0) {
+                int index = 0;
+                java.lang.String lastOperator = null;
+                boolean shouldNegate = false;
+                for (ParseTree child : ctx.children) {
+                    if (child instanceof MODLParser.Condition_groupContext) {
+                        ConditionGroup conditionGroup = new ConditionGroup();
+                        ((MODLParser.Condition_groupContext)child).enterRule(conditionGroup);
+                        subConditionList.add(new ImmutablePair<>(conditionGroup, new ImmutablePair<>(lastOperator, shouldNegate)));
+                        lastOperator = null;
+                        shouldNegate = false;
+                    } else  if (child instanceof MODLParser.ConditionContext) {
+                        Condition condition = new Condition();
+                        ((MODLParser.ConditionContext)child).enterRule(condition);
+                        subConditionList.add(new ImmutablePair<>(condition, new ImmutablePair<>(lastOperator, shouldNegate)));
+                        lastOperator = null;
+                        shouldNegate = false;
+                    } else {
+                        if (child.getText().equals("!")) {
+                            shouldNegate = true;
+                        } else {
+                            lastOperator = child.getText();
+                        }
+                    }
+                    index++;
+
+                }
+
+            }
+        }
+    }
+
+    public interface SubCondition extends ValueObject {}
+
+    public class ConditionGroup extends MODLParserBaseListener implements SubCondition {
+        java.util.List<org.apache.commons.lang3.tuple.ImmutablePair<ConditionTest, java.lang.String>> conditionsTestList = new LinkedList<>();
+
+        @Override
+        public void enterCondition_group(MODLParser.Condition_groupContext ctx) {
+            if (ctx.children.size() > 0) {
+                int index = 0;
+                java.lang.String lastOperator = null;
+                for (ParseTree child : ctx.children) {
+                    if (child instanceof MODLParser.Condition_testContext) {
+                        ConditionTest conditionTest = new ConditionTest();
+                        ((MODLParser.Condition_testContext) child).enterRule(conditionTest);
+                        conditionsTestList.add(new org.apache.commons.lang3.tuple.ImmutablePair<>(conditionTest, lastOperator));
+                        lastOperator = null;
+                    } else {
+                        if (child.getText().equals("{") || child.getText().equals("}")) {
+                        } else {
+                            lastOperator = child.getText();
+                        }
+                    }
+                    index++;
+
+                }
+
+            }
+        }
+    }
+
+    public class Condition extends MODLParserBaseListener implements  SubCondition {
+        java.lang.String key;
+        java.lang.String operator;
+        List<Value> values = new LinkedList<>();
+
+        // TODO Should we just store the condition String here?
+        // TODO We can then parse it in the "evaluates" method later
+
+        @Override
+        public void enterCondition(MODLParser.ConditionContext ctx) {
+            key = ctx.STRING().getText();
+            operator = ctx.operator().getText();
+            for (MODLParser.ValueContext v : ctx.value()) {
+                Value value = new Value();
+                v.enterRule(value);
+                values.add(value);
+            }
         }
     }
 
@@ -374,7 +450,8 @@ public class ModlParsed extends MODLParserBaseListener {
                 mapConditionals.put(conditionTest, conditionalReturn);
             }
             if (ctx.map_conditional_return().size() > ctx.condition_test().size()) {
-                ConditionTest conditionTest = new ConditionTest(new String ("else"));
+//                ConditionTest conditionTest = new ConditionTest(new String ("else"));
+                ConditionTest conditionTest = new ConditionTest();
                 MapConditionalReturn conditionalReturn = new MapConditionalReturn();
                 ctx.map_conditional_return(ctx.map_conditional_return().size() - 1).enterRule(conditionalReturn);
                 mapConditionals.put(conditionTest, conditionalReturn);
@@ -420,7 +497,9 @@ public class ModlParsed extends MODLParserBaseListener {
                 topLevelConditionalReturns.put(conditionTest, conditionalReturn);
             }
             if (ctx.top_level_conditional_return().size() > ctx.condition_test().size()) {
-                ConditionTest conditionTest = new ConditionTest(new String ("else"));
+//                ConditionTest conditionTest = new ConditionTest(new String ("else"));
+                // TODO Add True here?!
+                ConditionTest conditionTest = new ConditionTest();
                 TopLevelConditionalReturn conditionalReturn = new TopLevelConditionalReturn();
                 ctx.top_level_conditional_return(ctx.top_level_conditional_return().size() - 1).enterRule(conditionalReturn);
                 topLevelConditionalReturns.put(conditionTest, conditionalReturn);
@@ -466,7 +545,8 @@ public class ModlParsed extends MODLParserBaseListener {
                 arrayConditionalReturns.put(conditionTest, conditionalReturn);
             }
             if (ctx.array_conditional_return().size() > ctx.condition_test().size()) {
-                ConditionTest conditionTest = new ConditionTest(new String ("else"));
+//                ConditionTest conditionTest = new ConditionTest(new String ("else"));
+                ConditionTest conditionTest = new ConditionTest();
                 ArrayConditionalReturn conditionalReturn = new ArrayConditionalReturn();
                 ctx.array_conditional_return(ctx.array_conditional_return().size() - 1).enterRule(conditionalReturn);
                 arrayConditionalReturns.put(conditionTest, conditionalReturn);
@@ -512,7 +592,8 @@ public class ModlParsed extends MODLParserBaseListener {
                 valueConditionalReturns.put(conditionTest, conditionalReturn);
             }
             if (ctx.value_conditional_return().size() > ctx.condition_test().size()) {
-                ConditionTest conditionTest = new ConditionTest(new String ("else"));
+//                ConditionTest conditionTest = new ConditionTest(new String ("else"));
+                ConditionTest conditionTest = new ConditionTest();
                 ValueConditionalReturn conditionalReturn = new ValueConditionalReturn();
                 ctx.value_conditional_return(ctx.value_conditional_return().size() - 1).enterRule(conditionalReturn);
                 valueConditionalReturns.put(conditionTest, conditionalReturn);
