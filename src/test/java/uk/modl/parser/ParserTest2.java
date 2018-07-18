@@ -30,6 +30,46 @@ import java.util.List;
 
 public class ParserTest2 extends TestCase {
         final static List<Object[]> expected =  Arrays.asList(new Object[][]{
+                {"*class(\n" +
+                        "  *id=p\n" +
+                        "  *name=person\n" +
+                        "  *superclass=map\n" +
+                        ")\n" +
+                        "\n" +
+                        "p(name=Elliott Brown;dob=16/11/1983)","{\n" +
+                        "    \"person\": {\n" +
+                        "        \"name\": \"Elliott Brown\",\n" +
+                        "        \"dob\": \"16/11/1983\"\n" +
+                        "    }\n" +
+                        "}"},
+                {"*class(\n" +
+                        "  *id=p\n" +
+                        "  *name=person\n" +
+                        ")\n" +
+                        "\n" +
+                        "p(name=Elliott Brown;dob=16/11/1983)","{\n" +
+                        "    \"person\": {\n" +
+                        "        \"name\": \"Elliott Brown\",\n" +
+                        "        \"dob\": \"16/11/1983\"\n" +
+                        "    }\n" +
+                        "}"},
+                {"*class(\n" +
+                        "  *id=p\n" +
+                        "  *name=person\n" +
+                        "  *assign=[\n" +
+                        "     [name;dob]\n" +
+                        "   ]\n" +
+                        ")\n" +
+                        "\n" +
+                        "p=Elliott Brown:16/11/1983","{\n" +
+                        "    \"person\": {\n" +
+                        "        \"name\": \"Elliott Brown\",\n" +
+                        "        \"dob\": \"16/11/1983\"\n" +
+                        "    }\n" +
+                        "}"},
+                {"\"test\"=1","{\n" +
+                        "  \"test\" : 1\n" +
+                        "}"},
                 {"?=\"A\":B:C\n" +
                         "first_letter=%0","{ \"first_letter\" : \"A\" }"},
                 {"_test=123\n" +
