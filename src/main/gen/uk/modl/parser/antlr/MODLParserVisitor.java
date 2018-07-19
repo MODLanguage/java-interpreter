@@ -1,4 +1,4 @@
-// Generated from /Users/alex/code/NUM/MODL/MODL_grammar/src/main/java/uk/modl/parser/antlr/MODLParser.g4 by ANTLR 4.7
+// Generated from /Users/alex/code/NUM/MODL/java-interpreter/src/main/java/uk/modl/parser/antlr/MODLParser.g4 by ANTLR 4.7
 package uk.modl.parser.antlr;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -40,6 +40,12 @@ public interface MODLParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitPair(MODLParser.PairContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link MODLParser#value_item}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitValue_item(MODLParser.Value_itemContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link MODLParser#top_level_conditional}.
 	 * @param ctx the parse tree
@@ -101,17 +107,17 @@ public interface MODLParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitValue_conditional_return(MODLParser.Value_conditional_returnContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link MODLParser#value_item}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitValue_item(MODLParser.Value_itemContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link MODLParser#condition_test}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitCondition_test(MODLParser.Condition_testContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link MODLParser#operator}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitOperator(MODLParser.OperatorContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link MODLParser#condition}.
 	 * @param ctx the parse tree

@@ -1,16 +1,12 @@
 /*
 MIT License
-
 Copyright (c) 2018 NUM Technology Ltd
-
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the "Software"), to deal in the Software without restriction, including without limitation
 the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
 to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of
 the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
 WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
 OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
@@ -37,14 +33,14 @@ structure
 map
   // ( key = value; key = value )
   : LBRAC NEWLINE*
-        map_item (SC? NEWLINE* map_item )* NEWLINE*
+        ( map_item (SC? NEWLINE* map_item )* NEWLINE* )?
     RBRAC
   ;
 
 array
   // [ item; item ]
   : LSBRAC NEWLINE*
-        array_item (SC? NEWLINE* array_item )* SC? NEWLINE*
+        ( array_item (SC? NEWLINE* array_item )* SC? NEWLINE* )?
     RSBRAC
   ;
 
@@ -63,9 +59,9 @@ pair
   // passed with one key, the key must have an accompanying class which dictates how these
   // values are assigned to keys. Multi-value pairs can also be nested (see value_item)
 
-  : STRING EQUALS value_item ( NEWLINE* COLON value_item )*   // key = value        (standard pair)
-  | STRING map                                                // key( key = value ) (map pair)
-  | STRING array                                              // key[ item; item ]  (array pair)
+  : ( STRING | QUOTED) EQUALS value_item ( NEWLINE* COLON value_item )*   // key = value        (standard pair)
+  | STRING map                                                            // key( key = value ) (map pair)
+  | STRING array                                                          // key[ item; item ]  (array pair)
   ;
 
 value_item
@@ -137,13 +133,18 @@ value_conditional
     ;
 
 condition_test
-  // country=gb|us?
-  : EXCLAM? ( condition | condition_group ) (( AMP | PIPE ) ( condition | condition_group ) )*
+  // country=gb|language=en?
+  : EXCLAM? ( condition | condition_group ) (( AMP | PIPE ) EXCLAM? ( condition | condition_group ) )*
+  ;
+
+operator
+  // operator within conditionals
+  : EQUALS | GTHAN | GTHAN EQUALS | LTHAN | LTHAN EQUALS | EXCLAM EQUALS
   ;
 
 condition
   // e.g. country=gb
-  : NEWLINE* STRING? OPERATOR? ( ASTERISK? value ASTERISK? (PIPE ASTERISK? value ASTERISK?)* ) NEWLINE*
+  : NEWLINE* STRING? operator? value (PIPE value )* NEWLINE*
   ;
 
 condition_group

@@ -1,4 +1,4 @@
-// Generated from /Users/alex/code/NUM/MODL/MODL_grammar/src/main/java/uk/modl/parser/antlr/MODLParser.g4 by ANTLR 4.7
+// Generated from /Users/alex/code/NUM/MODL/java-interpreter/src/main/java/uk/modl/parser/antlr/MODLParser.g4 by ANTLR 4.7
 package uk.modl.parser.antlr;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -57,6 +57,16 @@ public interface MODLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitPair(MODLParser.PairContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link MODLParser#value_item}.
+	 * @param ctx the parse tree
+	 */
+	void enterValue_item(MODLParser.Value_itemContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link MODLParser#value_item}.
+	 * @param ctx the parse tree
+	 */
+	void exitValue_item(MODLParser.Value_itemContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link MODLParser#top_level_conditional}.
 	 * @param ctx the parse tree
@@ -158,16 +168,6 @@ public interface MODLParserListener extends ParseTreeListener {
 	 */
 	void exitValue_conditional_return(MODLParser.Value_conditional_returnContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#value_item}.
-	 * @param ctx the parse tree
-	 */
-	void enterValue_item(MODLParser.Value_itemContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link MODLParser#value_item}.
-	 * @param ctx the parse tree
-	 */
-	void exitValue_item(MODLParser.Value_itemContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link MODLParser#condition_test}.
 	 * @param ctx the parse tree
 	 */
@@ -177,6 +177,16 @@ public interface MODLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitCondition_test(MODLParser.Condition_testContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link MODLParser#operator}.
+	 * @param ctx the parse tree
+	 */
+	void enterOperator(MODLParser.OperatorContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link MODLParser#operator}.
+	 * @param ctx the parse tree
+	 */
+	void exitOperator(MODLParser.OperatorContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link MODLParser#condition}.
 	 * @param ctx the parse tree

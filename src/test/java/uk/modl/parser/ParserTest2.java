@@ -30,6 +30,196 @@ import java.util.List;
 
 public class ParserTest2 extends TestCase {
         final static List<Object[]> expected =  Arrays.asList(new Object[][]{
+//                {"_bool=true\n" +
+//                        "{\n" +
+//                        "bool?\n" +
+//                        "  test=1\n" +
+//                        "}", "{\n" +
+//                        "  \"test\":1\n" +
+//                        "}"},
+//                {"_test=1\\\\:2\n" +
+//                        "\n" +
+//                        "result={\n" +
+//                        "  test=1\\\\:2?\n" +
+//                        "      yes\n" +
+//                        "  /?\n" +
+//                        "     no\n" +
+//                        "}", "{\n" +
+//                        "    \"result\": \"yes”\n" +
+//                        "}"},
+                {"_test=1\\\\:2\n" +
+                        "result=%test", "{\n" +
+                        "    \"result\": \"1:2\"\n" +
+                        "}\n"},
+//                {"_test=\"http://www.tesco.com\"\n" +
+//                        "\n" +
+//                        "result={\n" +
+//                        "  test=\"http://www.tesco.com\"?\n" +
+//                        "      yes\n" +
+//                        "  /?\n" +
+//                        "     no\n" +
+//                        "}", "{\n" +
+//                        "    \"result\": \"yes”\n" +
+//                        "}"},
+                {"_test=abcdefg\n" +
+                        "result={\n" +
+                        "  {test!=a*}?\n" +
+                        "    in\n" +
+                        "  /?\n" +
+                        "    out\n" +
+                        "}", "{\n" +
+                        "    \"result\": \"out\"\n" +
+                        "}"},
+                {"_co = gb\n" +
+                        "test = {\n" +
+                        "  co = gb?\n" +
+                        "    UK\n" +
+                        "  /?\n" +
+                        "    Other\n" +
+                        "}",
+                        "{\"test\" : \"UK\" }"},
+                {"?=0:1:2\n" +
+                        "result={\n" +
+                        "%1>1?\n" +
+                        "  yes\n" +
+                        "/?\n" +
+                        "  no\n" +
+                        "}", "{\n" +
+                        "  \"result\":\"no\"\n" +
+                        "}"},
+                {"test=()", "{\n" +
+                        "  \"test\":{}\n" +
+                        "}"},
+                {"test=[]", "{\n" +
+                        "  \"test\":[]\n" +
+                        "}"},
+                {"test(\n" +
+                        "  empty_array=[]\n" +
+                        "  empty_map=()\n" +
+                        ")\n", "{\n" +
+                        "  \"test\": {\n" +
+                        "    \"empty_array\":[],\n" +
+                        "    \"empty_map\":{}\n" +
+                        "  }\n" +
+                        "}"},
+                {"test(\n" +
+                        "  map(\n" +
+                        "    array[]\n" +
+                        "  )\n" +
+                        "  array[\n" +
+                        "    map()\n" +
+                        "    array[1;2;3]\n" +
+                        "  ]\n" +
+                        ")\n", "{\n" +
+                        "  \"test\": {\n" +
+                        "    \"map\": {\n" +
+                        "      \"array\": []\n" +
+                        "    },\n" +
+                        "    \"array\": [{\n" +
+                        "        \"map\": {}\n" +
+                        "      },\n" +
+                        "      {\n" +
+                        "        \"array\": [1, 2, 3]\n" +
+                        "      }\n" +
+                        "    ]\n" +
+                        "  }\n" +
+                        "}"},
+                {"_num1 = 2\n" +
+                        "_num2 = 1000\n" +
+                        "\n" +
+                        "result={\n" +
+                        "  num1>num2?\n" +
+                        "    num1 is bigger\n" +
+                        "  /?\n" +
+                        "    num1 is not bigger\n" +
+                        "}\n", "{\n" +
+                        "    \"result\": \"num1 is not bigger\"\n" +
+                        "}"},
+                {"?=0:1:2\n" +
+                        "zero=%0\n" +
+                        "one=%1\n" +
+                        "two=%2", "[\n" +
+                        "    {\n" +
+                        "        \"zero\": \"0\"\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "        \"one\": \"1\"\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "        \"two\": \"2\"\n" +
+                        "    }\n" +
+                        "]"},
+                {"?=a:b:c\n" +
+                        "zero=%0\n" +
+                        "one=%1\n" +
+                        "two=%2\n", "[\n" +
+                        "    {\n" +
+                        "        \"zero\": \"a\"\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "        \"one\": \"b\"\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "        \"two\": \"c\"\n" +
+                        "    }\n" +
+                        "]"},
+                {"_num1 = 5\n" +
+                        "_num2 = 2\n" +
+                        "\n" +
+                        "result={\n" +
+                        "  num1>num2?\n" +
+                        "    num1 is bigger\n" +
+                        "  /?\n" +
+                        "    num1 is not bigger\n" +
+                        "}", "{\n" +
+                        "    \"result\": \"num1 is bigger\"\n" +
+                        "}"},
+                {"*class(\n" +
+                        "  *id=p\n" +
+                        "  *name=person\n" +
+                        "  *superclass=map\n" +
+                        ")\n" +
+                        "\n" +
+                        "p(name=Elliott Brown;dob=16/11/1983)","{\n" +
+                        "    \"person\": {\n" +
+                        "        \"name\": \"Elliott Brown\",\n" +
+                        "        \"dob\": \"16/11/1983\"\n" +
+                        "    }\n" +
+                        "}"},
+                {"*class(\n" +
+                        "  *id=p\n" +
+                        "  *name=person\n" +
+                        ")\n" +
+                        "\n" +
+                        "p(name=Elliott Brown;dob=16/11/1983)","{\n" +
+                        "    \"person\": {\n" +
+                        "        \"name\": \"Elliott Brown\",\n" +
+                        "        \"dob\": \"16/11/1983\"\n" +
+                        "    }\n" +
+                        "}"},
+                {"*class(\n" +
+                        "  *id=p\n" +
+                        "  *name=person\n" +
+                        "  *assign=[\n" +
+                        "     [name;dob]\n" +
+                        "   ]\n" +
+                        ")\n" +
+                        "\n" +
+                        "p=Elliott Brown:16/11/1983","{\n" +
+                        "    \"person\": {\n" +
+                        "        \"name\": \"Elliott Brown\",\n" +
+                        "        \"dob\": \"16/11/1983\"\n" +
+                        "    }\n" +
+                        "}"},
+                {"\"test\"=1","{\n" +
+                        "  \"test\" : 1\n" +
+                        "}"},
+                {"?=\"A\":B:C\n" +
+                        "first_letter=%0","{ \"first_letter\" : \"A\" }"},
+                {"_test=123\n" +
+                        "object(\n" +
+                        "  print_test = %test.test\n" +
+                        ")", "{\"object\":{\"print_test\":\"123.test\"}}"},
                 {"test=100%",
                         "{\"test\":\"100%\"}"},
                 {"*c(\n" +
@@ -44,10 +234,10 @@ public class ParserTest2 extends TestCase {
                         "m=in:2018-03-22:hi",
                         "{\n" +
                                 "  \"message\" : {\n" +
-                                "    \"method\" : \"sms\",\n" +
                                 "    \"direction\" : \"in\",\n" +
                                 "    \"date_time\" : \"2018-03-22\",\n" +
-                                "    \"message\" : \"hi\"\n" +
+                                "    \"message\" : \"hi\",\n" +
+                                "    \"method\" : \"sms\"\n" +
                                 "  }\n" +
                                 "}"},
                 {"test=`test`",
@@ -296,14 +486,6 @@ public class ParserTest2 extends TestCase {
                         "    \"make\" : \"Bentley\"\n" +
                         "  }\n" +
                         "}"},
-                {"_co = gb\n" +
-                        "test = {\n" +
-                        "  co = gb?\n" +
-                        "    UK\n" +
-                        "  /?\n" +
-                        "    Other\n" +
-                        "}",
-                        "{\"test\" : \"UK\" }"},
                 {/* nested conditionals */
                         "_co=at\n" +
                                 " _l=de\n" +

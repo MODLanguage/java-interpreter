@@ -302,8 +302,10 @@ Replace the part originally found (including graves) with the transformed subjec
         }
         String oldSubject = subject;
         subject = getValueForReference(subject);
-        if (oldSubject.equals(subject)) {
-            return "%" + subject;
+//        if (oldSubject.equals(subject)) {
+        if (subject == null) {
+//            return "%" + subject;
+            return "%" + oldSubject;
         }
 
         if (methodChain != null) {
@@ -323,7 +325,12 @@ Replace the part originally found (including graves) with the transformed subjec
                     subject = variableMethods.get(methodString).apply(subject + "," + paramsString);
 
                 } else {
-                    subject = variableMethods.get(method).apply(subject);
+                    if (variableMethods.get(method) == null) {
+                        // Nothing to do - leave it alone!
+                        subject = subject + "." + method;
+                    } else {
+                        subject = variableMethods.get(method).apply(subject);
+                    }
                 }
             }
         }
@@ -335,24 +342,31 @@ Replace the part originally found (including graves) with the transformed subjec
 
     private String getValueForReference(String subject) {
         String value = subject;
+        boolean found = false;
 
         // Make any variable replacements, etc.
         for (Integer i = 0; i < modlConfig.numberedVariables.size(); i++) {
             if (subject.equals(i.toString())) {
                 value = modlConfig.numberedVariables.get(i);
+                found = true;
             }
         }
         for (Map.Entry<String, String> variableEntry : modlConfig.variables.entrySet()) {
             if (subject.equals(variableEntry.getKey())) {
                 value = variableEntry.getValue();
+                found = true;
             }
         }
         for (Map.Entry<String, String> variableEntry : stringPairs.entrySet()) {
             if (subject.equals(variableEntry.getKey())) {
                 value = variableEntry.getValue();
+                found = true;
             }
         }
 
+        if (!found) {
+            return null;
+        }
         return value;
     }
 }

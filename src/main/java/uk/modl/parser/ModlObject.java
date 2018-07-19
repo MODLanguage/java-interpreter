@@ -20,6 +20,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 package uk.modl.parser;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import uk.modl.parser.printers.ModlJsonSerializer;
 
 import java.util.*;
@@ -310,15 +311,53 @@ public class ModlObject {
         }
     }
 
-    public class ConditionTest {
-        String test;
+    public interface SubCondition {}
 
-        public String getTest() {
-            return test;
+    public class ConditionTest {
+        java.util.Map<ModlObject.SubCondition, ImmutablePair<java.lang.String, Boolean>> subConditionMap = new HashMap<>();
+
+        public void addSubCondition(java.lang.String operator, boolean shouldNegate, SubCondition subCondition) {
+            subConditionMap.put(subCondition, new ImmutablePair<java.lang.String, Boolean>(operator, shouldNegate));
         }
 
-        public void setTest(String test) {
-            this.test = test;
+        public java.util.Map<SubCondition, ImmutablePair<java.lang.String, Boolean>> getSubConditionMap() {
+            return subConditionMap;
+        }
+    }
+
+    public class Condition implements SubCondition {
+        java.lang.String key;
+        java.lang.String operator;
+        List<Value> values = new LinkedList<>();
+
+        public Condition(java.lang.String key, java.lang.String operator, List<Value> values) {
+            this.key = key;
+            this.operator = operator;
+            this.values = values;
+        }
+
+        public java.lang.String getKey() {
+            return key;
+        }
+
+        public java.lang.String getOperator() {
+            return operator;
+        }
+
+        public List<Value> getValues() {
+            return values;
+        }
+    }
+
+    public class ConditionGroup implements SubCondition {
+        java.util.List<ImmutablePair<ConditionTest, java.lang.String>> conditionsTestList = new LinkedList<>();
+
+        public void addConditionTest(ConditionTest conditionTest, java.lang.String operator) {
+            conditionsTestList.add(new ImmutablePair<ConditionTest, java.lang.String>(conditionTest, operator));
+        }
+
+        public List<ImmutablePair<ConditionTest, java.lang.String>> getConditionsTestList() {
+            return conditionsTestList;
         }
     }
 

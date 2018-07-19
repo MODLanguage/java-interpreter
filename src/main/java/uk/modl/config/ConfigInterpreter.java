@@ -19,8 +19,10 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 package uk.modl.config;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import uk.modl.parser.Interpreter;
 import uk.modl.parser.ModlObject;
+import uk.modl.parser.ModlParsed;
 import uk.modl.parser.printers.JsonPrinter;
 
 import java.io.IOException;
@@ -80,7 +82,7 @@ public class ConfigInterpreter {
 
             if (structure.getPair() != null && (structure.getPair().getKey().equals("*I") || (structure.getPair().getKey().equals("*IMPORT")))) {
                 if (startedInterpreting) {
-                    throw new UnsupportedOperationException("Cannot have *I config file after other objects");
+//                    throw new UnsupportedOperationException("Cannot have *I config file after other objects");
                 }
                 // Load in the config file specified by the "I" object
                 if (structure.getPair().getValueItems().get(0).getValue().getString() != null) {
@@ -102,6 +104,8 @@ public class ConfigInterpreter {
             ))) {
                 modlConfig.loadconfig(structure, variableMethods);
                 continue;
+            } else if (structure.getPair() != null && (structure.getPair().getKey().startsWith("*"))) {
+                throw new RuntimeException("Unrecognised configuration instruction : " + structure.getPair().getKey());
             }
             if (!(structure.getPair() != null && (structure.getPair().getKey().equals("V_") ||
                     (structure.getPair().getKey().equals("version_"))))) {
@@ -127,6 +131,7 @@ public class ConfigInterpreter {
         // We no longer keep configs around - they can be built up dynamically for each new record that comes in
         // Load the config file!
         String contents = null;
+        location = transformString(location);
         // If no .modl or no .txt at end, then add .modl
         if (!location.endsWith(".modl") && !location.endsWith(".txt")) {
             location = location + ".modl";
@@ -286,7 +291,7 @@ public class ConfigInterpreter {
 //                }
             //  and the pairs from all parent classes in the class hierarchy are added to the new map pair.
             // Do this recursively up from the child class, only adding pairs if they are not there already
-            addAllParentPairs(modlObject, pair, originalKey);
+//            addAllParentPairs(modlObject, pair, originalKey);
 
 
             List<ModlObject.Pair> pairs = null;
@@ -390,8 +395,10 @@ public class ConfigInterpreter {
                             paramNum++;
                     }
                 }
+                addAllParentPairs(modlObject, pair, originalKey);
                 return true;
             }
+            addAllParentPairs(modlObject, pair, originalKey);
             return true;
         }
         return false;
@@ -687,6 +694,10 @@ public class ConfigInterpreter {
         for (Map.Entry<String, Object> entry : klass.entrySet()) {
             if (!entry.getKey().startsWith("_") && !(entry.getKey().startsWith("*") && !(entry.getKey().equals("?")))) {
 //            if (!entry.getKey().startsWith("_") ) {
+                if (pairHasKey(pair, entry.getKey())) {
+                    // Only add the new key if it does not already exist in the pair!
+                    continue;
+                }
                 ModlObject.Pair newPair = modlObject.new Pair();
                 newPair.setKey(entry.getKey());
                 // Fix this up for new grammar structures
@@ -699,6 +710,20 @@ public class ConfigInterpreter {
             }
         }
 
+    }
+
+    private boolean pairHasKey(ModlObject.Pair pair, String key) {
+        // Does this pair have a map which has a pair which has this key?
+        ModlObject.Map map = pair.getMap();
+        if (map == null || map.getMapItems() == null) {
+            return false;
+        }
+        for (ModlObject.MapItem mapItem : map.getMapItems()) {
+            if (mapItem.getPair() != null && mapItem.getPair().getKey().equals(key)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean mapPairAlready(ModlObject.Pair originalPair) {
@@ -741,7 +766,8 @@ public class ConfigInterpreter {
                     (getModlClass(originalPair.getKey()).get("*n").equals("var"))))) {
                 modlConfig.loadConfigNumberedVariables(originalPair.getValueItems());
             } else {
-                if (getModlClass(originalPair.getKey()).get("*superclass").equals("str")) {
+                if (getModlClass(originalPair.getKey()).get("*superclass") != null &&
+                        getModlClass(originalPair.getKey()).get("*superclass").equals("str")) {
                     ModlObject.Pair pair = modlObject.new Pair();
                     pair.setKey(originalPair.getKey());
                     if (originalPair.getValueItems().get(0).getValue() == null) {
@@ -840,11 +866,13 @@ public class ConfigInterpreter {
         }
         ModlObject.Array array = modlObject.new Array();
 
-        for (ModlObject.ArrayItem originalArrayItem : originalArray.getArrayItems()) {
-            List<ModlObject.ArrayItem> arrayItems = interpret(modlObject, originalArrayItem);
-            if (arrayItems != null) {
-                for (ModlObject.ArrayItem arrayItem : arrayItems) {
-                    array.addArrayItem(arrayItem);
+        if (originalArray.getArrayItems() != null) {
+            for (ModlObject.ArrayItem originalArrayItem : originalArray.getArrayItems()) {
+                List<ModlObject.ArrayItem> arrayItems = interpret(modlObject, originalArrayItem);
+                if (arrayItems != null) {
+                    for (ModlObject.ArrayItem arrayItem : arrayItems) {
+                        array.addArrayItem(arrayItem);
+                    }
                 }
             }
         }
@@ -970,33 +998,208 @@ public class ConfigInterpreter {
 
 
     private boolean evaluates(ModlObject.ConditionTest conditionalTest) {
-        // TODO Remember to check objects we currently have defined - stringPairNames or something?
-        // TODO Remember to try with and without underscores for defined names
-        // TODO Can we just call transformString here?and try a version which doesn't check for the "%" but just replaces the string?
-        // TODO And also check variables?
-        // TODO How does "else" look"?
-        String testString = conditionalTest.getTest().string;
-        if (testString.equals("else")) {
-            return true;
+        int nullCount = 0;
+        List<Map.Entry<ModlObject.SubCondition, ImmutablePair<java.lang.String, Boolean>>> conditionalTestOrderedList = new LinkedList<>();
+        for (Map.Entry<ModlObject.SubCondition, ImmutablePair<java.lang.String, Boolean>> conditionalTestEntry : conditionalTest.getSubConditionMap().entrySet()) {
+            // There are only & and | and null here!
+            // Work out where this should be in the list
+            String operator = conditionalTestEntry.getValue().getLeft();
+            if (operator == null) {
+                conditionalTestOrderedList.add(nullCount++, conditionalTestEntry);
+            } else {
+                if (operator.equals("|")) {
+                    conditionalTestOrderedList.add(conditionalTestEntry);
+                } else if (operator.equals("&")) {
+                    conditionalTestOrderedList.add(nullCount, conditionalTestEntry);
+                }
+            }
         }
-        String[] splits = testString.split("=");
-        if (splits.length == 2) {
-            String val = splits[1].trim();
-            String keyString = splits[0].trim();
-            StringTransformer stringTransformer = new StringTransformer(modlConfig, stringPairs, variableMethods);
-            keyString = stringTransformer.runObjectReferencing("%" + keyString, "%" + keyString, false);
-            if (keyString.equals("%"+keyString)) {
-                throw new RuntimeException("Couldn't find conditional key");
+
+        boolean result = true;
+        for (Map.Entry<ModlObject.SubCondition, ImmutablePair<java.lang.String, Boolean>> conditionalTestEntry : conditionalTestOrderedList) {
+            ModlObject.SubCondition subCondition = conditionalTestEntry.getKey();
+            ImmutablePair<String, Boolean> conditionTestOperatorPair = conditionalTestEntry.getValue();
+            String conditionTestOperator = conditionTestOperatorPair.getLeft();
+            Boolean shouldNegate = conditionTestOperatorPair.getRight();
+            boolean subConditionReturn = true;
+            if (subCondition instanceof ModlObject.ConditionGroup) {
+                subConditionReturn = evaluates((ModlObject.ConditionGroup)subCondition);
+            } else if (subCondition instanceof ModlObject.Condition) {
+                subConditionReturn = evaluates((ModlObject.Condition)subCondition);
             }
-//            keyString = transformString(keyString, true);
-            if (val.endsWith("?")) {
-                val = val.substring(0, val.length() - 1);
+
+            // HANDLE NOT OPERATOR!
+            if (shouldNegate) {
+                subConditionReturn = !subConditionReturn;
             }
-            if (keyString.equals(val)) {
-                return true;
+
+            // Do something with it!!!
+            if (conditionTestOperator == null) {
+                result = subConditionReturn;
+            }
+            else {
+                if (conditionTestOperator.equals("&")) {
+                    result = result && subConditionReturn;
+                } else if (conditionTestOperator.equals("|")) {
+                    result = result || subConditionReturn;
+                }
+            }
+        }
+        return result;
+    }
+
+    private boolean evaluates(ModlObject.ConditionGroup conditionGroup) {
+        List<ImmutablePair<ModlObject.ConditionTest, java.lang.String>> orderedConditionalTestList = new LinkedList<>();
+        int nullCount = 0;
+        for (ImmutablePair<ModlObject.ConditionTest, java.lang.String> conditionalTestEntry : conditionGroup.getConditionsTestList()) {
+            // Work out where this should be in the list
+            // There are only & and | and null here!
+            String operator = conditionalTestEntry.getValue();
+            if (operator == null) {
+                orderedConditionalTestList.add(nullCount++, conditionalTestEntry);
+            } else {
+                if (operator.equals("|")) {
+                    orderedConditionalTestList.add(conditionalTestEntry);
+                } else if (operator.equals("&")) {
+                    orderedConditionalTestList.add(nullCount, conditionalTestEntry);
+                }
+            }
+        }
+        boolean result = true;
+        for (ImmutablePair<ModlObject.ConditionTest, java.lang.String> conditionTestPair : orderedConditionalTestList) {
+            ModlObject.ConditionTest ct = conditionTestPair.getLeft();
+            java.lang.String conditionGroupOperator = conditionTestPair.getRight();
+            boolean ctReturn = evaluates(ct);
+            if (conditionGroupOperator == null) {
+                result = ctReturn;
+            } else {
+                if (conditionGroupOperator.equals("&")) {
+                    result = result && ctReturn;
+                } else if (conditionGroupOperator.equals("|")) {
+                    result = result || ctReturn;
+                }
+            }
+        }
+        return result;
+    }
+
+    private boolean evaluates(ModlObject.Condition condition) {
+        String keyString = condition.getKey();
+        // Try to do object referencing and string transformation on the key
+        String key = transformConditionalArgument(keyString);
+
+        String conditionOperator = condition.getOperator();
+        List<ModlObject.Value> values = condition.getValues();
+
+        // Now evaluate it!!
+        // Should either be number, string or quoted
+
+        if (values.size() > 1) {
+            // This MUST be a "variable assumption"
+            // Check that the operator is "="
+            // We need to check if the key is equal to ANY of the values
+            for (ModlObject.Value value: values) {
+                Object val = getObjectFromValueForCondition(value);
+                if (conditionOperator.equals("=")) {
+                    if (conditionalEquals(key, val)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } else {
+            // Single value
+            // Get the basic Java primitive out of the value
+            // Then cast it to Object
+            // Then do whatever the conditionOperator says!
+            Object valObj = getObjectFromValueForCondition(values.get(0));
+            String val = transformConditionalArgument(valObj.toString());
+            if (val.startsWith("%")) {
+                val = val.substring(1, val.length());
+            }
+            if (conditionOperator.equals("=")) {
+                return conditionalEquals(key.toString(), val);
+            }
+            if (conditionOperator.equals("!=")) {
+                return !conditionalEquals(key.toString(), val);
+            }
+            Float valFloat = new Float(val.toString());
+            Float keyFloat = new Float(key.toString());
+            if (conditionOperator.equals(">")) {
+                return keyFloat.compareTo(valFloat) > 0;
+            }
+            if (conditionOperator.equals("<")) {
+                return keyFloat.compareTo(valFloat) < 0;
+            }
+            if (conditionOperator.equals("<=")) {
+                return keyFloat.compareTo(valFloat) <= 0;
+            }
+            if (conditionOperator.equals(">=")) {
+                return keyFloat.compareTo(valFloat) >= 0;
             }
         }
         return false;
+    }
+
+    private boolean conditionalEquals(String key, Object val) {
+        if (val.toString().contains("*")) {
+            return conditionalWildcardEquals(key, val);
+        }
+        return key.equals(val);
+    }
+
+    private boolean conditionalWildcardEquals(String key, Object val) {
+        // Build a pattern matching string, using HEAD and TAIL operators, and adding wildcards inbetween the phrases, wherever we see a *
+        String regex = "";
+        if (!(val.toString().startsWith("*"))) {
+            regex = "^";
+        } else {
+            regex = ".*";
+        }
+
+        String[] splits = val.toString().split("\\*");
+        int i = 0;
+        for (String split : splits) {
+            if (split.equals("")) {
+                continue;
+            }
+            if (i++ > 0) {
+                regex+=".*";
+            }
+            regex+=split;
+        }
+        if (!(val.toString().endsWith("*"))) {
+            regex += "$";
+        } else {
+            regex += ".*";
+        }
+
+        return key.matches(regex);
+    }
+
+    private Object getObjectFromValueForCondition(ModlObject.Value value) {
+        if (value.getQuoted() != null) {
+            return value.getQuoted().string;
+        }
+        if (value.getString() != null) {
+            return value.getString().string;
+        }
+        if (value.getNumber() != null) {
+            return value.getNumber().string;
+        }
+        return null;
+    }
+
+    private String transformConditionalArgument(String origKeyString) {
+        StringTransformer stringTransformer = new StringTransformer(modlConfig, stringPairs, variableMethods);
+        String keyString = stringTransformer.runObjectReferencing("%" + origKeyString, "%" + origKeyString, false);
+        if (keyString.equals("%" + origKeyString) && origKeyString.startsWith("%")) {
+            keyString = stringTransformer.runObjectReferencing(origKeyString, origKeyString, false);
+        }
+        if (keyString.equals("%"+keyString)) {
+            throw new RuntimeException("Couldn't find conditional key");
+        }
+        return keyString;
     }
 
     private ModlObject.False interpret(ModlObject modlObject, ModlObject.False falseVal) {

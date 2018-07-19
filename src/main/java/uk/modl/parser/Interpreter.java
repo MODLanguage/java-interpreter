@@ -19,9 +19,11 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 package uk.modl.parser;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import uk.modl.parser.printers.JsonPrinter;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -132,6 +134,13 @@ public class Interpreter {
         value.setNullVal(interpret(modlObject, parsedValue.getNullVal()));
         value.setString(interpret(modlObject, parsedValue.getString()));
 
+        if (parsedValue.getMap() != null && value.getMap() == null) {
+            value.setMap(modlObject.new Map());
+        }
+        if (parsedValue.getArray() != null && value.getArray() == null) {
+            value.setArray(modlObject.new Array());
+        }
+
         return value;
     }
 
@@ -139,10 +148,55 @@ public class Interpreter {
         if (conditionTestParsed == null) {
             return null;
         }
+
         ModlObject.ConditionTest conditionTest = modlObject.new ConditionTest();
-//        conditionTest.setTest(modlObject.new String("_modl-conditional?" + conditionTestParsed.string.string));
-        conditionTest.setTest(modlObject.new String(conditionTestParsed.string.string));
+        // SubConditions are either ConditionGroups or Conditions
+        for (ImmutablePair<ModlParsed.SubCondition, ImmutablePair<String, Boolean>> subConditionPair : conditionTestParsed.subConditionList) {
+            ModlParsed.SubCondition subCondition = subConditionPair.getLeft();
+            ImmutablePair<java.lang.String, Boolean> operatorPair = subConditionPair.getRight();
+            String operator = operatorPair.getLeft();
+            Boolean shouldNegate = operatorPair.getRight();
+            if (subCondition instanceof ModlParsed.ConditionGroup) {
+                ModlObject.ConditionGroup conditionGroup = interpret(modlObject, (ModlParsed.ConditionGroup)subCondition);
+                conditionTest.addSubCondition(operator, shouldNegate, conditionGroup);
+            } else if (subCondition instanceof ModlParsed.Condition) {
+                ModlObject.Condition condition = interpret(modlObject, (ModlParsed.Condition)subCondition);
+                conditionTest.addSubCondition(operator, shouldNegate, condition);
+            }
+        }
+
         return conditionTest;
+    }
+
+    private static ModlObject.Condition interpret(ModlObject modlObject, ModlParsed.Condition conditionParsed) {
+        if (conditionParsed == null) {
+            return null;
+        }
+
+        String key = conditionParsed.key;
+        String operator = conditionParsed.operator;
+        List<ModlObject.Value> values = new LinkedList<>();
+        for (ModlParsed.Value valueParsed : conditionParsed.values) {
+            ModlObject.Value value = interpret(modlObject, valueParsed);
+            values.add(value);
+        }
+        ModlObject.Condition condition = modlObject.new Condition(key, operator, values);
+        return condition;
+    }
+
+    private static ModlObject.ConditionGroup interpret(ModlObject modlObject, ModlParsed.ConditionGroup conditionGroupParsed) {
+        if (conditionGroupParsed == null) {
+            return null;
+        }
+        ModlObject.ConditionGroup conditionGroup = modlObject.new ConditionGroup();
+        for (org.apache.commons.lang3.tuple.ImmutablePair<ModlParsed.ConditionTest, java.lang.String> conditionTestPair : conditionGroupParsed.conditionsTestList) {
+            ModlParsed.ConditionTest conditionTestParsed = conditionTestPair.getLeft();
+            String operator = conditionTestPair.getRight();
+            ModlObject.ConditionTest conditionTest = interpret(modlObject, conditionTestParsed);
+            conditionGroup.addConditionTest(conditionTest, operator);
+        }
+
+        return conditionGroup;
     }
 
     private static ModlObject.Pair interpret(ModlObject modlObject, ModlParsed.Pair pairParsed) {
