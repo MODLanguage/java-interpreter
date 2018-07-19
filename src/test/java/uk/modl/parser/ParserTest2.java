@@ -30,6 +30,37 @@ import java.util.List;
 
 public class ParserTest2 extends TestCase {
         final static List<Object[]> expected =  Arrays.asList(new Object[][]{
+//                {"_bool=true\n" +
+//                        "{\n" +
+//                        "bool?\n" +
+//                        "  test=1\n" +
+//                        "}", "{\n" +
+//                        "  \"test\":1\n" +
+//                        "}"},
+//                {"_test=1\\\\:2\n" +
+//                        "\n" +
+//                        "result={\n" +
+//                        "  test=1\\\\:2?\n" +
+//                        "      yes\n" +
+//                        "  /?\n" +
+//                        "     no\n" +
+//                        "}", "{\n" +
+//                        "    \"result\": \"yes”\n" +
+//                        "}"},
+                {"_test=1\\\\:2\n" +
+                        "result=%test", "{\n" +
+                        "    \"result\": \"1:2\"\n" +
+                        "}\n"},
+//                {"_test=\"http://www.tesco.com\"\n" +
+//                        "\n" +
+//                        "result={\n" +
+//                        "  test=\"http://www.tesco.com\"?\n" +
+//                        "      yes\n" +
+//                        "  /?\n" +
+//                        "     no\n" +
+//                        "}", "{\n" +
+//                        "    \"result\": \"yes”\n" +
+//                        "}"},
                 {"_test=abcdefg\n" +
                         "result={\n" +
                         "  {test!=a*}?\n" +
