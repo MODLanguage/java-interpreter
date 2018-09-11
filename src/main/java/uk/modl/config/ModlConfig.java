@@ -21,15 +21,12 @@ package uk.modl.config;
 
 import uk.modl.parser.ModlObject;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 public class ModlConfig {
 
-    Map<String, Map<String, Object>> klasses = new HashMap<>();
+    Map<String, Map<String, Object>> klasses = new LinkedHashMap<>();
     Map<String, String> variables = new HashMap<>();
     Map<Integer, String> numberedVariables = new HashMap<>();
 
@@ -287,7 +284,7 @@ public class ModlConfig {
             _output=m
           )
          */
-        Map<String, Object> o = new HashMap<>();
+        Map<String, Object> o = new LinkedHashMap<>();
         ModlObject.String superclass = modlObject.new String("map");
         ModlObject.Value superclassValue = modlObject.new Value();
         superclassValue.setString(superclass);
