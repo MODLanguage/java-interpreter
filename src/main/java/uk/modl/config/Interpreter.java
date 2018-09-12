@@ -20,7 +20,6 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 package uk.modl.config;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.jetbrains.annotations.Nullable;
 import uk.modl.parser.ModlObjectCreator;
 import uk.modl.parser.ModlObject;
 import uk.modl.parser.printers.JsonPrinter;
@@ -529,7 +528,6 @@ public class Interpreter {
         }
     }
 
-    @Nullable
     private String getStringFromValue(ModlObject.Pair originalPair) {
         String str = null;
         if (originalPair.getValueItems().get(0).getValue() != null &&
