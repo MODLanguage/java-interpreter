@@ -24,11 +24,11 @@ import uk.modl.parser.ModlObject;
 import java.util.*;
 import java.util.function.Function;
 
-public class ModlConfig {
+public class ModlClassLoader {
 
     Map<String, Map<String, Object>> klasses = new LinkedHashMap<>();
     Map<String, String> variables = new HashMap<>();
-    Map<Integer, String> numberedVariables = new HashMap<>();
+    Map<Integer, java.lang.Object> numberedVariables = new HashMap<>();
 
     public void loadConfig(ModlObject configModlObject, Map<String, Function<String, String>> variableMethods) {
         // Remember to define "o" for "object" BEFORE we load the config
@@ -67,7 +67,7 @@ public class ModlConfig {
             loadConfigVariable(structure.getPair().getMap().getMapItems());
         } else if (structure.getPair().getKey().equals("?")) {
             if (structure.getPair().getArray() != null) {
-                loadConfigNumberedVariablesArray(structure.getPair().getArray().getArrayItems());
+                loadConfigNumberedVariablesArray(structure.getPair().getArray());
             } else {
                 loadConfigNumberedVariables(structure.getPair().getValueItems());
             }
@@ -138,11 +138,14 @@ public class ModlConfig {
         return paramNum;
     }
 
-    public void loadConfigNumberedVariablesArray(List<ModlObject.ArrayItem> arrayItems) {
+    public void loadConfigNumberedVariablesArray(ModlObject.Array array) {
         numberedVariables = new HashMap<>();
         // We are expecting a list of Values
         int paramNum = 0;
-        loadConfigNumberedVariablesArray(arrayItems, paramNum);
+        loadConfigNumberedVariablesArray(array.getArrayItems(), paramNum);
+////        loadConfigNumberedVariablesArray(arrayItems, paramNum);
+////        addConfigNumberedVariable(0, array);
+//        numberedVariables.put(numberedVariables.size(), array);
     }
 
     private int loadConfigNumberedVariablesArray(List<ModlObject.ArrayItem> arrayItems, int paramNum) {
@@ -164,9 +167,12 @@ public class ModlConfig {
                 numberedVariables.put(paramNum++, vi.getValue().getString().string);
             }
         } else if (val.getArray() != null) {
+//                numberedVariables.put(paramNum++, val.getArray());
             for (ModlObject.ArrayItem vi : val.getArray().getArrayItems()) {
                 numberedVariables.put(paramNum++, vi.getValue().getString().string);
             }
+        } else if (val.getMap() != null) {
+            numberedVariables.put(paramNum++, val.getMap());
         }
         else {
             if (val.getString() != null) {
@@ -197,7 +203,7 @@ public class ModlConfig {
 
     private void loadConfigStructure(ModlObject.Structure structure) {
         // Load in the new klass
-        HashMap<String, Object> values = new HashMap<>();
+        HashMap<String, Object> values = new LinkedHashMap<>();
         String id = getPairValueFor(structure, "*id");
         if (id == null) {
             id = getPairValueFor(structure, "*i");

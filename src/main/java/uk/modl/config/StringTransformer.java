@@ -20,6 +20,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 package uk.modl.config;
 
 import org.apache.commons.text.StringEscapeUtils;
+import uk.modl.parser.ModlObject;
 
 import java.net.IDN;
 import java.util.LinkedList;
@@ -31,14 +32,20 @@ import static java.lang.Character.isLetter;
 
 public class StringTransformer {
 
-    ModlConfig modlConfig;
+    ModlClassLoader modlClassLoader;
     Map<String, String> stringPairs;
+    Map<String, Map> mapPairs;
+    Map<String, List> arrayPairs;
     Map<String, Function<String, String>> variableMethods;
 
 
-    public StringTransformer(ModlConfig modlConfig, Map<String, String> stringPairs, Map<String, Function<String, String>> variableMethods) {
-        this.modlConfig = modlConfig;
+    public StringTransformer(ModlClassLoader modlClassLoader, Map<String, String> stringPairs,
+                             Map<String, Map> mapPairs, Map<String, List> arrayPairs,
+                             Map<String, Function<String, String>> variableMethods) {
+        this.modlClassLoader = modlClassLoader;
         this.stringPairs = stringPairs;
+        this.arrayPairs = arrayPairs;
+        this.mapPairs = mapPairs;
         this.variableMethods = variableMethods;
     }
 
@@ -58,11 +65,15 @@ public class StringTransformer {
         // 3 : If parts are found loop through them in turn:
         for (String gravePart : graveParts) {
             //     If a part begins with a % then run “Object Referencing”, else run “Punycode encoded parts”
+            String newGravePart = null;
             if (gravePart.startsWith("`%")) {
                 stringToTransform = runObjectReferencing(gravePart, stringToTransform, true);
+                String nonGravePart = gravePart.substring(1, gravePart.length() - 1);
+                stringToTransform = stringToTransform.replace(gravePart, nonGravePart);
+//                newGravePart  = runObjectReferencing(gravePart, stringToTransform, true, false);
             } else {
                 // else run “Punycode encoded parts”
-                String newGravePart = replacePunycode(gravePart);
+                newGravePart = replacePunycode(gravePart);
                 stringToTransform = stringToTransform.replace(gravePart, newGravePart);
             }
         }
@@ -302,10 +313,8 @@ Replace the part originally found (including graves) with the transformed subjec
         }
         String oldSubject = subject;
         subject = getValueForReference(subject);
-//        if (oldSubject.equals(subject)) {
         if (subject == null) {
-//            return "%" + subject;
-            return "%" + oldSubject;
+                return stringToTransform;
         }
 
         if (methodChain != null) {
@@ -345,13 +354,17 @@ Replace the part originally found (including graves) with the transformed subjec
         boolean found = false;
 
         // Make any variable replacements, etc.
-        for (Integer i = 0; i < modlConfig.numberedVariables.size(); i++) {
+        for (Integer i = 0; i < modlClassLoader.numberedVariables.size(); i++) {
             if (subject.equals(i.toString())) {
-                value = modlConfig.numberedVariables.get(i);
+                if (modlClassLoader.numberedVariables.get(i) instanceof String) {
+                    value = (String) modlClassLoader.numberedVariables.get(i);
+                } else {
+                    value = ((ModlObject.Value) modlClassLoader.numberedVariables.get(i)).getString().string;
+                }
                 found = true;
             }
         }
-        for (Map.Entry<String, String> variableEntry : modlConfig.variables.entrySet()) {
+        for (Map.Entry<String, String> variableEntry : modlClassLoader.variables.entrySet()) {
             if (subject.equals(variableEntry.getKey())) {
                 value = variableEntry.getValue();
                 found = true;
@@ -360,6 +373,18 @@ Replace the part originally found (including graves) with the transformed subjec
         for (Map.Entry<String, String> variableEntry : stringPairs.entrySet()) {
             if (subject.equals(variableEntry.getKey())) {
                 value = variableEntry.getValue();
+                found = true;
+            }
+        }
+        for (Map.Entry<String, Map> variableEntry : mapPairs.entrySet()) {
+            if (subject.equals(variableEntry.getKey())) {
+//                value = variableEntry.getValue();
+                found = true;
+            }
+        }
+        for (Map.Entry<String, List> variableEntry : arrayPairs.entrySet()) {
+            if (subject.equals(variableEntry.getKey())) {
+//                value = variableEntry.getValue();
                 found = true;
             }
         }

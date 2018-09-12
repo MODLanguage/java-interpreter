@@ -21,7 +21,7 @@ package uk.modl.parser;
 
 import junit.framework.TestCase;
 import org.junit.Test;
-import uk.modl.config.ConfigInterpreter;
+import uk.modl.config.Interpreter;
 import uk.modl.parser.printers.JsonPrinter;
 
 import java.io.IOException;
@@ -30,37 +30,194 @@ import java.util.List;
 
 public class ParserTest2 extends TestCase {
         final static List<Object[]> expected =  Arrays.asList(new Object[][]{
-//                {"_bool=true\n" +
-//                        "{\n" +
-//                        "bool?\n" +
-//                        "  test=1\n" +
-//                        "}", "{\n" +
-//                        "  \"test\":1\n" +
-//                        "}"},
-//                {"_test=1\\\\:2\n" +
+//                {"*method(\n" +
+//                        "  ## The method can be called by it's ID or name\n" +
+//                        "  *id=cn\n" +
+//                        "  *name=company_name\n" +
+//                        "  ## The value of the object that the method is called on is transformed using the following methods:\n" +
+//                        "  *transform=`replace(-, ).trim(.).initcap`\n" +
+//                        ")\n" +
 //                        "\n" +
-//                        "result={\n" +
-//                        "  test=1\\\\:2?\n" +
-//                        "      yes\n" +
-//                        "  /?\n" +
-//                        "     no\n" +
-//                        "}", "{\n" +
-//                        "    \"result\": \"yes”\n" +
+//                        "_domain = smiths-limited.com\n" +
+//                        "friendly_name = %domain.cn ## The value \"Smiths Limited\" is assigned to the key \"friendly_name\"",
+//                        "{\n" +
+//                                "    \"friendly_name\": \"Smiths Limited\"\n" +
+//                                "}"},
+
+//                {"?[[a;b;c]];letters=%0", "{\n" +
+//                        "    \"letters\": [ \"a\", \"b\", \"c\"]\n" +
 //                        "}"},
+//                {"?[[a;b;c];[one;two;three]];letters=%0;numbers=%1", "{\n" +
+//                        "    \"letters\": [ \"a\", \"b\", \"c\"],\n" +
+//                        "    \"numbers\": [ \"one\", \"two\", \"three\"]\n" +
+//                        "}"},
+//                {"?=[a;b;c];[one;two;three];letters=%0;numbers=%1", "{\n" +
+//                        "    \"letters\": [ \"a\", \"b\", \"c\"],\n" +
+//                        "    \"numbers\": [ \"one\", \"two\", \"three\"]\n" +
+//                        "}"},
+//                {"?[zero;one;two]\n" +
+//                        "first_var=%0\n" +
+//                        "second_var=%1\n" +
+//                        "third_var=%2",
+//                        "[ {\n" +
+//                                "  \"first_var\" : \"zero\"\n" +
+//                                "}, {\n" +
+//                                "  \"second_var\" : \"one\"\n" +
+//                                "}, {\n" +
+//                                "  \"third_var\" : \"two\"\n" +
+//                                "} ]"},
+
+                {"_branch=\"\"\n" +
+                        "_root=\"\"\n" +
+                        "namespace=`%branch`numrecord.`%root`",
+                "{\n" +
+                        "  \"namespace\" : \"numrecord.\"\n" +
+                        "}"},
+                {"_root=tesco.com\n" +
+                        "_branch=direct.\n" +
+                        "namespace1=`%branch`numrecord.`%root`\n" +
+                        "namespace2=`%branch`_`%root`.numq.net",
+                "[ {\n" +
+                        "  \"namespace1\" : \"direct.numrecord.tesco.com\"\n" +
+                        "}, {\n" +
+                        "  \"namespace2\" : \"direct._tesco.com.numq.net\"\n" +
+                        "} ]\n"},
+                {"_branch=\"alex.\";_root=d;namespace=`%branch`blah.`%root`",
+                        "{\"namespace\":\"alex.blah.d\"}"
+                },
+                {"namespace=`%branch`blah.`%root`",
+                        "{\"namespace\":\"%branchblah.%root\"}"
+                },
+                {"?=zero:one:two\n" +
+                        "discount=%30",
+                        "{ \n" +
+                                "  \"discount\": \"%30\"\n" +
+                                "}"},
+
+                {"_C=gb\n" +
+                        "_COUNTRIES[\n" +
+                        "  United States\n" +
+                        "  United Kingdom\n" +
+                        "  Germany\n" +
+                        "]\n" +
+                        "\n" +
+                        "country_name = %COUNTRIES[0]",
+                "{ \"country_name\" : \"United States\" }"},
+
+                {"?=[one;two]\n" +
+                        "test=Blah `%0.r(o,huzzah)` `%1.t(w)`",
+                        "{\"test\":\"Blah huzzahne t\"}"},
+                {"?=[one;two]\n" +
+                        "test=Blah `%0.s` %1.s",
+                        "{\"test\":\"Blah One Two\"}"},
+                {"*I=\"http://config.modl.uk/num/en-GB.txt\"\n" +
+                        "o(n=Tesco;+[t=08001234567])",
+                "{\n" +
+                        "  \"organisation\" : {\n" +
+                        "    \"name\" : \"Tesco\",\n" +
+                        "    \"objects\" : [ {\n" +
+                        "      \"telephone\" : {\n" +
+                        "        \"value\" : \"08001234567\",\n" +
+                        "        \"object_type\" : \"medium\",\n" +
+                        "        \"display_name\" : \"Telephone\",\n" +
+                        "        \"description_default\" : \"Call\",\n" +
+                        "        \"prefix\" : \"tel://\",\n" +
+                        "        \"media_type\" : \"core\"\n" +
+                        "      }\n" +
+                        "    } ],\n" +
+                        "    \"object_type\" : \"entity\",\n" +
+                        "    \"description_default\" : \"View Organisation\"\n" +
+                        "  }\n" +
+                        "}"},
+                {"_test=\"http://www.tesco.com\"\n" +
+                        "\n" +
+                        "result={\n" +
+                        "  test=\"http://www.tesco.com\"?\n" +
+                        "      yes\n" +
+                        "  /?\n" +
+                        "     no\n" +
+                        "}", "{\n" +
+                        "  \"result\" : \"yes\"\n" +
+                        "}"},
+                {"_test=\"http://www.tesco.com\"\n" +
+                        "\n" +
+                        "result={\n" +
+                        "  test=\"http://www.tesco.com\"?\n" +
+                        "      yes\n" +
+                        "  /?\n" +
+                        "     no\n" +
+                        "}", "{\n" +
+                        "  \"result\" : \"yes\"\n" +
+                        "}"},
                 {"_test=1\\\\:2\n" +
                         "result=%test", "{\n" +
                         "    \"result\": \"1:2\"\n" +
                         "}\n"},
-//                {"_test=\"http://www.tesco.com\"\n" +
-//                        "\n" +
-//                        "result={\n" +
-//                        "  test=\"http://www.tesco.com\"?\n" +
-//                        "      yes\n" +
-//                        "  /?\n" +
-//                        "     no\n" +
-//                        "}", "{\n" +
-//                        "    \"result\": \"yes”\n" +
-//                        "}"},
+                {"_test=1\\\\:2\n" +
+                        "\n" +
+                        "result={\n" +
+                        "  test=1\\\\:2?\n" +
+                        "      yes\n" +
+                        "  /?\n" +
+                        "     no\n" +
+                        "}", "{ \"result\": \"yes\" }"},
+                {"_test=1~:2\n" +
+                        "\n" +
+                        "result={\n" +
+                        "  test=1~:2?\n" +
+                        "      yes\n" +
+                        "  /?\n" +
+                        "     no\n" +
+                        "}", "{ \"result\": \"yes\" }"},
+                {"_bool=true\n" +
+                        "{\n" +
+                        "bool?\n" +
+                        "  test=1\n" +
+                        "}", "{\n" +
+                        "  \"test\":1\n" +
+                        "}"},
+                {"{\n" +
+                        "true?\n" +
+                        "  test=1\n" +
+                        "}", "{\n" +
+                        "  \"test\":1\n" +
+                        "}"},
+                {"{\n" +
+                        "true?\n" +
+                        "  test=1\n" +
+                        "}", "{\n" +
+                        "  \"test\":1\n" +
+                        "}"},
+                {"{\n" +
+                        "01?\n" +
+                        "  test=1\n" +
+                        "}", "{\n" +
+                        "  \"test\":1\n" +
+                        "}"},
+                {"{\n" +
+                        "TRUE?\n" +
+                        "  test=1\n" +
+                        "}", "{\n" +
+                        "  \"test\":1\n" +
+                        "}"},
+                {"_C=gb\n" +
+                        "_COUNTRIES(\n" +
+                        "  us=United States\n" +
+                        "  gb=United Kingdom\n" +
+                        "  de=Germany\n" +
+                        ")\n" +
+                        "\n" +
+                        "country_name = %COUNTRIES[%C]", "{\n" +
+                        "  \"country_name\" : \"United Kingdom\"\n" +
+                        "}"},
+                {"_test_vars(\n" +
+                        "  one = 1\n" +
+                        "  two = 2\n" +
+                        ")\n" +
+                        "\n" +
+                        "first_number = %test_vars[one]", "{\n" +
+                        "  \"first_number\" : \"1\"\n" +
+                        "}"},
                 {"_test=abcdefg\n" +
                         "result={\n" +
                         "  {test!=a*}?\n" +
@@ -248,28 +405,6 @@ public class ParserTest2 extends TestCase {
                 "{\n" +
                         "  \"test\" : \"!\"\n" +
                         "}"},
-                {"?=zero:one:two\n" +
-                        "discount=%30",
-                "{ \n" +
-                        "  \"discount\": \"%30\"\n" +
-                        "}"},
-                {"?[zero;one;two]\n" +
-                        "first_var=%0\n" +
-                        "second_var=%1\n" +
-                        "third_var=%2",
-                "[ {\n" +
-                        "  \"first_var\" : \"zero\"\n" +
-                        "}, {\n" +
-                        "  \"second_var\" : \"one\"\n" +
-                        "}, {\n" +
-                        "  \"third_var\" : \"two\"\n" +
-                        "} ]"},
-                {"?=[one;two]\n" +
-                        "test=Blah `%0.r(o,huzzah)` `%1.t(w)`",
-                        "{\"test\":\"Blah huzzahne t\"}"},
-                {"?=[one;two]\n" +
-                        "test=Blah `%0.s` %1.s",
-                        "{\"test\":\"Blah One Two\"}"},
                 {"*class(\n" +
                         "  *id=g\n" +
                         "  *name=glossary\n" +
@@ -721,7 +856,7 @@ public class ParserTest2 extends TestCase {
                         System.out.println("Input : " + input);
                         System.out.println("Expected : " + expected);
 
-                        ModlObject modlObject = ConfigInterpreter.interpret(input);
+                        ModlObject modlObject = Interpreter.interpret(input);
                         String output = JsonPrinter.printModl(modlObject);
                         System.out.println("Output : " + output);
                         assertEquals(expected.replace(" ", "").replace("\n", ""),

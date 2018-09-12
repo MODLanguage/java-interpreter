@@ -27,7 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class Interpreter {
+public class ModlObjectCreator {
 
     public static int MODL_VERSION = 1;
 

@@ -406,8 +406,12 @@ public class ModlParsed extends MODLParserBaseListener {
 
         @Override
         public void enterCondition(MODLParser.ConditionContext ctx) {
-            key = ctx.STRING().getText();
-            operator = ctx.operator().getText();
+            if (ctx.STRING() != null) {
+                key = ctx.STRING().getText();
+            }
+            if (ctx.operator() != null) {
+                operator = ctx.operator().getText();
+            }
             for (MODLParser.ValueContext v : ctx.value()) {
                 Value value = new Value();
                 v.enterRule(value);

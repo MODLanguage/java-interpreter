@@ -21,7 +21,7 @@ package uk.modl.parser;
 
 import junit.framework.TestCase;
 import org.junit.Test;
-import uk.modl.config.ConfigInterpreter;
+import uk.modl.config.Interpreter;
 import uk.modl.parser.printers.JsonPrinter;
 
 import java.io.IOException;
@@ -124,7 +124,7 @@ public class ConditionalTest extends TestCase {
             System.out.println("Input : " + input);
             System.out.println("Expected : " + expected);
 
-            ModlObject modlObject = ConfigInterpreter.interpret(input);
+            ModlObject modlObject = Interpreter.interpret(input);
             String output = JsonPrinter.printModl(modlObject);
             System.out.println("Output : " + output);
             assertEquals(expected.replace(" ", "").replace("\n", "").replace("\r", ""),

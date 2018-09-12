@@ -22,8 +22,7 @@ package uk.modl.server;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import uk.modl.config.ConfigInterpreter;
-import uk.modl.parser.Interpreter;
+import uk.modl.config.Interpreter;
 import uk.modl.parser.ModlObject;
 import uk.modl.parser.printers.JsonPrinter;
 
@@ -48,7 +47,7 @@ public class ModlServer extends AbstractHandler
         ModlObject modlObject = null;
         try {
             if (modlInput != null) {
-                modlObject = ConfigInterpreter.interpret(modlInput);
+                modlObject = Interpreter.interpret(modlInput);
             }
 
             String jsonOutput = JsonPrinter.printModl(modlObject);

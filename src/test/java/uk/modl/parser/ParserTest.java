@@ -20,7 +20,6 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 package uk.modl.parser;
 
 import junit.framework.TestCase;
-import uk.modl.parser.Parser;
 import org.junit.Test;
 import uk.modl.parser.printers.JsonPrinter;
 
@@ -210,7 +209,7 @@ public class ParserTest extends TestCase {
             System.out.println("Input : " + input);
             System.out.println("Expected : " + expected);
 
-            ModlObject modlObject = Interpreter.interpret(input);
+            ModlObject modlObject = ModlObjectCreator.interpret(input);
             String output = JsonPrinter.printModl(modlObject);
             System.out.println("Output : " + output);
             assertEquals(expected.replace(" ", "").replace("\n", "").replace("\r", ""),

@@ -5,7 +5,7 @@ It doesn't include an API for accessing the MODL object yet (coming soon) but do
 
 ```java
 String input = "test(message=Hello World)"; 
-String json = ConfigInterpreter.parseToJson(input);
+String json = Interpreter.parseToJson(input);
 ```
 
 ## HTTP Wrapper

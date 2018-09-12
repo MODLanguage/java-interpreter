@@ -20,9 +20,9 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 package uk.modl.config;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import uk.modl.parser.Interpreter;
+import org.jetbrains.annotations.Nullable;
+import uk.modl.parser.ModlObjectCreator;
 import uk.modl.parser.ModlObject;
-import uk.modl.parser.ModlParsed;
 import uk.modl.parser.printers.JsonPrinter;
 
 import java.io.IOException;
@@ -32,16 +32,19 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Function;
 
-public class ConfigInterpreter {
+public class Interpreter {
 
     public static Integer CONFIG_VERSION = 0;
 
-    private ModlConfig modlConfig = null;
+    private ModlClassLoader modlClassLoader = null;
 
     Map<String, Function<String, String>> variableMethods = new HashMap<>();
 
     Set<String> pairNames;
     Map<String, String> stringPairs;
+    Map<String, Map> mapPairs;
+    Map<String, List> arrayPairs;
+    Map<String, Boolean> boolPairs;
 
     public static String parseToJson(String input) throws IOException {
         ModlObject modlObject = interpret(input);
@@ -53,29 +56,32 @@ public class ConfigInterpreter {
     }
 
     public static ModlObject interpret(String input) throws IOException {
-        ModlObject modlObject = Interpreter.interpret(input);
+        ModlObject modlObject = ModlObjectCreator.interpret(input);
 
         return interpret(modlObject);
     }
 
     public static ModlObject interpret(ModlObject modlObject) {
-        ConfigInterpreter configInterpreter = new ConfigInterpreter();
-        return configInterpreter.interpretPrivate(modlObject);
+        Interpreter interpreter = new Interpreter();
+        return interpreter.interpretPrivate(modlObject);
     }
 
-    public ConfigInterpreter() {
+    public Interpreter() {
         variableMethods = VariableMethods.getConstantVariableMethods();
     }
 
     private ModlObject interpretPrivate(ModlObject modlObject) {
         ModlObject configuredModlObject = new ModlObject();
-        modlConfig = new ModlConfig();
+        modlClassLoader = new ModlClassLoader();
         pairNames = new HashSet<>();
         stringPairs = new HashMap<>();
+        mapPairs = new HashMap<>();
+        arrayPairs = new HashMap<>();
+        boolPairs = new HashMap<>();
 
         // Interpret modlObject based on specified config files
 
-        // The R object will no longer be in the modlObject - the MODL Interpreter will have stripped it out
+        // The R object will no longer be in the modlObject - the MODL ModlObjectCreator will have stripped it out
         // If there are any S or I objects, they will be at the front of the modlObject.
         boolean startedInterpreting = false;
         for (ModlObject.Structure structure : modlObject.getStructures()) {
@@ -102,7 +108,7 @@ public class ConfigInterpreter {
 //                    (structure.getPair().getKey().equals("*")) ||
 //                    ((structure.getPair().getKey().equals("*v")) || (structure.getPair().getKey().equals("*var")))
             ))) {
-                modlConfig.loadconfig(structure, variableMethods);
+                modlClassLoader.loadconfig(structure, variableMethods);
                 continue;
             } else if (structure.getPair() != null && (structure.getPair().getKey().startsWith("*"))) {
                 throw new RuntimeException("Unrecognised configuration instruction : " + structure.getPair().getKey());
@@ -127,7 +133,7 @@ public class ConfigInterpreter {
         return configuredModlObject;
     }
 
-    private ModlConfig loadConfigFile(ModlObject modlObject, String location) {
+    private ModlClassLoader loadConfigFile(ModlObject modlObject, String location) {
         // We no longer keep configs around - they can be built up dynamically for each new record that comes in
         // Load the config file!
         String contents = null;
@@ -152,13 +158,13 @@ public class ConfigInterpreter {
         }
         ModlObject configModlObject = null;
         try {
-            configModlObject = Interpreter.interpret(contents);
+            configModlObject = ModlObjectCreator.interpret(contents);
         } catch (IOException e) {
             throw new RuntimeException("Could not interpret " + location + ", error : " + e);
         }
-        modlConfig.loadConfig(configModlObject, variableMethods);
+        modlClassLoader.loadConfig(configModlObject, variableMethods);
         // Now we've loaded it, stick it in the map so we can use it next time
-        return modlConfig;
+        return modlClassLoader;
     }
 
     private List<ModlObject.Structure> interpret(ModlObject configuredModlObject, ModlObject.Structure structure) {
@@ -169,10 +175,10 @@ public class ConfigInterpreter {
         if (structure.getTopLevelConditional() == null) {
             ModlObject.Structure newStructure = configuredModlObject.new Structure();
 
-            newStructure.setMap(interpret(configuredModlObject, structure.getMap()));
-            newStructure.setArray(interpret(configuredModlObject, structure.getArray()));
+            newStructure.setMap(interpret(configuredModlObject, structure.getMap(), null));
+            newStructure.setArray(interpret(configuredModlObject, structure.getArray(), null));
 
-            ModlObject.Pair pair = interpret(configuredModlObject, structure.getPair());
+            ModlObject.Pair pair = interpret(configuredModlObject, structure.getPair(), null);
             if (pair != null) {
                 if (!pair.getKey().startsWith("_") &&
                         !pair.getKey().startsWith("*") &&
@@ -192,7 +198,7 @@ public class ConfigInterpreter {
 
     }
 
-    private ModlObject.Pair interpret(ModlObject modlObject, ModlObject.Pair originalPair) {
+    private ModlObject.Pair interpret(ModlObject modlObject, ModlObject.Pair originalPair, Object parentPair) {
         if (originalPair == null) {
             return null;
         }
@@ -200,7 +206,7 @@ public class ConfigInterpreter {
 //            if (originalPair.getKey().startsWith("_")) {
 //                if (originalPair.getKey().equals("_v") || originalPair.getKey().equals("_var")) {
                 if (originalPair.getKey().equals("?")) {
-                    modlConfig.loadConfigNumberedVariables(originalPair.getValueItems());
+                    modlClassLoader.loadConfigNumberedVariables(originalPair.getValueItems());
                     return null;
                 }
 //            }
@@ -223,21 +229,24 @@ public class ConfigInterpreter {
                 }
             }
         }
-        pairNames.add(newKey);
-        if (originalPair.getValueItems() != null) {
-            transformPairKey(originalPair, newKey);
+        if (!pairNames.contains("_" + newKey)) {
+            if (parentPair == null && !(newKey.startsWith("%"))) {
+                pairNames.add(newKey);
+            }
+//        if (originalPair.getValueItems() != null) {
+            transformPairKey(modlObject, originalPair, newKey, parentPair);
+//        }
         }
         if (newKey != null && (newKey.startsWith("_") || (newKey.startsWith("*")) || newKey.equals("?"))) {
-//        if (newKey != null && (newKey.startsWith("_"))) {
             return null;
         }
 
         //  A pair with a key that matches a class ID or class name is transformed according to the class definition:
         // TODO Should be able to look up by transformed name too?
-        if (haveModlClass(originalKey)) { // modlConfig.klasses.get(originalKey) != null) {
+        if (haveModlClass(originalKey)) {
             // The key of the pair is set to the class name.
             // The value of the original standard pair is given the key value in the new map pair
-            if (generateModlClassObject(modlObject, originalPair, pair, originalKey, newKey))
+            if (generateModlClassObject(modlObject, originalPair, pair, originalKey, newKey, parentPair))
                 return pair; // TODO In all cases?
 
 
@@ -245,11 +254,42 @@ public class ConfigInterpreter {
 
         pair.setKey(newKey);
 
-        pair.setMap(interpret(modlObject, originalPair.getMap()));
-        pair.setArray(interpret(modlObject, originalPair.getArray()));
+        pair.setMap(interpret(modlObject, originalPair.getMap(), parentPair));
+            pair.setArray(interpret(modlObject, originalPair.getArray(), parentPair));
         if (originalPair.getValueItems() != null) {
             for (ModlObject.ValueItem originalValueItem : originalPair.getValueItems()) {
-                pair.addValueItem(interpret(modlObject, originalValueItem));
+                // Is this a variable prefixed by "%"?
+                if (originalPair.getValueItems() != null &&
+                    originalPair.getValueItems().get(0).getValue() != null &&
+                        originalPair.getValueItems().get(0).getValue().getPair() != null
+                && originalPair.getValueItems().get(0).getValue().getPair().getKey().startsWith("%")) {
+                    String key = originalPair.getValueItems().get(0).getValue().getPair().getKey();
+                    // If so, then look up the reference!!
+                    if (pairNames.contains(key.replaceFirst("%", "_"))) {
+                        if (mapPairs.containsKey(key.replaceFirst("%", ""))) {
+                            ModlObject.ValueItem valueItem = modlObject.new ValueItem();
+                            Map map = mapPairs.get(key.replaceFirst("%", ""));
+                            String result = (String) map.get(transformString(originalPair.getValueItems().get(0).getValue().getPair().getArray().getArrayItems().get(0).getValue().getString().string));
+                            result = transformString(result);
+                            ModlObject.Value val = modlObject.new Value();
+                            val.setString(modlObject.new String(result));
+                            valueItem.setValue(val);
+                            pair.addValueItem(valueItem);
+                        } else if (arrayPairs.containsKey(key.replaceFirst("%", ""))) {
+                            ModlObject.ValueItem valueItem = modlObject.new ValueItem();
+                            List list = arrayPairs.get(key.replaceFirst("%", ""));
+                            String result = ((ModlObject.ArrayItem)(list.get(new Integer(originalPair.getValueItems().get(0).getValue().getPair().getArray().getArrayItems().get(0).getValue().getNumber().string))))
+                                    .getValue().getString().string;
+                            result = transformString(result);
+                            ModlObject.Value val = modlObject.new Value();
+                            val.setString(modlObject.new String(result));
+                            valueItem.setValue(val);
+                            pair.addValueItem(valueItem);
+                        }
+                    }
+                } else {
+                    pair.addValueItem(interpret(modlObject, originalValueItem, parentPair));
+                }
 
             }
         }
@@ -257,7 +297,8 @@ public class ConfigInterpreter {
         return pair;
     }
 
-    private boolean generateModlClassObject(ModlObject modlObject, ModlObject.Pair originalPair, ModlObject.Pair pair, String originalKey, String newKey) {
+    private boolean generateModlClassObject(ModlObject modlObject, ModlObject.Pair originalPair, ModlObject.Pair pair,
+                                            String originalKey, String newKey, Object parentPair) {
         pair.setKey(newKey);
 
         // TODO WHEN WE EVALUATE NUMPARAMS, WE NEED TO COUNT THE EVALUATED CONDITIONALS RATHER THAN THE INPUT SIZE!!!
@@ -279,7 +320,7 @@ public class ConfigInterpreter {
         }
         numParams = getNumParams(originalPair, numParams);
         String paramsKeyString = "*params" + numParams;
-//            Object obj = modlConfig.klasses.get(originalPair.getKey()).get(paramsKeyString);
+//            Object obj = modlClassLoader.klasses.get(originalPair.getKey()).get(paramsKeyString);
         Object obj = getModlClass(originalPair.getKey()).get(paramsKeyString);
         boolean hasParams = (obj != null);
 
@@ -298,25 +339,25 @@ public class ConfigInterpreter {
             boolean wasArray = false;
 
             if (originalPair.getArray() != null) {
-                pairs = getPairsFromArray(modlObject, originalPair.getArray());
+                pairs = getPairsFromArray(modlObject, originalPair.getArray(), parentPair);
                 pair.setArray(modlObject.new Array());
                 wasArray = true;
             }
 
             if (mapPairAlready(originalPair)) {
                 pairs = new LinkedList<>();
-                addMapItemsToPair(modlObject, originalPair.getMap().getMapItems(), pairs);
+                addMapItemsToPair(modlObject, originalPair.getMap().getMapItems(), pairs, parentPair);
             }
 
             if (pairs != null) {
                 // Make all the new map values in the new map pair
-                makeNewMapPair(modlObject, pair, pairs, wasArray);
+                makeNewMapPair(modlObject, pair, pairs, wasArray, parentPair);
             }
             if (originalPair.getValueItems() != null && originalPair.getValueItems().size() > 0) {
                 if (!hasParams) {
                     // Don't need a pair here - continue
                     for (ModlObject.ValueItem originalValueItem : originalPair.getValueItems()) {
-                        ModlObject.Value value = interpret(modlObject, originalValueItem.getValue());
+                        ModlObject.Value value = interpret(modlObject, originalValueItem.getValue(), parentPair);
                         ModlObject.ValueItem valueItem = modlObject.new ValueItem();
                         valueItem.setValue(value);
                         pair.addValueItem(valueItem);
@@ -340,10 +381,10 @@ public class ConfigInterpreter {
                             madePair = makePairFromValueItems(modlObject, currentClass, valueItem);
                         }
 
-                        List<ModlObject.ValueItem> vis = getValueItemsFromValueItem(modlObject, valueItem);
+                        List<ModlObject.ValueItem> vis = getValueItemsFromValueItem(modlObject, valueItem, parentPair);
                         for (ModlObject.ValueItem vi : vis) {
 
-                            List<ModlObject.Value> originalValues = getValuesFromValueItem(modlObject, vi);
+                            List<ModlObject.Value> originalValues = getValuesFromValueItem(modlObject, vi, parentPair);
 
                             for (ModlObject.Value value : originalValues) {
                                 // We now need to deal with the assigned params - we only need to do this if it is a multi-value pair as they will be named otherwise
@@ -362,8 +403,8 @@ public class ConfigInterpreter {
                                     ModlObject.Pair newPair = modlObject.new Pair();
                                     newPair.setKey(params.get(paramNum).getString().string);
                                     ModlObject.ValueItem v = modlObject.new ValueItem();
-                                    if (modlConfig.klasses.get(params.get(paramNum).getString()) != null) {
-                                        if (modlConfig.klasses.get(params.get(paramNum).getString().string).get("*superclass").equals("str")) {
+                                    if (modlClassLoader.klasses.get(params.get(paramNum).getString()) != null) {
+                                        if (modlClassLoader.klasses.get(params.get(paramNum).getString().string).get("*superclass").equals("str")) {
                                             value = makeValueString(modlObject, value);
                                         }
                                     }
@@ -374,7 +415,7 @@ public class ConfigInterpreter {
                                             madePair = false;
                                     } else {
                                         // Need to interpret as the right type! e.g. if number, and string required, then interpret as string!
-                                        newPair = interpret(modlObject, newPair);
+                                        newPair = interpret(modlObject, newPair, parentPair);
                                     }
                                     if (!newPair.getKey().startsWith("_") && !newPair.getKey().startsWith("*") &&
                                             !(newPair.getKey().equals("?"))) {
@@ -418,35 +459,110 @@ public class ConfigInterpreter {
         return numParams;
     }
 
-    private void transformPairKey(ModlObject.Pair originalPair, String newKey) {
-        if (originalPair.getValueItems().size() == 1) {
-            String transformedKey = newKey;
-            if (transformedKey.startsWith("_")) {
-                transformedKey = transformedKey.replaceFirst("_", "");
+    private void transformPairKey(ModlObject modlObject, ModlObject.Pair originalPair, String newKey, Object parentPair) {
+        String transformedKey = newKey;
+        if (transformedKey.startsWith("_")) {
+            transformedKey = transformedKey.replaceFirst("_", "");
+        }
+//        if (pairNames.contains(transformedKey)) { //  || pairNames.contains("_" + transformedKey)) {
+//            return;
+//        }
+        if (parentPair == null) {
+            if (originalPair.getValueItems() != null && originalPair.getValueItems().size() == 1) {
+                if (originalPair.getValueItems().get(0).getValue() != null &&
+                        originalPair.getValueItems().get(0).getValue().getPair() != null) {
+//                    stringPairs.put(transformedKey, transformPair(originalPair.getValueItems().get(0).getValue().getPair()));
+                } else if (originalPair.getValueItems().get(0).getValue() != null &&
+                        originalPair.getValueItems().get(0).getValue().getTrueVal() != null) {
+                    boolPairs.put(transformedKey, true);
+                } else if (originalPair.getValueItems().get(0).getValue() != null &&
+                        originalPair.getValueItems().get(0).getValue().getFalseVal() != null) {
+                    boolPairs.put(transformedKey, false);
+                } else {
+                    // String of some sort
+                    String str = getStringFromValue(originalPair);
+                    stringPairs.put(transformedKey, transformString(str));
+                }
             }
-            if (originalPair.getValueItems().get(0).getValue() != null &&
-                    originalPair.getValueItems().get(0).getValue().getString() != null) {
-                String str = originalPair.getValueItems().get(0).getValue().getString().string;
-                stringPairs.put(transformedKey, transformString(str));
+            if (newKey.startsWith("_")) {
+            if (originalPair.getMap() != null) {
+                    originalPair.setKey(transformedKey);
+//                mapPairs.put(transformedKey, interpret(modlObject, originalPair.getMap(), false));
+//                ModlObject.Map newMap = modlObject.new Map();
+                    Map newMap = new HashMap();
+                    mapPairs.put(transformedKey, newMap);
+                    interpret(modlObject, originalPair.getMap(), newMap);
             }
-            if (originalPair.getValueItems().get(0).getValue() != null &&
-                    originalPair.getValueItems().get(0).getValue().getQuoted() != null) {
-                stringPairs.put(transformedKey, transformString(originalPair.getValueItems().get(0).getValue().getQuoted().string));
+            if (originalPair.getArray() != null) {
+                originalPair.setKey(transformedKey);
+//                arrayPairs.put(transformedKey, interpret(modlObject, originalPair.getArray(), false));
+//                ModlObject.Array newArray = modlObject.new Array();
+                List newList = new LinkedList();
+                arrayPairs.put(transformedKey, newList);
+//                for (ModlObject.ValueItem vi : originalPair.getValueItems()) {
+//                    interpret(modlObject, vi, newList);
+//                }
+                interpret(modlObject, originalPair.getArray(), newList);
             }
-            if (originalPair.getValueItems().get(0).getValue() != null &&
-                    originalPair.getValueItems().get(0).getValue().getNumber() != null) {
-                stringPairs.put(transformedKey, transformString(originalPair.getValueItems().get(0).getValue().getNumber().string));
             }
+            // TODO We need to store the interpreted variable underneath than top-level mapPair or arrayPair
+            // TODO So if it is a mapPair, then we should add a new pair underneath map.
+            // TODO We should also _NOT_ store the pairName in the top-level
+            // TODO If it is an arrayPair, then we should store the value under the arrayPair, and NOT store the pairName
+        } else {
+            // We have a new definition which must live under an existing mapPair or arrayPair
+            // TODO Do we have a mapPair or an arrayPair?
+            if (parentPair instanceof Map) {
+//                ((ModlObject.Map)parentPair).addMapItem(interpret(modlObject, ))
+                String str = getStringFromValue(originalPair);
+                ((Map)parentPair).put(transformedKey, str);
+            } else if (parentPair instanceof List) {
+                String str = getStringFromValue(originalPair);
+                ((List)parentPair).add(str);
+            } else {
+                throw new RuntimeException("Expecting Map or Array as parentPair!");
+            }
+            // TODO Which does it belong to?
+            // TODO How do we add it?
+            // TODO Do we even need to? Can we not do the transform when the time comes?
+            // TODO Or might things have changed in the environment since the original definition?
         }
     }
 
-    public void makeNewMapPair(ModlObject modlObject, ModlObject.Pair pair, List<ModlObject.Pair> pairs, boolean wasArray) {
+    @Nullable
+    private String getStringFromValue(ModlObject.Pair originalPair) {
+        String str = null;
+        if (originalPair.getValueItems().get(0).getValue() != null &&
+                originalPair.getValueItems().get(0).getValue().getString() != null) {
+            str = originalPair.getValueItems().get(0).getValue().getString().string;
+        }
+        if (originalPair.getValueItems().get(0).getValue() != null &&
+                originalPair.getValueItems().get(0).getValue().getQuoted() != null) {
+//                    stringPairs.put(transformedKey, transformString(originalPair.getValueItems().get(0).getValue().getQuoted().string));
+            str = originalPair.getValueItems().get(0).getValue().getQuoted().string;
+        }
+        if (originalPair.getValueItems().get(0).getValue() != null &&
+                originalPair.getValueItems().get(0).getValue().getNumber() != null) {
+//                    stringPairs.put(transformedKey, transformString(originalPair.getValueItems().get(0).getValue().getNumber().string));
+            str = originalPair.getValueItems().get(0).getValue().getNumber().string;
+        }
+        return str;
+    }
+
+    private String transformPair(ModlObject.Pair pair) {
+        // TODO Do we have a mapPair or an arrayPair with the correct key?
+        // TODO If so, then see if we have an entry in that item for the reference
+        // TODO Do we need to do any transformString stuff here?
+        return "deleteMe";
+    }
+
+    public void makeNewMapPair(ModlObject modlObject, ModlObject.Pair pair, List<ModlObject.Pair> pairs, boolean wasArray, Object parentPair) {
         for (ModlObject.Pair originalMapPair : pairs) {
             // TODO Do we need to check the order and types here?
             // TODO Need to look up pair name (e.g. "n") in classes and load the appropriate type of thing here
 
             // TODO Watch out for ValueItems here! They can be interpreted into list of ValueItems which each need dealt with recursively
-            ModlObject.Pair newMapPair = interpret(modlObject, originalMapPair);
+            ModlObject.Pair newMapPair = interpret(modlObject, originalMapPair, parentPair);
             if (newMapPair != null) {
                 if (wasArray) {
                     ModlObject.Value value = modlObject.new Value();
@@ -519,7 +635,7 @@ public class ConfigInterpreter {
         values.add(value);
         List<ModlObject.ValueItem> newvis = new LinkedList<>();
         newvis.add(valueItem);
-        modlConfig.loadConfigNumberedVariables(newvis);
+        modlClassLoader.loadConfigNumberedVariables(newvis);
     }
 
     private ModlObject.Value makeValueString(ModlObject modlObject, ModlObject.Value value) {
@@ -554,24 +670,24 @@ public class ConfigInterpreter {
         return value;
     }
 
-    private List<ModlObject.Value> getValuesFromValueItem(ModlObject modlObject, ModlObject.ValueItem interpretedValueItem) {
+    private List<ModlObject.Value> getValuesFromValueItem(ModlObject modlObject, ModlObject.ValueItem interpretedValueItem, Object parentPair) {
         List<ModlObject.Value> values = new LinkedList<>();
         if (interpretedValueItem.getValueItems() != null) {
             for (ModlObject.ValueItem vi : interpretedValueItem.getValueItems()) {
-                values.addAll(getValuesFromValueItem(modlObject, vi));
+                values.addAll(getValuesFromValueItem(modlObject, vi, parentPair));
             }
         }
         if (interpretedValueItem.getValue() != null) {
             values.add(interpretedValueItem.getValue());
         }
         if (interpretedValueItem.getValueConditional() != null) {
-            values.addAll(getValuesFromValueItem(modlObject, interpret(modlObject, interpretedValueItem.getValueConditional())));
+            values.addAll(getValuesFromValueItem(modlObject, interpret(modlObject, interpretedValueItem.getValueConditional(), parentPair), parentPair));
         }
         return values;
     }
 
     private boolean isDefinedClassName(String key) {
-        for (Map.Entry<String, Map<String, Object>> klass : modlConfig.klasses.entrySet()) {
+        for (Map.Entry<String, Map<String, Object>> klass : modlClassLoader.klasses.entrySet()) {
             if (((ModlObject.Value)(klass.getValue().get("*name"))) != null && ((ModlObject.Value)(klass.getValue().get("*name"))).getString() != null) {
                 if (key.equals(((ModlObject.Value)(klass.getValue().get("*name"))).getString().string)) {
                     return true;
@@ -586,25 +702,28 @@ public class ConfigInterpreter {
         return false;
     }
 
-    private List<ModlObject.ValueItem> getValueItemsFromValueItem(ModlObject modlObject, ModlObject.ValueItem interpretedValueItem) {
+    private List<ModlObject.ValueItem> getValueItemsFromValueItem(ModlObject modlObject,
+                                                                  ModlObject.ValueItem interpretedValueItem,
+                                                                  Object parentPair) {
         List<ModlObject.ValueItem> valueItems = new LinkedList<>();
         if (interpretedValueItem.getValueItems() != null) {
             for (ModlObject.ValueItem vi : interpretedValueItem.getValueItems()) {
-                valueItems.addAll(getValueItemsFromValueItem(modlObject, vi));
+                valueItems.addAll(getValueItemsFromValueItem(modlObject, vi, parentPair));
             }
         }
         if (interpretedValueItem.getValue() != null) {
             ModlObject.ValueItem vi = modlObject.new ValueItem();
-            vi.setValue(interpret(modlObject, interpretedValueItem.getValue()));
+            vi.setValue(interpret(modlObject, interpretedValueItem.getValue(), parentPair));
             valueItems.add(vi);
         }
         if (interpretedValueItem.getValueConditional() != null) {
-            valueItems.addAll(getValueItemsFromValueItem(modlObject, interpret(modlObject, interpretedValueItem.getValueConditional())));
+            valueItems.addAll(getValueItemsFromValueItem(modlObject,
+                    interpret(modlObject, interpretedValueItem.getValueConditional(), parentPair), parentPair));
         }
         return valueItems;
     }
 
-    private void addMapItemsToPair(ModlObject modlObject, List<ModlObject.MapItem> mapItems, List<ModlObject.Pair> pairs) {
+    private void addMapItemsToPair(ModlObject modlObject, List<ModlObject.MapItem> mapItems, List<ModlObject.Pair> pairs, Object parentPair) {
         if (mapItems == null) {
             return;
         }
@@ -613,13 +732,13 @@ public class ConfigInterpreter {
                 pairs.add(mapItem.getPair());
             } else {
                 // handle conditionals
-                List<ModlObject.MapItem> newMapItems = interpret(modlObject, mapItem.getMapConditional());
-                addMapItemsToPair(modlObject, newMapItems, pairs);
+                List<ModlObject.MapItem> newMapItems = interpret(modlObject, mapItem.getMapConditional(), parentPair);
+                addMapItemsToPair(modlObject, newMapItems, pairs, parentPair);
             }
         }
     }
 
-    private ModlObject.ValueItem interpret(ModlObject modlObject, ModlObject.ValueItem originalValueItem) {
+    private ModlObject.ValueItem interpret(ModlObject modlObject, ModlObject.ValueItem originalValueItem, Object parentPair) {
         if (originalValueItem == null) {
             return null;
         }
@@ -627,15 +746,15 @@ public class ConfigInterpreter {
 
         if (originalValueItem.getValue() != null) {
             ModlObject.ValueItem valueItem = modlObject.new ValueItem();
-            valueItem.setValue(interpret(modlObject, originalValueItem.getValue()));
+            valueItem.setValue(interpret(modlObject, originalValueItem.getValue(), parentPair));
             newValueItem.addValueItem(valueItem);
         }
         if (originalValueItem.getValueConditional() != null) {
-            newValueItem .addValueItem(interpret(modlObject, originalValueItem.getValueConditional()));
+            newValueItem .addValueItem(interpret(modlObject, originalValueItem.getValueConditional(), parentPair));
         }
         if (originalValueItem.getValueItems() != null) {
             for (ModlObject.ValueItem vi : originalValueItem.getValueItems()) {
-                newValueItem.addValueItem(interpret(modlObject, vi));
+                newValueItem.addValueItem(interpret(modlObject, vi, parentPair));
             }
         }
 
@@ -643,11 +762,11 @@ public class ConfigInterpreter {
     }
 
     private Map<String, Object> getModlClass(String key) {
-        Map<String, Object> ret = modlConfig.klasses.get(key);
+        Map<String, Object> ret = modlClassLoader.klasses.get(key);
         if (ret != null) {
             return ret;
         }
-        for (Map.Entry<String, Map<String, Object>> entry : modlConfig.klasses.entrySet()) {
+        for (Map.Entry<String, Map<String, Object>> entry : modlClassLoader.klasses.entrySet()) {
             for (Map.Entry<String, Object> valueEntry : entry.getValue().entrySet()) {
                 if (valueEntry.getKey().equals("*name") || valueEntry.getKey().equals("*n")) {
                     if (((ModlObject.Value)(valueEntry.getValue())).getString().string.equals(key)) {
@@ -663,11 +782,11 @@ public class ConfigInterpreter {
         return (getModlClass(originalKey) != null);
     }
 
-    private List<ModlObject.Pair> getPairsFromArray(ModlObject modlObject, ModlObject.Array array) {
-        return getPairsFromArray(modlObject, array.getArrayItems());
+    private List<ModlObject.Pair> getPairsFromArray(ModlObject modlObject, ModlObject.Array array, Object parentPair) {
+        return getPairsFromArray(modlObject, array.getArrayItems(), parentPair);
     }
 
-    private List<ModlObject.Pair> getPairsFromArray(ModlObject modlObject, List<ModlObject.ArrayItem> arrayItems) {
+    private List<ModlObject.Pair> getPairsFromArray(ModlObject modlObject, List<ModlObject.ArrayItem> arrayItems, Object parentPair) {
 
         List<ModlObject.Pair> pairs = new LinkedList<>();
         if (arrayItems != null) {
@@ -678,8 +797,8 @@ public class ConfigInterpreter {
                     pairs.add(arrayItem.getValue().getPair());
                 } else {
                     // handle conditionals
-                    List<ModlObject.ArrayItem> newArrayItems = interpret(modlObject, arrayItem.getArrayConditional());
-                    List<ModlObject.Pair> newPairs = getPairsFromArray(modlObject, newArrayItems);
+                    List<ModlObject.ArrayItem> newArrayItems = interpret(modlObject, arrayItem.getArrayConditional(), parentPair);
+                    List<ModlObject.Pair> newPairs = getPairsFromArray(modlObject, newArrayItems, parentPair);
                     for (ModlObject.Pair p : newPairs) {
                         pairs.add(p);
                     }
@@ -764,7 +883,7 @@ public class ConfigInterpreter {
                     (getModlClass(originalPair.getKey()).get("*n") != null &&
                             ((getModlClass(originalPair.getKey()).get("*n").equals("_v"))  ||
                     (getModlClass(originalPair.getKey()).get("*n").equals("var"))))) {
-                modlConfig.loadConfigNumberedVariables(originalPair.getValueItems());
+                modlClassLoader.loadConfigNumberedVariables(originalPair.getValueItems());
             } else {
                 if (getModlClass(originalPair.getKey()).get("*superclass") != null &&
                         getModlClass(originalPair.getKey()).get("*superclass").equals("str")) {
@@ -787,16 +906,16 @@ public class ConfigInterpreter {
         return originalPair;
     }
 
-    private ModlObject.Value interpret(ModlObject modlObject, ModlObject.Value originalValue) {
+    private ModlObject.Value interpret(ModlObject modlObject, ModlObject.Value originalValue, Object parentPair) {
         if (originalValue == null) {
             return null;
         }
 
         ModlObject.Value value = modlObject.new Value();
 
-        value.setPair(interpret(modlObject, originalValue.getPair()));
-        value.setMap(interpret(modlObject, originalValue.getMap()));
-        value.setArray(interpret(modlObject, originalValue.getArray()));
+        value.setPair(interpret(modlObject, originalValue.getPair(), parentPair));
+        value.setMap(interpret(modlObject, originalValue.getMap(), parentPair));
+        value.setArray(interpret(modlObject, originalValue.getArray(), parentPair));
         value.setQuoted(interpret(modlObject, originalValue.getQuoted()));
         value.setNumber(interpret(modlObject, originalValue.getNumber()));
         value.setTrueVal(interpret(modlObject, originalValue.getTrueVal()));
@@ -809,7 +928,7 @@ public class ConfigInterpreter {
         return value;
     }
 
-    private ModlObject.Map interpret(ModlObject modlObject, ModlObject.Map originalMap) {
+    private ModlObject.Map interpret(ModlObject modlObject, ModlObject.Map originalMap, Object parentPair) {
         if (originalMap == null) {
             return null;
         }
@@ -818,7 +937,7 @@ public class ConfigInterpreter {
 
         if (originalMap.getMapItems() != null) {
             for (ModlObject.MapItem originalMapItem : originalMap.getMapItems()) {
-                List<ModlObject.MapItem> mapItems = interpret(modlObject, originalMapItem);
+                List<ModlObject.MapItem> mapItems = interpret(modlObject, originalMapItem, parentPair);
                 for (ModlObject.MapItem mapItem : mapItems) {
                     if (mapItem != null) {
                         if (!mapItem.getPair().getKey().startsWith("_") &&
@@ -835,7 +954,7 @@ public class ConfigInterpreter {
     }
 
 
-    private List<ModlObject.MapItem> interpret(ModlObject modlObject, ModlObject.MapItem originalMapItem) {
+    private List<ModlObject.MapItem> interpret(ModlObject modlObject, ModlObject.MapItem originalMapItem, Object parentPair) {
         if (originalMapItem == null) {
             return null;
         }
@@ -843,7 +962,7 @@ public class ConfigInterpreter {
         List<ModlObject.MapItem> mapItems = new LinkedList<>();
 
         if (originalMapItem.getPair() != null) {
-                ModlObject.Pair pair = interpret(modlObject, originalMapItem.getPair());
+                ModlObject.Pair pair = interpret(modlObject, originalMapItem.getPair(), parentPair);
                 if (pair != null) {
                     if (!pair.getKey().startsWith("_")) {
                     ModlObject.MapItem mapItem = modlObject.new MapItem();
@@ -854,13 +973,13 @@ public class ConfigInterpreter {
         }
         if (originalMapItem.getMapConditional() != null) {
             // evaluate the conditional
-            mapItems = interpret(modlObject, originalMapItem.getMapConditional());
+            mapItems = interpret(modlObject, originalMapItem.getMapConditional(), parentPair);
         }
         return mapItems;
     }
 
 
-    private ModlObject.Array interpret(ModlObject modlObject, ModlObject.Array originalArray) {
+    private ModlObject.Array interpret(ModlObject modlObject, ModlObject.Array originalArray, Object parentPair) {
         if (originalArray == null) {
             return null;
         }
@@ -868,10 +987,13 @@ public class ConfigInterpreter {
 
         if (originalArray.getArrayItems() != null) {
             for (ModlObject.ArrayItem originalArrayItem : originalArray.getArrayItems()) {
-                List<ModlObject.ArrayItem> arrayItems = interpret(modlObject, originalArrayItem);
+                List<ModlObject.ArrayItem> arrayItems = interpret(modlObject, originalArrayItem, parentPair);
                 if (arrayItems != null) {
                     for (ModlObject.ArrayItem arrayItem : arrayItems) {
                         array.addArrayItem(arrayItem);
+                        if (parentPair != null) {
+                            ((List)parentPair).add(arrayItem);
+                        }
                     }
                 }
             }
@@ -880,7 +1002,7 @@ public class ConfigInterpreter {
         return array;
     }
 
-    private List<ModlObject.ArrayItem> interpret(ModlObject modlObject, ModlObject.ArrayItem originalArrayItem) {
+    private List<ModlObject.ArrayItem> interpret(ModlObject modlObject, ModlObject.ArrayItem originalArrayItem, Object parentPair) {
         if (originalArrayItem == null) {
             return null;
         }
@@ -888,13 +1010,13 @@ public class ConfigInterpreter {
 
 
         if (originalArrayItem.getValue() != null) {
-            ModlObject.Value value = interpret(modlObject, originalArrayItem.getValue());
+            ModlObject.Value value = interpret(modlObject, originalArrayItem.getValue(), parentPair);
             ModlObject.ArrayItem arrayItem = modlObject.new ArrayItem();
             arrayItem.setValue(value);
             arrayItems.add(arrayItem);
         }
         if (originalArrayItem.getArrayConditional() != null) {
-            arrayItems = interpret(modlObject, originalArrayItem.getArrayConditional());
+            arrayItems = interpret(modlObject, originalArrayItem.getArrayConditional(), parentPair);
         }
 
         return arrayItems;
@@ -902,7 +1024,7 @@ public class ConfigInterpreter {
 
     // We don't want to return this as a conditional any more!
     // We want to return it as whatever the conditional evaluates to
-    private ModlObject.ValueItem interpret(ModlObject modlObject, ModlObject.ValueConditional originalConditional) {
+    private ModlObject.ValueItem interpret(ModlObject modlObject, ModlObject.ValueConditional originalConditional, Object parentPair) {
         if (originalConditional == null) {
             return null;
         }
@@ -913,7 +1035,7 @@ public class ConfigInterpreter {
                 // NEED TO INTERPRET THE VALUES!!!
                 ModlObject.ValueItem returnValueItem = modlObject.new ValueItem();
                 for (ModlObject.ValueItem valueItem : originalConditionalEntry.getValue().getValueItems()) {
-                    ModlObject.ValueItem vi = interpret(modlObject, valueItem);
+                    ModlObject.ValueItem vi = interpret(modlObject, valueItem, parentPair);
                         returnValueItem.addValueItem(vi);
                 }
                 return returnValueItem;
@@ -923,7 +1045,7 @@ public class ConfigInterpreter {
         return null;
     }
 
-    private List<ModlObject.ArrayItem> interpret(ModlObject modlObject, ModlObject.ArrayConditional originalConditional) {
+    private List<ModlObject.ArrayItem> interpret(ModlObject modlObject, ModlObject.ArrayConditional originalConditional, Object parentPair) {
         if (originalConditional == null) {
             return null;
         }
@@ -935,7 +1057,7 @@ public class ConfigInterpreter {
                     // NEED TO INTERPRET THE VALUES!!!
                     List<ModlObject.ArrayItem> returnArrayItems = new LinkedList<>();
                     for (ModlObject.ArrayItem arrayItem : originalConditionalEntry.getValue().getArrayItems()) {
-                        List<ModlObject.ArrayItem> arrayItems = interpret(modlObject, arrayItem);
+                        List<ModlObject.ArrayItem> arrayItems = interpret(modlObject, arrayItem, parentPair);
                         for (ModlObject.ArrayItem ai : arrayItems) {
                             returnArrayItems.add(ai);
                         }
@@ -948,7 +1070,7 @@ public class ConfigInterpreter {
         return null;
     }
 
-    private List<ModlObject.MapItem> interpret(ModlObject modlObject, ModlObject.MapConditional originalConditional) {
+    private List<ModlObject.MapItem> interpret(ModlObject modlObject, ModlObject.MapConditional originalConditional, Object parentPair) {
         if (originalConditional == null) {
             return null;
         }
@@ -959,7 +1081,7 @@ public class ConfigInterpreter {
                 // NEED TO INTERPRET THE VALUES!!!
                 List<ModlObject.MapItem> returnMapItems = new LinkedList<>();
                 for (ModlObject.MapItem mapItem : originalConditionalEntry.getValue().getMapItems()) {
-                    List<ModlObject.MapItem> mapItems = interpret(modlObject, mapItem);
+                    List<ModlObject.MapItem> mapItems = interpret(modlObject, mapItem, parentPair);
                     for (ModlObject.MapItem mi : mapItems) {
                         returnMapItems.add(mi);
                     }
@@ -1085,11 +1207,22 @@ public class ConfigInterpreter {
 
     private boolean evaluates(ModlObject.Condition condition) {
         String keyString = condition.getKey();
+        List<ModlObject.Value> values = condition.getValues();
         // Try to do object referencing and string transformation on the key
+        if (keyString == null) {
+            if (values.get(0).getTrueVal() != null) {
+                return true;
+            }
+            if (values.get(0).getFalseVal() != null) {
+                return false;
+            }
+            if (values.get(0).getString() != null && boolPairs.containsKey(values.get(0).getString().string)) {
+                return boolPairs.get(values.get(0).getString().string);
+            }
+        }
         String key = transformConditionalArgument(keyString);
 
         String conditionOperator = condition.getOperator();
-        List<ModlObject.Value> values = condition.getValues();
 
         // Now evaluate it!!
         // Should either be number, string or quoted
@@ -1118,7 +1251,13 @@ public class ConfigInterpreter {
                 val = val.substring(1, val.length());
             }
             if (conditionOperator.equals("=")) {
-                return conditionalEquals(key.toString(), val);
+                if (conditionalEquals(key.toString(), val)) {
+                    return true;
+                }
+                if (conditionalEquals(key.toString(), transformString(val))) {
+                    return true;
+                }
+                return false;
             }
             if (conditionOperator.equals("!=")) {
                 return !conditionalEquals(key.toString(), val);
@@ -1191,13 +1330,15 @@ public class ConfigInterpreter {
     }
 
     private String transformConditionalArgument(String origKeyString) {
-        StringTransformer stringTransformer = new StringTransformer(modlConfig, stringPairs, variableMethods);
+        StringTransformer stringTransformer = new StringTransformer(modlClassLoader, stringPairs, mapPairs, arrayPairs, variableMethods);
         String keyString = stringTransformer.runObjectReferencing("%" + origKeyString, "%" + origKeyString, false);
         if (keyString.equals("%" + origKeyString) && origKeyString.startsWith("%")) {
             keyString = stringTransformer.runObjectReferencing(origKeyString, origKeyString, false);
         }
-        if (keyString.equals("%"+keyString)) {
-            throw new RuntimeException("Couldn't find conditional key");
+//        if (keyString.equals("%"+keyString)) {
+        if (keyString.equals("%"+origKeyString)) {
+//            throw new RuntimeException("Couldn't find conditional key");
+            return origKeyString;
         }
         return keyString;
     }
@@ -1260,7 +1401,7 @@ public class ConfigInterpreter {
     }
 
     private String transformString(String s) {
-        StringTransformer stringTransformer = new StringTransformer(modlConfig, stringPairs, variableMethods);
+        StringTransformer stringTransformer = new StringTransformer(modlClassLoader, stringPairs, mapPairs, arrayPairs, variableMethods);
         return stringTransformer.transformString(s);
     }
 
