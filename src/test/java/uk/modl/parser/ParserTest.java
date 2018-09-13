@@ -209,8 +209,8 @@ public class ParserTest extends TestCase {
             System.out.println("Input : " + input);
             System.out.println("Expected : " + expected);
 
-            ModlObject modlObject = ModlObjectCreator.interpret(input);
-            String output = JsonPrinter.printModl(modlObject);
+            RawModlObject rawModlObject = ModlObjectCreator.processModlParsed(input);
+            String output = JsonPrinter.printModl(rawModlObject);
             System.out.println("Output : " + output);
             assertEquals(expected.replace(" ", "").replace("\n", "").replace("\r", ""),
                     output.replace(" ", "").replace("\n", "").replace("\r", ""));

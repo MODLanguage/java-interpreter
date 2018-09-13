@@ -17,10 +17,10 @@ OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHE
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-package uk.modl.config;
+package uk.modl.interpreter;
 
 import org.apache.commons.text.StringEscapeUtils;
-import uk.modl.parser.ModlObject;
+import uk.modl.parser.RawModlObject;
 
 import java.net.IDN;
 import java.util.LinkedList;
@@ -359,7 +359,7 @@ Replace the part originally found (including graves) with the transformed subjec
                 if (modlClassLoader.numberedVariables.get(i) instanceof String) {
                     value = (String) modlClassLoader.numberedVariables.get(i);
                 } else {
-                    value = ((ModlObject.Value) modlClassLoader.numberedVariables.get(i)).getString().string;
+                    value = ((RawModlObject.Value) modlClassLoader.numberedVariables.get(i)).getString().string;
                 }
                 found = true;
             }

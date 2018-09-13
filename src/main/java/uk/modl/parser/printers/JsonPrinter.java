@@ -23,13 +23,28 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import uk.modl.parser.ModlObject;
+import uk.modl.interpreter.ModlObject;
+import uk.modl.parser.RawModlObject;
 
 public class JsonPrinter {
     static ObjectMapper mapper = new ObjectMapper();
 
+    public static String printModl(RawModlObject modl) throws JsonProcessingException {
+        return printModl(modl, true);
+    }
+
     public static String printModl(ModlObject modl) throws JsonProcessingException {
         return printModl(modl, true);
+    }
+
+    public static String printModl(RawModlObject modl, boolean pretty) throws JsonProcessingException {
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+
+        if (pretty) {
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(modl);
+        }
+
+        return mapper.writeValueAsString(modl);
     }
 
     public static String printModl(ModlObject modl, boolean pretty) throws JsonProcessingException {

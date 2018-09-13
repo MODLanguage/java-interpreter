@@ -21,16 +21,16 @@ package uk.modl.parser;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import uk.modl.parser.printers.ModlJsonSerializer;
+import uk.modl.parser.printers.RawModlObjectJsonSerializer;
 
 import java.util.*;
 
-@JsonSerialize(using = ModlJsonSerializer.class)
-public class ModlObject {
+@JsonSerialize(using = RawModlObjectJsonSerializer.class)
+public class RawModlObject {
 
-    List<ModlObject.Structure> structures = new LinkedList<>();
+    List<RawModlObject.Structure> structures = new LinkedList<>();
 
-    public List<ModlObject.Structure> getStructures() {
+    public List<RawModlObject.Structure> getStructures() {
         return structures;
     }
 
@@ -77,15 +77,15 @@ public class ModlObject {
     }
 
     public class Value {
-        ModlObject.Quoted quoted;
-        ModlObject.Number number;
-        ModlObject.True trueVal;
-        ModlObject.False falseVal;
-        ModlObject.Null nullVal;
-        ModlObject.String string;
-        ModlObject.Map map;
-        ModlObject.Array array;
-        ModlObject.Pair pair;
+        RawModlObject.Quoted quoted;
+        RawModlObject.Number number;
+        RawModlObject.True trueVal;
+        RawModlObject.False falseVal;
+        RawModlObject.Null nullVal;
+        RawModlObject.String string;
+        RawModlObject.Map map;
+        RawModlObject.Array array;
+        RawModlObject.Pair pair;
 
         public void setQuoted(Quoted quoted) {
             this.quoted = quoted;
@@ -135,27 +135,27 @@ public class ModlObject {
             this.pair = pair;
         }
 
-        public ModlObject.Quoted getQuoted() {
+        public RawModlObject.Quoted getQuoted() {
             return quoted;
         }
 
-        public ModlObject.Number getNumber() {
+        public RawModlObject.Number getNumber() {
             return number;
         }
 
-        public ModlObject.True getTrueVal() {
+        public RawModlObject.True getTrueVal() {
             return trueVal;
         }
 
-        public ModlObject.False getFalseVal() {
+        public RawModlObject.False getFalseVal() {
             return falseVal;
         }
 
-        public ModlObject.Null getNullVal() {
+        public RawModlObject.Null getNullVal() {
             return nullVal;
         }
 
-        public ModlObject.String getString() {
+        public RawModlObject.String getString() {
             return string;
         }
     }
@@ -241,7 +241,7 @@ public class ModlObject {
         Array array;
 
 
-        public List<ModlObject.ValueItem> getValueItems() {
+        public List<RawModlObject.ValueItem> getValueItems() {
             return valueItems;
         }
 
@@ -314,7 +314,7 @@ public class ModlObject {
     public interface SubCondition {}
 
     public class ConditionTest {
-        java.util.Map<ModlObject.SubCondition, ImmutablePair<java.lang.String, Boolean>> subConditionMap = new HashMap<>();
+        java.util.Map<RawModlObject.SubCondition, ImmutablePair<java.lang.String, Boolean>> subConditionMap = new HashMap<>();
 
         public void addSubCondition(java.lang.String operator, boolean shouldNegate, SubCondition subCondition) {
             subConditionMap.put(subCondition, new ImmutablePair<java.lang.String, Boolean>(operator, shouldNegate));
@@ -362,7 +362,7 @@ public class ModlObject {
     }
 
     public class Array {
-        List<ModlObject.ArrayItem> arrayItems;
+        List<RawModlObject.ArrayItem> arrayItems;
 
         public void addArrayItem(ArrayItem arrayItem) {
             if (arrayItems == null) {
@@ -371,7 +371,7 @@ public class ModlObject {
             arrayItems.add(arrayItem);
         }
 
-        public List<ModlObject.ArrayItem> getArrayItems() {
+        public List<RawModlObject.ArrayItem> getArrayItems() {
             return arrayItems;
         }
     }

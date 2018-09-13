@@ -17,9 +17,9 @@ OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHE
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-package uk.modl.config;
+package uk.modl.interpreter;
 
-import uk.modl.parser.ModlObject;
+import uk.modl.parser.RawModlObject;
 
 import java.util.*;
 import java.util.function.Function;
@@ -30,22 +30,22 @@ public class ModlClassLoader {
     Map<String, String> variables = new HashMap<>();
     Map<Integer, java.lang.Object> numberedVariables = new HashMap<>();
 
-    public void loadConfig(ModlObject configModlObject, Map<String, Function<String, String>> variableMethods) {
+    public void loadConfig(RawModlObject configRawModlObject, Map<String, Function<String, String>> variableMethods) {
         // Remember to define "o" for "object" BEFORE we load the config
-        loadModlKlassO(configModlObject);
+        loadModlKlassO(configRawModlObject);
 
         // Then, load in all the new definitions, and build the class heirarchy
         // we probably don't need to store a heirarchy - just a Map keyed by klass id
         // as we load in more klasses, we can add more keys, copying the info from the superclass before overriding anything and adding more
         //
-        // So first, get a ModlObject from the config file
+        // So first, get a RawModlObject from the config file
         // Then, go through each klass, building the config map as we go
-        for (ModlObject.Structure structure : configModlObject.getStructures()) {
+        for (RawModlObject.Structure structure : configRawModlObject.getStructures()) {
             loadconfig(structure, variableMethods);
         }
     }
 
-    public void loadconfig(ModlObject.Structure structure, Map<String, Function<String, String>> variableMethods) {
+    public void loadconfig(RawModlObject.Structure structure, Map<String, Function<String, String>> variableMethods) {
         if (structure.getPair() != null && (structure.getPair().getKey().equals("*I") || structure.getPair().getKey().equals("*S"))) {
             return;
         }
@@ -80,7 +80,7 @@ public class ModlClassLoader {
         }
     }
 
-    private void loadVariableMethod(ModlObject.Structure structure, Map<String, Function<String, String>> variableMethods) {
+    private void loadVariableMethod(RawModlObject.Structure structure, Map<String, Function<String, String>> variableMethods) {
         // TODO Load up the values : e.g. :
         /*
 *method(
@@ -118,16 +118,16 @@ public class ModlClassLoader {
         int delete = 0;
     }
 
-    public void loadConfigNumberedVariables(List<ModlObject.ValueItem> valueItems) {
+    public void loadConfigNumberedVariables(List<RawModlObject.ValueItem> valueItems) {
         numberedVariables = new HashMap<>();
         // We are expecting a list of Values
         int paramNum = 0;
         loadConfigNumberedVariables(valueItems, paramNum);
     }
 
-    private int loadConfigNumberedVariables(List<ModlObject.ValueItem> valueItems, int paramNum) {
+    private int loadConfigNumberedVariables(List<RawModlObject.ValueItem> valueItems, int paramNum) {
         if (valueItems != null) {
-            for (ModlObject.ValueItem val : valueItems) {
+            for (RawModlObject.ValueItem val : valueItems) {
                 if (val.getValue() != null) {
                     paramNum = addConfigNumberedVariable(paramNum, val.getValue());
                 } else {
@@ -138,7 +138,7 @@ public class ModlClassLoader {
         return paramNum;
     }
 
-    public void loadConfigNumberedVariablesArray(ModlObject.Array array) {
+    public void loadConfigNumberedVariablesArray(RawModlObject.Array array) {
         numberedVariables = new HashMap<>();
         // We are expecting a list of Values
         int paramNum = 0;
@@ -148,9 +148,9 @@ public class ModlClassLoader {
 //        numberedVariables.put(numberedVariables.size(), array);
     }
 
-    private int loadConfigNumberedVariablesArray(List<ModlObject.ArrayItem> arrayItems, int paramNum) {
+    private int loadConfigNumberedVariablesArray(List<RawModlObject.ArrayItem> arrayItems, int paramNum) {
         if (arrayItems != null) {
-            for (ModlObject.ArrayItem val : arrayItems) {
+            for (RawModlObject.ArrayItem val : arrayItems) {
                 if (val.getValue() != null) {
                     paramNum = addConfigNumberedVariable(paramNum, val.getValue());
 //                } else {
@@ -161,14 +161,14 @@ public class ModlClassLoader {
         return paramNum;
     }
 
-    private int addConfigNumberedVariable(int paramNum, ModlObject.Value val) {
+    private int addConfigNumberedVariable(int paramNum, RawModlObject.Value val) {
         if (val.getPair() != null) {
-            for (ModlObject.ValueItem vi : val.getPair().getValueItems()) {
+            for (RawModlObject.ValueItem vi : val.getPair().getValueItems()) {
                 numberedVariables.put(paramNum++, vi.getValue().getString().string);
             }
         } else if (val.getArray() != null) {
 //                numberedVariables.put(paramNum++, val.getArray());
-            for (ModlObject.ArrayItem vi : val.getArray().getArrayItems()) {
+            for (RawModlObject.ArrayItem vi : val.getArray().getArrayItems()) {
                 numberedVariables.put(paramNum++, vi.getValue().getString().string);
             }
         } else if (val.getMap() != null) {
@@ -186,14 +186,14 @@ public class ModlClassLoader {
         return paramNum;
     }
 
-    private void loadConfigVariable(List<ModlObject.MapItem> mapItems) {
+    private void loadConfigVariable(List<RawModlObject.MapItem> mapItems) {
         // Load in the variable
-        for (ModlObject.MapItem mapItem : mapItems) {
+        for (RawModlObject.MapItem mapItem : mapItems) {
             loadConfigVar(mapItem.getPair().getKey(), mapItem.getPair());
         }
     }
 
-    private void loadConfigVar(String key, ModlObject.Pair pair) {
+    private void loadConfigVar(String key, RawModlObject.Pair pair) {
         if (pair.getValueItems().get(0).getValue().getString() != null) {
             variables.put(key, pair.getValueItems().get(0).getValue().getString().string);
         } else {
@@ -201,7 +201,7 @@ public class ModlClassLoader {
         }
     }
 
-    private void loadConfigStructure(ModlObject.Structure structure) {
+    private void loadConfigStructure(RawModlObject.Structure structure) {
         // Load in the new klass
         HashMap<String, Object> values = new LinkedHashMap<>();
         String id = getPairValueFor(structure, "*id");
@@ -238,7 +238,7 @@ public class ModlClassLoader {
         }
 
         // Go through the structure and find all the new values and add them (replacing any already there from superklass)
-        for (ModlObject.MapItem mapItem : structure.getPair().getMap().getMapItems()) {
+        for (RawModlObject.MapItem mapItem : structure.getPair().getMap().getMapItems()) {
             // Remember to avoid "_id" and "_sc" !
             if (mapItem.getPair().getKey().equals("*id") || mapItem.getPair().getKey().equals("*i") ||
                     mapItem.getPair().getKey().equals("*superclass") || mapItem.getPair().getKey().equals("*s")) {
@@ -257,13 +257,13 @@ public class ModlClassLoader {
         }
     }
 
-    private void loadParams(HashMap<String, Object> values, ModlObject.Array array) {
+    private void loadParams(HashMap<String, Object> values, RawModlObject.Array array) {
         // _params : add like _params<n> where n is number of values in array
-        for (ModlObject.ArrayItem v : array.getArrayItems()) {
-            ModlObject.Array a = v.getValue().getArray();
+        for (RawModlObject.ArrayItem v : array.getArrayItems()) {
+            RawModlObject.Array a = v.getValue().getArray();
             String key = "*params" + a.getArrayItems().size();
-            List<ModlObject.Value> vs = new LinkedList<>();
-            for (ModlObject.ArrayItem ai : v.getValue().getArray().getArrayItems()) {
+            List<RawModlObject.Value> vs = new LinkedList<>();
+            for (RawModlObject.ArrayItem ai : v.getValue().getArray().getArrayItems()) {
                 vs.add(ai.getValue());
             }
 //            values.put(key, a.getValues())
@@ -271,8 +271,8 @@ public class ModlClassLoader {
         }
     }
 
-    private String getPairValueFor(ModlObject.Structure structure, String pairValue) {
-        for (ModlObject.MapItem mapItem : structure.getPair().getMap().getMapItems()) {
+    private String getPairValueFor(RawModlObject.Structure structure, String pairValue) {
+        for (RawModlObject.MapItem mapItem : structure.getPair().getMap().getMapItems()) {
             if (mapItem.getPair().getKey().equals(pairValue)) {
                 return mapItem.getPair().getValueItems().get(0).getValue().getString().string;
             }
@@ -280,7 +280,7 @@ public class ModlClassLoader {
         return null;
     }
 
-    private void loadModlKlassO(ModlObject modlObject) {
+    private void loadModlKlassO(RawModlObject rawModlObject) {
                 /*
         klass(
             _id=o;
@@ -291,16 +291,16 @@ public class ModlClassLoader {
           )
          */
         Map<String, Object> o = new LinkedHashMap<>();
-        ModlObject.String superclass = modlObject.new String("map");
-        ModlObject.Value superclassValue = modlObject.new Value();
+        RawModlObject.String superclass = rawModlObject.new String("map");
+        RawModlObject.Value superclassValue = rawModlObject.new Value();
         superclassValue.setString(superclass);
         o.put("*superclass", superclassValue);
-        ModlObject.String name = modlObject.new String("object");
-        ModlObject.Value nameValue = modlObject.new Value();
+        RawModlObject.String name = rawModlObject.new String("object");
+        RawModlObject.Value nameValue = rawModlObject.new Value();
         nameValue.setString(name);
         o.put("*name", nameValue);
-        ModlObject.String output = modlObject.new String("map");
-        ModlObject.Value outputValue = modlObject.new Value();
+        RawModlObject.String output = rawModlObject.new String("map");
+        RawModlObject.Value outputValue = rawModlObject.new Value();
         outputValue.setString(output);
         o.put("*output", outputValue);
 

@@ -21,7 +21,8 @@ package uk.modl.parser;
 
 import junit.framework.TestCase;
 import org.junit.Test;
-import uk.modl.config.Interpreter;
+import uk.modl.interpreter.Interpreter;
+import uk.modl.interpreter.ModlObject;
 import uk.modl.parser.printers.JsonPrinter;
 
 import java.io.IOException;

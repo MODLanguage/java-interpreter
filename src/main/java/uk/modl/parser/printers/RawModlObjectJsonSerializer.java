@@ -22,49 +22,41 @@ package uk.modl.parser.printers;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import uk.modl.parser.ModlObject;
+import uk.modl.parser.RawModlObject;
 
 import java.io.IOException;
 
-public class ModlJsonSerializer extends JsonSerializer<ModlObject> {
+public class RawModlObjectJsonSerializer extends JsonSerializer<RawModlObject> {
     @Override
-    public void serialize(ModlObject modlObject, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-//        boolean closeObject = false;
-//        if (modlObject.getValues().size() == 1 && modlObject.getValues().get(0).getPair() != null) {
-//            gen.writeStartObject();
-//            closeObject = true;
-//        }
-        if (modlObject.getStructures().size() > 1) {
+    public void serialize(RawModlObject rawModlObject, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        if (rawModlObject.getStructures().size() > 1) {
             gen.writeStartArray();
         }
-        for (ModlObject.Structure structure : modlObject.getStructures()) {
+        for (RawModlObject.Structure structure : rawModlObject.getStructures()) {
             serialize(structure, gen, serializers);
         }
-        if (modlObject.getStructures().size() > 1) {
+        if (rawModlObject.getStructures().size() > 1) {
             gen.writeEndArray();
         }
-//        if (closeObject) {
-//            gen.writeEndObject();
-//        }
     }
 
-    public void serialize(ModlObject.Structure structure, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    public void serialize(RawModlObject.Structure structure, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         serialize(structure, gen, serializers, true);
     }
-    public void serialize(ModlObject.Structure structure, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
+
+    public void serialize(RawModlObject.Structure structure, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
         if (structure == null) {
             return;
         }
         serialize(structure.getArray(), gen, serializers);
         serialize(structure.getPair(), gen, serializers, startObject);
         serialize(structure.getMap(), gen, serializers);
-
     }
 
-    public void serialize(ModlObject.Value value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    public void serialize(RawModlObject.Value value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         serialize(value, gen, serializers, true);
     }
-    public void serialize(ModlObject.Value value, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
+    public void serialize(RawModlObject.Value value, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
         if (value == null) {
             return;
         }
@@ -85,13 +77,13 @@ public class ModlJsonSerializer extends JsonSerializer<ModlObject> {
         serialize(value.getString(), gen, serializers);
     }
 
-    private void serialize(ModlObject.Map map, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private void serialize(RawModlObject.Map map, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         if (map == null) {
             return;
         }
         if (map.getMapItems() != null) {
             gen.writeStartObject();
-            for (ModlObject.MapItem mapItem : map.getMapItems()) {
+            for (RawModlObject.MapItem mapItem : map.getMapItems()) {
                 serialize(mapItem, gen, serializers, false);
             }
             gen.writeEndObject();
@@ -102,7 +94,7 @@ public class ModlJsonSerializer extends JsonSerializer<ModlObject> {
         }
     }
 
-    private void serialize(ModlObject.MapItem mapItem, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
+    private void serialize(RawModlObject.MapItem mapItem, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
         if (mapItem == null) {
             return;
         }
@@ -111,13 +103,13 @@ public class ModlJsonSerializer extends JsonSerializer<ModlObject> {
         }
     }
 
-    private void serialize(ModlObject.Array array, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private void serialize(RawModlObject.Array array, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         if (array == null) {
             return;
         }
         if (array.getArrayItems() != null) {
             gen.writeStartArray();
-            for (ModlObject.ArrayItem arrayItem : array.getArrayItems()) {
+            for (RawModlObject.ArrayItem arrayItem : array.getArrayItems()) {
                 serialize(arrayItem, gen, serializers, false);
             }
             gen.writeEndArray();
@@ -127,7 +119,7 @@ public class ModlJsonSerializer extends JsonSerializer<ModlObject> {
         }
     }
 
-    private void serialize(ModlObject.ArrayItem arrayItem, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
+    private void serialize(RawModlObject.ArrayItem arrayItem, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
         if (arrayItem == null) {
             return;
         }
@@ -136,11 +128,11 @@ public class ModlJsonSerializer extends JsonSerializer<ModlObject> {
         }
     }
 
-    private void serialize(ModlObject.Pair pair, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private void serialize(RawModlObject.Pair pair, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         serialize(pair, gen, serializers, true);
     }
 
-    private void serialize(ModlObject.Pair pair, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
+    private void serialize(RawModlObject.Pair pair, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
         if (pair == null) {
             return;
         }
@@ -152,7 +144,7 @@ public class ModlJsonSerializer extends JsonSerializer<ModlObject> {
                 if (pair.getValueItems().size() > 1) {
                     gen.writeStartArray();
                 }
-                for (ModlObject.ValueItem value : pair.getValueItems()) {
+                for (RawModlObject.ValueItem value : pair.getValueItems()) {
                     serialize(value, gen, serializers);
                 }
                 if (pair.getValueItems().size() > 1) {
@@ -169,17 +161,17 @@ public class ModlJsonSerializer extends JsonSerializer<ModlObject> {
     }
 
 
-    private void serialize(ModlObject.ValueItem valueItem, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private void serialize(RawModlObject.ValueItem valueItem, JsonGenerator gen, SerializerProvider serializers) throws IOException {
             serialize(valueItem, gen, serializers, true);
     }
-    private void serialize(ModlObject.ValueItem valueItem, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
+    private void serialize(RawModlObject.ValueItem valueItem, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
         if (valueItem == null) {
             return;
         }
 //        if (values.size() > 1 || values.get(0).getStructure() != null) {
 //            gen.writeStartObject();
 //        }
-//        for (ModlObject.Value value : values) {
+//        for (RawModlObject.Value value : values) {
 //            serialize(valueItem.getValue(), gen, serializers, false);
         if (valueItem.getValue() != null) {
             serialize(valueItem.getValue(), gen, serializers, true);
@@ -188,7 +180,7 @@ public class ModlJsonSerializer extends JsonSerializer<ModlObject> {
             if (startObject && valueItem.getValueItems().size() > 1) {
                 gen.writeStartArray();
             }
-            for (ModlObject.ValueItem vi : valueItem.getValueItems()) {
+            for (RawModlObject.ValueItem vi : valueItem.getValueItems()) {
 //                serialize(vi, gen, serializers, false);
                 serialize(vi, gen, serializers, true);
             }
@@ -202,14 +194,14 @@ public class ModlJsonSerializer extends JsonSerializer<ModlObject> {
 //        }
     }
 
-    private void serialize(ModlObject.Quoted quoted, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private void serialize(RawModlObject.Quoted quoted, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         if (quoted == null) {
             return;
         }
         gen.writeString(quoted.string);
     }
 
-    private void serialize(ModlObject.Number number, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private void serialize(RawModlObject.Number number, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         if (number == null) {
             return;
         }
@@ -217,28 +209,28 @@ public class ModlJsonSerializer extends JsonSerializer<ModlObject> {
         gen.writeNumber(number.string);
     }
 
-    private void serialize(ModlObject.True trueVal, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private void serialize(RawModlObject.True trueVal, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         if (trueVal == null) {
             return;
         }
         gen.writeBoolean(true);
     }
 
-    private void serialize(ModlObject.False falseVal, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private void serialize(RawModlObject.False falseVal, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         if (falseVal == null) {
             return;
         }
         gen.writeBoolean(false);
     }
 
-    private void serialize(ModlObject.Null nullVal, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private void serialize(RawModlObject.Null nullVal, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         if (nullVal == null) {
             return;
         }
         gen.writeNull();
     }
 
-    private void serialize(ModlObject.String string, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private void serialize(RawModlObject.String string, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         if (string == null) {
             return;
         }

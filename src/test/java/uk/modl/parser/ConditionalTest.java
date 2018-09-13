@@ -21,7 +21,8 @@ package uk.modl.parser;
 
 import junit.framework.TestCase;
 import org.junit.Test;
-import uk.modl.config.Interpreter;
+import uk.modl.interpreter.Interpreter;
+import uk.modl.interpreter.ModlObject;
 import uk.modl.parser.printers.JsonPrinter;
 
 import java.io.IOException;
@@ -30,8 +31,22 @@ import java.util.List;
 
 public class ConditionalTest extends TestCase {
     final static List<Object[]> expected =  Arrays.asList(new Object[][] {
-//            {"*alex=1", ""},
-
+            {"_country=gb\n" +
+                    "{\n" +
+                    "  !{country=us|gb|au}?\n" +
+                    "    support_number=441270123456\n" +
+                    "  /?\n" +
+                    "    support_number=International Clients:14161234567\n" +
+                    "}",
+                    "{\"support_number\":[\"International Clients\",14161234567]}"},
+            {"_number=42\n" +
+                    "{\n" +
+                    "  !{number>41}?\n" +
+                    "    support_number=441270123456\n" +
+                    "  /?\n" +
+                    "    support_number=International Clients:14161234567\n" +
+                    "}",
+                    "{\"support_number\":[\"International Clients\",14161234567]}"},
             {"_input=\"hi apple ios\"\n" +
                     "{\n" +
                     "  {input=*apple*ios*}?\n" +
@@ -82,22 +97,6 @@ public class ConditionalTest extends TestCase {
                     "    support_number=International Clients:14161234567\n" +
                     "}",
                     "{\"support_number\":441270123456}"},
-            {"_country=gb\n" +
-                    "{\n" +
-                    "  !{country=us|gb|au}?\n" +
-                    "    support_number=441270123456\n" +
-                    "  /?\n" +
-                    "    support_number=International Clients:14161234567\n" +
-                    "}",
-                    "{\"support_number\":[\"International Clients\",14161234567]}"},
-            {"_number=42\n" +
-                    "{\n" +
-                    "  !{number>41}?\n" +
-                    "    support_number=441270123456\n" +
-                    "  /?\n" +
-                    "    support_number=International Clients:14161234567\n" +
-                    "}",
-                    "{\"support_number\":[\"International Clients\",14161234567]}"},
             { "_co=ca\n" +
                     "_l=fr\n" +
                     "{\n" +
