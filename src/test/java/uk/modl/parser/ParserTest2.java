@@ -933,61 +933,7 @@ public class ParserTest2 extends TestCase {
                                 "  {\n" +
                                 "    \"url_encode_example\" : \"quick-test+of+Elliott%27s+variable_methods\"\n" +
                                 "  }\n" +
-                                "]"},
-                {"*I=\"http://config.modl.uk/num/en-GB.txt\"\n" +
-                        "o(n=Tesco;+[t=08001234567])",
-                        "{\n" +
-                                "  \"organisation\" : {\n" +
-                                "    \"name\" : \"Tesco\",\n" +
-                                "    \"objects\" : [ {\n" +
-                                "      \"telephone\" : {\n" +
-                                "        \"value\" : \"08001234567\",\n" +
-                                "        \"object_type\" : \"medium\",\n" +
-                                "        \"display_name\" : \"Telephone\",\n" +
-                                "        \"description_default\" : \"Call\",\n" +
-                                "        \"prefix\" : \"tel://\",\n" +
-                                "        \"media_type\" : \"core\"\n" +
-                                "      }\n" +
-                                "    } ],\n" +
-                                "    \"object_type\" : \"entity\",\n" +
-                                "    \"description_default\" : \"View Organisation\"\n" +
-                                "  }\n" +
-                                "}"},
-                {"*I=\"http://config.modl.uk/num/en-GB.txt!\"\n" +
-                        "o(n=Tesco;+[t=08001234567])",
-                        "{\n" +
-                                "  \"organisation\" : {\n" +
-                                "    \"name\" : \"Tesco\",\n" +
-                                "    \"objects\" : [ {\n" +
-                                "      \"telephone\" : {\n" +
-                                "        \"value\" : \"08001234567\",\n" +
-                                "        \"object_type\" : \"medium\",\n" +
-                                "        \"display_name\" : \"Telephone\",\n" +
-                                "        \"description_default\" : \"Call\",\n" +
-                                "        \"prefix\" : \"tel://\",\n" +
-                                "        \"media_type\" : \"core\"\n" +
-                                "      }\n" +
-                                "    } ],\n" +
-                                "    \"object_type\" : \"entity\",\n" +
-                                "    \"description_default\" : \"View Organisation\"\n" +
-                                "  }\n" +
-                                "}"},
-                {"*I=\"http://config.modl.uk/num/en-GB.txt\"\n" +
-                        "+[t=08001234567]",
-                        "{\n" +
-                                "    \"objects\": [\n" +
-                                "        {\n" +
-                                "            \"telephone\": {\n" +
-                                "                \"value\": \"08001234567\",\n" +
-                                "                \"object_type\": \"medium\",\n" +
-                                "                \"display_name\": \"Telephone\",\n" +
-                                "                \"description_default\": \"Call\",\n" +
-                                "                \"prefix\": \"tel://\",\n" +
-                                "                \"media_type\": \"core\"\n" +
-                                "            }\n" +
-                                "        }\n" +
-                                "    ]\n" +
-                                "}"}
+                                "]"}
         });
 
         @Test
