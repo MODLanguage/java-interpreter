@@ -20,7 +20,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 package uk.modl.parser;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import uk.modl.parser.printers.JsonPrinter;
+import uk.modl.interpreter.ModlObject;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -31,15 +31,6 @@ public class ModlObjectCreator {
 
     public static int MODL_VERSION = 1;
 
-
-//    public static String parseToJson(String input) throws IOException {
-//        RawModlObject rawModlObject = processModlParsed(input);
-//
-//        JsonPrinter jsonPrinter = new JsonPrinter();
-//        String json = jsonPrinter.printModl(rawModlObject);
-//        return json;
-//
-//    }
 
     public static RawModlObject processModlParsed(String input) throws IOException {
         ModlParsed modlParsed = Parser.parse(input);
@@ -52,34 +43,49 @@ public class ModlObjectCreator {
         RawModlObject rawModlObject = new RawModlObject();
 
 
-            for (ModlParsed.Structure parsedStructure : modlParsed.getStructures()) {
-                RawModlObject.Structure structure = processModlParsed(rawModlObject, parsedStructure);
-                if (structure.getPair() == null && structure.getArray() == null &&  structure.getTopLevelConditional() == null &&
-                        structure.getMap() == null) {
-                    continue;
+        for (ModlParsed.Structure parsedStructure : modlParsed.getStructures()) {
+            List<RawModlObject.Structure> structures = processModlParsed(rawModlObject, parsedStructure);
+            if (structures != null) {
+                for (RawModlObject.Structure structure : structures) {
+                    if (structure != null) {
+                        rawModlObject.addStructure(structure);
+                    }
                 }
-                rawModlObject.addStructure(structure);
             }
+        }
 
         return rawModlObject;
     }
 
-    private static RawModlObject.Structure processModlParsed(RawModlObject rawModlObject, ModlParsed.Structure parsedStructure) {
+    private static List<RawModlObject.Structure> processModlParsed(RawModlObject rawModlObject, ModlParsed.Structure parsedStructure) {
         if (parsedStructure == null) {
             return null;
         }
 
-        RawModlObject.Structure structure = rawModlObject.new Structure();
+        List<RawModlObject.Structure> structures = new LinkedList<>();
+        RawModlObject.Structure structure = null;
 
-        structure.setMap(processModlParsed(rawModlObject, parsedStructure.getMap()));
-        structure.setArray(processModlParsed(rawModlObject, parsedStructure.getArray()));
-        RawModlObject.Pair pair = processModlParsed(rawModlObject, parsedStructure.getPair());
-        if (pair != null) {
-            structure.setPair(pair);
+        structure = (processModlParsed(rawModlObject, parsedStructure.getMap()));
+        if (structure != null) {
+            structures.add(structure);
+            return structures;
         }
-        structure.setTopLevelConditional(processModlParsed(rawModlObject, parsedStructure.getTopLevelConditional()));
 
-        return structure;
+        structure = (processModlParsed(rawModlObject, parsedStructure.getArray()));
+        if (structure != null) {
+            structures.add(structure);
+            return structures;
+        }
+
+        structures = processModlParsed(rawModlObject, parsedStructure.getPair());
+        if (structures != null) {
+            return structures;
+        }
+
+        structure = (processModlParsed(rawModlObject, parsedStructure.getTopLevelConditional()));
+        structures = new LinkedList<>();
+        structures.add(structure);
+        return structures;
     }
 
     private static RawModlObject.Map processModlParsed(RawModlObject rawModlObject, ModlParsed.Map parsedMap) {
@@ -91,9 +97,9 @@ public class ModlObjectCreator {
 
         if (parsedMap.getMapItems() != null) {
             for (ModlParsed.MapItem mapItemParsed : parsedMap.getMapItems()) {
-                RawModlObject.MapItem mapItem = processModlParsed(rawModlObject, mapItemParsed);
-                if (mapItem != null) {
-                    map.addMapItem(mapItem);
+                RawModlObject.Pair pair = processModlParsed(rawModlObject, mapItemParsed);
+                if (pair != null) {
+                    map.addPair(pair);
                 }
             }
         }
@@ -101,47 +107,69 @@ public class ModlObjectCreator {
         return map;
     }
 
-    private static RawModlObject.MapItem processModlParsed(RawModlObject rawModlObject, ModlParsed.MapItem parsedMapItem) {
+    private static RawModlObject.Pair processModlParsed(RawModlObject rawModlObject, ModlParsed.MapItem parsedMapItem) {
         if (parsedMapItem == null) {
             return null;
         }
-        RawModlObject.MapItem mapItem = rawModlObject.new MapItem();
-        if (parsedMapItem.getMapConditional() != null) {
-            mapItem.setMapConditional(processModlParsed(rawModlObject, parsedMapItem.getMapConditional()));
+        RawModlObject.Pair pair = null;
+        pair = processModlParsed(rawModlObject, parsedMapItem.getMapConditional());
+        if (pair != null) {
+            return pair;
         }
-        if (parsedMapItem.getPair() != null) {
-            // TODO If we get back an unnamed pair which contains a list of value items, then move the value items directly into this pair
-            mapItem.setPair(processModlParsed(rawModlObject, parsedMapItem.getPair()));
+//        pair = (processModlParsed(rawModlObject, parsedMapItem.getPair()));
+        List<RawModlObject.Structure> structures = (processModlParsed(rawModlObject, parsedMapItem.getPair()));
+        if (structures.size() > 0) {
+            return ((RawModlObject.Pair)(structures.get(0)));
         }
-        return mapItem;
+        return null;
     }
 
 
-        private static RawModlObject.Value processModlParsed(RawModlObject rawModlObject, ModlParsed.Value parsedValue) {
+    private static RawModlObject.Value processModlParsed(RawModlObject rawModlObject, ModlParsed.Value parsedValue) {
         if (parsedValue == null) {
             return null;
         }
 
-        RawModlObject.Value value = rawModlObject.new Value();
+        RawModlObject.Value value = null;
 
-        value.setPair(processModlParsed(rawModlObject, parsedValue.getPair()));
-        value.setMap(processModlParsed(rawModlObject, parsedValue.getMap()));
-        value.setArray(processModlParsed(rawModlObject, parsedValue.getArray()));
-        value.setQuoted(processModlParsed(rawModlObject, parsedValue.getQuoted()));
-        value.setNumber(processModlParsed(rawModlObject, parsedValue.getNumber()));
-        value.setTrueVal(processModlParsed(rawModlObject, parsedValue.getTrueVal()));
-        value.setFalseVal(processModlParsed(rawModlObject, parsedValue.getFalseVal()));
-        value.setNullVal(processModlParsed(rawModlObject, parsedValue.getNullVal()));
-        value.setString(processModlParsed(rawModlObject, parsedValue.getString()));
-
-        if (parsedValue.getMap() != null && value.getMap() == null) {
-            value.setMap(rawModlObject.new Map());
+        List<RawModlObject.Structure> pairs = processModlParsed(rawModlObject, parsedValue.getPair());
+        if (pairs != null && pairs.size() > 0) {
+            return (RawModlObject.Value)(pairs.get(0));
         }
-        if (parsedValue.getArray() != null && value.getArray() == null) {
-            value.setArray(rawModlObject.new Array());
+        value = processModlParsed(rawModlObject, parsedValue.getMap());
+        if (value != null) {
+            return value;
         }
-
+        value = processModlParsed(rawModlObject, parsedValue.getArray());
+        if (value != null) {
+            return value;
+        }
+        value = processModlParsed(rawModlObject, parsedValue.getQuoted());
+        if (value != null) {
+            return value;
+        }
+        value = processModlParsed(rawModlObject, parsedValue.getNumber());
+        if (value != null) {
+            return value;
+        }
+        value = processModlParsed(rawModlObject, parsedValue.getTrueVal());
+        if (value != null) {
+            return value;
+        }
+        value = processModlParsed(rawModlObject, parsedValue.getFalseVal());
+        if (value != null) {
+            return value;
+        }
+        value = processModlParsed(rawModlObject, parsedValue.getNullVal());
+        if (value != null) {
+            return value;
+        }
+        value = processModlParsed(rawModlObject, parsedValue.getString());
+        if (value != null) {
+            return value;
+        }
         return value;
+
     }
 
     private static RawModlObject.ConditionTest processModlParsed(RawModlObject rawModlObject, ModlParsed.ConditionTest conditionTestParsed) {
@@ -157,10 +185,10 @@ public class ModlObjectCreator {
             String operator = operatorPair.getLeft();
             Boolean shouldNegate = operatorPair.getRight();
             if (subCondition instanceof ModlParsed.ConditionGroup) {
-                RawModlObject.ConditionGroup conditionGroup = processModlParsed(rawModlObject, (ModlParsed.ConditionGroup)subCondition);
+                RawModlObject.ConditionGroup conditionGroup = processModlParsed(rawModlObject, (ModlParsed.ConditionGroup) subCondition);
                 conditionTest.addSubCondition(operator, shouldNegate, conditionGroup);
             } else if (subCondition instanceof ModlParsed.Condition) {
-                RawModlObject.Condition condition = processModlParsed(rawModlObject, (ModlParsed.Condition)subCondition);
+                RawModlObject.Condition condition = processModlParsed(rawModlObject, (ModlParsed.Condition) subCondition);
                 conditionTest.addSubCondition(operator, shouldNegate, condition);
             }
         }
@@ -199,7 +227,7 @@ public class ModlObjectCreator {
         return conditionGroup;
     }
 
-    private static RawModlObject.Pair processModlParsed(RawModlObject rawModlObject, ModlParsed.Pair pairParsed) {
+    private static List<RawModlObject.Structure> processModlParsed(RawModlObject rawModlObject, ModlParsed.Pair pairParsed) {
         if (pairParsed == null) {
             return null;
         }
@@ -212,18 +240,64 @@ public class ModlObjectCreator {
         }
         RawModlObject.Pair pair = rawModlObject.new Pair();
 
-        pair.setKey(pairParsed.getKey());
+        pair.setKey(rawModlObject.new String(pairParsed.getKey()));
 
-        pair.setMap(processModlParsed(rawModlObject, pairParsed.getMap()));
-        pair.setArray(processModlParsed(rawModlObject, pairParsed.getArray()));
-        if (pairParsed.getValueItems() != null) {
-            for (ModlParsed.ValueItem valueParsed : pairParsed.getValueItems()) {
-                RawModlObject.ValueItem valueItem = processModlParsed(rawModlObject, valueParsed);
-                pair.addValueItem(valueItem);
+        if (pairParsed.getKey().equals("*I") || pairParsed.getKey().equals("*IMPORT")) {
+            // Make a new Pair for each valueItem or item in the array for the IMPORT statement!
+            return processImportStatement(rawModlObject, pairParsed);
+        } else {
+            RawModlObject.Map map = (processModlParsed(rawModlObject, pairParsed.getMap()));
+            if (map != null) {
+                pair.addValue(map);
+            }
+
+            RawModlObject.Array array = (processModlParsed(rawModlObject, pairParsed.getArray()));
+            if (array != null) {
+                pair.addValue(array);
+            }
+
+            if (pairParsed.getValueItems() != null) {
+                for (ModlParsed.ValueItem valueParsed : pairParsed.getValueItems()) {
+                    RawModlObject.Value v = processModlParsed(rawModlObject, valueParsed, pair);
+                    pair.addValue(v);
+                }
+            }
+
+            List<RawModlObject.Structure> pairs = new LinkedList<>();
+            pairs.add(pair);
+            return pairs;
+        }
+    }
+
+    private static List<RawModlObject.Structure> processImportStatement(RawModlObject rawModlObject, ModlParsed.Pair pairParsed) {
+        // Replace each import file in a single import pair with as many import pairs as there are files in the original import pair
+        List<RawModlObject.Structure> structures = new LinkedList<>();
+        RawModlObject.Array array = (processModlParsed(rawModlObject, pairParsed.getArray()));
+        if (array != null) {
+            for (ModlObject.Value v : array.getValues()) {
+                RawModlObject.Pair pair = rawModlObject.new Pair();
+                pair.setKey(rawModlObject.new String(pairParsed.getKey()));
+                if (v instanceof RawModlObject.Number) {
+                    v = rawModlObject.new String(((RawModlObject.Number)v).number);
+                }
+                pair.addValue(v);
+                structures.add(pair);
+            }
+        } else {
+            if (pairParsed.getValueItems() != null) {
+                for (ModlParsed.ValueItem valueParsed : pairParsed.getValueItems()) {
+                    RawModlObject.Pair pair = rawModlObject.new Pair();
+                    pair.setKey(rawModlObject.new String(pairParsed.getKey()));
+                    RawModlObject.Value v = processModlParsed(rawModlObject, valueParsed, pair);
+                    if (v instanceof RawModlObject.Number) {
+                        v = rawModlObject.new String(((RawModlObject.Number)v).number);
+                    }
+                    pair.addValue(v);
+                    structures.add(pair);
+                }
             }
         }
-
-        return pair;
+        return structures;
     }
 
     private static RawModlObject.Array processModlParsed(RawModlObject rawModlObject, ModlParsed.Array arrayParsed) {
@@ -234,9 +308,9 @@ public class ModlObjectCreator {
 
         if (arrayParsed.getArrayItems() != null) {
             for (ModlParsed.ArrayItem arrayItemParsed : arrayParsed.getArrayItems()) {
-                RawModlObject.ArrayItem arrayItem = processModlParsed(rawModlObject, arrayItemParsed);
-                if (arrayItem != null) {
-                    array.addArrayItem(arrayItem);
+                RawModlObject.Value value = processModlParsed(rawModlObject, arrayItemParsed);
+                if (value != null) {
+                    array.addValue(value);
                 }
             }
         }
@@ -245,41 +319,44 @@ public class ModlObjectCreator {
     }
 
 
-    private static RawModlObject.ArrayItem processModlParsed(RawModlObject rawModlObject, ModlParsed.ArrayItem arrayItemParsed) {
+    private static RawModlObject.Value processModlParsed(RawModlObject rawModlObject, ModlParsed.ArrayItem arrayItemParsed) {
         if (arrayItemParsed == null) {
             return null;
         }
-        RawModlObject.ArrayItem arrayItem = rawModlObject.new ArrayItem();
+        RawModlObject.Value value = null;
 
         if (arrayItemParsed.getArrayConditional() != null) {
-            arrayItem.setArrayConditional(processModlParsed(rawModlObject, arrayItemParsed.getArrayConditional()));
+            value = (processModlParsed(rawModlObject, arrayItemParsed.getArrayConditional()));
         }
         if (arrayItemParsed.getValue() != null) {
-            arrayItem.setValue(processModlParsed(rawModlObject, arrayItemParsed.getValue()));
+            value = (processModlParsed(rawModlObject, arrayItemParsed.getValue()));
         }
 
-        return arrayItem;
+        return value;
     }
 
-    private static RawModlObject.ValueItem processModlParsed(RawModlObject rawModlObject, ModlParsed.ValueItem valueItemParsed) {
+    private static RawModlObject.Value processModlParsed(RawModlObject rawModlObject, ModlParsed.ValueItem valueItemParsed,
+                                                         RawModlObject.Pair parentPair) {
         if (valueItemParsed == null) {
             return null;
         }
-        RawModlObject.ValueItem valueItem = rawModlObject.new ValueItem();
+        RawModlObject.Value value = null;
 
         if (valueItemParsed.getValueConditional() != null) {
-            valueItem.setValueConditional(processModlParsed(rawModlObject, valueItemParsed.getValueConditional()));
+            value = (processModlParsed(rawModlObject, valueItemParsed.getValueConditional(), parentPair));
         }
         if (valueItemParsed.getValue() != null) {
-            valueItem.setValue(processModlParsed(rawModlObject, valueItemParsed.getValue()));
+            value = (processModlParsed(rawModlObject, valueItemParsed.getValue()));
         }
-        if (valueItemParsed.getValueItems() != null) {
+        if (valueItemParsed.getValueItems() != null && valueItemParsed.getValueItems().size() > 0) {
+            value = rawModlObject.new Array();
             for (ModlParsed.ValueItem vi : valueItemParsed.getValueItems()) {
-                valueItem.addValueItem(processModlParsed(rawModlObject, vi));
+//                parentPair.addValue(processModlParsed(rawModlObject, vi, parentPair));
+                ((ModlObject.Array) value).addValue(processModlParsed(rawModlObject, vi, parentPair));
             }
         }
 
-        return valueItem;
+        return value;
     }
 
     private static RawModlObject.False processModlParsed(RawModlObject rawModlObject, ModlParsed.False falseVal) {
@@ -331,45 +408,47 @@ End
         return null;
     }
 
-    private static RawModlObject.Quoted processModlParsed(RawModlObject rawModlObject, ModlParsed.Quoted quoted) {
+    private static RawModlObject.String processModlParsed(RawModlObject rawModlObject, ModlParsed.Quoted quoted) {
         if (quoted != null) {
             String s = quoted.string;
             if (s.startsWith("\"") && s.endsWith("\"")) {
                 s = s.substring(1, s.length() - 1);
             }
-            RawModlObject.Quoted string = rawModlObject.new Quoted(s);
+            RawModlObject.String string = rawModlObject.new String(s);
             return string;
         }
         return null;
     }
 
-    private static RawModlObject.ValueConditional processModlParsed(RawModlObject rawModlObject, ModlParsed.ValueConditional conditionalParsed) {
+    private static RawModlObject.ValueConditional processModlParsed(RawModlObject rawModlObject, ModlParsed.ValueConditional conditionalParsed,
+                                                                    RawModlObject.Pair parentPair) {
         if (conditionalParsed == null) {
             return null;
         }
         RawModlObject.ValueConditional conditional = rawModlObject.new ValueConditional();
         for (Map.Entry<ModlParsed.ConditionTest, ModlParsed.ValueConditionalReturn> conditionalParsedEntry : conditionalParsed.getValueConditionalReturns().entrySet()) {
             conditional.addConditional(processModlParsed(rawModlObject, conditionalParsedEntry.getKey()),
-                    processModlParsed(rawModlObject, conditionalParsedEntry.getValue()));
+                    processModlParsed(rawModlObject, conditionalParsedEntry.getValue(), parentPair));
         }
         return conditional;
     }
 
-    private static RawModlObject.ValueConditionalReturn processModlParsed(RawModlObject rawModlObject, ModlParsed.ValueConditionalReturn conditionalReturnParsed) {
+    private static RawModlObject.ValueConditionalReturn processModlParsed(RawModlObject rawModlObject, ModlParsed.ValueConditionalReturn conditionalReturnParsed,
+                                                                          RawModlObject.Pair parentPair) {
         if (conditionalReturnParsed == null) {
             return null;
         }
         RawModlObject.ValueConditionalReturn conditionalReturn = rawModlObject.new ValueConditionalReturn();
         if (conditionalReturnParsed.getValueItems() != null) {
             for (ModlParsed.ValueItem valueParsed : conditionalReturnParsed.getValueItems()) {
-                RawModlObject.ValueItem valueItem = processModlParsed(rawModlObject, valueParsed);
-                conditionalReturn.addValueItem(valueItem);
+                RawModlObject.Value value = processModlParsed(rawModlObject, valueParsed, parentPair);
+                conditionalReturn.addValue(value);
             }
         }
         return conditionalReturn;
     }
 
-    private static RawModlObject.ArrayConditional processModlParsed(RawModlObject rawModlObject, ModlParsed.ArrayConditional conditionalParsed) {
+    private static RawModlObject.Value processModlParsed(RawModlObject rawModlObject, ModlParsed.ArrayConditional conditionalParsed) {
         if (conditionalParsed == null) {
             return null;
         }
@@ -390,8 +469,8 @@ End
         RawModlObject.ArrayConditionalReturn conditionalReturn = rawModlObject.new ArrayConditionalReturn();
         if (conditionalReturnParsed.getArrayItems() != null) {
             for (ModlParsed.ArrayItem valueParsed : conditionalReturnParsed.getArrayItems()) {
-                RawModlObject.ArrayItem arrayItem = processModlParsed(rawModlObject, valueParsed);
-                conditionalReturn.addArrayItem(arrayItem);
+                RawModlObject.Value value = processModlParsed(rawModlObject, valueParsed);
+                conditionalReturn.addValue(value);
             }
         }
         return conditionalReturn;
@@ -409,18 +488,21 @@ End
         return conditional;
     }
 
-    private static RawModlObject.MapConditionalReturn processModlParsed(RawModlObject rawModlObject, ModlParsed.MapConditionalReturn conditionalReturnParsed) {
+    private static RawModlObject.Map processModlParsed(RawModlObject rawModlObject, ModlParsed.MapConditionalReturn conditionalReturnParsed) {
         if (conditionalReturnParsed == null) {
             return null;
         }
-        RawModlObject.MapConditionalReturn conditionalReturn = rawModlObject.new MapConditionalReturn();
+//        RawModlObject.Pair pair = rawModlObject.new Pair();
+        RawModlObject.Map map = rawModlObject.new Map();
         if (conditionalReturnParsed.getMapItems() != null) {
             for (ModlParsed.MapItem valueParsed : conditionalReturnParsed.getMapItems()) {
-                RawModlObject.MapItem mapItem = processModlParsed(rawModlObject, valueParsed);
-                conditionalReturn.addMapItem(mapItem);
+                RawModlObject.Pair p = processModlParsed(rawModlObject, valueParsed);
+//                pair.addValue(p);
+                map.addPair(p);
             }
         }
-        return conditionalReturn;
+//        map.addPair(pair);
+        return map;
     }
 
     private static RawModlObject.TopLevelConditional processModlParsed(RawModlObject rawModlObject, ModlParsed.TopLevelConditional conditionalParsed) {
@@ -442,8 +524,9 @@ End
         RawModlObject.TopLevelConditionalReturn conditionalReturn = rawModlObject.new TopLevelConditionalReturn();
         if (conditionalReturnParsed.getStructures() != null) {
             for (ModlParsed.Structure valueParsed : conditionalReturnParsed.getStructures()) {
-                RawModlObject.Structure structure = processModlParsed(rawModlObject, valueParsed);
-                conditionalReturn.addStructure(structure);
+//                RawModlObject.Structure structure = processModlParsed(rawModlObject, valueParsed);
+                List<RawModlObject.Structure> structures = processModlParsed(rawModlObject, valueParsed);
+                conditionalReturn.addStructure(structures.get(0));
             }
         }
         return conditionalReturn;

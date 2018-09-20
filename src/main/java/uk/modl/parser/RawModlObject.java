@@ -21,297 +21,43 @@ package uk.modl.parser;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import uk.modl.parser.printers.RawModlObjectJsonSerializer;
+import uk.modl.interpreter.ModlObject;
+import uk.modl.parser.printers.ModlObjectJsonSerializer;
 
 import java.util.*;
 
-@JsonSerialize(using = RawModlObjectJsonSerializer.class)
-public class RawModlObject {
-
-    List<RawModlObject.Structure> structures = new LinkedList<>();
-
-    public List<RawModlObject.Structure> getStructures() {
-        return structures;
-    }
-
-    public void addStructure(Structure structure) { structures.add(structure); }
-
-    public class Structure {
-        Map map;
-        Array array;
-        TopLevelConditional topLevelConditional;
-        Pair pair;
-
-        public Map getMap() {
-            return map;
-        }
-
-        public void setMap(Map map) {
-            this.map = map;
-        }
-
-        public Array getArray() {
-            return array;
-        }
-
-        public void setArray(Array array) {
-            this.array = array;
-        }
-
-        public TopLevelConditional getTopLevelConditional() {
-            return topLevelConditional;
-        }
-
-        public void setTopLevelConditional(TopLevelConditional topLevelConditional) {
-            this.topLevelConditional = topLevelConditional;
-        }
-
-        public Pair getPair() {
-            return pair;
-        }
-
-        public void setPair(Pair pair) {
-            this.pair = pair;
-        }
-
-    }
-
-    public class Value {
-        RawModlObject.Quoted quoted;
-        RawModlObject.Number number;
-        RawModlObject.True trueVal;
-        RawModlObject.False falseVal;
-        RawModlObject.Null nullVal;
-        RawModlObject.String string;
-        RawModlObject.Map map;
-        RawModlObject.Array array;
-        RawModlObject.Pair pair;
-
-        public void setQuoted(Quoted quoted) {
-            this.quoted = quoted;
-        }
-
-        public void setNumber(Number number) {
-            this.number = number;
-        }
-
-        public void setTrueVal(True trueVal) {
-            this.trueVal = trueVal;
-        }
-
-        public void setFalseVal(False falseVal) {
-            this.falseVal = falseVal;
-        }
-
-        public void setNullVal(Null nullVal) {
-            this.nullVal = nullVal;
-        }
-
-        public void setString(String string) {
-            this.string = string;
-        }
-
-        public Map getMap() {
-            return map;
-        }
-
-        public void setMap(Map map) {
-            this.map = map;
-        }
-
-        public Array getArray() {
-            return array;
-        }
-
-        public void setArray(Array array) {
-            this.array = array;
-        }
-
-        public Pair getPair() {
-            return pair;
-        }
-
-        public void setPair(Pair pair) {
-            this.pair = pair;
-        }
-
-        public RawModlObject.Quoted getQuoted() {
-            return quoted;
-        }
-
-        public RawModlObject.Number getNumber() {
-            return number;
-        }
-
-        public RawModlObject.True getTrueVal() {
-            return trueVal;
-        }
-
-        public RawModlObject.False getFalseVal() {
-            return falseVal;
-        }
-
-        public RawModlObject.Null getNullVal() {
-            return nullVal;
-        }
-
-        public RawModlObject.String getString() {
-            return string;
-        }
-    }
-
-    public class Map {
-        List<MapItem> mapItems;
-
-        public List<MapItem> getMapItems() {
-            return mapItems;
-        }
-
-        public void addMapItem(MapItem mapItem) {
-            if (mapItems == null) {
-                mapItems = new LinkedList<>();
-            }
-            mapItems.add(mapItem);
-        }
-
-    }
-
-    public class MapItem {
-        Pair pair;
-        MapConditional mapConditional;
-
-        public Pair getPair() {
-            return pair;
-        }
-
-        public void setPair(Pair pair) {
-            this.pair = pair;
-        }
-
-        public MapConditional getMapConditional() {
-            return mapConditional;
-        }
-
-        public void setMapConditional(MapConditional mapConditional) {
-            this.mapConditional = mapConditional;
-        }
-    }
-
-    public class ValueItem {
-        Value value;
-        List<ValueItem> valueItems;
-        ValueConditional valueConditional;
-
-        public Value getValue() {
-            return value;
-        }
-
-        public void setValue(Value value) {
-            this.value = value;
-        }
-
-        public ValueConditional getValueConditional() {
-            return valueConditional;
-        }
-
-        public void setValueConditional(ValueConditional valueConditional) {
-            this.valueConditional = valueConditional;
-        }
-
-        public List<ValueItem> getValueItems() {
-            return valueItems;
-        }
-
-        public void addValueItem(ValueItem valueItem) {
-            if (valueItems == null) {
-                valueItems = new LinkedList<>();
-            }
-            valueItems.add(valueItem);
-        }
-
-        public void resetValueItems() {
-            valueItems = null;
-        }
-    }
-
-    public class Pair {
-        java.lang.String key;
-        List<ValueItem> valueItems;
-        Map map;
-        Array array;
-
-
-        public List<RawModlObject.ValueItem> getValueItems() {
-            return valueItems;
-        }
-
-        public java.lang.String getKey() {
-            return key;
-        }
-
-        public void addValueItem( ValueItem valueItem) {
-            if (valueItems == null) {
-                valueItems = new LinkedList<>();
-            }
-//            if (values.get(key) != null) {
-//                // TODO Deal with duplicate keys!!!
-//            } else {
-                valueItems.add(valueItem);
-//            }
-        }
-
-        public void resetValueItems() {
-            valueItems = null;
-        }
-
-        public void setKey(java.lang.String key) {
-            this.key = key;
-        }
-
-        public Map getMap() {
-            return map;
-        }
-
-        public void setMap(Map map) {
-            this.map = map;
-        }
-
-        public Array getArray() {
-            return array;
-        }
-
-        public void setArray(Array array) {
-            this.array = array;
-        }
-
-    }
-
-    public class String {
-        public java.lang.String string;
-
-        public String(java.lang.String string) {
-            this.string = string;
-        }
-    }
-
-    public class Number {
-        // TODO Should be number
-        public java.lang.String string;
-
-        public Number(java.lang.String string) {
-            this.string = string;
-        }
-    }
-
-    public class Quoted {
-        public java.lang.String string;
-
-        public Quoted(java.lang.String string) {
-            this.string = string;
-        }
-    }
+@JsonSerialize(using = ModlObjectJsonSerializer.class)
+public class RawModlObject extends ModlObject {
 
     public interface SubCondition {}
+
+    public void replaceFirstImport(java.lang.String importValue, RawModlObject newRawModlObject) {
+        // Replace the first import pair that we find with the given value
+        // When we get to that point, then remove the import pair, and add all the structures in the newRawModlObject
+        int count = 0;
+        for (Structure structure : structures) {
+            if (structure instanceof Pair) {
+                Pair pair =((Pair)structure);
+                if ((pair.getKey().string.equals("*I")) || (pair.getKey().string.equals("*IMPORT"))) {
+                    java.lang.String importLocation = ((String)pair.getValues().get(0)).string;
+                    if (importLocation.equals(importValue)) {
+                        break;
+                    }
+                }
+            }
+            count++;
+        }
+        // FOUND IT!
+        // Now we need to remove this pair
+        structures.remove(count);
+        // And then replace it with all the structures in the newRawModlObject
+        for (Structure newStructure : newRawModlObject.structures) {
+            structures.add(count, newStructure);
+            count++;
+        }
+
+    }
+
 
     public class ConditionTest {
         java.util.Map<RawModlObject.SubCondition, ImmutablePair<java.lang.String, Boolean>> subConditionMap = new HashMap<>();
@@ -361,56 +107,8 @@ public class RawModlObject {
         }
     }
 
-    public class Array {
-        List<RawModlObject.ArrayItem> arrayItems;
 
-        public void addArrayItem(ArrayItem arrayItem) {
-            if (arrayItems == null) {
-                arrayItems = new LinkedList<>();
-            }
-            arrayItems.add(arrayItem);
-        }
-
-        public List<RawModlObject.ArrayItem> getArrayItems() {
-            return arrayItems;
-        }
-    }
-
-    public class ArrayItem {
-        Value value;
-        ArrayConditional arrayConditional;
-
-        public Value getValue() {
-            return value;
-        }
-
-        public void setValue(Value value) {
-            this.value = value;
-        }
-
-        public ArrayConditional getArrayConditional() {
-            return arrayConditional;
-        }
-
-        public void setArrayConditional(ArrayConditional arrayConditional) {
-            this.arrayConditional = arrayConditional;
-        }
-    }
-
-
-    public class True {
-
-    }
-
-    public class False {
-
-    }
-
-    public class Null {
-
-    }
-
-    public class ValueConditional {
+    public class ValueConditional implements Value, Conditional {
         java.util.Map<ConditionTest, ValueConditionalReturn> conditionals;
 
         public java.util.Map<ConditionTest, ValueConditionalReturn> getConditionals() {
@@ -425,22 +123,22 @@ public class RawModlObject {
         }
     }
 
-    public class ValueConditionalReturn {
-        List<ValueItem> valueItems;
+    public class ValueConditionalReturn implements Value {
+        List<Value> values;
 
-        public void addValueItem(ValueItem valueItem) {
-            if (valueItems == null) {
-                valueItems = new LinkedList<>();
+        public void addValue(Value value) {
+            if (values == null) {
+                values = new LinkedList<>();
             }
-            valueItems.add(valueItem);
+            values.add(value);
         }
 
-        public List<ValueItem> getValueItems() {
-            return valueItems;
+        public List<Value> getValues() {
+            return values;
         }
     }
 
-    public class ArrayConditional {
+    public class ArrayConditional extends Array implements Conditional {
         java.util.Map<ConditionTest, ArrayConditionalReturn> conditionals;
 
         public java.util.Map<ConditionTest, ArrayConditionalReturn> getConditionals() {
@@ -455,29 +153,20 @@ public class RawModlObject {
         }
     }
 
-    public class ArrayConditionalReturn {
-        List<ArrayItem> arrayItems;
-
-        public void addArrayItem(ArrayItem arrayItem) {
-            if (arrayItems == null) {
-                arrayItems = new LinkedList<>();
-            }
-            arrayItems.add(arrayItem);
-        }
-
-        public List<ArrayItem> getArrayItems() {
-            return arrayItems;
-        }
+    public class ArrayConditionalReturn extends Array {
     }
 
-    public class MapConditional {
-        java.util.Map<ConditionTest, MapConditionalReturn> conditionals;
+    public interface Conditional {}
 
-        public java.util.Map<ConditionTest, MapConditionalReturn> getConditionals() {
+    //    public class MapConditional extends Pair implements Conditional {
+    public class MapConditional extends Pair implements Conditional {
+        java.util.Map<ConditionTest, Map> conditionals;
+
+        public java.util.Map<ConditionTest, Map> getConditionals() {
             return conditionals;
         }
 
-        public void addConditional(ConditionTest conditionTest, MapConditionalReturn conditionalReturn) {
+        public void addConditional(ConditionTest conditionTest, Map conditionalReturn) {
             if (conditionals == null) {
                 conditionals = new LinkedHashMap<>();
             }
@@ -485,22 +174,7 @@ public class RawModlObject {
         }
     }
 
-    public class MapConditionalReturn {
-        List<MapItem> mapItems;
-
-        public void addMapItem(MapItem mapItem) {
-            if (mapItems == null) {
-                mapItems = new LinkedList<>();
-            }
-            mapItems.add(mapItem);
-        }
-
-        public List<MapItem> getMapItems() {
-            return mapItems;
-        }
-    }
-
-    public class TopLevelConditional {
+    public class TopLevelConditional implements Structure {
         java.util.Map<ConditionTest, TopLevelConditionalReturn> conditionals;
 
         public java.util.Map<ConditionTest, TopLevelConditionalReturn> getConditionals() {
@@ -515,7 +189,7 @@ public class RawModlObject {
         }
     }
 
-    public class TopLevelConditionalReturn {
+    public class TopLevelConditionalReturn implements Structure {
         List<Structure> structures;
 
         public void addStructure(Structure structure) {

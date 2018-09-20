@@ -1,9 +1,9 @@
 { 
-  tz = ""?
-    { 
+  !tz?
+    {
       c = us?
-        tz = EST
+        _tz = EST
       /?
-       tz = GMT
+       _tz = GMT
     }
 }

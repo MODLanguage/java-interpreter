@@ -4,24 +4,23 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import uk.modl.interpreter.ModlObject;
-import uk.modl.parser.RawModlObject;
 
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by alex on 13/09/2018.
  */
 public class ModlObjectJsonSerializer extends JsonSerializer<ModlObject> {
     @Override
-    public void serialize(ModlObject rawModlObject, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        if (rawModlObject.getStructures().size() > 1) {
+    public void serialize(ModlObject modlObject, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        if (modlObject.getStructures().size() > 1) {
             gen.writeStartArray();
         }
-        for (ModlObject.Structure structure : rawModlObject.getStructures()) {
+        for (ModlObject.Structure structure : modlObject.getStructures()) {
             serialize(structure, gen, serializers);
         }
-        if (rawModlObject.getStructures().size() > 1) {
+        if (modlObject.getStructures().size() > 1) {
             gen.writeEndArray();
         }
     }
@@ -112,16 +111,30 @@ public class ModlObjectJsonSerializer extends JsonSerializer<ModlObject> {
             gen.writeStartObject();
         }
         gen.writeFieldName(pair.getKey().string);
-        serialize(pair.getValue(), gen, serializers, startObject);
+        if (pair.getValues().size() > 0 && pair.getValues().get(0) instanceof ModlObject.Pair) {
+            gen.writeStartObject();
+        }
+        if (pair.getValues().size() > 1 && !(pair.getValues().get(0) instanceof ModlObject.Pair)
+                && !(pair.getValues().get(0) instanceof ModlObject.Map)) {
+            gen.writeStartArray();
+        }
+        serialize(pair.getValues(), gen, serializers, startObject);
+        if (pair.getValues().size() > 0 && pair.getValues().get(0) instanceof ModlObject.Pair) {
+            gen.writeEndObject();
+        }
+        if (pair.getValues().size() > 1 && !(pair.getValues().get(0) instanceof ModlObject.Pair)
+                && !(pair.getValues().get(0) instanceof ModlObject.Map)) {
+            gen.writeEndArray();
+        }
 //        // TODO Do we have an array?
-//        if (pair.getValueItems() != null) {
-//            if (pair.getValueItems().size() > 1) {
+//        if (pair.getValues() != null) {
+//            if (pair.getValues().size() > 1) {
 //                gen.writeStartArray();
 //            }
-//            for (RawModlObject.ValueItem value : pair.getValueItems()) {
+//            for (RawModlObject.ValueItem value : pair.getValues()) {
 //                serialize(value, gen, serializers);
 //            }
-//            if (pair.getValueItems().size() > 1) {
+//            if (pair.getValues().size() > 1) {
 //                gen.writeEndArray();
 //            }
 //        } else if (pair.getArray() != null) {
@@ -134,6 +147,28 @@ public class ModlObjectJsonSerializer extends JsonSerializer<ModlObject> {
         }
     }
 
+    private void serialize(List<ModlObject.Value> values, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
+        if (values == null || values.size() == 0) {
+            return;
+        }
+//        if (values.size() > 1) {
+//            gen.writeStartArray();
+//        }
+//        if (startObject) {
+//            gen.writeStartObject();
+//        }
+        for (ModlObject.Value value : values) {
+//            serialize(value, gen, serializers, startObject);
+            serialize(value, gen, serializers, false);
+        }
+//        if (startObject) {
+//            gen.writeEndObject();
+//        }
+//        if (values.size() > 1) {
+//            gen.writeEndArray();
+//        }
+    }
+
     private void serialize(ModlObject.Array array, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         if (array == null) {
             return;
@@ -141,7 +176,12 @@ public class ModlObjectJsonSerializer extends JsonSerializer<ModlObject> {
         if (array.getValues() != null) {
             gen.writeStartArray();
             for (ModlObject.Value value : array.getValues()) {
-                serialize(value, gen, serializers, false);
+                boolean startObject = false;
+                if (value instanceof ModlObject.Pair) {
+                    startObject = true;
+                }
+//                serialize(value, gen, serializers, false);
+                serialize(value, gen, serializers, startObject);
             }
             gen.writeEndArray();
         } else {

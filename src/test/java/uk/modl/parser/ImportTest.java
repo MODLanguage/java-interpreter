@@ -31,21 +31,41 @@ import java.util.List;
 
 public class ImportTest extends TestCase {
     final static List<Object[]> expected =  Arrays.asList(new Object[][]{
-//            {"## country\n" +
-//                    "_c = us\n" +
-//                    "## language\n" +
-//                    "_l = en\n" +
-//                    "\n" +
-//                    "*I=import_config.modl\n" +
-//                    "\n" +
-//                    "country = %c\n" +
-//                    "language = %l\n" +
-//                    "time_zone = %tz",
-//                    "[\n" +
-//                            "  {\"country\": \"us\"},\n" +
-//                            "  {\"language\": \"en\"},\n" +
-//                            "  {\"time_zone\": \"EST\"}\n" +
-//                            "]"},
+            {"## country\n" +
+                    "_c = us\n" +
+                    "## language\n" +
+                    "_l = en\n" +
+                    "\n" +
+                    "*I=import_config.modl\n" +
+                    "\n" +
+                    "country = %c\n" +
+                    "language = %l\n" +
+                    "time_zone = %tz",
+                    "[\n" +
+                            "  {\"country\": \"us\"},\n" +
+                            "  {\"language\": \"en\"},\n" +
+                            "  {\"time_zone\": \"EST\"}\n" +
+                            "]"},
+            {"*I=a:b:c\n" +
+                    "var=%var",
+                    "{\n" +
+                            " \"var\": \"abc\"\n" +
+                            "}"},
+            {"*I=1:2:3\n" +
+                    "the_number=%number",
+                    "{\n" +
+                            " \"the_number\": 3\n" +
+                            "}"},
+            {"*I=1:2:3:1\n" +
+                    "the_number=%number",
+            "{\n" +
+                    " \"the_number\": 1\n" +
+                    "}"},
+            {"*I[1;2;3;1]\n" +
+                    "the_number=%number",
+            "{\n" +
+                    " \"the_number\": 1\n" +
+                    "}"},
             {"_T=demo\n*I=`%T`_config", ""},
             {"*I=demo_config\n" +
                     "*class(\n" +

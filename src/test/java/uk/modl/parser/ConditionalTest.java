@@ -31,14 +31,6 @@ import java.util.List;
 
 public class ConditionalTest extends TestCase {
     final static List<Object[]> expected =  Arrays.asList(new Object[][] {
-            {"_country=gb\n" +
-                    "{\n" +
-                    "  !{country=us|gb|au}?\n" +
-                    "    support_number=441270123456\n" +
-                    "  /?\n" +
-                    "    support_number=International Clients:14161234567\n" +
-                    "}",
-                    "{\"support_number\":[\"International Clients\",14161234567]}"},
             {"_number=42\n" +
                     "{\n" +
                     "  !{number>41}?\n" +
@@ -47,6 +39,16 @@ public class ConditionalTest extends TestCase {
                     "    support_number=International Clients:14161234567\n" +
                     "}",
                     "{\"support_number\":[\"International Clients\",14161234567]}"},
+            {"_country=gb\n" +
+                    "{\n" +
+                    "  !{country=us|gb|au}?\n" +
+                    "    support_number=441270123456\n" +
+                    "  /?\n" +
+                    "    support_number=International Clients:14161234567\n" +
+                    "}",
+                    "{\"support_number\":[\"International Clients\",14161234567]}"},
+            {"_test=gb\n" +
+                    "result={test=gb|au?No/?Yes}", "{ \"result\": \"No\" }"},
             {"_input=\"hi apple ios\"\n" +
                     "{\n" +
                     "  {input=*apple*ios*}?\n" +
@@ -107,9 +109,7 @@ public class ConditionalTest extends TestCase {
                     "}",
                     "{\n" +
                             " \"support_number\" : 14161234567\n" +
-                            "}" },
-            {"_test=gb\n" +
-                    "result={test=gb|au?No/?Yes}", "{ \"result\": \"No\" }"}
+                            "}" }
     });
 
     @Test

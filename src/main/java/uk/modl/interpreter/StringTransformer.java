@@ -20,7 +20,6 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 package uk.modl.interpreter;
 
 import org.apache.commons.text.StringEscapeUtils;
-import uk.modl.parser.RawModlObject;
 
 import java.net.IDN;
 import java.util.LinkedList;
@@ -32,28 +31,33 @@ import static java.lang.Character.isLetter;
 
 public class StringTransformer {
 
-    ModlClassLoader modlClassLoader;
-    Map<String, String> stringPairs;
-    Map<String, Map> mapPairs;
-    Map<String, List> arrayPairs;
+    Map<String, ModlObject.Value> valuePairs;
     Map<String, Function<String, String>> variableMethods;
+    Map<String, ModlObject.Value> variables;
+    Map<Integer, ModlObject.Value> numberedVariables;
 
 
-    public StringTransformer(ModlClassLoader modlClassLoader, Map<String, String> stringPairs,
-                             Map<String, Map> mapPairs, Map<String, List> arrayPairs,
-                             Map<String, Function<String, String>> variableMethods) {
-        this.modlClassLoader = modlClassLoader;
-        this.stringPairs = stringPairs;
-        this.arrayPairs = arrayPairs;
-        this.mapPairs = mapPairs;
+    public StringTransformer(Map<String, ModlObject.Value> valuePairs,
+                             Map<String, Function<String, String>> variableMethods,
+                             Map<String, ModlObject.Value> variables,
+                             Map<Integer, ModlObject.Value> numberedVariables) {
+        this.valuePairs = valuePairs;
         this.variableMethods = variableMethods;
+        this.variables = variables;
+        this.numberedVariables = numberedVariables;
     }
 
-    protected String transformString(String stringToTransform) {
+    protected ModlObject.Value transformString(String stringToTransform) {
         if (stringToTransform == null) {
             return null;
         }
-//        System.out.println("Transforming : " + stringToTransform);
+        ModlObject modlObject = new ModlObject();
+        if (stringToTransform.toLowerCase().equals("true")) {
+            return modlObject.new True();
+        }
+        if (stringToTransform.toLowerCase().equals("false")) {
+            return modlObject.new False();
+        }
 
         // Replace any unicode encodings
         stringToTransform = StringEscapeUtils.unescapeJava(stringToTransform);
@@ -67,10 +71,15 @@ public class StringTransformer {
             //     If a part begins with a % then run “Object Referencing”, else run “Punycode encoded parts”
             String newGravePart = null;
             if (gravePart.startsWith("`%")) {
-                stringToTransform = runObjectReferencing(gravePart, stringToTransform, true);
-                String nonGravePart = gravePart.substring(1, gravePart.length() - 1);
-                stringToTransform = stringToTransform.replace(gravePart, nonGravePart);
-//                newGravePart  = runObjectReferencing(gravePart, stringToTransform, true, false);
+//                stringToTransform = runObjectReferencing(gravePart, stringToTransform, true);
+                ModlObject.Value ret = runObjectReferencing(gravePart, stringToTransform, true);
+                if (ret instanceof ModlObject.String) {
+                    stringToTransform = ((ModlObject.String)ret).string;
+                    String nonGravePart = gravePart.substring(1, gravePart.length() - 1);
+                    stringToTransform = stringToTransform.replace(gravePart, nonGravePart);
+                } else {
+                    throw new RuntimeException("Can't have non-string in string transformation!");
+                }
             } else {
                 // else run “Punycode encoded parts”
                 newGravePart = replacePunycode(gravePart);
@@ -80,13 +89,17 @@ public class StringTransformer {
         // 4: Find all non-space parts of the string that are prefixed with % (percent sign). These are object references – run “Object Referencing”
         List<String> percentParts = getPercentPartsFromString(stringToTransform);
         for (String percentPart : percentParts) {
-            stringToTransform = runObjectReferencing(percentPart, stringToTransform, false);
+            ModlObject.Value ret = runObjectReferencing(percentPart, stringToTransform, false);
+            if (ret instanceof ModlObject.String) {
+                stringToTransform = ((ModlObject.String)ret).string;
+            } else {
+                return ret;
+            }
         }
         // 5: Replace the strings as per the txt document attached "string-replacement.txt"
         stringToTransform = replaceEscapedStrings(stringToTransform);
 
-//        System.out.println("Transformed : " + stringToTransform);
-        return stringToTransform;
+        return modlObject.new String(stringToTransform);
     }
 
     private List<String> getPercentPartsFromString(String stringToTransform) {
@@ -282,7 +295,7 @@ public class StringTransformer {
     }
 
 
-    public String runObjectReferencing(String percentPart, String stringToTransform, boolean isGraved) {
+    public ModlObject.Value runObjectReferencing(String percentPart, String stringToTransform, boolean isGraved) {
     /*
     Object Referencing
 If the reference includes a . (dot / full stop / period) then the reference key should be considered everything to the left of the . (dot / full stop / period).
@@ -303,6 +316,7 @@ Replace the part originally found (including graves) with the transformed subjec
         startOffset = 2;
         endOffset = 1;
     }
+        ModlObject modlObject = new ModlObject();
         String subject = percentPart.substring(startOffset, percentPart.length() - endOffset);
 
         String methodChain = null;
@@ -311,10 +325,13 @@ Replace the part originally found (including graves) with the transformed subjec
             subject = percentPart.substring(startOffset, indexOfDot);
             methodChain = percentPart.substring(indexOfDot + 1, percentPart.length() - endOffset);
         }
-        String oldSubject = subject;
-        subject = getValueForReference(subject);
-        if (subject == null) {
-                return stringToTransform;
+        ModlObject.Value value = getValueForReference(subject);
+        if (value == null) {
+          return modlObject.new String(stringToTransform);
+        } else if (value instanceof ModlObject.String) {
+            subject = ((ModlObject.String)value).string;
+        } else {
+            return value;
         }
 
         if (methodChain != null) {
@@ -346,45 +363,33 @@ Replace the part originally found (including graves) with the transformed subjec
 
         stringToTransform = stringToTransform.replace(percentPart, subject);
 
-        return stringToTransform;
+        return modlObject.new String(stringToTransform);
     }
 
-    private String getValueForReference(String subject) {
-        String value = subject;
+    private ModlObject.Value getValueForReference(String subject) {
+        ModlObject.Value value = null;
         boolean found = false;
 
         // Make any variable replacements, etc.
-        for (Integer i = 0; i < modlClassLoader.numberedVariables.size(); i++) {
+        for (Integer i = 0; i < numberedVariables.size(); i++) {
             if (subject.equals(i.toString())) {
-                if (modlClassLoader.numberedVariables.get(i) instanceof String) {
-                    value = (String) modlClassLoader.numberedVariables.get(i);
+                if (numberedVariables.get(i) instanceof ModlObject.String) {
+                    value = numberedVariables.get(i);
                 } else {
-                    value = ((RawModlObject.Value) modlClassLoader.numberedVariables.get(i)).getString().string;
+                    value = numberedVariables.get(i);
                 }
                 found = true;
             }
         }
-        for (Map.Entry<String, String> variableEntry : modlClassLoader.variables.entrySet()) {
+        for (Map.Entry<String, ModlObject.Value> variableEntry : variables.entrySet()) {
             if (subject.equals(variableEntry.getKey())) {
                 value = variableEntry.getValue();
                 found = true;
             }
         }
-        for (Map.Entry<String, String> variableEntry : stringPairs.entrySet()) {
+        for (Map.Entry<String, ModlObject.Value> variableEntry : valuePairs.entrySet()) {
             if (subject.equals(variableEntry.getKey())) {
                 value = variableEntry.getValue();
-                found = true;
-            }
-        }
-        for (Map.Entry<String, Map> variableEntry : mapPairs.entrySet()) {
-            if (subject.equals(variableEntry.getKey())) {
-//                value = variableEntry.getValue();
-                found = true;
-            }
-        }
-        for (Map.Entry<String, List> variableEntry : arrayPairs.entrySet()) {
-            if (subject.equals(variableEntry.getKey())) {
-//                value = variableEntry.getValue();
                 found = true;
             }
         }

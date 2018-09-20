@@ -114,6 +114,7 @@ public class VariableMethods {
         constantVariableMethods.put("u", upperCase);
         constantVariableMethods.put("d", downCase);
         constantVariableMethods.put("i", initCaps);
+        constantVariableMethods.put("initcap", initCaps);
         constantVariableMethods.put("ue", urlEncode);
         constantVariableMethods.put("s", sentence);
         constantVariableMethods.put("t", trim);
@@ -123,11 +124,7 @@ public class VariableMethods {
     }
 
 
-    // TODO Add the remaining variable methods!
-
     private static String makeSentence(String parameter) {
-        // First, make all the characters lower-case
-//        parameter = parameter.toLowerCase();
         // Now, Capitalise the first word.
         String[] splits = parameter.split(" ");
         splits[0] = WordUtils.capitalize(splits[0]);

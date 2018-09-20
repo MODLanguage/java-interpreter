@@ -29,6 +29,11 @@ import java.util.List;
 
 public class ParserTest extends TestCase {
     final static List<Object[]> expected =  Arrays.asList(new Object[][] {
+            { "o=[test;test;t=Customer Service:44123]", "{\n" +
+                    "  \"o\" : [ \"test\", \"test\", {\n" +
+                    "    \"t\" : [ \"Customer Service\", 44123 ]\n" +
+                    "  } ]\n" +
+                    "}" },
             { "test(one=1;two=2;three=3)", "{\n" +
                     " \"test\" : {" +
                     "  \"one\": 1,\n" +
@@ -51,6 +56,15 @@ public class ParserTest extends TestCase {
                     "    \"three\": 3\n" +
                     "  }\n" +
                     "]" },
+            { "[o(n=test);o(n=test2)]", "[ {\n" +
+                    "  \"o\" : {\n" +
+                    "    \"n\" : \"test\"\n" +
+                    "  }\n" +
+                    "}, {\n" +
+                    "  \"o\" : {\n" +
+                    "    \"n\" : \"test2\"\n" +
+                    "  }\n" +
+                    "} ]" },
             { "R=0\nnumber=1;number=2;number=3",
                     " [ {\n" +
                     "  \"R\" : 0\n" +
@@ -105,26 +119,12 @@ public class ParserTest extends TestCase {
                     "    }\n" +
                     "  ]\n" +
                     "}" },
-            { "o=[test;test;t=Customer Service:44123]", "{\n" +
-                    "  \"o\" : [ \"test\", \"test\", {\n" +
-                    "    \"t\" : [ \"Customer Service\", 44123 ]\n" +
-                    "  } ]\n" +
-                    "}" },
             { "o(n=Tesco;s=Every Little Helps)", "{\n" +
                     "  \"o\" : {\n" +
                     "    \"n\" : \"Tesco\",\n" +
                     "    \"s\" : \"Every Little Helps\"\n" +
                     "  }\n" +
                     "}" },
-            { "[o(n=test);o(n=test2)]", "[ {\n" +
-                    "  \"o\" : {\n" +
-                    "    \"n\" : \"test\"\n" +
-                    "  }\n" +
-                    "}, {\n" +
-                    "  \"o\" : {\n" +
-                    "    \"n\" : \"test2\"\n" +
-                    "  }\n" +
-                    "} ]" },
             { "o(n=test)", "{\n" +
                     "  \"o\" : {\n" +
                     "    \"n\" : \"test\"\n" +

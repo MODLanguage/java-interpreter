@@ -16,7 +16,7 @@ public class ModlObject {
 
     public interface Structure {}
 
-    List<Structure> structures = new LinkedList<>();
+    protected List<Structure> structures = new LinkedList<>();
 
     public List<Structure> getStructures() {
         return structures;
@@ -35,16 +35,16 @@ public class ModlObject {
             pairs.add(pair);
         }
 
-        public Value get(String key) {
+        public List<Value> get(String key) {
             for (Pair pair : pairs) {
-                if (pair.getKey().string.equals(key)) {
-                    return pair;
+                if (pair.getKey().string.equals(key.string)) {
+                    return pair.getValues();
                 }
             }
             return null;
         }
 
-        public Value get(Integer index) {
+        public Pair get(Integer index) {
             return pairs.get(index);
         }
 
@@ -71,13 +71,13 @@ public class ModlObject {
 
     public class Pair implements Structure, Value {
         private String key;
-        private Value value;
+        private List<Value> values = new LinkedList<>();
 
         public Pair() {}
 
         public Pair(String key, Value value) {
             this.key = key;
-            this.value = value;
+            this.values.add(value);
         }
 
         public String getKey() {
@@ -88,26 +88,35 @@ public class ModlObject {
             this.key = key;
         }
 
-        public Value getValue() {
-            return value;
+        public List<Value> getValues() {
+            return values;
         }
 
-        public void setValue(Value value) {
-            this.value = value;
-        }
+//        public void setValue(Value value) {
+//            this.value = value;
+//        }
 
         public void addValue(Value value) {
             if (value == null) {
                 return;
             }
-            if (this.value == null) {
-                this.value = value;
-                return;
-            }
-            Value oldValue = this.value;
-            this.value = new Array();
-            ((Array) this.value).addValue(oldValue);
-            ((Array) this.value).addValue(value);
+            this.values.add(value);
+//            if (this.value == null) {
+//                this.value = value;
+//                return;
+//            }
+//            Value oldValue = this.value;
+//            if (this.value instanceof ModlObject.Map) {
+//                ((Map)this.value).addPair((Pair)value);
+//            } else if (this.value instanceof ModlObject.Pair && value instanceof ModlObject.Pair) {
+//                this.value = new Map();
+//                ((Map)this.value).addPair((Pair)oldValue);
+//                ((Map)this.value).addPair((Pair)value);
+//            } else {
+//                this.value = new Array();
+//                ((Array) this.value).addValue(oldValue);
+//                ((Array) this.value).addValue(value);
+//            }
         }
     }
 
@@ -117,6 +126,8 @@ public class ModlObject {
         public String(java.lang.String string) {
             this.string = string;
         }
+
+        public java.lang.String toString() {return string;}
     }
 
     public class Number implements Value {

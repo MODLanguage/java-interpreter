@@ -19,11 +19,11 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 package uk.modl.interpreter;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class StringEscapeReplacer {
-    static Map<String, String> replacements = new HashMap<>();
+    static Map<String, String> replacements = new LinkedHashMap<>();
     public static String replace(String stringToTransform) {
         // String-replacement.text to replace escaped characters
         if (replacements.isEmpty()) {
@@ -39,6 +39,11 @@ public class StringEscapeReplacer {
     }
 
     private static void loadReplacements() {
+        replacements.put("~\\", "\\");
+        replacements.put("\\\\", "\\");
+        replacements.put("~~", "~");
+        replacements.put("\\~", "~");
+
         replacements.put("~(", "(");
         replacements.put("\\(", "(");
         replacements.put("~)", ")");
@@ -63,11 +68,6 @@ public class StringEscapeReplacer {
         replacements.put("\\`", "`");
         replacements.put("~\"", "\"");
         replacements.put("\\\"", "\"");
-
-        replacements.put("~\\", "\\");
-        replacements.put("\\\\", "\\");
-        replacements.put("~~", "~");
-        replacements.put("\\~", "~");
 
         replacements.put("~=", "=");
         replacements.put("\\=", "=");
