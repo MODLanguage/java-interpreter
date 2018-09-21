@@ -426,6 +426,13 @@ public class ParserTest2 extends TestCase {
                                 "    [\"a\", \"b\" ]\n" +
                                 "  ]\n" +
                                 "}"},
+                {"test=[zero;one]:[a;b]",
+                        "{\n" +
+                                "  \"test\" : [ \n" +
+                                "    [\"zero\", \"one\" ],\n" +
+                                "    [\"a\", \"b\" ]\n" +
+                                "  ]\n" +
+                                "}"},
                 {"?[zero;one;two]\n" +
                         "first_var=%0\n" +
                         "second_var=%1\n" +
@@ -756,6 +763,10 @@ public class ParserTest2 extends TestCase {
                                 "  \"test\" : \"!\"\n" +
                                 "}"},
                 {"test=(zero:one)",
+                        "{\n" +
+                                "  \"test\" : [ \"zero\", \"one\" ]\n" +
+                                "}"},
+                {"test=[zero;one]",
                         "{\n" +
                                 "  \"test\" : [ \"zero\", \"one\" ]\n" +
                                 "}"},
