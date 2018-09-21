@@ -91,7 +91,13 @@ public class StringTransformer {
         for (String percentPart : percentParts) {
             ModlObject.Value ret = runObjectReferencing(percentPart, stringToTransform, false);
             if (ret instanceof ModlObject.String) {
-                stringToTransform = ((ModlObject.String)ret).string;
+                stringToTransform = ((ModlObject.String) ret).string;
+            } else if (ret instanceof ModlObject.Number) {
+                if (percentPart.equals(stringToTransform)) {
+                    return ret;
+                }
+                String number = ((ModlObject.Number)ret).number;
+                stringToTransform = stringToTransform.replace(percentPart, number);
             } else {
                 return ret;
             }
@@ -388,7 +394,7 @@ Replace the part originally found (including graves) with the transformed subjec
             }
         }
         for (Map.Entry<String, ModlObject.Value> variableEntry : valuePairs.entrySet()) {
-            if (subject.equals(variableEntry.getKey())) {
+            if (subject.equals(variableEntry.getKey()) || subject.equals("_"+variableEntry.getKey())) {
                 value = variableEntry.getValue();
                 found = true;
             }

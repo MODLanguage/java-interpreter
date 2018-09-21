@@ -49,7 +49,10 @@ public class VariableMethods {
                 String[] split = parameter.split(",");
                 String subject = split[0];
                 String search = split[1];
-                String replace = split[2];
+                String replace = "";
+                if (split.length > 2) {
+                    replace = split[2];
+                }
                 return subject.replace(search, replace);
             };
 

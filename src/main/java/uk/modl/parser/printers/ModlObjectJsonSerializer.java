@@ -1,3 +1,22 @@
+/*
+MIT License
+
+Copyright (c) 2018 NUM Technology Ltd
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 package uk.modl.parser.printers;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -6,7 +25,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import uk.modl.interpreter.ModlObject;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Created by alex on 13/09/2018.
@@ -49,24 +67,12 @@ public class ModlObjectJsonSerializer extends JsonSerializer<ModlObject> {
             return;
         }
         if (map.getPairs() != null) {
-            ModlObject modlObject = new ModlObject();
             gen.writeStartObject();
             for (ModlObject.Pair pair : map.getPairs()) {
                 serialize(pair, gen, serializers, false);
             }
             gen.writeEndObject();
         }
-//        if (map.getPairs() != null) {
-//            ModlObject modlObject = new ModlObject();
-//            gen.writeStartObject();
-//            for (java.util.Map.Entry<ModlObject.String, ModlObject.Value> mapEntry : map.getPairs().entrySet()) {
-//                ModlObject.Pair pair = modlObject.new Pair();
-//                pair.setKey(mapEntry.getKey());
-//                pair.setValue(mapEntry.getValue());
-//                serialize(pair, gen, serializers, false);
-//            }
-//            gen.writeEndObject();
-//        }
         else {
             gen.writeStartObject();
             gen.writeEndObject();
@@ -111,62 +117,10 @@ public class ModlObjectJsonSerializer extends JsonSerializer<ModlObject> {
             gen.writeStartObject();
         }
         gen.writeFieldName(pair.getKey().string);
-        if (pair.getValues().size() > 0 && pair.getValues().get(0) instanceof ModlObject.Pair) {
-            gen.writeStartObject();
-        }
-        if (pair.getValues().size() > 1 && !(pair.getValues().get(0) instanceof ModlObject.Pair)
-                && !(pair.getValues().get(0) instanceof ModlObject.Map)) {
-            gen.writeStartArray();
-        }
-        serialize(pair.getValues(), gen, serializers, startObject);
-        if (pair.getValues().size() > 0 && pair.getValues().get(0) instanceof ModlObject.Pair) {
-            gen.writeEndObject();
-        }
-        if (pair.getValues().size() > 1 && !(pair.getValues().get(0) instanceof ModlObject.Pair)
-                && !(pair.getValues().get(0) instanceof ModlObject.Map)) {
-            gen.writeEndArray();
-        }
-//        // TODO Do we have an array?
-//        if (pair.getValues() != null) {
-//            if (pair.getValues().size() > 1) {
-//                gen.writeStartArray();
-//            }
-//            for (RawModlObject.ValueItem value : pair.getValues()) {
-//                serialize(value, gen, serializers);
-//            }
-//            if (pair.getValues().size() > 1) {
-//                gen.writeEndArray();
-//            }
-//        } else if (pair.getArray() != null) {
-//            serialize(pair.getArray(), gen, serializers);
-//        } else if (pair.getMap() != null) {
-//            serialize(pair.getMap(), gen, serializers);
-//        }
+        serialize(pair.getValue(), gen, serializers, startObject);
         if (startObject) {
             gen.writeEndObject();
         }
-    }
-
-    private void serialize(List<ModlObject.Value> values, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
-        if (values == null || values.size() == 0) {
-            return;
-        }
-//        if (values.size() > 1) {
-//            gen.writeStartArray();
-//        }
-//        if (startObject) {
-//            gen.writeStartObject();
-//        }
-        for (ModlObject.Value value : values) {
-//            serialize(value, gen, serializers, startObject);
-            serialize(value, gen, serializers, false);
-        }
-//        if (startObject) {
-//            gen.writeEndObject();
-//        }
-//        if (values.size() > 1) {
-//            gen.writeEndArray();
-//        }
     }
 
     private void serialize(ModlObject.Array array, JsonGenerator gen, SerializerProvider serializers) throws IOException {
@@ -180,7 +134,6 @@ public class ModlObjectJsonSerializer extends JsonSerializer<ModlObject> {
                 if (value instanceof ModlObject.Pair) {
                     startObject = true;
                 }
-//                serialize(value, gen, serializers, false);
                 serialize(value, gen, serializers, startObject);
             }
             gen.writeEndArray();

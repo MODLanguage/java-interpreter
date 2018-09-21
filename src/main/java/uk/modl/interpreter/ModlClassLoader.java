@@ -25,40 +25,13 @@ import java.util.*;
 
 public class ModlClassLoader {
 
-//    Map<String, Map<String, Object>> klasses = new LinkedHashMap<>();
-//    Map<String, ModlObject.Value> variables = new HashMap<>();
-//    Map<Integer, ModlObject.Value> numberedVariables = new HashMap<>();
-
-//    public void loadConfig(RawModlObject configRawModlObject, Map<String, Function<String, String>> variableMethods) {
-//        // Remember to define "o" for "object" BEFORE we load the config
-//        loadModlKlassO(configRawModlObject);
-//
-//        // Then, load in all the new definitions, and build the class heirarchy
-//        // we probably don't need to store a heirarchy - just a Map keyed by klass id
-//        // as we load in more klasses, we can add more keys, copying the info from the superclass before overriding anything and adding more
-//        //
-//        // So first, get a RawModlObject from the config file
-//        // Then, go through each klass, building the config map as we go
-//        for (RawModlObject.Structure structure : configRawModlObject.getStructures()) {
-////            loadconfig(structure, variableMethods);
-//            loadClass(structure, variableMethods);
-//        }
-//    }
-
     public static void loadClass(RawModlObject.Structure structure, Map<String, Map<String, Object>> klasses) {
         if (structure instanceof ModlObject.Pair) {
             ModlObject.Pair pair = (ModlObject.Pair)structure;
-//            if (pair != null && (pair.getKey().equals("*I") || pair.getKey().equals("*S"))) {
-//                return;
-//            }
             if (pair == null || (!(((pair.getKey().string.equals("*class")) ||
                     (pair.getKey().string.equals("*c")))))) {
-//                    (pair.getKey().string.equals("*m"))) || ((pair.getKey().string.equals("*method"))) ||
-//                    (pair.getKey().string.startsWith("_") || pair.getKey().string.equals("?")
-//                    )))) {
                 throw new RuntimeException("Expecting '*class' in ModlClassLoader");
             }
-//            if (pair.getKey().string.equals("*class") || pair.getKey().string.equals("*c")) {
                 loadClassStructure(structure, klasses);
         }
     }
@@ -100,21 +73,20 @@ public class ModlClassLoader {
         }
 
         // Go through the structure and find all the new values and add them (replacing any already there from superklass)
-//        for (RawModlObject.MapItem mapItem : structure.getPair().getMap().getMapItems()) {
-        for (RawModlObject.Pair mapItem : ((ModlObject.Map)((ModlObject.Pair)structure).getValues().get(0)).getPairs()) {
+        for (RawModlObject.Pair mapItem : ((ModlObject.Map)((ModlObject.Pair)structure).getValue()).getPairs()) {
             // Remember to avoid "_id" and "_sc" !
             if (mapItem.getKey().string.equals("*id") || mapItem.getKey().string.equals("*i") ||
                     mapItem.getKey().string.equals("*superclass") || mapItem.getKey().string.equals("*s")) {
                 continue;
             }
             if (mapItem.getKey().string.equals("*assign") || mapItem.getKey().string.equals("*a")) {
-                if (mapItem.getValues().get(0) instanceof ModlObject.Array) {
-                    loadParams(values, (ModlObject.Array) (mapItem.getValues().get(0)));
+                if (mapItem.getValue() instanceof ModlObject.Array) {
+                    loadParams(values, (ModlObject.Array) (mapItem.getValue()));
                 }
                 continue;
             }
             // Now add the new value
-            values.put(mapItem.getKey().string, mapItem.getValues().get(0));
+            values.put(mapItem.getKey().string, mapItem.getValue());
         }
     }
 
@@ -132,10 +104,10 @@ public class ModlClassLoader {
     }
 
     public static String getPairValueFor(RawModlObject.Structure structure, String pairValue) {
-        for (RawModlObject.Pair mapItem : ((ModlObject.Map)((ModlObject.Pair)structure).getValues().get(0)).getPairs()) {
+        for (RawModlObject.Pair mapItem : ((ModlObject.Map)((ModlObject.Pair)structure).getValue()).getPairs()) {
             if (mapItem.getKey().string.equals(pairValue)) {
                 // TODO This does not need to be a String!
-                return ((ModlObject.String)mapItem.getValues().get(0)).string;
+                return ((ModlObject.String)mapItem.getValue()).string;
             }
         }
         return null;
@@ -155,7 +127,6 @@ public class ModlClassLoader {
         Map<String, Object> o = new LinkedHashMap<>();
         RawModlObject.String superclass = rawModlObject.new String("map");
         o.put("*superclass", superclass);
-//        RawModlObject.String name = rawModlObject.new String("object");
         RawModlObject.String name = rawModlObject.new String("o");
         o.put("*name", name);
         RawModlObject.String output = rawModlObject.new String("map");

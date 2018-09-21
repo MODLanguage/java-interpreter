@@ -116,7 +116,6 @@ public class ModlObjectCreator {
         if (pair != null) {
             return pair;
         }
-//        pair = (processModlParsed(rawModlObject, parsedMapItem.getPair()));
         List<RawModlObject.Structure> structures = (processModlParsed(rawModlObject, parsedMapItem.getPair()));
         if (structures.size() > 0) {
             return ((RawModlObject.Pair)(structures.get(0)));
@@ -256,10 +255,16 @@ public class ModlObjectCreator {
                 pair.addValue(array);
             }
 
-            if (pairParsed.getValueItems() != null) {
-                for (ModlParsed.ValueItem valueParsed : pairParsed.getValueItems()) {
-                    RawModlObject.Value v = processModlParsed(rawModlObject, valueParsed, pair);
-                    pair.addValue(v);
+            if (pairParsed.getValueItems() != null && pairParsed.getValueItems().size() > 0) {
+                if (pairParsed.getValueItems().size() == 1) {
+                    pair.addValue(processModlParsed(rawModlObject, pairParsed.getValueItems().get(0), pair));
+                } else {
+                    RawModlObject.Array newArray = rawModlObject.new Array();
+                    for (ModlParsed.ValueItem valueParsed : pairParsed.getValueItems()) {
+                        RawModlObject.Value v = processModlParsed(rawModlObject, valueParsed, pair);
+                        newArray.addValue(v);
+                    }
+                    pair.addValue(newArray);
                 }
             }
 
@@ -351,7 +356,6 @@ public class ModlObjectCreator {
         if (valueItemParsed.getValueItems() != null && valueItemParsed.getValueItems().size() > 0) {
             value = rawModlObject.new Array();
             for (ModlParsed.ValueItem vi : valueItemParsed.getValueItems()) {
-//                parentPair.addValue(processModlParsed(rawModlObject, vi, parentPair));
                 ((ModlObject.Array) value).addValue(processModlParsed(rawModlObject, vi, parentPair));
             }
         }
@@ -492,16 +496,13 @@ End
         if (conditionalReturnParsed == null) {
             return null;
         }
-//        RawModlObject.Pair pair = rawModlObject.new Pair();
         RawModlObject.Map map = rawModlObject.new Map();
         if (conditionalReturnParsed.getMapItems() != null) {
             for (ModlParsed.MapItem valueParsed : conditionalReturnParsed.getMapItems()) {
                 RawModlObject.Pair p = processModlParsed(rawModlObject, valueParsed);
-//                pair.addValue(p);
                 map.addPair(p);
             }
         }
-//        map.addPair(pair);
         return map;
     }
 
@@ -524,7 +525,6 @@ End
         RawModlObject.TopLevelConditionalReturn conditionalReturn = rawModlObject.new TopLevelConditionalReturn();
         if (conditionalReturnParsed.getStructures() != null) {
             for (ModlParsed.Structure valueParsed : conditionalReturnParsed.getStructures()) {
-//                RawModlObject.Structure structure = processModlParsed(rawModlObject, valueParsed);
                 List<RawModlObject.Structure> structures = processModlParsed(rawModlObject, valueParsed);
                 conditionalReturn.addStructure(structures.get(0));
             }

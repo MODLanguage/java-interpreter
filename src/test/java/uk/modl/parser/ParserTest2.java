@@ -31,6 +31,124 @@ import java.util.List;
 
 public class ParserTest2 extends TestCase {
         final static List<Object[]> expected =  Arrays.asList(new Object[][]{
+                {"_C=gb\n" +
+                        "_COUNTRIES(\n" +
+                        "  us=United States\n" +
+                        "  gb=United Kingdom\n" +
+                        "  de=Germany\n" +
+                        ")\n" +
+                        "\n" +
+                        "country_name = %COUNTRIES[%C]", "{\n" +
+                        "  \"country_name\" : \"United Kingdom\"\n" +
+                        "}"},
+                {"_person(  \n" +
+                        "  name(\n" +
+                        "    first=\"Elliott\"\n" +
+                        "  )\n" +
+                        ")\n" +
+                        "a=%person[name[first]]",
+                        "{\"a\":\"Elliott\"}"},
+                {"?=[a;b;c;d]:[1;2;3;4;5]\n" +
+                        "test=%1[0]",
+                        "{\n" +
+                                "    \"test\": 1\n" +
+                                "}"},
+                {"_test[\n" +
+                        "  numbers[\n" +
+                        "    1;2;3;4;5\n" +
+                        "]\n" +
+                        "  letters[\n" +
+                        "    a;b;c;d\n" +
+                        "  ]\n" +
+                        "]\n" +
+                        "\n" +
+                        "a=%test[0[0]]",
+                        "{\"a\":1}"},
+                {"_test[\n" +
+                        "  [\n" +
+                        "    1;2;3;4;5\n" +
+                        "]\n" +
+                        "  [\n" +
+                        "    a;b;c;d\n" +
+                        "  ]\n" +
+                        "]\n" +
+                        "\n" +
+                        "a=%test[0[0]]",
+                "{\"a\":1}"},
+
+                {"?=[a;b;c;d]:[1;2;3;4;5]\n" +
+                        "test=%1",
+                "{\n" +
+                        "    \"test\": [1,2,3,4,5]\n" +
+                        "}"},
+                {"*method(\n" +
+                        "  *id=rt\n" +
+                        "  *name=remove_two\n" +
+                        "  *transform=`replace(two,)`\n" +
+                        ")\n" +
+                        "\n" +
+                        "_numbers = one two three\n" +
+                        "name = %numbers.rt",
+                "{ \"name\": \"one  three\" }"},
+                {"_test=123\n" +
+                        "print=%_test",
+                "{\n" +
+                        "    \"print\": 123\n" +
+                        "}"},
+                {"*class(\n" +
+                        "  *id=desc\n" +
+                        "  *name=description\n" +
+                        "  *superclass=str\n" +
+                        ")\n" +
+                        "\n" +
+                        "*class(\n" +
+                        "  *id=val\n" +
+                        "  *name=value\n" +
+                        "  *superclass=str\n" +
+                        ")\n" +
+                        "\n" +
+                        "*class(\n" +
+                        "  *id=media1\n" +
+                        "  *name=media1\n" +
+                        "  *superclass=map\n" +
+                        "  *assign=[\n" +
+                        "    [desc;val]\n" +
+                        "  ]\n" +
+                        ")\n" +
+                        "\n" +
+                        "*class(\n" +
+                        "  *id=media2\n" +
+                        "  *name=media2\n" +
+                        "  *superclass=map\n" +
+                        "  *assign=[\n" +
+                        "    [desc;val]\n" +
+                        "  ]\n" +
+                        ")\n" +
+                        "*class(\n" +
+                        "  *id=list\n" +
+                        "  *name=list\n" +
+                        "  *superclass=map\n" +
+                        "  *assign[\n" +
+                        "    [media1;media2]\n" +
+                        "  ]\n" +
+                        ")\n" +
+                        "\n" +
+                        "\n" +
+                        "list=[tel;fb]:[yt;tw]",
+//                        "list=[[tel;fb];[yt;tw]]",
+//                        "list=(tel:fb):(yt:tw)",
+                        "{\n" +
+                                "  \"list\" : {\n" +
+                                "    \"media1\" : {\n" +
+                                "      \"description\" : \"tel\",\n" +
+                                "      \"value\" : \"fb\"\n" +
+                                "    },\n" +
+                                "    \"media2\" : {\n" +
+                                "      \"description\" : \"yt\",\n" +
+                                "      \"value\" : \"tw\"\n" +
+                                "    }\n" +
+                                "  }\n" +
+                                "}"},
                 {"_test=1~:2\n" +
                         "\n" +
                         "result={\n" +
@@ -162,58 +280,6 @@ public class ParserTest2 extends TestCase {
                         "    no\n" +
                         "}",
                         "{ \"result\": \"yes\" }"},
-                {"*class(\n" +
-                        "  *id=desc\n" +
-                        "  *name=description\n" +
-                        "  *superclass=str\n" +
-                        ")\n" +
-                        "\n" +
-                        "*class(\n" +
-                        "  *id=val\n" +
-                        "  *name=value\n" +
-                        "  *superclass=str\n" +
-                        ")\n" +
-                        "\n" +
-                        "*class(\n" +
-                        "  *id=media1\n" +
-                        "  *name=media1\n" +
-                        "  *superclass=map\n" +
-                        "  *assign=[\n" +
-                        "    [desc;val]\n" +
-                        "  ]\n" +
-                        ")\n" +
-                        "\n" +
-                        "*class(\n" +
-                        "  *id=media2\n" +
-                        "  *name=media2\n" +
-                        "  *superclass=map\n" +
-                        "  *assign=[\n" +
-                        "    [desc;val]\n" +
-                        "  ]\n" +
-                        ")\n" +
-                        "*class(\n" +
-                        "  *id=list\n" +
-                        "  *name=list\n" +
-                        "  *superclass=map\n" +
-                        "  *assign[\n" +
-                        "    [media1;media2]\n" +
-                        "  ]\n" +
-                        ")\n" +
-                        "\n" +
-                        "\n" +
-                        "list=(tel:fb):(yt:tw)",
-                        "{\n" +
-                                "  \"list\" : {\n" +
-                                "    \"media1\" : {\n" +
-                                "      \"description\" : \"tel\",\n" +
-                                "      \"value\" : \"fb\"\n" +
-                                "    },\n" +
-                                "    \"media2\" : {\n" +
-                                "      \"description\" : \"yt\",\n" +
-                                "      \"value\" : \"tw\"\n" +
-                                "    }\n" +
-                                "  }\n" +
-                                "}"},
                 {"*class(\n" +
                         "  *id=g\n" +
                         "  *name=glossary\n" +
@@ -442,16 +508,6 @@ public class ParserTest2 extends TestCase {
                         "\n" +
                         "first_number = %test_vars[one]", "{\n" +
                         "  \"first_number\" : 1\n" +
-                        "}"},
-                {"_C=gb\n" +
-                        "_COUNTRIES(\n" +
-                        "  us=United States\n" +
-                        "  gb=United Kingdom\n" +
-                        "  de=Germany\n" +
-                        ")\n" +
-                        "\n" +
-                        "country_name = %COUNTRIES[%C]", "{\n" +
-                        "  \"country_name\" : \"United Kingdom\"\n" +
                         "}"},
                 {"_C=gb\n" +
                         "_COUNTRIES[\n" +

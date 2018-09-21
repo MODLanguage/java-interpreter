@@ -1,3 +1,22 @@
+/*
+MIT License
+
+Copyright (c) 2018 NUM Technology Ltd
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 package uk.modl.interpreter;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -35,10 +54,12 @@ public class ModlObject {
             pairs.add(pair);
         }
 
-        public List<Value> get(String key) {
+//        public List<Value> get(String key) {
+        public Value get(String key) {
             for (Pair pair : pairs) {
                 if (pair.getKey().string.equals(key.string)) {
-                    return pair.getValues();
+//                    return pair.getValues();
+                    return pair.getValue();
                 }
             }
             return null;
@@ -64,6 +85,17 @@ public class ModlObject {
             return values.get(index);
         }
 
+        public Pair get(String name) {
+            for (Value v : values) {
+                if (v instanceof Pair) {
+                    if (((Pair)v).getKey().string.equals(name.string)) {
+                        return (Pair)v;
+                    }
+                }
+            }
+            return null;
+        }
+
         public List<Value> getValues() {
             return values;
         }
@@ -71,13 +103,13 @@ public class ModlObject {
 
     public class Pair implements Structure, Value {
         private String key;
-        private List<Value> values = new LinkedList<>();
+        private Value value;
 
         public Pair() {}
 
         public Pair(String key, Value value) {
             this.key = key;
-            this.values.add(value);
+            this.value = (value);
         }
 
         public String getKey() {
@@ -88,35 +120,30 @@ public class ModlObject {
             this.key = key;
         }
 
-        public List<Value> getValues() {
-            return values;
+        public Value getValue() {
+            return value;
         }
-
-//        public void setValue(Value value) {
-//            this.value = value;
-//        }
 
         public void addValue(Value value) {
             if (value == null) {
                 return;
             }
-            this.values.add(value);
-//            if (this.value == null) {
-//                this.value = value;
-//                return;
-//            }
-//            Value oldValue = this.value;
-//            if (this.value instanceof ModlObject.Map) {
-//                ((Map)this.value).addPair((Pair)value);
-//            } else if (this.value instanceof ModlObject.Pair && value instanceof ModlObject.Pair) {
-//                this.value = new Map();
-//                ((Map)this.value).addPair((Pair)oldValue);
-//                ((Map)this.value).addPair((Pair)value);
-//            } else {
-//                this.value = new Array();
-//                ((Array) this.value).addValue(oldValue);
-//                ((Array) this.value).addValue(value);
-//            }
+            if (this.value == null) {
+                this.value = value;
+                return;
+            }
+            Value oldValue = this.value;
+            if (this.value instanceof ModlObject.Map) {
+                ((Map)this.value).addPair((Pair)value);
+            } else if (this.value instanceof ModlObject.Pair && value instanceof ModlObject.Pair) {
+                this.value = new Map();
+                ((Map)this.value).addPair((Pair)oldValue);
+                ((Map)this.value).addPair((Pair)value);
+            } else {
+                this.value = new Array();
+                ((Array) this.value).addValue(oldValue);
+                ((Array) this.value).addValue(value);
+            }
         }
     }
 
