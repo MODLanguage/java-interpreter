@@ -31,6 +31,36 @@ import java.util.List;
 
 public class ParserTest2 extends TestCase {
         final static List<Object[]> expected =  Arrays.asList(new Object[][]{
+                {"_person(  \n" +
+                        "  name(\n" +
+                        "    first=Elliott\n" +
+                        "    last=Brown\n" +
+                        "  )\n" +
+                        ")\n" +
+                        "say=%person[name[first]]",
+                "{\n" +
+                        "    \"say\": \"Elliott\"\n" +
+                        "}"},
+//                {"_person(  \n" +
+//                        "  name(\n" +
+//                        "    first=Elliott\n" +
+//                        "    last=Brown\n" +
+//                        "  )\n" +
+//                        ")\n" +
+//                        "say=Hi %person[name[first]]",
+//                "{\n" +
+//                        "    \"say\": \"Hi Elliott\"\n" +
+//                        "}"},
+//                {"_person(  \n" +
+//                        "  name(\n" +
+//                        "    first=Elliott\n" +
+//                        "    last=Brown\n" +
+//                        "  )\n" +
+//                        ")\n" +
+//                        "say=\"Hi, my name is %person[name[first]] %person[name[last]]\"",
+//                "{\n" +
+//                        "  \"say\" : \"Hi, my name is Elliott Brown\"\n" +
+//                        "}"},
                 {"_C=gb\n" +
                         "_COUNTRIES(\n" +
                         "  us=United States\n" +
