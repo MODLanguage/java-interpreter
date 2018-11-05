@@ -19,6 +19,8 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 package uk.modl.interpreter;
 
+import uk.modl.modlObject.ModlObject;
+import uk.modl.modlObject.ModlValue;
 import uk.modl.parser.RawModlObject;
 
 import java.util.List;
@@ -29,10 +31,10 @@ import java.util.Map;
  */
 public class VariableLoader {
 
-    public static void loadConfigNumberedVariables(RawModlObject.Value value, Map<Integer, ModlObject.Value> numberedVariables) { // , int paramNum) {
+    public static void loadConfigNumberedVariables(ModlValue value, Map<Integer, ModlValue> numberedVariables) { // , int paramNum) {
         if (value != null) {
             if (value instanceof ModlObject.Array) {
-                for (RawModlObject.Value val : ((ModlObject.Array)value).getValues()) {
+                for (ModlValue val : ((ModlObject.Array)value).getValues()) {
                     addConfigNumberedVariable(val, numberedVariables);
                 }
             } else {
@@ -41,21 +43,21 @@ public class VariableLoader {
         }
     }
 
-    private static int addConfigNumberedVariable(RawModlObject.Value val, Map<Integer, ModlObject.Value> numberedVariables) {
+    private static int addConfigNumberedVariable(ModlValue val, Map<Integer, ModlValue> numberedVariables) {
         int paramNum = numberedVariables.size();
         numberedVariables.put(paramNum, val);
         return paramNum;
     }
 
-    private static void loadConfigVariable(List<RawModlObject.Pair> mapItems, Map<String, ModlObject.Value> variables) {
+    private static void loadConfigVariable(List<RawModlObject.Pair> mapItems, Map<String, ModlValue> variables) {
         // Load in the variable
         for (RawModlObject.Pair mapItem : mapItems) {
             loadConfigVar(mapItem.getKey().string, mapItem, variables);
         }
     }
 
-    public static void loadConfigVar(String key, RawModlObject.Pair pair, Map<String, ModlObject.Value> variables) {
-        ModlObject.Value v = pair.getValue();
+    public static void loadConfigVar(String key, RawModlObject.Pair pair, Map<String, ModlValue> variables) {
+        ModlValue v = pair.getModlValue();
         variables.put(key, v);
     }
 

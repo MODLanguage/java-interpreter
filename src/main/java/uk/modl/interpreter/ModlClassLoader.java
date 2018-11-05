@@ -19,6 +19,8 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 package uk.modl.interpreter;
 
+import uk.modl.modlObject.ModlObject;
+import uk.modl.modlObject.ModlValue;
 import uk.modl.parser.RawModlObject;
 
 import java.util.*;
@@ -73,30 +75,30 @@ public class ModlClassLoader {
         }
 
         // Go through the structure and find all the new values and add them (replacing any already there from superklass)
-        for (RawModlObject.Pair mapItem : ((ModlObject.Map)((ModlObject.Pair)structure).getValue()).getPairs()) {
+        for (RawModlObject.Pair mapItem : ((ModlObject.Map)((ModlObject.Pair)structure).getModlValue()).getPairs()) {
             // Remember to avoid "_id" and "_sc" !
             if (mapItem.getKey().string.equals("*id") || mapItem.getKey().string.equals("*i") ||
                     mapItem.getKey().string.equals("*superclass") || mapItem.getKey().string.equals("*s")) {
                 continue;
             }
             if (mapItem.getKey().string.equals("*assign") || mapItem.getKey().string.equals("*a")) {
-                if (mapItem.getValue() instanceof ModlObject.Array) {
-                    loadParams(values, (ModlObject.Array) (mapItem.getValue()));
+                if (mapItem.getModlValue() instanceof ModlObject.Array) {
+                    loadParams(values, (ModlObject.Array) (mapItem.getModlValue()));
                 }
                 continue;
             }
             // Now add the new value
-            values.put(mapItem.getKey().string, mapItem.getValue());
+            values.put(mapItem.getKey().string, mapItem.getModlValue());
         }
     }
 
     private static void loadParams(HashMap<String, Object> values, RawModlObject.Array array) {
         // _params : add like _params<n> where n is number of values in array
-        for (RawModlObject.Value v : array.getValues()) {
+        for (ModlValue v : array.getValues()) {
             RawModlObject.Array a = (ModlObject.Array)v;
             String key = "*params" + a.getValues().size();
-            List<RawModlObject.Value> vs = new LinkedList<>();
-            for (RawModlObject.Value ai : a.getValues()) {
+            List<ModlValue> vs = new LinkedList<>();
+            for (ModlValue ai : a.getValues()) {
                 vs.add(ai);
             }
             values.put(key, vs);
@@ -104,10 +106,10 @@ public class ModlClassLoader {
     }
 
     public static String getPairValueFor(RawModlObject.Structure structure, String pairValue) {
-        for (RawModlObject.Pair mapItem : ((ModlObject.Map)((ModlObject.Pair)structure).getValue()).getPairs()) {
+        for (RawModlObject.Pair mapItem : ((ModlObject.Map)((ModlObject.Pair)structure).getModlValue()).getPairs()) {
             if (mapItem.getKey().string.equals(pairValue)) {
                 // TODO This does not need to be a String!
-                return ((ModlObject.String)mapItem.getValue()).string;
+                return ((ModlObject.String)mapItem.getModlValue()).string;
             }
         }
         return null;

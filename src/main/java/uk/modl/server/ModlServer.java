@@ -23,7 +23,7 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import uk.modl.interpreter.Interpreter;
-import uk.modl.interpreter.ModlObject;
+import uk.modl.modlObject.ModlObject;
 import uk.modl.parser.printers.JsonPrinter;
 
 import javax.servlet.ServletException;

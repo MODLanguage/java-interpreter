@@ -21,7 +21,8 @@ package uk.modl.parser;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import uk.modl.interpreter.ModlObject;
+import uk.modl.modlObject.ModlObject;
+import uk.modl.modlObject.ModlValue;
 import uk.modl.parser.printers.ModlObjectJsonSerializer;
 
 import java.util.*;
@@ -40,7 +41,7 @@ public class RawModlObject extends ModlObject {
                 Pair pair =((Pair)structure);
                 if ((pair.getKey().string.equals("*I")) || (pair.getKey().string.equals("*IMPORT"))) {
 //                    java.lang.String importLocation = ((String)pair.getValues().get(0)).string;
-                    java.lang.String importLocation = ((String)pair.getValue()).string;
+                    java.lang.String importLocation = ((String)pair.getModlValue()).string;
                     if (importLocation.equals(importValue)) {
                         break;
                     }
@@ -75,9 +76,9 @@ public class RawModlObject extends ModlObject {
     public class Condition implements SubCondition {
         java.lang.String key;
         java.lang.String operator;
-        List<Value> values = new LinkedList<>();
+        List<ModlValue> values = new LinkedList<>();
 
-        public Condition(java.lang.String key, java.lang.String operator, List<Value> values) {
+        public Condition(java.lang.String key, java.lang.String operator, List<ModlValue> values) {
             this.key = key;
             this.operator = operator;
             this.values = values;
@@ -91,7 +92,7 @@ public class RawModlObject extends ModlObject {
             return operator;
         }
 
-        public List<Value> getValues() {
+        public List<ModlValue> getValues() {
             return values;
         }
     }
@@ -109,7 +110,7 @@ public class RawModlObject extends ModlObject {
     }
 
 
-    public class ValueConditional implements Value, Conditional {
+    public class ValueConditional implements ModlValue, Conditional {
         java.util.Map<ConditionTest, ValueConditionalReturn> conditionals;
 
         public java.util.Map<ConditionTest, ValueConditionalReturn> getConditionals() {
@@ -124,17 +125,17 @@ public class RawModlObject extends ModlObject {
         }
     }
 
-    public class ValueConditionalReturn implements Value {
-        List<Value> values;
+    public class ValueConditionalReturn implements ModlValue {
+        List<ModlValue> values;
 
-        public void addValue(Value value) {
+        public void addValue(ModlValue value) {
             if (values == null) {
                 values = new LinkedList<>();
             }
             values.add(value);
         }
 
-        public List<Value> getValues() {
+        public List<ModlValue> getValues() {
             return values;
         }
     }

@@ -43,8 +43,6 @@ public class ModlParsed extends MODLParserBaseListener {
             str.enterRule(structure);
             structures.add(structure);
         });
-
-        int deleteMe = 0;
     }
 
 

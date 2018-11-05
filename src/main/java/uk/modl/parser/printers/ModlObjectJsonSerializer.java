@@ -22,7 +22,8 @@ package uk.modl.parser.printers;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import uk.modl.interpreter.ModlObject;
+import uk.modl.modlObject.ModlObject;
+import uk.modl.modlObject.ModlValue;
 
 import java.io.IOException;
 
@@ -79,7 +80,7 @@ public class ModlObjectJsonSerializer extends JsonSerializer<ModlObject> {
         }
     }
 
-    public void serialize(ModlObject.Value value, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
+    public void serialize(ModlValue value, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
         if (value == null) {
             return;
         }
@@ -117,7 +118,7 @@ public class ModlObjectJsonSerializer extends JsonSerializer<ModlObject> {
             gen.writeStartObject();
         }
         gen.writeFieldName(pair.getKey().string);
-        serialize(pair.getValue(), gen, serializers, startObject);
+        serialize(pair.getModlValue(), gen, serializers, startObject);
         if (startObject) {
             gen.writeEndObject();
         }
@@ -129,7 +130,7 @@ public class ModlObjectJsonSerializer extends JsonSerializer<ModlObject> {
         }
         if (array.getValues() != null) {
             gen.writeStartArray();
-            for (ModlObject.Value value : array.getValues()) {
+            for (ModlValue value : array.getValues()) {
                 boolean startObject = false;
                 if (value instanceof ModlObject.Pair) {
                     startObject = true;

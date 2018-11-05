@@ -20,6 +20,8 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 package uk.modl.interpreter;
 
 import org.apache.commons.text.StringEscapeUtils;
+import uk.modl.modlObject.ModlObject;
+import uk.modl.modlObject.ModlValue;
 
 import java.net.IDN;
 import java.util.LinkedList;
@@ -31,23 +33,23 @@ import static java.lang.Character.isLetter;
 
 public class StringTransformer {
 
-    Map<String, ModlObject.Value> valuePairs;
+    Map<String, ModlValue> valuePairs;
     Map<String, Function<String, String>> variableMethods;
-    Map<String, ModlObject.Value> variables;
-    Map<Integer, ModlObject.Value> numberedVariables;
+    Map<String, ModlValue> variables;
+    Map<Integer, ModlValue> numberedVariables;
 
 
-    public StringTransformer(Map<String, ModlObject.Value> valuePairs,
+    public StringTransformer(Map<String, ModlValue> valuePairs,
                              Map<String, Function<String, String>> variableMethods,
-                             Map<String, ModlObject.Value> variables,
-                             Map<Integer, ModlObject.Value> numberedVariables) {
+                             Map<String, ModlValue> variables,
+                             Map<Integer, ModlValue> numberedVariables) {
         this.valuePairs = valuePairs;
         this.variableMethods = variableMethods;
         this.variables = variables;
         this.numberedVariables = numberedVariables;
     }
 
-    protected ModlObject.Value transformString(String stringToTransform) {
+    protected ModlValue transformString(String stringToTransform) {
         if (stringToTransform == null) {
             return null;
         }
@@ -72,7 +74,7 @@ public class StringTransformer {
             String newGravePart = null;
             if (gravePart.startsWith("`%")) {
 //                stringToTransform = runObjectReferencing(gravePart, stringToTransform, true);
-                ModlObject.Value ret = runObjectReferencing(gravePart, stringToTransform, true);
+                ModlValue ret = runObjectReferencing(gravePart, stringToTransform, true);
                 if (ret instanceof ModlObject.String) {
                     stringToTransform = ((ModlObject.String)ret).string;
                     String nonGravePart = gravePart.substring(1, gravePart.length() - 1);
@@ -89,7 +91,7 @@ public class StringTransformer {
         // 4: Find all non-space parts of the string that are prefixed with % (percent sign). These are object references – run “Object Referencing”
         List<String> percentParts = getPercentPartsFromString(stringToTransform);
         for (String percentPart : percentParts) {
-            ModlObject.Value ret = runObjectReferencing(percentPart, stringToTransform, false);
+            ModlValue ret = runObjectReferencing(percentPart, stringToTransform, false);
             if (ret instanceof ModlObject.String) {
                 stringToTransform = ((ModlObject.String) ret).string;
             } else if (ret instanceof ModlObject.Number) {
@@ -301,7 +303,7 @@ public class StringTransformer {
     }
 
 
-    public ModlObject.Value runObjectReferencing(String percentPart, String stringToTransform, boolean isGraved) {
+    public ModlValue runObjectReferencing(String percentPart, String stringToTransform, boolean isGraved) {
     /*
     Object Referencing
 If the reference includes a . (dot / full stop / period) then the reference key should be considered everything to the left of the . (dot / full stop / period).
@@ -331,7 +333,7 @@ Replace the part originally found (including graves) with the transformed subjec
             subject = percentPart.substring(startOffset, indexOfDot);
             methodChain = percentPart.substring(indexOfDot + 1, percentPart.length() - endOffset);
         }
-        ModlObject.Value value = getValueForReference(subject);
+        ModlValue value = getValueForReference(subject);
         if (value == null) {
           return modlObject.new String(stringToTransform);
         } else if (value instanceof ModlObject.String) {
@@ -372,8 +374,8 @@ Replace the part originally found (including graves) with the transformed subjec
         return modlObject.new String(stringToTransform);
     }
 
-    private ModlObject.Value getValueForReference(String subject) {
-        ModlObject.Value value = null;
+    private ModlValue getValueForReference(String subject) {
+        ModlValue value = null;
         boolean found = false;
 
         // Make any variable replacements, etc.
@@ -387,13 +389,13 @@ Replace the part originally found (including graves) with the transformed subjec
                 found = true;
             }
         }
-        for (Map.Entry<String, ModlObject.Value> variableEntry : variables.entrySet()) {
+        for (Map.Entry<String, ModlValue> variableEntry : variables.entrySet()) {
             if (subject.equals(variableEntry.getKey())) {
                 value = variableEntry.getValue();
                 found = true;
             }
         }
-        for (Map.Entry<String, ModlObject.Value> variableEntry : valuePairs.entrySet()) {
+        for (Map.Entry<String, ModlValue> variableEntry : valuePairs.entrySet()) {
             if (subject.equals(variableEntry.getKey()) || subject.equals("_"+variableEntry.getKey())) {
                 value = variableEntry.getValue();
                 found = true;
