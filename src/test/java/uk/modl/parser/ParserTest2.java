@@ -31,6 +31,29 @@ import java.util.List;
 
 public class ParserTest2 extends TestCase {
         final static List<Object[]> expected =  Arrays.asList(new Object[][]{
+                {"*class(\n" +
+                        "  *id=car\n" +
+                        "  *name=car\n" +
+                        "  *superclass=map\n" +
+                        "  *assign=[\n" +
+                        "    [m]\n" +
+                        "    [m;md]\n" +
+                        "  ]\n" +
+                        ")\n" +
+                        "\n" +
+                        "_C=gb\n" +
+                        "\n" +
+                        "car=Bentley:{C=ru?ContinentalRussia GT/?Continental GT}",
+                        "{\n" +
+                                "  \"car\" : {\n" +
+                                "    \"m\" : \"Bentley\",\n" +
+                                "    \"md\" : \"Continental GT\"\n" +
+                                "  }\n" +
+                                "}"},
+                {"*VERSION=1\n" +
+                        "\"test\"=1","{\n" +
+                        "  \"test\" : 1\n" +
+                        "}"},
                 {"_person(  \n" +
                         "  name(\n" +
                         "    first=John\n" +
@@ -449,7 +472,8 @@ public class ParserTest2 extends TestCase {
                                 "}, {\n" +
                                 "  \"numbers\" : [ \"one\", \"two\", \"three\" ]\n" +
                                 "} ]"},
-                {"test=(zero:one):(a:b)",
+//                {"test=(zero:one):(a:b)",
+                {"test=[zero;one]:[a;b]",
                         "{\n" +
                                 "  \"test\" : [ \n" +
                                 "    [\"zero\", \"one\" ],\n" +
@@ -777,9 +801,6 @@ public class ParserTest2 extends TestCase {
                         "}", "{\n" +
                         "    \"result\": \"num1 is bigger\"\n" +
                         "}"},
-                {"\"test\"=1","{\n" +
-                        "  \"test\" : 1\n" +
-                        "}"},
                 {"?=\"A\":B:C\n" +
                         "first_letter=%0","{ \"first_letter\" : \"A\" }"},
                 {"test=100%",
@@ -792,10 +813,10 @@ public class ParserTest2 extends TestCase {
                         "{\n" +
                                 "  \"test\" : \"!\"\n" +
                                 "}"},
-                {"test=(zero:one)",
-                        "{\n" +
-                                "  \"test\" : [ \"zero\", \"one\" ]\n" +
-                                "}"},
+//                {"test=(zero:one)",
+//                        "{\n" +
+//                                "  \"test\" : [ \"zero\", \"one\" ]\n" +
+//                                "}"},
                 {"test=[zero;one]",
                         "{\n" +
                                 "  \"test\" : [ \"zero\", \"one\" ]\n" +
@@ -973,25 +994,6 @@ public class ParserTest2 extends TestCase {
                         "        \"name\": \"John Smith\",\n" +
                         "        \"dob\": \"01/01/2001\"\n" +
                         "    }\n" +
-                        "}"},
-                {"*class(\n" +
-                        "  *id=car\n" +
-                        "  *name=car\n" +
-                        "  *superclass=map\n" +
-                        "  *assign=[\n" +
-                        "    [m]\n" +
-                        "    [m;md]\n" +
-                        "  ]\n" +
-                        ")\n" +
-                        "\n" +
-                        "_C=gb\n" +
-                        "\n" +
-                        "car=Bentley:{C=ru?ContinentalRussia GT/?Continental GT}",
-                "{\n" +
-                        "  \"car\" : {\n" +
-                        "    \"m\" : \"Bentley\",\n" +
-                        "    \"md\" : \"Continental GT\"\n" +
-                        "  }\n" +
                         "}"},
                 {"*class(\n" +
                         "  *id=car\n" +

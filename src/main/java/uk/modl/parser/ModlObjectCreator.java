@@ -22,6 +22,7 @@ package uk.modl.parser;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import uk.modl.modlObject.ModlObject;
 import uk.modl.modlObject.ModlValue;
+import uk.modl.parser.antlr.MODLParser;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -144,6 +145,57 @@ public class ModlObjectCreator {
         if (value != null) {
             return value;
         }
+        value = processModlParsed(rawModlObject, parsedValue.getNbArray());
+        if (value != null) {
+            return value;
+        }
+        value = processModlParsed(rawModlObject, parsedValue.getQuoted());
+        if (value != null) {
+            return value;
+        }
+        value = processModlParsed(rawModlObject, parsedValue.getNumber());
+        if (value != null) {
+            return value;
+        }
+        value = processModlParsed(rawModlObject, parsedValue.getTrueVal());
+        if (value != null) {
+            return value;
+        }
+        value = processModlParsed(rawModlObject, parsedValue.getFalseVal());
+        if (value != null) {
+            return value;
+        }
+        value = processModlParsed(rawModlObject, parsedValue.getNullVal());
+        if (value != null) {
+            return value;
+        }
+        value = processModlParsed(rawModlObject, parsedValue.getString());
+        if (value != null) {
+            return value;
+        }
+        return value;
+
+    }
+
+    private static ModlValue processModlParsed(RawModlObject rawModlObject, ModlParsed.ArrayValueItem parsedValue) {
+        if (parsedValue == null) {
+            return null;
+        }
+
+        ModlValue value = null;
+
+        List<RawModlObject.Structure> pairs = processModlParsed(rawModlObject, parsedValue.getPair());
+        if (pairs != null && pairs.size() > 0) {
+            return (ModlValue)(pairs.get(0));
+        }
+        value = processModlParsed(rawModlObject, parsedValue.getMap());
+        if (value != null) {
+            return value;
+        }
+        value = processModlParsed(rawModlObject, parsedValue.getArray());
+        if (value != null) {
+            return value;
+        }
         value = processModlParsed(rawModlObject, parsedValue.getQuoted());
         if (value != null) {
             return value;
@@ -231,10 +283,10 @@ public class ModlObjectCreator {
         if (pairParsed == null) {
             return null;
         }
-        if (pairParsed.getKey() != null && (pairParsed.getKey().equals("_S") || (pairParsed.getKey().equals("_SYNTAX")))) {
+        if (pairParsed.getKey() != null && (pairParsed.getKey().equals("*V") || (pairParsed.getKey().equals("*VERSION")))) {
             // This is the version number - check it and then ignore it
-            if (!(pairParsed.getValueItems().get(0).getValue().getNumber().string.equals(String.valueOf(MODL_VERSION)))) {
-                throw new UnsupportedOperationException("Can't handle MODL version " + pairParsed.getValueItems().get(0).getValue().getNumber());
+            if (!(pairParsed.getValueItem().getValue().getNumber().string.equals(String.valueOf(MODL_VERSION)))) {
+                throw new UnsupportedOperationException("Can't handle MODL version " + pairParsed.getValueItem().getValue().getNumber().string);
             }
             return null;
         }
@@ -242,7 +294,7 @@ public class ModlObjectCreator {
 
         pair.setKey(rawModlObject.new String(pairParsed.getKey()));
 
-        if (pairParsed.getKey().equals("*I") || pairParsed.getKey().equals("*IMPORT")) {
+        if (pairParsed.getKey() != null &&  (pairParsed.getKey().equals("*I") || pairParsed.getKey().equals("*IMPORT"))) {
             // Make a new Pair for each valueItem or item in the array for the IMPORT statement!
             return processImportStatement(rawModlObject, pairParsed);
         } else {
@@ -256,17 +308,8 @@ public class ModlObjectCreator {
                 pair.addModlValue(array);
             }
 
-            if (pairParsed.getValueItems() != null && pairParsed.getValueItems().size() > 0) {
-                if (pairParsed.getValueItems().size() == 1) {
-                    pair.addModlValue(processModlParsed(rawModlObject, pairParsed.getValueItems().get(0), pair));
-                } else {
-                    RawModlObject.Array newArray = rawModlObject.new Array();
-                    for (ModlParsed.ValueItem valueParsed : pairParsed.getValueItems()) {
-                        ModlValue v = processModlParsed(rawModlObject, valueParsed, pair);
-                        newArray.addValue(v);
-                    }
-                    pair.addModlValue(newArray);
-                }
+            if (pairParsed.getValueItem() != null) {
+                    pair.addModlValue(processModlParsed(rawModlObject, pairParsed.getValueItem(), pair));
             }
 
             List<RawModlObject.Structure> pairs = new LinkedList<>();
@@ -279,6 +322,11 @@ public class ModlObjectCreator {
         // Replace each import file in a single import pair with as many import pairs as there are files in the original import pair
         List<RawModlObject.Structure> structures = new LinkedList<>();
         RawModlObject.Array array = (processModlParsed(rawModlObject, pairParsed.getArray()));
+        if (array == null) {
+            if (pairParsed.getValueItem() != null && pairParsed.getValueItem().getValue() != null) {
+                array = processModlParsed(rawModlObject, pairParsed.getValueItem().getValue().getNbArray());
+            }
+        }
         if (array != null) {
             for (ModlValue v : array.getValues()) {
                 RawModlObject.Pair pair = rawModlObject.new Pair();
@@ -290,17 +338,16 @@ public class ModlObjectCreator {
                 structures.add(pair);
             }
         } else {
-            if (pairParsed.getValueItems() != null) {
-                for (ModlParsed.ValueItem valueParsed : pairParsed.getValueItems()) {
+            if (pairParsed.getValueItem() != null) {
                     RawModlObject.Pair pair = rawModlObject.new Pair();
                     pair.setKey(rawModlObject.new String(pairParsed.getKey()));
+                    ModlParsed.ValueItem valueParsed = pairParsed.getValueItem();
                     ModlValue v = processModlParsed(rawModlObject, valueParsed, pair);
                     if (v instanceof RawModlObject.Number) {
                         v = rawModlObject.new String(((RawModlObject.Number)v).number);
                     }
                     pair.addModlValue(v);
                     structures.add(pair);
-                }
             }
         }
         return structures;
@@ -312,11 +359,26 @@ public class ModlObjectCreator {
         }
         RawModlObject.Array array = rawModlObject.new Array();
 
-        if (arrayParsed.getArrayItems() != null) {
-            for (ModlParsed.ArrayItem arrayItemParsed : arrayParsed.getArrayItems()) {
-                ModlValue value = processModlParsed(rawModlObject, arrayItemParsed);
-                if (value != null) {
-                    array.addValue(value);
+        if (arrayParsed.getAbstractArrayItems() != null) {
+            for (ModlParsed.AbstractArrayItem arrayItemParsed : arrayParsed.getAbstractArrayItems()) {
+                // TODO Expand NbArrays here?
+//                ModlValue value = processModlParsed(rawModlObject, (arrayItemParsed));
+//                if (value != null) {
+//                    array.addValue(value);
+//                }
+
+                if (arrayItemParsed instanceof ModlParsed.ArrayItem) {
+                    ModlValue value = processModlParsed(rawModlObject, ((ModlParsed.ArrayItem)arrayItemParsed));
+                    if (value != null) {
+                        array.addValue(value);
+                    }
+                } else if (arrayItemParsed instanceof ModlParsed.NbArray) {
+                    for (ModlParsed.ArrayItem ai : ((ModlParsed.NbArray)arrayItemParsed).getArrayItems()) {
+                        ModlValue value = processModlParsed(rawModlObject, ai);
+                        if (value != null) {
+                            array.addValue(value);
+                        }
+                    }
                 }
             }
         }
@@ -324,6 +386,30 @@ public class ModlObjectCreator {
         return array;
     }
 
+    private static RawModlObject.Array processModlParsed(RawModlObject rawModlObject, ModlParsed.NbArray nbArray) {
+        if (nbArray == null || nbArray.getArrayItems().size() == 0) {
+            return null;
+        }
+        ModlObject.Array array = rawModlObject.new Array();
+        for (ModlParsed.ArrayItem arrayItem : nbArray.getArrayItems()) {
+            ModlValue value = processModlParsed(rawModlObject, arrayItem);
+            array.addValue(value);
+        }
+        return array;
+    }
+
+//    private static ModlValue processModlParsed(RawModlObject rawModlObject, ModlParsed.AbstractArrayItem arrayItemParsed) {
+//        if (arrayItemParsed == null) {
+//            return null;
+//        }
+//        if (arrayItemParsed instanceof ModlParsed.ArrayItem) {
+//            return processModlParsed(rawModlObject, (ModlParsed.ArrayItem)arrayItemParsed);
+//        } else if (arrayItemParsed instanceof ModlParsed.NbArray) {
+//            return processModlParsed(rawModlObject, (ModlParsed.NbArray)arrayItemParsed);
+//        }
+//        throw new IllegalArgumentException();
+//    }
+//
 
     private static ModlValue processModlParsed(RawModlObject rawModlObject, ModlParsed.ArrayItem arrayItemParsed) {
         if (arrayItemParsed == null) {
@@ -334,8 +420,8 @@ public class ModlObjectCreator {
         if (arrayItemParsed.getArrayConditional() != null) {
             value = (processModlParsed(rawModlObject, arrayItemParsed.getArrayConditional()));
         }
-        if (arrayItemParsed.getValue() != null) {
-            value = (processModlParsed(rawModlObject, arrayItemParsed.getValue()));
+        if (arrayItemParsed.getArrayValueItem() != null) {
+            value = (processModlParsed(rawModlObject, arrayItemParsed.getArrayValueItem()));
         }
 
         return value;
@@ -353,12 +439,6 @@ public class ModlObjectCreator {
         }
         if (valueItemParsed.getValue() != null) {
             value = (processModlParsed(rawModlObject, valueItemParsed.getValue()));
-        }
-        if (valueItemParsed.getValueItems() != null && valueItemParsed.getValueItems().size() > 0) {
-            value = rawModlObject.new Array();
-            for (ModlParsed.ValueItem vi : valueItemParsed.getValueItems()) {
-                ((ModlObject.Array) value).addValue(processModlParsed(rawModlObject, vi, parentPair));
-            }
         }
 
         return value;

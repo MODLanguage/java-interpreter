@@ -31,6 +31,27 @@ import java.util.List;
 
 public class ImportTest extends TestCase {
     final static List<Object[]> expected =  Arrays.asList(new Object[][]{
+            {"*I=a:b:c\n" +
+                    "var=%var",
+                    "{\n" +
+                            " \"var\": \"abc\"\n" +
+                            "}"},
+            {"*I=1:2:3\n" +
+                    "the_number=%number",
+                    "{\n" +
+                            " \"the_number\": 3\n" +
+                            "}"},
+            {"*I=1:2:3:1\n" +
+                    "the_number=%number",
+                    "{\n" +
+                            " \"the_number\": 1\n" +
+                            "}"},
+            {"*I[1;2;3;1]\n" +
+                    "the_number=%number",
+                    "{\n" +
+                            " \"the_number\": 1\n" +
+                            "}"},
+
             {"_var=2\n" +
                     "*I=\"http://s3-eu-west-1.amazonaws.com/modltestfiles/testing.txt!\"\n" +
                     "print=%update_date\n",
@@ -120,26 +141,6 @@ public class ImportTest extends TestCase {
                             "  {\"language\": \"en\"},\n" +
                             "  {\"time_zone\": \"EST\"}\n" +
                             "]"},
-            {"*I=a:b:c\n" +
-                    "var=%var",
-                    "{\n" +
-                            " \"var\": \"abc\"\n" +
-                            "}"},
-            {"*I=1:2:3\n" +
-                    "the_number=%number",
-                    "{\n" +
-                            " \"the_number\": 3\n" +
-                            "}"},
-            {"*I=1:2:3:1\n" +
-                    "the_number=%number",
-            "{\n" +
-                    " \"the_number\": 1\n" +
-                    "}"},
-            {"*I[1;2;3;1]\n" +
-                    "the_number=%number",
-            "{\n" +
-                    " \"the_number\": 1\n" +
-                    "}"},
             {"_T=demo\n*I=`%T`_config", ""},
             {"*I=src/test/test_import_dir/test_import.txt\n" +
                     "*class(\n" +
