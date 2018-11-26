@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.modl.modlObject.ModlObject;
+import uk.modl.modlObject.ModlValue;
 import uk.modl.parser.RawModlObject;
 
 public class JsonPrinter {
@@ -35,6 +36,20 @@ public class JsonPrinter {
 
     public static String printModl(ModlObject modl) throws JsonProcessingException {
         return printModl(modl, true);
+    }
+
+    public static String printModl(ModlValue modlValue) throws JsonProcessingException {
+        return printModl(modlValue, true);
+    }
+
+    private static String printModl(ModlValue modlValue, boolean pretty) throws JsonProcessingException {
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+
+        if (pretty) {
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(modlValue);
+        }
+
+        return mapper.writeValueAsString(modlValue);
     }
 
     public static String printModl(RawModlObject modl, boolean pretty) throws JsonProcessingException {

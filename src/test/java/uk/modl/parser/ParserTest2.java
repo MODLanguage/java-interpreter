@@ -1053,5 +1053,16 @@ public class ParserTest2 extends TestCase {
 
         }
 
+        @Test
+        public void testPrintingModlValue() throws Exception {
+                ModlObject object = Interpreter.interpret("n=(a=1\nb=2)");
+                String output = JsonPrinter.printModl(object.get("n"));
+                System.out.println(output);
+                assertEquals("{\n" +
+                        "  \"a\" : 1,\n" +
+                        "  \"b\" : 2\n" +
+                        "}", output);
+        }
+
         // TODO Run some test inputs which should generate errors (e.g. re-defining uppercase OBJECTNAME)
 }

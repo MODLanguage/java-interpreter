@@ -1,11 +1,16 @@
 package uk.modl.modlObject;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import uk.modl.parser.printers.ModlObjectJsonSerializer;
+import uk.modl.parser.printers.ModlValueJsonSerializer;
+
 import java.util.LinkedList;
 import java.util.List;
 
 /**
  * Created by alex on 05/11/2018.
  */
+@JsonSerialize(using = ModlValueJsonSerializer.class)
 public interface ModlValue {
     default ModlValue get(String name) { throw new UnsupportedOperationException(); }
 

@@ -34,7 +34,7 @@ public class ParserTest extends TestCase {
                     "    \"t\" : [ \"Customer Service\", 44123 ]\n" +
                     "  } ]\n" +
                     "}" },
-            { "test(one=1;two=2;three=3)", "{\n" +
+                { "test(one=1;two=2;three=3)", "{\n" +
                     " \"test\" : {" +
                     "  \"one\": 1,\n" +
                     "  \"two\": 2,\n" +
