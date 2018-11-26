@@ -33,33 +33,33 @@ public class ParserTest2 extends TestCase {
         final static List<Object[]> expected =  Arrays.asList(new Object[][]{
                 {"_person(  \n" +
                         "  name(\n" +
-                        "    first=Elliott\n" +
-                        "    last=Brown\n" +
+                        "    first=John\n" +
+                        "    last=Smith\n" +
                         "  )\n" +
                         ")\n" +
                         "say=%person[name[first]]",
                 "{\n" +
-                        "    \"say\": \"Elliott\"\n" +
+                        "    \"say\": \"John\"\n" +
                         "}"},
 //                {"_person(  \n" +
 //                        "  name(\n" +
-//                        "    first=Elliott\n" +
-//                        "    last=Brown\n" +
+//                        "    first=John\n" +
+//                        "    last=Smith\n" +
 //                        "  )\n" +
 //                        ")\n" +
 //                        "say=Hi %person[name[first]]",
 //                "{\n" +
-//                        "    \"say\": \"Hi Elliott\"\n" +
+//                        "    \"say\": \"Hi John\"\n" +
 //                        "}"},
 //                {"_person(  \n" +
 //                        "  name(\n" +
-//                        "    first=Elliott\n" +
-//                        "    last=Brown\n" +
+//                        "    first=John\n" +
+//                        "    last=Smith\n" +
 //                        "  )\n" +
 //                        ")\n" +
 //                        "say=\"Hi, my name is %person[name[first]] %person[name[last]]\"",
 //                "{\n" +
-//                        "  \"say\" : \"Hi, my name is Elliott Brown\"\n" +
+//                        "  \"say\" : \"Hi, my name is John Smith\"\n" +
 //                        "}"},
                 {"_C=gb\n" +
                         "_COUNTRIES(\n" +
@@ -73,11 +73,11 @@ public class ParserTest2 extends TestCase {
                         "}"},
                 {"_person(  \n" +
                         "  name(\n" +
-                        "    first=\"Elliott\"\n" +
+                        "    first=\"John\"\n" +
                         "  )\n" +
                         ")\n" +
                         "a=%person[name[first]]",
-                        "{\"a\":\"Elliott\"}"},
+                        "{\"a\":\"John\"}"},
                 {"?=[a;b;c;d]:[1;2;3;4;5]\n" +
                         "test=%1[0]",
                         "{\n" +
@@ -569,10 +569,10 @@ public class ParserTest2 extends TestCase {
                         "  *superclass=map\n" +
                         ")\n" +
                         "\n" +
-                        "p(name=Elliott Brown;dob=16/11/1983)","{\n" +
+                        "p(name=John Smith;dob=01/01/2000)","{\n" +
                         "    \"person\": {\n" +
-                        "        \"name\": \"Elliott Brown\",\n" +
-                        "        \"dob\": \"16/11/1983\"\n" +
+                        "        \"name\": \"John Smith\",\n" +
+                        "        \"dob\": \"01/01/2000\"\n" +
                         "    }\n" +
                         "}"},
                 {"alex=1.2345", "{\"alex\":1.2345}"},
@@ -968,10 +968,10 @@ public class ParserTest2 extends TestCase {
                         "  *name=person\n" +
                         ")\n" +
                         "\n" +
-                        "p(name=Elliott Brown;dob=16/11/1983)","{\n" +
+                        "p(name=John Smith;dob=01/01/2001)","{\n" +
                         "    \"person\": {\n" +
-                        "        \"name\": \"Elliott Brown\",\n" +
-                        "        \"dob\": \"16/11/1983\"\n" +
+                        "        \"name\": \"John Smith\",\n" +
+                        "        \"dob\": \"01/01/2001\"\n" +
                         "    }\n" +
                         "}"},
                 {"*class(\n" +
@@ -1008,7 +1008,7 @@ public class ParserTest2 extends TestCase {
                         "  }\n" +
                         "}"},
                 {/* From Trello variable methods card */
-                                "  _testing = quick-test of Elliott's variable_methods\n" +
+                                "  _testing = quick-test of John's variable_methods\n" +
                                 "upcase_example = %testing.u\n" +
                                 "downcase_example = %testing.d\n" +
                                 "initcap_example = %testing.i\n" +
@@ -1016,19 +1016,19 @@ public class ParserTest2 extends TestCase {
                                 "url_encode_example = %testing.ue",
                         "[\n" +
                                 "  {\n" +
-                                "    \"upcase_example\" : \"QUICK-TEST OF ELLIOTT'S VARIABLE_METHODS\"\n" +
+                                "    \"upcase_example\" : \"QUICK-TEST OF JOHN'S VARIABLE_METHODS\"\n" +
                                 "  },\n" +
                                 "  {\n" +
-                                "    \"downcase_example\" : \"quick-test of elliott's variable_methods\"\n" +
+                                "    \"downcase_example\" : \"quick-test of john's variable_methods\"\n" +
                                 "  },\n" +
                                 "  {\n" +
-                                "    \"initcap_example\" : \"Quick-test Of Elliott's Variable_methods\"\n" +
+                                "    \"initcap_example\" : \"Quick-test Of John's Variable_methods\"\n" +
                                 "  },\n" +
                                 "  {\n" +
-                                "    \"sentence_example\" :  \"Quick-test of Elliott's variable_methods\"\n" +
+                                "    \"sentence_example\" :  \"Quick-test of John's variable_methods\"\n" +
                                 "  },\n" +
                                 "  {\n" +
-                                "    \"url_encode_example\" : \"quick-test+of+Elliott%27s+variable_methods\"\n" +
+                                "    \"url_encode_example\" : \"quick-test+of+John%27s+variable_methods\"\n" +
                                 "  }\n" +
                                 "]"}
         });
