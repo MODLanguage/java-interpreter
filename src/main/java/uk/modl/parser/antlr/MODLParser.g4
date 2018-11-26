@@ -40,8 +40,14 @@ map
 array
   // [ item; item ]
   : LSBRAC NEWLINE*
-        ( array_item (SC? NEWLINE* array_item )* SC? NEWLINE* )?
+        ( ( array_item | nb_array ) (SC? NEWLINE* ( array_item | nb_array ) )* SC? NEWLINE* )?
     RSBRAC
+  ;
+
+nb_array
+  // non-bracketed array
+  // numbers=1:2:3:4:5:6
+  : array_item (NEWLINE* COLON NEWLINE* array_item )+
   ;
 
 pair
@@ -51,22 +57,17 @@ pair
   // For efficiency, it's also possible to assign a map to a pair without an equals sign,
   // since the left bracket separates the key from the value  – this is called a map pair.
   // e.g. person(name=John) – this is equivalent to person=(name=John)
-  //
+  //a
   // It's also possible to do the same with an array pair
   // e.g. numbers[1;2;3] – equivalent to numbers=[1;2;3]
-  //
-  // Finally, it's possible to have multi-value pairs. This allows multiple values to be
-  // passed with one key, the key must have an accompanying class which dictates how these
-  // values are assigned to keys. Multi-value pairs can also be nested (see value_item)
 
-  : ( STRING | QUOTED) EQUALS value_item ( NEWLINE* COLON value_item )*   // key = value        (standard pair)
+  : ( STRING | QUOTED) EQUALS ( value_item )                              // key = value        (standard pair)
   | STRING map                                                            // key( key = value ) (map pair)
   | STRING array                                                          // key[ item; item ]  (array pair)
   ;
 
 value_item
-  // this allows for nested multi-value pair values
-  : ( value | LBRAC value_item ( NEWLINE* COLON value_item )* RBRAC | value_conditional )
+  : ( value | value_conditional )
   ;
 
 // Four conditional rules are set because the grammar validates the conditional return depending on
@@ -117,7 +118,7 @@ array_conditional
     : array_item ( ( SC | NEWLINE* | SC NEWLINE* ) array_item )* SC? NEWLINE*
     ;
     array_item
-      : value | array_conditional
+      : array_value_item | array_conditional
       ;
 
 value_conditional
@@ -155,6 +156,7 @@ condition_group
 value
   : map
   | array
+  | nb_array
   | pair
   | QUOTED
   | NUMBER
@@ -162,4 +164,16 @@ value
   | TRUE
   | FALSE
   | NULL
-  ;
+;
+
+array_value_item
+  : map
+  | pair
+  | array
+  | QUOTED
+  | NUMBER
+  | STRING
+  | TRUE
+  | FALSE
+  | NULL
+;

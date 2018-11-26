@@ -1,4 +1,4 @@
-// Generated from /Users/alex/code/NUM/MODL/java-interpreter/src/main/java/uk/modl/parser/antlr/MODLParser.g4 by ANTLR 4.7
+// Generated from /Users/alex/code/NUM/MODL/interpreter/src/main/java/uk/modl/parser/antlr/MODLParser.g4 by ANTLR 4.7
 package uk.modl.parser.antlr;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -34,6 +34,12 @@ public interface MODLParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitArray(MODLParser.ArrayContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link MODLParser#nb_array}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNb_array(MODLParser.Nb_arrayContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link MODLParser#pair}.
 	 * @param ctx the parse tree
@@ -136,4 +142,10 @@ public interface MODLParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitValue(MODLParser.ValueContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link MODLParser#array_value_item}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArray_value_item(MODLParser.Array_value_itemContext ctx);
 }

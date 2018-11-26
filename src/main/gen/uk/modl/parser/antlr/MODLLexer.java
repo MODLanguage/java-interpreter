@@ -1,4 +1,4 @@
-// Generated from /Users/alex/code/NUM/MODL/java-interpreter/src/main/java/uk/modl/parser/antlr/MODLLexer.g4 by ANTLR 4.7
+// Generated from /Users/alex/code/NUM/MODL/interpreter/src/main/java/uk/modl/parser/antlr/MODLLexer.g4 by ANTLR 4.7
 package uk.modl.parser.antlr;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;

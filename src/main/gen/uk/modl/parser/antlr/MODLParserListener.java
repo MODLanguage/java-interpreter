@@ -1,4 +1,4 @@
-// Generated from /Users/alex/code/NUM/MODL/java-interpreter/src/main/java/uk/modl/parser/antlr/MODLParser.g4 by ANTLR 4.7
+// Generated from /Users/alex/code/NUM/MODL/interpreter/src/main/java/uk/modl/parser/antlr/MODLParser.g4 by ANTLR 4.7
 package uk.modl.parser.antlr;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -47,6 +47,16 @@ public interface MODLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitArray(MODLParser.ArrayContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link MODLParser#nb_array}.
+	 * @param ctx the parse tree
+	 */
+	void enterNb_array(MODLParser.Nb_arrayContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link MODLParser#nb_array}.
+	 * @param ctx the parse tree
+	 */
+	void exitNb_array(MODLParser.Nb_arrayContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link MODLParser#pair}.
 	 * @param ctx the parse tree
@@ -217,4 +227,14 @@ public interface MODLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitValue(MODLParser.ValueContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link MODLParser#array_value_item}.
+	 * @param ctx the parse tree
+	 */
+	void enterArray_value_item(MODLParser.Array_value_itemContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link MODLParser#array_value_item}.
+	 * @param ctx the parse tree
+	 */
+	void exitArray_value_item(MODLParser.Array_value_itemContext ctx);
 }
