@@ -1,2 +1,3 @@
-rootProject.name = 'modl'
+rootProject.name = 'java-interpreter'
 
+enableFeaturePreview('STABLE_PUBLISHING')
