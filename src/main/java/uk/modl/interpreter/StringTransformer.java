@@ -34,17 +34,14 @@ import static java.lang.Character.isLetter;
 public class StringTransformer {
 
     Map<String, ModlValue> valuePairs;
-//    Map<String, Function<String, String>> variableMethods;
     Map<String, ModlValue> variables;
     Map<Integer, ModlValue> numberedVariables;
 
 
     public StringTransformer(Map<String, ModlValue> valuePairs,
-//                             Map<String, Function<String, String>> variableMethods,
                              Map<String, ModlValue> variables,
                              Map<Integer, ModlValue> numberedVariables) {
         this.valuePairs = valuePairs;
-//        this.variableMethods = variableMethods;
         this.variables = variables;
         this.numberedVariables = numberedVariables;
     }
@@ -214,12 +211,6 @@ public class StringTransformer {
 
     private boolean isVariableMethod(String s) {
         return VariableMethods.isVariableMethod(s);
-//        for (Map.Entry<String, Function<String, String>> entry : variableMethods.entrySet()) {
-//            if (s.equals(entry.getKey())) {
-//                return true;
-//            }
-//        }
-//        return false;
     }
 
     private boolean isNumber(String substring) {
@@ -358,16 +349,13 @@ Replace the part originally found (including graves) with the transformed subjec
                     int startParamsIndex = method.indexOf("(");
                     String paramsString = method.substring(startParamsIndex + 1, method.length()-1); //  - 1);
                     String methodString = method.substring(0, startParamsIndex);
-//                    subject = variableMethods.get(methodString).apply(subject + "," + paramsString);
                     subject = VariableMethods.transform(methodString, subject + "," + paramsString);
 
                 } else {
-//                    if (variableMethods.get(method) == null) {
                     if (!VariableMethods.isVariableMethod(method)) {
                         // Nothing to do - leave it alone!
                         subject = subject + "." + method;
                     } else {
-//                        subject = variableMethods.get(method).apply(subject);
                         subject = VariableMethods.transform(method, subject);
                     }
                 }

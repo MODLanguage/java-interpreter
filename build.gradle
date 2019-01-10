@@ -41,13 +41,8 @@ dependencies {
 // https://mvnrepository.com/artifact/org.antlr/antlr4
     compile group: 'org.antlr', name: 'antlr4', version: '4.7'
 
-
-    // https://mvnrepository.com/artifact/org.javassist/javassist
-    compile group: 'org.javassist', name: 'javassist', version: '3.24.1-GA'
-
 // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.2'
-
 
 // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server
     compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.8.v20171121'

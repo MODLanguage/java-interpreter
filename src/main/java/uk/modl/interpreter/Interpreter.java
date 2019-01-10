@@ -34,7 +34,6 @@ import static uk.modl.parser.ModlObjectCreator.MODL_VERSION;
 
 public class Interpreter {
 
-//    Map<String, Function<String, String>> variableMethods = new HashMap<>();
     Map<String, Map<String, Object>> klasses = new LinkedHashMap<>();
     Map<String, ModlValue> variables = new HashMap<>();
     Map<Integer, ModlValue> numberedVariables = new HashMap<>();
@@ -68,10 +67,6 @@ public class Interpreter {
             }
         }
         return modlObject;
-    }
-
-    public Interpreter() {
-//        variableMethods = VariableMethods.getConstantVariableMethods();
     }
 
     private ModlObject interpretPrivate(RawModlObject rawModlObject) throws RequireRestart {
@@ -131,7 +126,6 @@ public class Interpreter {
                     ModlClassLoader.loadClass(rawStructure, klasses);
                     continue;
                 } else if (pair.getKey().string.equals("*method") || pair.getKey().string.equals("*m")) {
-//                    VariableMethodLoader.loadVariableMethod(pair, variableMethods);
                     VariableMethodLoader.loadVariableMethod(pair);
                 } else if (pair.getKey().string.equals("?")) {
                     VariableLoader.loadConfigNumberedVariables(pair.getModlValue(), numberedVariables);
@@ -1295,7 +1289,6 @@ public class Interpreter {
     }
 
     private String transformConditionalArgument(String origKeyString) {
-//        StringTransformer stringTransformer = new StringTransformer(valuePairs, variableMethods, variables, numberedVariables);
         StringTransformer stringTransformer = new StringTransformer(valuePairs, variables, numberedVariables);
         ModlValue objectRef = stringTransformer.runObjectReferencing("%" + origKeyString, "%" + origKeyString, false);
         if (objectRef instanceof ModlObject.String) {
@@ -1363,7 +1356,6 @@ public class Interpreter {
     }
 
     private ModlValue transformString(String s) {
-//        StringTransformer stringTransformer = new StringTransformer(valuePairs, variableMethods, variables, numberedVariables);
         StringTransformer stringTransformer = new StringTransformer(valuePairs, variables, numberedVariables);
         return stringTransformer.transformString(s);
     }

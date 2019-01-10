@@ -19,7 +19,6 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 package uk.modl.interpreter;
 
-//import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import uk.modl.parser.RawModlObject;
 
 import java.util.HashMap;
@@ -32,7 +31,6 @@ import java.util.Map;
  * Created by alex on 19/09/2018.
  */
 public class VariableMethodLoader {
-//    public static void loadVariableMethod(RawModlObject.Structure structure, Map<String, Function<String, String>> variableMethods) {
     public static void loadVariableMethod(RawModlObject.Structure structure) {
         /*
 *method(
@@ -58,67 +56,33 @@ public class VariableMethodLoader {
             methodString = ModlClassLoader.getPairValueFor(structure, "*t");
         }
         methodString = methodString.replace("`", "");
-//        createVariableMethod(methodName, methodString, variableMethods);
         createVariableMethod(methodName, methodString);
     }
 
-//    private static void createVariableMethod(String methodName, String methodString, Map<String, Function<String, String>> variableMethods) {
     private static void createVariableMethod(String methodName, String methodString) {
-        List<Map<String, String>> methodsAndParams = getMethodsAndParams(methodString);
+        final List<Map<String, String>> methodsAndParams = getMethodsAndParams(methodString);
 
-//        // CREATE THE NEW METHOD SOMEHOW
-//        try {
-//            CtClass vms = ClassPool.getDefault().get("uk.modl.interpreter.VariableMethods");
-//
-//            // TODO How do we make this method?!
-//            String newMethodString = "public static String " + methodName + "(String parameter) { return parameter; }";
-//            CtMethod m = CtNewMethod.make(newMethodString, vms);
-//
-//            vms.addMethod(m);
-//            VariableMethods.addMethod(methodName, methodName);
-//
-//            Method m2 = VariableMethods.class.getMethod(methodName, String.class);
-//            String result = (String) m2.invoke("blah", "blah");
-//
-////            byte[] classFile = vms.toBytecode();
-////            HotSwapper hs = new HotSwapper(8000);  // 8000 is a port number.
-////            hs.reload("uk.modl.interpreter.VariableMethods", classFile);
-//        } catch (NotFoundException e) {
-//            throw new RuntimeException("Can't find VariableMethods! : " + e);
-//        } catch (CannotCompileException e) {
-//            throw new RuntimeException("Can't make new method " + methodName + " : " + e);
-////        } catch (IOException e) {
-////            throw new RuntimeException("Can't hot swap VariableMethods : " + e);
-////        } catch (IllegalConnectorArgumentsException e) {
-////            throw new RuntimeException("Can't run HotSwap : " + e);
-//        } catch (NoSuchMethodException e) {
-//            e.printStackTrace();
-//        } catch (IllegalAccessException e) {
-//            e.printStackTrace();
-//        } catch (InvocationTargetException e) {
-//            e.printStackTrace();
-//        }
-//
-////        Function<String, String> function = createNewFunction(variableMethods, methodsAndParams);
-////        variableMethods.put(methodName, function);
+        // We need to create a TaskRunner, and then add that to the VariableMethods.
+        VariableMethods.TaskRunner newTask = new VariableMethods.TaskRunner() {
+            @Override
+            public void run() {
+                // Make the new method!!!
+                String intermediateResult = parameter;
+                for (Map<String, String> methodAndParam : methodsAndParams) {
+                    String method = (String)(methodAndParam.keySet().toArray()[0]);
+                    String params = methodAndParam.get(method);
+                    if (params == null || params.length() == 0) {
+                        intermediateResult = VariableMethods.transform(method, intermediateResult);
+                    } else {
+                        intermediateResult = VariableMethods.transform(method, intermediateResult + "," + params);
+                    }
+                }
+                result = intermediateResult;
+            }
+        };
+        VariableMethods.addMethod(methodName, newTask);
+
     }
-
-//    private static Function<String, String> createNewFunction(Map<String, Function<String, String>> variableMethods, List<Map<String, String>> methodsAndParams) {
-//        // Now go through methodsAndParams and build up the lambda
-//        return parameter -> {
-//            String result = parameter;
-//            for (Map<String, String> methodAndParam : methodsAndParams) {
-//                String method = (String)(methodAndParam.keySet().toArray()[0]);
-//                String params = methodAndParam.get(method);
-//                if (params == null || params.length() == 0) {
-//                    result = variableMethods.get(method).apply(result);
-//                } else {
-//                    result = variableMethods.get(method).apply(result + "," + params);
-//                }
-//            }
-//            return result;
-//        };
-//    }
 
     private static List<Map<String, String>> getMethodsAndParams(String methodString) {
         // Need to go through the methodString, and add a new "apply" in the new function for ech of the vairable methods called!
