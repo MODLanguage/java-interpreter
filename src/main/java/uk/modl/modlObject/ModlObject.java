@@ -20,6 +20,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 package uk.modl.modlObject;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import uk.modl.interpreter.StringEscapeReplacer;
 import uk.modl.parser.printers.ModlObjectJsonSerializer;
 
 import java.util.LinkedList;
@@ -29,12 +30,12 @@ import java.util.List;
  * Created by alex on 13/09/2018.
  */
 @JsonSerialize(using = ModlObjectJsonSerializer.class)
-public class ModlObject implements ModlValue {
+public class ModlObject extends ModlValue {
 
     @Override
     public boolean isModlObject() { return true; };
 
-    public interface Structure extends ModlValue {}
+    public abstract class Structure extends ModlValue {}
 
     protected List<Structure> structures = new LinkedList<>();
 
@@ -80,7 +81,8 @@ public class ModlObject implements ModlValue {
         return structures.get(index);
     }
 
-    public class Map implements Structure, ModlValue {
+//    public class Map implements Structure, ModlValue {
+    public class Map extends Structure {
 
         @Override
         public boolean isMap() { return true; };
@@ -138,7 +140,8 @@ public class ModlObject implements ModlValue {
 
     }
 
-    public class Array implements Structure, ModlValue {
+//    public class Array implements Structure, ModlValue {
+    public class Array extends Structure {
 
         @Override
         public boolean isArray() { return true; };
@@ -174,7 +177,8 @@ public class ModlObject implements ModlValue {
 
     }
 
-    public class Pair implements Structure, ModlValue {
+//    public class Pair implements Structure, ModlValue {
+    public class Pair extends Structure {
 
         @Override
         public boolean isPair() { return true; };
@@ -242,9 +246,12 @@ public class ModlObject implements ModlValue {
             return values;
         }
 
+        public void setModlValue(ModlValue mv) {
+            this.modlValue = mv;
+        }
     }
 
-    public class String implements ModlValue {
+    public class String extends ModlValue {
 
         @Override
         public boolean isString() { return true; };
@@ -252,7 +259,9 @@ public class ModlObject implements ModlValue {
         public final java.lang.String string;
 
         public String(java.lang.String string) {
-            this.string = string;
+
+            this.string = StringEscapeReplacer.replace(string);
+            
         }
 
         public java.lang.String toString() {return string;}
@@ -267,7 +276,7 @@ public class ModlObject implements ModlValue {
 
     }
 
-    public class Number implements ModlValue {
+    public class Number extends ModlValue {
 
         @Override
         public boolean isNumber() { return true; };
@@ -288,7 +297,7 @@ public class ModlObject implements ModlValue {
 
     }
 
-    public class True implements ModlValue {
+    public class True extends ModlValue {
 
         @Override
         public boolean isTrue() { return true; };
@@ -303,7 +312,7 @@ public class ModlObject implements ModlValue {
 
     }
 
-    public class False implements ModlValue {
+    public class False extends ModlValue {
 
         @Override
         public boolean isFalse() { return true; };
@@ -317,7 +326,7 @@ public class ModlObject implements ModlValue {
         }
     }
 
-    public class Null implements ModlValue {
+    public class Null extends ModlValue {
 
         @Override
         public boolean isNull() { return true; };

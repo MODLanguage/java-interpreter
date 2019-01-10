@@ -29,76 +29,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public class ConditionalTest extends TestCase {
-    final static List<Object[]> expected =  Arrays.asList(new Object[][] {
-            {"_number=42\n" +
-                    "{\n" +
-                    "  !{number>41}?\n" +
-                    "    support_number=441270123456\n" +
-                    "  /?\n" +
-                    "    support_number=International Clients:14161234567\n" +
-                    "}",
-                    "{\"support_number\":[\"International Clients\",14161234567]}"},
-            {"_country=gb\n" +
-                    "{\n" +
-                    "  !{country=us|gb|au}?\n" +
-                    "    support_number=441270123456\n" +
-                    "  /?\n" +
-                    "    support_number=International Clients:14161234567\n" +
-                    "}",
-                    "{\"support_number\":[\"International Clients\",14161234567]}"},
-            {"_test=gb\n" +
-                    "result={test=gb|au?No/?Yes}", "{ \"result\": \"No\" }"},
-            {"_input=\"hi apple ios\"\n" +
-                    "{\n" +
-                    "  {input=*apple*ios*}?\n" +
-                    "    support_number=441270123456\n" +
-                    "  /?\n" +
-                    "    support_number=International Clients:14161234567\n" +
-                    "}",
-                    "{\"support_number\":441270123456}"},
-            {"_input=\"An iOS string\"\n" +
-                    "{\n" +
-                    "  {input=*iOS*}?\n" +
-                    "    support_number=441270123456\n" +
-                    "  /?\n" +
-                    "    support_number=International Clients:14161234567\n" +
-                    "}",
-                    "{\"support_number\":441270123456}"},
-            {"_input=\"An iOS string\"\n" +
-                    "{\n" +
-                    "  !{input=iOS*}?\n" +
-                    "    support_number=441270123456\n" +
-                    "  /?\n" +
-                    "    support_number=International Clients:14161234567\n" +
-                    "}",
-                    "{\"support_number\":441270123456}"},
-            {"_number=42\n" +
-                    "{\n" +
-                    "  {number>41}?\n" +
-                    "    support_number=441270123456\n" +
-                    "  /?\n" +
-                    "    support_number=International Clients:14161234567\n" +
-                    "}",
-                    "{\"support_number\":441270123456}"},
-            { "_co=ca\n" +
-                    "{\n" +
-                    "  co = fr?\n" +
-                    "    support_number=14161234567\n" +
-                    "  /?\n" +
-                    "    support_number=441270123456\n" +
-                    "}",
-                    "{\n" +
-                            " \"support_number\" : 441270123456\n" +
-                            "}" },
-            {"_country=gb\n" +
-                    "{\n" +
-                    "  country=us|gb|au?\n" +
-                    "    support_number=441270123456\n" +
-                    "  /?\n" +
-                    "    support_number=International Clients:14161234567\n" +
-                    "}",
-                    "{\"support_number\":441270123456}"},
+public class    ConditionalTest extends TestCase {
+    final public static List<Object[]> expected =  Arrays.asList(new Object[][] {
             { "_co=ca\n" +
                     "_l=fr\n" +
                     "{\n" +
@@ -109,7 +41,86 @@ public class ConditionalTest extends TestCase {
                     "}",
                     "{\n" +
                             " \"support_number\" : 14161234567\n" +
-                            "}" }
+                            "}",
+                    "_co=ca;_l=fr;{{co=ca&l=fr}|co=fr?support_number=14161234567/?support_number=441270123456}",
+            "_co=ca;_l=fr;{co=fr|{co=ca&l=fr}?support_number=14161234567/?support_number=441270123456}"},
+            {"_input=\"hi apple ios\"\n" +
+                    "{\n" +
+                    "  {input=*apple*ios*}?\n" +
+                    "    support_number=441270123456\n" +
+                    "  /?\n" +
+                    "    support_number=International Clients:14161234567\n" +
+                    "}",
+                    "{\"support_number\":441270123456}",
+            "_input=hi apple ios;{{input=*apple*ios*}?support_number=441270123456/?support_number=International Clients:14161234567}"},
+            {"_input=\"An iOS string\"\n" +
+                    "{\n" +
+                    "  {input=*iOS*}?\n" +
+                    "    support_number=441270123456\n" +
+                    "  /?\n" +
+                    "    support_number=International Clients:14161234567\n" +
+                    "}",
+                    "{\"support_number\":441270123456}",
+            "_input=An iOS string;{{input=*iOS*}?support_number=441270123456/?support_number=International Clients:14161234567}"},
+            {"_input=\"An iOS string\"\n" +
+                    "{\n" +
+                    "  !{input=iOS*}?\n" +
+                    "    support_number=441270123456\n" +
+                    "  /?\n" +
+                    "    support_number=International Clients:14161234567\n" +
+                    "}",
+                    "{\"support_number\":441270123456}",
+            "_input=An iOS string;{!{input=iOS*}?support_number=441270123456/?support_number=International Clients:14161234567}"},
+            {"_number=42\n" +
+                    "{\n" +
+                    "  {number>41}?\n" +
+                    "    support_number=441270123456\n" +
+                    "  /?\n" +
+                    "    support_number=International Clients:14161234567\n" +
+                    "}",
+                    "{\"support_number\":441270123456}",
+            "_number=42;{{number>41}?support_number=441270123456/?support_number=International Clients:14161234567}"},
+            { "_co=ca\n" +
+                    "{\n" +
+                    "  co = fr?\n" +
+                    "    support_number=14161234567\n" +
+                    "  /?\n" +
+                    "    support_number=441270123456\n" +
+                    "}",
+                    "{\n" +
+                            " \"support_number\" : 441270123456\n" +
+                            "}" ,
+            "_co=ca;{co=fr?support_number=14161234567/?support_number=441270123456}"},
+            {"_country=gb\n" +
+                    "{\n" +
+                    "  country=us|gb|au?\n" +
+                    "    support_number=441270123456\n" +
+                    "  /?\n" +
+                    "    support_number=International Clients:14161234567\n" +
+                    "}",
+                    "{\"support_number\":441270123456}",
+            "_country=gb;{country=us|gb|au?support_number=441270123456/?support_number=International Clients:14161234567}"},
+            {"_test=gb\n" +
+                    "result={test=gb|au?No/?Yes}", "{ \"result\": \"No\" }",
+            "_test=gb;result={test=gb|au?No/?Yes}"},
+            {"_number=42\n" +
+                    "{\n" +
+                    "  !{number>41}?\n" +
+                    "    support_number=441270123456\n" +
+                    "  /?\n" +
+                    "    support_number=International Clients:14161234567\n" +
+                    "}",
+                    "{\"support_number\":[\"International Clients\",14161234567]}",
+            "_number=42;{!{number>41}?support_number=441270123456/?support_number=International Clients:14161234567}"},
+            {"_country=gb\n" +
+                    "{\n" +
+                    "  !{country=us|gb|au}?\n" +
+                    "    support_number=441270123456\n" +
+                    "  /?\n" +
+                    "    support_number=International Clients:14161234567\n" +
+                    "}",
+                    "{\"support_number\":[\"International Clients\",14161234567]}",
+            "_country=gb;{!{country=us|gb|au}?support_number=441270123456/?support_number=International Clients:14161234567}"}
     });
 
     @Test

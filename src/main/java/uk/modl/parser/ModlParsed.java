@@ -38,11 +38,11 @@ public class ModlParsed extends MODLParserBaseListener {
 
     @Override
     public void enterModl(MODLParser.ModlContext ctx) {
-        ctx.structure().forEach(str -> {
+        for (MODLParser.StructureContext str : ctx.structure()) {
             Structure structure = new Structure();
             str.enterRule(structure);
             structures.add(structure);
-        });
+        };
     }
 
 
@@ -97,11 +97,12 @@ public class ModlParsed extends MODLParserBaseListener {
         public void enterMap(MODLParser.MapContext ctx) {
             if (ctx.map_item() != null) {
                 mapItems = new LinkedList<>();
-                ctx.map_item().forEach(mi -> {
+//                ctx.map_item().forEach(mi -> {
+                for (MODLParser.Map_itemContext mi : ctx.map_item()) {
                     MapItem mapItem = new MapItem();
                     mi.enterRule(mapItem);
                     mapItems.add(mapItem);
-                });
+                };
             }
         }
         public List<MapItem> getMapItems() {
@@ -404,13 +405,13 @@ public class ModlParsed extends MODLParserBaseListener {
                     if (child instanceof MODLParser.Condition_groupContext) {
                         ConditionGroup conditionGroup = new ConditionGroup();
                         ((MODLParser.Condition_groupContext)child).enterRule(conditionGroup);
-                        subConditionList.add(new ImmutablePair<>(conditionGroup, new ImmutablePair<>(lastOperator, shouldNegate)));
+                        subConditionList.add(new ImmutablePair<>((SubCondition)conditionGroup, new ImmutablePair<>(lastOperator, shouldNegate)));
                         lastOperator = null;
                         shouldNegate = false;
                     } else  if (child instanceof MODLParser.ConditionContext) {
                         Condition condition = new Condition();
                         ((MODLParser.ConditionContext)child).enterRule(condition);
-                        subConditionList.add(new ImmutablePair<>(condition, new ImmutablePair<>(lastOperator, shouldNegate)));
+                        subConditionList.add(new ImmutablePair<>((SubCondition)condition, new ImmutablePair<>(lastOperator, shouldNegate)));
                         lastOperator = null;
                         shouldNegate = false;
                     } else {
@@ -482,11 +483,11 @@ public class ModlParsed extends MODLParserBaseListener {
         @Override
         public void enterMap_conditional_return(MODLParser.Map_conditional_returnContext ctx) {
             if (ctx.map_item().size() > 0) {
-                ctx.map_item().forEach(mi -> {
+                for (MODLParser.Map_itemContext mi : ctx.map_item()) {
                     MapItem mapItem = new MapItem();
                     mi.enterRule(mapItem);
                     mapItems.add(mapItem);
-                });
+                };
             }
         }
 
@@ -528,11 +529,12 @@ public class ModlParsed extends MODLParserBaseListener {
         @Override
         public void enterTop_level_conditional_return(MODLParser.Top_level_conditional_returnContext ctx) {
             if (ctx.structure().size() > 0) {
-                ctx.structure().forEach(str -> {
+//                ctx.structure().forEach(str -> {
+                for (MODLParser.StructureContext str : ctx.structure()) {
                     Structure structure = new Structure();
                     str.enterRule(structure);
                     this.structures.add(structure);
-                });
+                };
             }
         }
 
@@ -574,11 +576,12 @@ public class ModlParsed extends MODLParserBaseListener {
         @Override
         public void enterArray_conditional_return(MODLParser.Array_conditional_returnContext ctx) {
             if (ctx.array_item().size() > 0) {
-                ctx.array_item().forEach(str -> {
+//                ctx.array_item().forEach(ai -> {
+                for (MODLParser.Array_itemContext ai : ctx.array_item()) {
                     ArrayItem arrayItem = new ArrayItem();
-                    str.enterRule(arrayItem);
+                    ai.enterRule(arrayItem);
                     this.arrayItems.add(arrayItem);
-                });
+                };
             }
         }
 
@@ -620,11 +623,12 @@ public class ModlParsed extends MODLParserBaseListener {
         @Override
         public void enterValue_conditional_return(MODLParser.Value_conditional_returnContext ctx) {
             if (ctx.value_item().size() > 0) {
-                ctx.value_item().forEach(str -> {
+//                ctx.value_item().forEach(vi -> {
+                for (MODLParser.Value_itemContext vi : ctx.value_item()) {
                     ValueItem valueItem = new ValueItem();
-                    str.enterRule(valueItem);
+                    vi.enterRule(valueItem);
                     this.valueItems.add(valueItem);
-                });
+                };
             }
         }
 
@@ -666,11 +670,11 @@ public class ModlParsed extends MODLParserBaseListener {
         @Override
         public void enterNb_array(MODLParser.Nb_arrayContext ctx) {
             if (ctx.array_item().size() > 0) {
-                ctx.array_item().forEach(ai -> {
+                for (MODLParser.Array_itemContext ai : ctx.array_item()) {
                     ArrayItem arrayItem = new ArrayItem();
                     ai.enterRule(arrayItem);
                     arrayItems.add(arrayItem);
-                });
+                };
             }
         }
 

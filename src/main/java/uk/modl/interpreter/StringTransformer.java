@@ -27,24 +27,24 @@ import java.net.IDN;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+//import java.util.function.Function;
 
 import static java.lang.Character.isLetter;
 
 public class StringTransformer {
 
     Map<String, ModlValue> valuePairs;
-    Map<String, Function<String, String>> variableMethods;
+//    Map<String, Function<String, String>> variableMethods;
     Map<String, ModlValue> variables;
     Map<Integer, ModlValue> numberedVariables;
 
 
     public StringTransformer(Map<String, ModlValue> valuePairs,
-                             Map<String, Function<String, String>> variableMethods,
+//                             Map<String, Function<String, String>> variableMethods,
                              Map<String, ModlValue> variables,
                              Map<Integer, ModlValue> numberedVariables) {
         this.valuePairs = valuePairs;
-        this.variableMethods = variableMethods;
+//        this.variableMethods = variableMethods;
         this.variables = variables;
         this.numberedVariables = numberedVariables;
     }
@@ -60,6 +60,9 @@ public class StringTransformer {
         if (stringToTransform.toLowerCase().equals("false")) {
             return modlObject.new False();
         }
+
+        // 5: Replace the strings as per the txt document attached "string-replacement.txt"
+        stringToTransform = replaceEscapedStrings(stringToTransform);
 
         // Replace any unicode encodings
         stringToTransform = StringEscapeUtils.unescapeJava(stringToTransform);
@@ -104,8 +107,6 @@ public class StringTransformer {
                 return ret;
             }
         }
-        // 5: Replace the strings as per the txt document attached "string-replacement.txt"
-        stringToTransform = replaceEscapedStrings(stringToTransform);
 
         return modlObject.new String(stringToTransform);
     }
@@ -212,12 +213,13 @@ public class StringTransformer {
     }
 
     private boolean isVariableMethod(String s) {
-        for (Map.Entry<String, Function<String, String>> entry : variableMethods.entrySet()) {
-            if (s.equals(entry.getKey())) {
-                return true;
-            }
-        }
-        return false;
+        return VariableMethods.isVariableMethod(s);
+//        for (Map.Entry<String, Function<String, String>> entry : variableMethods.entrySet()) {
+//            if (s.equals(entry.getKey())) {
+//                return true;
+//            }
+//        }
+//        return false;
     }
 
     private boolean isNumber(String substring) {
@@ -284,7 +286,7 @@ public class StringTransformer {
 
 
     private String replacePunycode(String stringToTransform) {
-        // Prefix it with xn— (the letters xn and two dashes) and decode using punycode / IDN library. Replace the full part (including graves) with the decoded value.
+        // Prefix it with xn-- (the letters xn and two dashes) and decode using punycode / IDN library. Replace the full part (including graves) with the decoded value.
         if (stringToTransform == null) {
             return stringToTransform;
         }
@@ -356,14 +358,17 @@ Replace the part originally found (including graves) with the transformed subjec
                     int startParamsIndex = method.indexOf("(");
                     String paramsString = method.substring(startParamsIndex + 1, method.length()-1); //  - 1);
                     String methodString = method.substring(0, startParamsIndex);
-                    subject = variableMethods.get(methodString).apply(subject + "," + paramsString);
+//                    subject = variableMethods.get(methodString).apply(subject + "," + paramsString);
+                    subject = VariableMethods.transform(methodString, subject + "," + paramsString);
 
                 } else {
-                    if (variableMethods.get(method) == null) {
+//                    if (variableMethods.get(method) == null) {
+                    if (!VariableMethods.isVariableMethod(method)) {
                         // Nothing to do - leave it alone!
                         subject = subject + "." + method;
                     } else {
-                        subject = variableMethods.get(method).apply(subject);
+//                        subject = variableMethods.get(method).apply(subject);
+                        subject = VariableMethods.transform(method, subject);
                     }
                 }
             }

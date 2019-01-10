@@ -34,12 +34,16 @@ public class VariableLoader {
     public static void loadConfigNumberedVariables(ModlValue value, Map<Integer, ModlValue> numberedVariables) { // , int paramNum) {
         if (value != null) {
             if (value instanceof ModlObject.Array) {
-                for (ModlValue val : ((ModlObject.Array)value).getValues()) {
+                for (ModlValue val : ((ModlObject.Array) value).getValues()) {
                     addConfigNumberedVariable(val, numberedVariables);
                 }
-            } else {
-                addConfigNumberedVariable(value, numberedVariables);
+                return;
+            } else if (value instanceof ModlObject.Pair) {
+//                if (((ModlObject.Pair)value).getValue() instanceof Array) {
+//                    return;
+//                }
             }
+                addConfigNumberedVariable(value, numberedVariables);
         }
     }
 

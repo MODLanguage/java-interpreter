@@ -61,6 +61,7 @@ public class ModlClassLoader {
         if (name == null) {
             name = id;
         }
+        values.put("*name", name); // TODO ???
         // Remember to see if there is a superclass - if so, then copy all its values in first
         Map<String, Object> superKlass = klasses.get(superclass);
         if (superclass != null) {
@@ -88,7 +89,11 @@ public class ModlClassLoader {
                 continue;
             }
             // Now add the new value
-            values.put(mapItem.getKey().string, mapItem.getModlValue());
+            if (mapItem.getKey().string.equals("*n")) {
+                values.put("*name", mapItem.getModlValue());
+            } else {
+                values.put(mapItem.getKey().string, mapItem.getModlValue());
+            }
         }
     }
 

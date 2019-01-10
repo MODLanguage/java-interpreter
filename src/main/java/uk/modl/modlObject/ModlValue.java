@@ -11,26 +11,26 @@ import java.util.List;
  * Created by alex on 05/11/2018.
  */
 @JsonSerialize(using = ModlValueJsonSerializer.class)
-public interface ModlValue {
-    default ModlValue get(String name) { throw new UnsupportedOperationException(); }
+public abstract class ModlValue {
+    public ModlValue get(String name) { throw new UnsupportedOperationException(); }
 
-    default ModlValue get(Integer index) { throw new UnsupportedOperationException(); }
+    public ModlValue get(Integer index) { throw new UnsupportedOperationException(); }
 
-    default List<String> getKeys() { throw new UnsupportedOperationException(); }
+    public List<String> getKeys() { throw new UnsupportedOperationException(); }
 
-    default Object getValue() { throw new UnsupportedOperationException(); }
+    public Object getValue() { throw new UnsupportedOperationException(); }
 
-    default List<? extends ModlValue> getModlValues() { return new LinkedList<>(); };
+    public List<? extends ModlValue> getModlValues() { return new LinkedList<>(); };
 
-    default boolean isModlObject() { return false; }
-    default boolean isStructure() { return false; }
-    default boolean isArray() { return false; }
-    default boolean isMap() { return false; }
-    default boolean isPair() { return false; }
-    default boolean isTerminal() { return false; }
-    default boolean isString() { return false; }
-    default boolean isNumber() { return false; }
-    default boolean isFalse() { return false; }
-    default boolean isTrue() { return false; }
-    default boolean isNull() { return false; }
+    public boolean isModlObject() { return false; }
+    public boolean isStructure() { return false; }
+    public boolean isArray() { return false; }
+    public boolean isMap() { return false; }
+    public boolean isPair() { return false; }
+    public boolean isTerminal() { return false; }
+    public boolean isString() { return false; }
+    public boolean isNumber() { return false; }
+    public boolean isFalse() { return false; }
+    public boolean isTrue() { return false; }
+    public boolean isNull() { return false; }
 }

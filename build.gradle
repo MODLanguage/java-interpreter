@@ -17,12 +17,12 @@ apply plugin: 'application'
 
 mainClassName = "uk.modl.server.ModlServer"
 
-sourceCompatibility = 1.8
+sourceCompatibility = 1.7
 
 group = "uk.modl"
 applicationName = "java-interpreter"
 archivesBaseName = "java-interpreter"
-version = "0.0.1"
+version = "0.0.2"
 
 repositories {
     mavenCentral()
@@ -41,6 +41,9 @@ dependencies {
 // https://mvnrepository.com/artifact/org.antlr/antlr4
     compile group: 'org.antlr', name: 'antlr4', version: '4.7'
 
+
+    // https://mvnrepository.com/artifact/org.javassist/javassist
+    compile group: 'org.javassist', name: 'javassist', version: '3.24.1-GA'
 
 // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.2'

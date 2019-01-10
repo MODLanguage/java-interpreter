@@ -283,13 +283,6 @@ public class ModlObjectCreator {
         if (pairParsed == null) {
             return null;
         }
-        if (pairParsed.getKey() != null && (pairParsed.getKey().equals("*V") || (pairParsed.getKey().equals("*VERSION")))) {
-            // This is the version number - check it and then ignore it
-            if (!(pairParsed.getValueItem().getValue().getNumber().string.equals(String.valueOf(MODL_VERSION)))) {
-                throw new UnsupportedOperationException("Can't handle MODL version " + pairParsed.getValueItem().getValue().getNumber().string);
-            }
-            return null;
-        }
         RawModlObject.Pair pair = rawModlObject.new Pair();
 
         pair.setKey(rawModlObject.new String(pairParsed.getKey()));
@@ -331,9 +324,9 @@ public class ModlObjectCreator {
             for (ModlValue v : array.getValues()) {
                 RawModlObject.Pair pair = rawModlObject.new Pair();
                 pair.setKey(rawModlObject.new String(pairParsed.getKey()));
-                if (v instanceof RawModlObject.Number) {
-                    v = rawModlObject.new String(((RawModlObject.Number)v).number);
-                }
+//                if (v instanceof RawModlObject.Number) {
+//                    v = rawModlObject.new String(((RawModlObject.Number)v).number);
+//                }
                 pair.addModlValue(v);
                 structures.add(pair);
             }
@@ -343,9 +336,9 @@ public class ModlObjectCreator {
                     pair.setKey(rawModlObject.new String(pairParsed.getKey()));
                     ModlParsed.ValueItem valueParsed = pairParsed.getValueItem();
                     ModlValue v = processModlParsed(rawModlObject, valueParsed, pair);
-                    if (v instanceof RawModlObject.Number) {
-                        v = rawModlObject.new String(((RawModlObject.Number)v).number);
-                    }
+//                    if (v instanceof RawModlObject.Number) {
+//                        v = rawModlObject.new String(((RawModlObject.Number)v).number);
+//                    }
                     pair.addModlValue(v);
                     structures.add(pair);
             }
@@ -493,14 +486,17 @@ End
         return null;
     }
 
+//    private static RawModlObject.Quoted processModlParsed(RawModlObject rawModlObject, ModlParsed.Quoted quoted) {
     private static RawModlObject.String processModlParsed(RawModlObject rawModlObject, ModlParsed.Quoted quoted) {
         if (quoted != null) {
             String s = quoted.string;
             if (s.startsWith("\"") && s.endsWith("\"")) {
                 s = s.substring(1, s.length() - 1);
             }
-            RawModlObject.String string = rawModlObject.new String(s);
-            return string;
+//            RawModlObject.Quoted q = rawModlObject.new Quoted(s);
+//            return q;
+            RawModlObject.String str = rawModlObject.new String(s);
+            return str;
         }
         return null;
     }

@@ -30,6 +30,8 @@ import java.util.*;
 @JsonSerialize(using = ModlObjectJsonSerializer.class)
 public class RawModlObject extends ModlObject {
 
+    // TODO Add manipulation methods to this class
+
     public interface SubCondition {}
 
     public void replaceFirstImport(java.lang.String importValue, RawModlObject newRawModlObject) {
@@ -40,7 +42,12 @@ public class RawModlObject extends ModlObject {
             if (structure instanceof Pair) {
                 Pair pair =((Pair)structure);
                 if ((pair.getKey().string.equals("*I")) || (pair.getKey().string.equals("*IMPORT"))) {
-                    java.lang.String importLocation = ((String)pair.getModlValue()).string;
+                    java.lang.String importLocation = null;
+                    if (pair.getModlValue() instanceof ModlObject.String) {
+                        importLocation = ((String) pair.getModlValue()).string;
+                    } else {
+                        importLocation = ((Number)pair.getModlValue()).number.toString();
+                    }
                     if (importLocation.equals(importValue)) {
                         break;
                     }
@@ -57,6 +64,12 @@ public class RawModlObject extends ModlObject {
             count++;
         }
 
+    }
+
+    public class Quoted extends String {
+        public Quoted(java.lang.String s) {
+            super(s);
+        }
     }
 
 
@@ -109,7 +122,7 @@ public class RawModlObject extends ModlObject {
     }
 
 
-    public class ValueConditional implements ModlValue, Conditional {
+    public class ValueConditional extends ModlValue implements Conditional {
         java.util.Map<ConditionTest, ValueConditionalReturn> conditionals;
 
         public java.util.Map<ConditionTest, ValueConditionalReturn> getConditionals() {
@@ -124,7 +137,7 @@ public class RawModlObject extends ModlObject {
         }
     }
 
-    public class ValueConditionalReturn implements ModlValue {
+    public class ValueConditionalReturn extends ModlValue {
         List<ModlValue> values;
 
         public void addValue(ModlValue value) {
@@ -175,7 +188,7 @@ public class RawModlObject extends ModlObject {
         }
     }
 
-    public class TopLevelConditional implements Structure {
+    public class TopLevelConditional extends Structure {
         java.util.Map<ConditionTest, TopLevelConditionalReturn> conditionals;
 
         public java.util.Map<ConditionTest, TopLevelConditionalReturn> getConditionals() {
@@ -190,7 +203,7 @@ public class RawModlObject extends ModlObject {
         }
     }
 
-    public class TopLevelConditionalReturn implements Structure {
+    public class TopLevelConditionalReturn extends Structure {
         List<Structure> structures;
 
         public void addStructure(Structure structure) {
