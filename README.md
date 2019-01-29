@@ -15,6 +15,6 @@ This library includes a useful HTTP wrapper service which converts MODL to JSON.
     
 Then you can access the server on localhost at:
 
-http://0.0.0.0:8080/?modl=test(message=this%20is%20a%20test%20message
+http://0.0.0.0:8080/?modl=test(message=this%20is%20a%20test%20message)
 
 There's a very basic client in the repo at *client/index.html*
