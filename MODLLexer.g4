@@ -139,5 +139,5 @@ mode CONDITIONAL;
     // String inside graves – any char is allowed inside graves except for the grave itself. It is handled by parser
     : '`' (STRING | INSIDE_GRAVES) '`' -> type(GRAVED)
     ;
-  // The right curly bracket takes us out of conditional mode
+  // The right curly bracket takes us out of conditional mode 
   RCBRAC  : '}' -> popMode;
