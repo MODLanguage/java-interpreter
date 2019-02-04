@@ -1,5 +1,4 @@
-// Generated from /Users/alex/code/NUM/MODL/interpreter/src/main/java/uk/modl/parser/antlr/MODLParser.g4 by ANTLR 4.7
-package uk.modl.parser.antlr;
+// Generated from /Users/alex/code/NUM/MODL/interpreter/grammar/MODLParser.g4 by ANTLR 4.7
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;

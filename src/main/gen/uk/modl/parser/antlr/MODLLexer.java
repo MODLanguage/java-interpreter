@@ -1,5 +1,4 @@
-// Generated from /Users/alex/code/NUM/MODL/interpreter/src/main/java/uk/modl/parser/antlr/MODLLexer.g4 by ANTLR 4.7
-package uk.modl.parser.antlr;
+// Generated from /Users/alex/code/NUM/MODL/interpreter/grammar/MODLLexer.g4 by ANTLR 4.7
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
