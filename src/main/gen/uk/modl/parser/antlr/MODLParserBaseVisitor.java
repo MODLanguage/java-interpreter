@@ -1,6 +1,5 @@
+// Generated from MODLParser.g4 by ANTLR 4.7.2
 package uk.modl.parser.antlr;
-
-// Generated from /Users/alex/code/NUM/MODL/interpreter/grammar/MODLParser.g4 by ANTLR 4.7
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
 /**
@@ -25,152 +24,152 @@ public class MODLParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> implem
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitStructure(MODLParser.StructureContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_structure(MODLParser.Modl_structureContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMap(MODLParser.MapContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_map(MODLParser.Modl_mapContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitArray(MODLParser.ArrayContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_array(MODLParser.Modl_arrayContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitNb_array(MODLParser.Nb_arrayContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_nb_array(MODLParser.Modl_nb_arrayContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPair(MODLParser.PairContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_pair(MODLParser.Modl_pairContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitValue_item(MODLParser.Value_itemContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_value_item(MODLParser.Modl_value_itemContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTop_level_conditional(MODLParser.Top_level_conditionalContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_top_level_conditional(MODLParser.Modl_top_level_conditionalContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTop_level_conditional_return(MODLParser.Top_level_conditional_returnContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_top_level_conditional_return(MODLParser.Modl_top_level_conditional_returnContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMap_conditional(MODLParser.Map_conditionalContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_map_conditional(MODLParser.Modl_map_conditionalContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMap_conditional_return(MODLParser.Map_conditional_returnContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_map_conditional_return(MODLParser.Modl_map_conditional_returnContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMap_item(MODLParser.Map_itemContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_map_item(MODLParser.Modl_map_itemContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitArray_conditional(MODLParser.Array_conditionalContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_array_conditional(MODLParser.Modl_array_conditionalContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitArray_conditional_return(MODLParser.Array_conditional_returnContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_array_conditional_return(MODLParser.Modl_array_conditional_returnContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitArray_item(MODLParser.Array_itemContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_array_item(MODLParser.Modl_array_itemContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitValue_conditional(MODLParser.Value_conditionalContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_value_conditional(MODLParser.Modl_value_conditionalContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitValue_conditional_return(MODLParser.Value_conditional_returnContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_value_conditional_return(MODLParser.Modl_value_conditional_returnContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitCondition_test(MODLParser.Condition_testContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_condition_test(MODLParser.Modl_condition_testContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitOperator(MODLParser.OperatorContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_operator(MODLParser.Modl_operatorContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitCondition(MODLParser.ConditionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_condition(MODLParser.Modl_conditionContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitCondition_group(MODLParser.Condition_groupContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_condition_group(MODLParser.Modl_condition_groupContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitValue(MODLParser.ValueContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_value(MODLParser.Modl_valueContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitArray_value_item(MODLParser.Array_value_itemContext ctx) { return visitChildren(ctx); }
+	@Override public T visitModl_array_value_item(MODLParser.Modl_array_value_itemContext ctx) { return visitChildren(ctx); }
 }

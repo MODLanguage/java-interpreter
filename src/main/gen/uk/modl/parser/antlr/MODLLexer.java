@@ -1,16 +1,17 @@
+// Generated from MODLLexer.g4 by ANTLR 4.7.2
 package uk.modl.parser.antlr;
-
-// Generated from /Users/alex/code/NUM/MODL/interpreter/grammar/MODLLexer.g4 by ANTLR 4.7
+import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.atn.ATN;
-import org.antlr.v4.runtime.atn.ATNDeserializer;
-import org.antlr.v4.runtime.atn.LexerATNSimulator;
-import org.antlr.v4.runtime.atn.PredictionContextCache;
+import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
+import org.antlr.v4.runtime.misc.*;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class MODLLexer extends Lexer {
-	static { RuntimeMetaData.checkVersion("4.7", RuntimeMetaData.VERSION); }
+	static { RuntimeMetaData.checkVersion("4.7.2", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
@@ -30,29 +31,38 @@ public class MODLLexer extends Lexer {
 		"DEFAULT_MODE", "CONDITIONAL"
 	};
 
-	public static final String[] ruleNames = {
-		"WS", "NULL", "TRUE", "FALSE", "NEWLINE", "COLON", "EQUALS", "SC", "LBRAC", 
-		"RBRAC", "LSBRAC", "RSBRAC", "NUMBER", "INT", "EXP", "COMMENT", "INSIDE_COMMENT", 
-		"STRING", "UNRESERVED", "RESERVED_CHARS", "ESCAPED", "UNICODE", "HEX", 
-		"HASH_PREFIX", "QUOTED", "INSIDE_QUOTES", "GRAVED", "INSIDE_GRAVES", "LCBRAC", 
-		"CWS", "CNULL", "CTRUE", "CFALSE", "CNEWLINE", "CCOLON", "CEQUALS", "CSC", 
-		"CLBRAC", "CRBRAC", "CLSBRAC", "CRSBRAC", "CNUMBER", "QMARK", "FSLASH", 
-		"GTHAN", "LTHAN", "ASTERISK", "AMP", "PIPE", "EXCLAM", "CLCBRAC", "CSTRING", 
-		"CUNRESERVED", "CRESERVED_CHARS", "CESCAPED", "CCOMMENT", "CQUOTED", "CGRAVED", 
-		"RCBRAC"
-	};
+	private static String[] makeRuleNames() {
+		return new String[] {
+			"WS", "NULL", "TRUE", "FALSE", "NEWLINE", "COLON", "EQUALS", "SC", "LBRAC", 
+			"RBRAC", "LSBRAC", "RSBRAC", "NUMBER", "INT", "EXP", "COMMENT", "INSIDE_COMMENT", 
+			"STRING", "UNRESERVED", "RESERVED_CHARS", "ESCAPED", "UNICODE", "HEX", 
+			"HASH_PREFIX", "QUOTED", "INSIDE_QUOTES", "GRAVED", "INSIDE_GRAVES", 
+			"LCBRAC", "CWS", "CNULL", "CTRUE", "CFALSE", "CNEWLINE", "CCOLON", "CEQUALS", 
+			"CSC", "CLBRAC", "CRBRAC", "CLSBRAC", "CRSBRAC", "CNUMBER", "QMARK", 
+			"FSLASH", "GTHAN", "LTHAN", "ASTERISK", "AMP", "PIPE", "EXCLAM", "CLCBRAC", 
+			"CSTRING", "CUNRESERVED", "CRESERVED_CHARS", "CESCAPED", "CCOMMENT", 
+			"CQUOTED", "CGRAVED", "RCBRAC"
+		};
+	}
+	public static final String[] ruleNames = makeRuleNames();
 
-	private static final String[] _LITERAL_NAMES = {
-		null, null, null, null, null, null, null, null, null, null, null, null, 
-		null, null, null, null, null, null, null, "'{'", null, "'?'", "'/'", "'>'", 
-		"'<'", "'*'", "'&'", "'|'", "'!'", null, "'}'"
-	};
-	private static final String[] _SYMBOLIC_NAMES = {
-		null, "WS", "NULL", "TRUE", "FALSE", "NEWLINE", "COLON", "EQUALS", "SC", 
-		"LBRAC", "RBRAC", "LSBRAC", "RSBRAC", "NUMBER", "COMMENT", "STRING", "HASH_PREFIX", 
-		"QUOTED", "GRAVED", "LCBRAC", "CWS", "QMARK", "FSLASH", "GTHAN", "LTHAN", 
-		"ASTERISK", "AMP", "PIPE", "EXCLAM", "CCOMMENT", "RCBRAC"
-	};
+	private static String[] makeLiteralNames() {
+		return new String[] {
+			null, null, null, null, null, null, null, null, null, null, null, null, 
+			null, null, null, null, null, null, null, "'{'", null, "'?'", "'/'", 
+			"'>'", "'<'", "'*'", "'&'", "'|'", "'!'", null, "'}'"
+		};
+	}
+	private static final String[] _LITERAL_NAMES = makeLiteralNames();
+	private static String[] makeSymbolicNames() {
+		return new String[] {
+			null, "WS", "NULL", "TRUE", "FALSE", "NEWLINE", "COLON", "EQUALS", "SC", 
+			"LBRAC", "RBRAC", "LSBRAC", "RSBRAC", "NUMBER", "COMMENT", "STRING", 
+			"HASH_PREFIX", "QUOTED", "GRAVED", "LCBRAC", "CWS", "QMARK", "FSLASH", 
+			"GTHAN", "LTHAN", "ASTERISK", "AMP", "PIPE", "EXCLAM", "CCOMMENT", "RCBRAC"
+		};
+	}
+	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
 	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
 	/**
