@@ -42,7 +42,7 @@ public class ArraysTest {
             "o=1:2::4:5", "{\n" + "  \"o\" : [ 1, 2,, 4, 5 ]\n" + "}"
         }, {
             // Missing elements at the end (should fail, and does)
-            "o=1:2::4:5::", "{\n" + "  \"o\" : [ 1, 2,, 4, 5 ]\n" + "}"
+            "o=1:2::4:5::", "{\n" + " ParseCancellationException\n" + "}"
         }, {
             // Normal array
             "o=[1;2;3;4;5]", "{\n" + "  \"o\" : [ 1, 2, 3, 4, 5 ]\n" + "}"
@@ -51,7 +51,7 @@ public class ArraysTest {
             "o=[1;2;;4;5]", "{\n" + "  \"o\" : [ 1, 2,, 4, 5 ]\n" + "}"
         }, {
             // Missing elements at the end (should fail, and does)
-            "o=[1;2;;4;5;;]", "{\n" + "  \"o\" : [ 1, 2,, 4, 5 ]\n" + "}"
+            "o=[1;2;;4;5;;]", "{\n" + "  ParseCancellationException\n" + "}"
         }, {
             // Normal array with newlines
             "o=[1\n2\n3\n4\n5]", "{\n" + "  \"o\" : [ 1, 2, 3, 4, 5 ]\n" + "}"
@@ -61,6 +61,12 @@ public class ArraysTest {
         }, {
             // Missing separator - no semicolon or newline
             "o=[1 2 3 4 5]", "{\n" + "  \"o\" : [ 1, 2, 3, 4, 5 ]\n" + "}"
+        }, {
+            // Finish on a semicolon
+            "o=[1;2;3;4;5;]", "{\n" + "  ParseCancellationException\n" + "}"
+        }, {
+            // Finish on a colon
+            "o=1:2:3:4:5:", "{\n" + "  ParseCancellationException\n" + "}"
         }
     };
 
@@ -68,7 +74,7 @@ public class ArraysTest {
      * @throws IOException on test failure
      */
     @Test
-    public void test_0() throws IOException {
+    public void test_00() throws IOException {
         singleCase(expected[0]);
     }
 
@@ -76,7 +82,7 @@ public class ArraysTest {
      * @throws IOException on test failure
      */
     @Test
-    public void test_1() throws IOException {
+    public void test_01() throws IOException {
         singleCase(expected[1]);
     }
 
@@ -84,12 +90,12 @@ public class ArraysTest {
      * @throws IOException on test failure
      */
     @Test
-    public void test_2() throws IOException {
+    public void test_02() throws IOException {
         try {
             singleCase(expected[2]);
             Assert.fail("Expected and exception");
         } catch (ParseCancellationException e) {
-            // Expected
+            System.out.println("Success: ParseCancellationException received");
         }
     }
 
@@ -97,7 +103,7 @@ public class ArraysTest {
      * @throws IOException on test failure
      */
     @Test
-    public void test_3() throws IOException {
+    public void test_03() throws IOException {
         singleCase(expected[3]);
     }
 
@@ -105,7 +111,7 @@ public class ArraysTest {
      * @throws IOException on test failure
      */
     @Test
-    public void test_4() throws IOException {
+    public void test_04() throws IOException {
         singleCase(expected[4]);
     }
 
@@ -113,12 +119,12 @@ public class ArraysTest {
      * @throws IOException on test failure
      */
     @Test
-    public void test_5() throws IOException {
+    public void test_05() throws IOException {
         try {
             singleCase(expected[5]);
             Assert.fail("Expected and exception");
         } catch (ParseCancellationException e) {
-            // Expected
+            System.out.println("Success: ParseCancellationException received");
         }
     }
 
@@ -126,7 +132,7 @@ public class ArraysTest {
      * @throws IOException on test failure
      */
     @Test
-    public void test_6() throws IOException {
+    public void test_06() throws IOException {
         singleCase(expected[6]);
     }
 
@@ -134,7 +140,7 @@ public class ArraysTest {
      * @throws IOException on test failure
      */
     @Test
-    public void test_7() throws IOException {
+    public void test_07() throws IOException {
         singleCase(expected[7]);
     }
 
@@ -142,8 +148,34 @@ public class ArraysTest {
      * @throws IOException on test failure
      */
     @Test
-    public void test_8() throws IOException {
+    public void test_08() throws IOException {
         singleCase(expected[8]);
+    }
+
+    /**
+     * @throws IOException on test failure
+     */
+    @Test
+    public void test_09() throws IOException {
+        try {
+            singleCase(expected[9]);
+            Assert.fail("Expected and exception");
+        } catch (ParseCancellationException e) {
+            System.out.println("Success: ParseCancellationException received");
+        }
+    }
+
+    /**
+     * @throws IOException on test failure
+     */
+    @Test
+    public void test_10() throws IOException {
+        try {
+            singleCase(expected[10]);
+            Assert.fail("Expected and exception");
+        } catch (ParseCancellationException e) {
+            System.out.println("Success: ParseCancellationException received as expected");
+        }
     }
 
     /**
