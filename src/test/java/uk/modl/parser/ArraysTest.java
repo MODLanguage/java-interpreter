@@ -33,41 +33,40 @@ import java.io.IOException;
  * This way the early failures don't mask later ones.
  */
 public class ArraysTest {
-    private final static String[][] expected = {
-        {
+    private final static String[][] expected = {{
             // Normal NB array
             "o=1:2:3:4:5", "{\n" + "  \"o\" : [ 1, 2, 3, 4, 5 ]\n" + "}"
-        }, {
+    }, {
             // Missing elements
-            "o=1:2::4:5", "{\n" + "  \"o\" : [ 1, 2,, 4, 5 ]\n" + "}"
-        }, {
+            "o=1:2::4:5", "{\n" + "  \"o\" : [ 1, 2, null, 4, 5 ]\n" + "}"
+    }, {
             // Missing elements at the end (should fail, and does)
             "o=1:2::4:5::", "{\n" + " ParseCancellationException\n" + "}"
-        }, {
+    }, {
             // Normal array
             "o=[1;2;3;4;5]", "{\n" + "  \"o\" : [ 1, 2, 3, 4, 5 ]\n" + "}"
-        }, {
+    }, {
             // Missing elelemts
-            "o=[1;2;;4;5]", "{\n" + "  \"o\" : [ 1, 2,, 4, 5 ]\n" + "}"
-        }, {
+            "o=[1;2;;4;5]", "{\n" + "  \"o\" : [ 1, 2, null, 4, 5 ]\n" + "}"
+    }, {
             // Missing elements at the end (should fail, and does)
             "o=[1;2;;4;5;;]", "{\n" + "  ParseCancellationException\n" + "}"
-        }, {
+    }, {
             // Normal array with newlines
             "o=[1\n2\n3\n4\n5]", "{\n" + "  \"o\" : [ 1, 2, 3, 4, 5 ]\n" + "}"
-        }, {
+    }, {
             // Multiple newlines
             "o=[1\n2\n\n3\n4\n5]", "{\n" + "  \"o\" : [ 1, 2, 3, 4, 5 ]\n" + "}"
-        }, {
+    }, {
             // Missing separator - no semicolon or newline
-            "o=[1 2 3 4 5]", "{\n" + "  \"o\" : [ 1, 2, 3, 4, 5 ]\n" + "}"
-        }, {
+            "o=[1 2 3 4 5]", "{\n  \"o\" : [ \"1 2 3 4 5\" ]\n" + "}"
+    }, {
             // Finish on a semicolon
             "o=[1;2;3;4;5;]", "{\n" + "  ParseCancellationException\n" + "}"
-        }, {
+    }, {
             // Finish on a colon
             "o=1:2:3:4:5:", "{\n" + "  ParseCancellationException\n" + "}"
-        }
+    }
     };
 
     /**
@@ -193,12 +192,12 @@ public class ArraysTest {
         String output = JsonPrinter.printModl(rawModlObject);
         System.out.println("Output : " + output);
         Assert.assertEquals(expected
-                .replace(" ", "")
-                .replace("\n", "")
-                .replace("\r", ""),
-            output
-                .replace(" ", "")
-                .replace("\n", "")
-                .replace("\r", ""));
+                        .replace(" ", "")
+                        .replace("\n", "")
+                        .replace("\r", ""),
+                output
+                        .replace(" ", "")
+                        .replace("\n", "")
+                        .replace("\r", ""));
     }
 }

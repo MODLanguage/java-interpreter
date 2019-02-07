@@ -19,8 +19,11 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 package uk.modl.parser;
 
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import uk.modl.parser.antlr.MODLLexer;
 import uk.modl.parser.antlr.MODLParser;
 import uk.modl.parser.antlr.MODLParserBaseListener;
 
@@ -47,7 +50,6 @@ public class ModlParsed extends MODLParserBaseListener {
             str.enterRule(structure);
             structures.add(structure);
         }
-        ;
     }
 
 
@@ -66,23 +68,23 @@ public class ModlParsed extends MODLParserBaseListener {
             if (ctx.modl_pair() != null) {
                 pair = new Pair();
                 ctx
-                    .modl_pair()
-                    .enterRule(pair);
+                        .modl_pair()
+                        .enterRule(pair);
             } else if (ctx.modl_top_level_conditional() != null) {
                 topLevelConditional = new TopLevelConditional();
                 ctx
-                    .modl_top_level_conditional()
-                    .enterRule(topLevelConditional);
+                        .modl_top_level_conditional()
+                        .enterRule(topLevelConditional);
             } else if (ctx.modl_map() != null) {
                 map = new Map();
                 ctx
-                    .modl_map()
-                    .enterRule(map);
+                        .modl_map()
+                        .enterRule(map);
             } else if (ctx.modl_array() != null) {
                 array = new Array();
                 ctx
-                    .modl_array()
-                    .enterRule(array);
+                        .modl_array()
+                        .enterRule(array);
             }
         }
 
@@ -134,14 +136,14 @@ public class ModlParsed extends MODLParserBaseListener {
             if (ctx.modl_pair() != null) {
                 pair = new Pair();
                 ctx
-                    .modl_pair()
-                    .enterRule(pair);
+                        .modl_pair()
+                        .enterRule(pair);
             }
             if (ctx.modl_map_conditional() != null) {
                 mapConditional = new MapConditional();
                 ctx
-                    .modl_map_conditional()
-                    .enterRule(mapConditional);
+                        .modl_map_conditional()
+                        .enterRule(mapConditional);
             }
         }
 
@@ -171,39 +173,39 @@ public class ModlParsed extends MODLParserBaseListener {
         public void enterModl_value(MODLParser.Modl_valueContext ctx) {
             if (ctx.NUMBER() != null) {
                 number =
-                    new Number(ctx
-                        .NUMBER()
-                        .getText());
+                        new Number(ctx
+                                .NUMBER()
+                                .getText());
             } else if (ctx.modl_map() != null) {
                 map = new Map();
                 ctx
-                    .modl_map()
-                    .enterRule(map);
+                        .modl_map()
+                        .enterRule(map);
             } else if (ctx.modl_nb_array() != null) {
                 nbArray = new NbArray();
                 ctx
-                    .modl_nb_array()
-                    .enterRule(nbArray);
+                        .modl_nb_array()
+                        .enterRule(nbArray);
             } else if (ctx.modl_array() != null) {
                 array = new Array();
                 ctx
-                    .modl_array()
-                    .enterRule(array);
+                        .modl_array()
+                        .enterRule(array);
             } else if (ctx.modl_pair() != null) {
                 pair = new Pair();
                 ctx
-                    .modl_pair()
-                    .enterRule(pair);
+                        .modl_pair()
+                        .enterRule(pair);
             } else if (ctx.STRING() != null) {
                 string =
-                    new String(ctx
-                        .STRING()
-                        .getText());
+                        new String(ctx
+                                .STRING()
+                                .getText());
             } else if (ctx.QUOTED() != null) {
                 quoted =
-                    new Quoted(ctx
-                        .QUOTED()
-                        .getText());
+                        new Quoted(ctx
+                                .QUOTED()
+                                .getText());
             } else if (ctx.NULL() != null) {
                 nullVal = new Null();
             } else if (ctx.TRUE() != null) {
@@ -272,34 +274,34 @@ public class ModlParsed extends MODLParserBaseListener {
         public void enterModl_array_value_item(MODLParser.Modl_array_value_itemContext ctx) {
             if (ctx.NUMBER() != null) {
                 number =
-                    new Number(ctx
-                        .NUMBER()
-                        .getText());
+                        new Number(ctx
+                                .NUMBER()
+                                .getText());
             } else if (ctx.modl_map() != null) {
                 map = new Map();
                 ctx
-                    .modl_map()
-                    .enterRule(map);
+                        .modl_map()
+                        .enterRule(map);
             } else if (ctx.modl_array() != null) {
                 array = new Array();
                 ctx
-                    .modl_array()
-                    .enterRule(array);
+                        .modl_array()
+                        .enterRule(array);
             } else if (ctx.modl_pair() != null) {
                 pair = new Pair();
                 ctx
-                    .modl_pair()
-                    .enterRule(pair);
+                        .modl_pair()
+                        .enterRule(pair);
             } else if (ctx.STRING() != null) {
                 string =
-                    new String(ctx
-                        .STRING()
-                        .getText());
+                        new String(ctx
+                                .STRING()
+                                .getText());
             } else if (ctx.QUOTED() != null) {
                 quoted =
-                    new Quoted(ctx
-                        .QUOTED()
-                        .getText());
+                        new Quoted(ctx
+                                .QUOTED()
+                                .getText());
             } else if (ctx.NULL() != null) {
                 nullVal = new Null();
             } else if (ctx.TRUE() != null) {
@@ -357,14 +359,14 @@ public class ModlParsed extends MODLParserBaseListener {
             if (ctx.modl_value_conditional() != null) {
                 valueConditional = new ValueConditional();
                 ctx
-                    .modl_value_conditional()
-                    .enterRule(valueConditional);
+                        .modl_value_conditional()
+                        .enterRule(valueConditional);
             }
             if (ctx.modl_value() != null) {
                 value = new Value();
                 ctx
-                    .modl_value()
-                    .enterRule(value);
+                        .modl_value()
+                        .enterRule(value);
             }
         }
 
@@ -389,32 +391,32 @@ public class ModlParsed extends MODLParserBaseListener {
         public void enterModl_pair(MODLParser.Modl_pairContext ctx) {
             if (ctx.STRING() != null) {
                 key =
-                    ctx
-                        .STRING()
-                        .toString();
+                        ctx
+                                .STRING()
+                                .toString();
             }
             if (ctx.QUOTED() != null) {
                 key =
-                    ctx
-                        .QUOTED()
-                        .toString();
+                        ctx
+                                .QUOTED()
+                                .toString();
                 key = key.substring(1, key.length() - 1);
             }
             if (ctx.modl_array() != null) {
                 array = new Array();
                 ctx
-                    .modl_array()
-                    .enterRule(array);
+                        .modl_array()
+                        .enterRule(array);
             } else if (ctx.modl_map() != null) {
                 map = new Map();
                 ctx
-                    .modl_map()
-                    .enterRule(map);
+                        .modl_map()
+                        .enterRule(map);
             } else if (ctx.modl_value_item() != null) {
                 valueItem = new ValueItem();
                 ctx
-                    .modl_value_item()
-                    .enterRule(valueItem);
+                        .modl_value_item()
+                        .enterRule(valueItem);
             }
         }
 
@@ -462,8 +464,8 @@ public class ModlParsed extends MODLParserBaseListener {
 
     public class ConditionTest extends MODLParserBaseListener implements ValueObject {
         java.util.List<org.apache.commons.lang3.tuple.ImmutablePair<SubCondition, ImmutablePair<java.lang.String, Boolean>>>
-            subConditionList =
-            new LinkedList<>();
+                subConditionList =
+                new LinkedList<>();
 
         @Override
         public void enterModl_condition_test(MODLParser.Modl_condition_testContext ctx) {
@@ -475,20 +477,20 @@ public class ModlParsed extends MODLParserBaseListener {
                         ConditionGroup conditionGroup = new ConditionGroup();
                         ((MODLParser.Modl_condition_groupContext) child).enterRule(conditionGroup);
                         subConditionList.add(new ImmutablePair<>((SubCondition) conditionGroup,
-                            new ImmutablePair<>(lastOperator, shouldNegate)));
+                                new ImmutablePair<>(lastOperator, shouldNegate)));
                         lastOperator = null;
                         shouldNegate = false;
                     } else if (child instanceof MODLParser.Modl_conditionContext) {
                         Condition condition = new Condition();
                         ((MODLParser.Modl_conditionContext) child).enterRule(condition);
                         subConditionList.add(new ImmutablePair<>((SubCondition) condition,
-                            new ImmutablePair<>(lastOperator, shouldNegate)));
+                                new ImmutablePair<>(lastOperator, shouldNegate)));
                         lastOperator = null;
                         shouldNegate = false;
                     } else {
                         if (child
-                            .getText()
-                            .equals("!")) {
+                                .getText()
+                                .equals("!")) {
                             shouldNegate = true;
                         } else {
                             lastOperator = child.getText();
@@ -506,8 +508,8 @@ public class ModlParsed extends MODLParserBaseListener {
 
     public class ConditionGroup extends MODLParserBaseListener implements SubCondition {
         java.util.List<org.apache.commons.lang3.tuple.ImmutablePair<ConditionTest, java.lang.String>>
-            conditionsTestList =
-            new LinkedList<>();
+                conditionsTestList =
+                new LinkedList<>();
 
         @Override
         public void enterModl_condition_group(MODLParser.Modl_condition_groupContext ctx) {
@@ -518,14 +520,14 @@ public class ModlParsed extends MODLParserBaseListener {
                         ConditionTest conditionTest = new ConditionTest();
                         ((MODLParser.Modl_condition_testContext) child).enterRule(conditionTest);
                         conditionsTestList.add(new org.apache.commons.lang3.tuple.ImmutablePair<>(conditionTest,
-                            lastOperator));
+                                lastOperator));
                         lastOperator = null;
                     } else {
                         if (child
-                            .getText()
-                            .equals("{") || child
-                            .getText()
-                            .equals("}")) {
+                                .getText()
+                                .equals("{") || child
+                                .getText()
+                                .equals("}")) {
                         } else {
                             lastOperator = child.getText();
                         }
@@ -546,15 +548,15 @@ public class ModlParsed extends MODLParserBaseListener {
         public void enterModl_condition(MODLParser.Modl_conditionContext ctx) {
             if (ctx.STRING() != null) {
                 key =
-                    ctx
-                        .STRING()
-                        .getText();
+                        ctx
+                                .STRING()
+                                .getText();
             }
             if (ctx.modl_operator() != null) {
                 operator =
-                    ctx
-                        .modl_operator()
-                        .getText();
+                        ctx
+                                .modl_operator()
+                                .getText();
             }
             for (MODLParser.Modl_valueContext v : ctx.modl_value()) {
                 Value value = new Value();
@@ -571,8 +573,8 @@ public class ModlParsed extends MODLParserBaseListener {
         @Override
         public void enterModl_map_conditional_return(MODLParser.Modl_map_conditional_returnContext ctx) {
             if (ctx
-                .modl_map_item()
-                .size() > 0) {
+                    .modl_map_item()
+                    .size() > 0) {
                 for (MODLParser.Modl_map_itemContext mi : ctx.modl_map_item()) {
                     MapItem mapItem = new MapItem();
                     mi.enterRule(mapItem);
@@ -595,32 +597,32 @@ public class ModlParsed extends MODLParserBaseListener {
             mapConditionals = new LinkedHashMap<>();
             for (int i = 0;
                  i < ctx
-                     .modl_condition_test()
-                     .size();
+                         .modl_condition_test()
+                         .size();
                  i++) {
                 ConditionTest conditionTest = new ConditionTest();
                 ctx
-                    .modl_condition_test(i)
-                    .enterRule(conditionTest);
+                        .modl_condition_test(i)
+                        .enterRule(conditionTest);
 
                 MapConditionalReturn conditionalReturn = new MapConditionalReturn();
                 ctx
-                    .modl_map_conditional_return(i)
-                    .enterRule(conditionalReturn);
+                        .modl_map_conditional_return(i)
+                        .enterRule(conditionalReturn);
                 mapConditionals.put(conditionTest, conditionalReturn);
             }
             if (ctx
-                .modl_map_conditional_return()
-                .size() > ctx
-                .modl_condition_test()
-                .size()) {
+                    .modl_map_conditional_return()
+                    .size() > ctx
+                    .modl_condition_test()
+                    .size()) {
                 ConditionTest conditionTest = new ConditionTest();
                 MapConditionalReturn conditionalReturn = new MapConditionalReturn();
                 ctx
-                    .modl_map_conditional_return(ctx
-                        .modl_map_conditional_return()
-                        .size() - 1)
-                    .enterRule(conditionalReturn);
+                        .modl_map_conditional_return(ctx
+                                .modl_map_conditional_return()
+                                .size() - 1)
+                        .enterRule(conditionalReturn);
                 mapConditionals.put(conditionTest, conditionalReturn);
             }
         }
@@ -637,8 +639,8 @@ public class ModlParsed extends MODLParserBaseListener {
         @Override
         public void enterModl_top_level_conditional_return(MODLParser.Modl_top_level_conditional_returnContext ctx) {
             if (ctx
-                .modl_structure()
-                .size() > 0) {
+                    .modl_structure()
+                    .size() > 0) {
                 //                ctx.modl_structure().forEach(str -> {
                 for (MODLParser.Modl_structureContext str : ctx.modl_structure()) {
                     Structure structure = new Structure();
@@ -662,32 +664,32 @@ public class ModlParsed extends MODLParserBaseListener {
             topLevelConditionalReturns = new LinkedHashMap<>();
             for (int i = 0;
                  i < ctx
-                     .modl_condition_test()
-                     .size();
+                         .modl_condition_test()
+                         .size();
                  i++) {
                 ConditionTest conditionTest = new ConditionTest();
                 ctx
-                    .modl_condition_test(i)
-                    .enterRule(conditionTest);
+                        .modl_condition_test(i)
+                        .enterRule(conditionTest);
 
                 TopLevelConditionalReturn conditionalReturn = new TopLevelConditionalReturn();
                 ctx
-                    .modl_top_level_conditional_return(i)
-                    .enterRule(conditionalReturn);
+                        .modl_top_level_conditional_return(i)
+                        .enterRule(conditionalReturn);
                 topLevelConditionalReturns.put(conditionTest, conditionalReturn);
             }
             if (ctx
-                .modl_top_level_conditional_return()
-                .size() > ctx
-                .modl_condition_test()
-                .size()) {
+                    .modl_top_level_conditional_return()
+                    .size() > ctx
+                    .modl_condition_test()
+                    .size()) {
                 ConditionTest conditionTest = new ConditionTest();
                 TopLevelConditionalReturn conditionalReturn = new TopLevelConditionalReturn();
                 ctx
-                    .modl_top_level_conditional_return(ctx
-                        .modl_top_level_conditional_return()
-                        .size() - 1)
-                    .enterRule(conditionalReturn);
+                        .modl_top_level_conditional_return(ctx
+                                .modl_top_level_conditional_return()
+                                .size() - 1)
+                        .enterRule(conditionalReturn);
                 topLevelConditionalReturns.put(conditionTest, conditionalReturn);
             }
         }
@@ -704,8 +706,8 @@ public class ModlParsed extends MODLParserBaseListener {
         @Override
         public void enterModl_array_conditional_return(MODLParser.Modl_array_conditional_returnContext ctx) {
             if (ctx
-                .modl_array_item()
-                .size() > 0) {
+                    .modl_array_item()
+                    .size() > 0) {
                 //                ctx.modl_array_item().forEach(ai -> {
                 for (MODLParser.Modl_array_itemContext ai : ctx.modl_array_item()) {
                     ArrayItem arrayItem = new ArrayItem();
@@ -729,32 +731,32 @@ public class ModlParsed extends MODLParserBaseListener {
             arrayConditionalReturns = new LinkedHashMap<>();
             for (int i = 0;
                  i < ctx
-                     .modl_condition_test()
-                     .size();
+                         .modl_condition_test()
+                         .size();
                  i++) {
                 ConditionTest conditionTest = new ConditionTest();
                 ctx
-                    .modl_condition_test(i)
-                    .enterRule(conditionTest);
+                        .modl_condition_test(i)
+                        .enterRule(conditionTest);
 
                 ArrayConditionalReturn conditionalReturn = new ArrayConditionalReturn();
                 ctx
-                    .modl_array_conditional_return(i)
-                    .enterRule(conditionalReturn);
+                        .modl_array_conditional_return(i)
+                        .enterRule(conditionalReturn);
                 arrayConditionalReturns.put(conditionTest, conditionalReturn);
             }
             if (ctx
-                .modl_array_conditional_return()
-                .size() > ctx
-                .modl_condition_test()
-                .size()) {
+                    .modl_array_conditional_return()
+                    .size() > ctx
+                    .modl_condition_test()
+                    .size()) {
                 ConditionTest conditionTest = new ConditionTest();
                 ArrayConditionalReturn conditionalReturn = new ArrayConditionalReturn();
                 ctx
-                    .modl_array_conditional_return(ctx
-                        .modl_array_conditional_return()
-                        .size() - 1)
-                    .enterRule(conditionalReturn);
+                        .modl_array_conditional_return(ctx
+                                .modl_array_conditional_return()
+                                .size() - 1)
+                        .enterRule(conditionalReturn);
                 arrayConditionalReturns.put(conditionTest, conditionalReturn);
             }
         }
@@ -771,8 +773,8 @@ public class ModlParsed extends MODLParserBaseListener {
         @Override
         public void enterModl_value_conditional_return(MODLParser.Modl_value_conditional_returnContext ctx) {
             if (ctx
-                .modl_value_item()
-                .size() > 0) {
+                    .modl_value_item()
+                    .size() > 0) {
                 //                ctx.modl_value_item().forEach(vi -> {
                 for (MODLParser.Modl_value_itemContext vi : ctx.modl_value_item()) {
                     ValueItem valueItem = new ValueItem();
@@ -796,32 +798,32 @@ public class ModlParsed extends MODLParserBaseListener {
             valueConditionalReturns = new LinkedHashMap<>();
             for (int i = 0;
                  i < ctx
-                     .modl_condition_test()
-                     .size();
+                         .modl_condition_test()
+                         .size();
                  i++) {
                 ConditionTest conditionTest = new ConditionTest();
                 ctx
-                    .modl_condition_test(i)
-                    .enterRule(conditionTest);
+                        .modl_condition_test(i)
+                        .enterRule(conditionTest);
 
                 ValueConditionalReturn conditionalReturn = new ValueConditionalReturn();
                 ctx
-                    .modl_value_conditional_return(i)
-                    .enterRule(conditionalReturn);
+                        .modl_value_conditional_return(i)
+                        .enterRule(conditionalReturn);
                 valueConditionalReturns.put(conditionTest, conditionalReturn);
             }
             if (ctx
-                .modl_value_conditional_return()
-                .size() > ctx
-                .modl_condition_test()
-                .size()) {
+                    .modl_value_conditional_return()
+                    .size() > ctx
+                    .modl_condition_test()
+                    .size()) {
                 ConditionTest conditionTest = new ConditionTest();
                 ValueConditionalReturn conditionalReturn = new ValueConditionalReturn();
                 ctx
-                    .modl_value_conditional_return(ctx
-                        .modl_value_conditional_return()
-                        .size() - 1)
-                    .enterRule(conditionalReturn);
+                        .modl_value_conditional_return(ctx
+                                .modl_value_conditional_return()
+                                .size() - 1)
+                        .enterRule(conditionalReturn);
                 valueConditionalReturns.put(conditionTest, conditionalReturn);
             }
         }
@@ -836,21 +838,53 @@ public class ModlParsed extends MODLParserBaseListener {
 
         @Override
         public void enterModl_nb_array(MODLParser.Modl_nb_arrayContext ctx) {
-            if (ctx
-                .modl_array_item()
-                .size() > 0) {
-                for (MODLParser.Modl_array_itemContext ai : ctx.modl_array_item()) {
+            int i = 0;
+            Object previous = null;
+            for (ParseTree pt : ctx.children) {
+                if (pt instanceof MODLParser.Modl_array_itemContext) {
                     ArrayItem arrayItem = new ArrayItem();
-                    ai.enterRule(arrayItem);
-                    arrayItems.add(arrayItem);
+                    ((MODLParser.Modl_array_itemContext) pt).enterRule(arrayItem);
+                    arrayItems.add(i++, arrayItem);
+                } else if (pt instanceof TerminalNode) {
+                    if (previous != null &&
+                            previous instanceof TerminalNode &&
+                            pt instanceof TerminalNode) {
+
+                        // If we get here then we have two terminal nodes in a row, so we need to output something unless
+                        // the terminal symbols are newlines
+                        //
+                        int prevSymbol = ((TerminalNode) previous).getSymbol().getType();
+                        int currentSymbol = ((TerminalNode) pt).getSymbol().getType();
+
+                        if (prevSymbol != MODLLexer.NEWLINE && currentSymbol != MODLLexer.NEWLINE) {
+                            ArrayItem arrayItem = handleEmptyArrayItem();
+
+                            arrayItems.add(i++, arrayItem);
+                        }
+                    }
                 }
-                ;
+                previous = pt;
             }
+
         }
 
         public List<ArrayItem> getArrayItems() {
             return arrayItems;
         }
+    }
+
+    private ArrayItem handleEmptyArrayItem() {
+        // Create something for the blank array item
+        //
+        // The problem is that we might not have any context to tell us what type we need to create
+        // so this currently defaults to the null value
+        //
+        // TODO: Is there a way to know the type to create or is Null always acceptable?
+        ArrayItem arrayItem = new ArrayItem();
+
+        arrayItem.arrayValueItem = new ArrayValueItem();
+        arrayItem.arrayValueItem.nullVal = new Null();
+        return arrayItem;
     }
 
     public interface AbstractArrayItem extends ValueObject {
@@ -867,6 +901,7 @@ public class ModlParsed extends MODLParserBaseListener {
             abstractArrayItems = new LinkedList<>();
 
             int i = 0;
+            Object previous = null;
             for (ParseTree pt : ctx.children) {
                 if (pt instanceof MODLParser.Modl_array_itemContext) {
                     ArrayItem arrayItem = new ArrayItem();
@@ -876,7 +911,36 @@ public class ModlParsed extends MODLParserBaseListener {
                     NbArray nbArray = new NbArray();
                     ((MODLParser.Modl_nb_arrayContext) pt).enterRule(nbArray);
                     abstractArrayItems.add(i++, nbArray);
+                } else if (pt instanceof TerminalNode) {
+                    if (previous != null &&
+                            previous instanceof TerminalNode &&
+                            pt instanceof TerminalNode) {
+
+                        // If we get here then we have two terminal nodes in a row, so we need to output something unless
+                        // the terminal symbols are newlines
+                        //
+                        int prevSymbol = ((TerminalNode) previous).getSymbol().getType();
+                        int currentSymbol = ((TerminalNode) pt).getSymbol().getType();
+
+                        if(prevSymbol == MODLLexer.LSBRAC && currentSymbol == MODLLexer.RSBRAC) {
+                            continue; // This allows empty arrays
+                        }
+
+                        if (prevSymbol != MODLLexer.NEWLINE && currentSymbol != MODLLexer.NEWLINE) {
+
+                            // Create something for the blank array item
+                            //
+                            // The problem is that we might not have any context to tell us what type we need to create
+                            // so this currently defaults to the null
+                            //
+                            // TODO: Is there a way to know the type to create or is Null always acceptable?
+                            ArrayItem arrayItem = handleEmptyArrayItem();
+
+                            abstractArrayItems.add(i++, arrayItem);
+                        }
+                    }
                 }
+                previous = pt;
             }
         }
 
@@ -894,14 +958,14 @@ public class ModlParsed extends MODLParserBaseListener {
             if (ctx.modl_array_conditional() != null) {
                 arrayConditional = new ArrayConditional();
                 ctx
-                    .modl_array_conditional()
-                    .enterRule(arrayConditional);
+                        .modl_array_conditional()
+                        .enterRule(arrayConditional);
             }
             if (ctx.modl_array_value_item() != null) {
                 arrayValueItem = new ArrayValueItem();
                 ctx
-                    .modl_array_value_item()
-                    .enterRule(arrayValueItem);
+                        .modl_array_value_item()
+                        .enterRule(arrayValueItem);
             }
         }
 
