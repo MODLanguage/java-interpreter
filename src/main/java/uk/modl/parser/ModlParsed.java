@@ -19,7 +19,6 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 package uk.modl.parser;
 
-import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -31,6 +30,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ModlParsed extends MODLParserBaseListener {
 
@@ -197,15 +198,17 @@ public class ModlParsed extends MODLParserBaseListener {
                         .modl_pair()
                         .enterRule(pair);
             } else if (ctx.STRING() != null) {
+                java.lang.String textValue = additionalStringProcessing(ctx
+                        .STRING()
+                        .getText());
                 string =
-                        new String(ctx
-                                .STRING()
-                                .getText());
+                        new String(textValue);
             } else if (ctx.QUOTED() != null) {
+                java.lang.String textValue = additionalStringProcessing(ctx
+                        .QUOTED()
+                        .getText());
                 quoted =
-                        new Quoted(ctx
-                                .QUOTED()
-                                .getText());
+                        new Quoted(textValue);
             } else if (ctx.NULL() != null) {
                 nullVal = new Null();
             } else if (ctx.TRUE() != null) {
@@ -258,6 +261,31 @@ public class ModlParsed extends MODLParserBaseListener {
         }
     }
 
+    /**
+     * Regex to find (possibly empty) strings of the form `abcd`
+     *
+     */
+    private static final Pattern gravedPattern = Pattern.compile("^`([^`]*)`$");
+
+    /**
+     * Special handling for STRING contents.
+     *
+     * @param text the input java.lang.String
+     * @return the processed java.lang.String
+     */
+
+    private static java.lang.String additionalStringProcessing(final java.lang.String text) {
+
+        // Special case for a possibly empty graved string ``
+        if (text != null) {
+            final Matcher matcher = gravedPattern.matcher(text);
+            if (matcher.matches()) {
+                return matcher.group(1);
+            }
+        }
+        return text;
+    }
+
     public class ArrayValueItem extends MODLParserBaseListener implements ValueObject {
         //        ValueObject valueObject; // can be one of Pair or Conditional
         Map map;
@@ -293,15 +321,17 @@ public class ModlParsed extends MODLParserBaseListener {
                         .modl_pair()
                         .enterRule(pair);
             } else if (ctx.STRING() != null) {
+                java.lang.String textValue = additionalStringProcessing(ctx
+                        .STRING()
+                        .getText());
                 string =
-                        new String(ctx
-                                .STRING()
-                                .getText());
+                        new String(textValue);
             } else if (ctx.QUOTED() != null) {
+                java.lang.String textValue = additionalStringProcessing(ctx
+                        .QUOTED()
+                        .getText());
                 quoted =
-                        new Quoted(ctx
-                                .QUOTED()
-                                .getText());
+                        new Quoted(textValue);
             } else if (ctx.NULL() != null) {
                 nullVal = new Null();
             } else if (ctx.TRUE() != null) {
@@ -922,7 +952,7 @@ public class ModlParsed extends MODLParserBaseListener {
                         int prevSymbol = ((TerminalNode) previous).getSymbol().getType();
                         int currentSymbol = ((TerminalNode) pt).getSymbol().getType();
 
-                        if(prevSymbol == MODLLexer.LSBRAC && currentSymbol == MODLLexer.RSBRAC) {
+                        if (prevSymbol == MODLLexer.LSBRAC && currentSymbol == MODLLexer.RSBRAC) {
                             continue; // This allows empty arrays
                         }
 

@@ -48,7 +48,7 @@ public class EmptyStringsTest {
      * @throws IOException on test failure
      */
     @Test
-    public void test_0() throws IOException {
+    public void test_00() throws IOException {
         singleCase(expected[0]);
     }
 
@@ -56,7 +56,7 @@ public class EmptyStringsTest {
      * @throws IOException on test failure
      */
     @Test
-    public void test_1() throws IOException {
+    public void test_01() throws IOException {
         singleCase(expected[1]);
     }
 
@@ -64,7 +64,7 @@ public class EmptyStringsTest {
      * @throws IOException on test failure
      */
     @Test
-    public void test_2() throws IOException {
+    public void test_02() throws IOException {
         singleCase(expected[2]);
     }
 
@@ -72,7 +72,7 @@ public class EmptyStringsTest {
      * @throws IOException on test failure
      */
     @Test
-    public void test_3() throws IOException {
+    public void test_03() throws IOException {
         singleCase(expected[3]);
     }
 
