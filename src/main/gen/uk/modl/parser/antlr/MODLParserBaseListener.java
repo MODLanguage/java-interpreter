@@ -1,6 +1,5 @@
+// Generated from MODLParser.g4 by ANTLR 4.7.2
 package uk.modl.parser.antlr;
-
-// Generated from /Users/alex/code/NUM/MODL/interpreter/grammar/MODLParser.g4 by ANTLR 4.7
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -29,265 +28,265 @@ public class MODLParserBaseListener implements MODLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterStructure(MODLParser.StructureContext ctx) { }
+	@Override public void enterModl_structure(MODLParser.Modl_structureContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitStructure(MODLParser.StructureContext ctx) { }
+	@Override public void exitModl_structure(MODLParser.Modl_structureContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterMap(MODLParser.MapContext ctx) { }
+	@Override public void enterModl_map(MODLParser.Modl_mapContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitMap(MODLParser.MapContext ctx) { }
+	@Override public void exitModl_map(MODLParser.Modl_mapContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArray(MODLParser.ArrayContext ctx) { }
+	@Override public void enterModl_array(MODLParser.Modl_arrayContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArray(MODLParser.ArrayContext ctx) { }
+	@Override public void exitModl_array(MODLParser.Modl_arrayContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterNb_array(MODLParser.Nb_arrayContext ctx) { }
+	@Override public void enterModl_nb_array(MODLParser.Modl_nb_arrayContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitNb_array(MODLParser.Nb_arrayContext ctx) { }
+	@Override public void exitModl_nb_array(MODLParser.Modl_nb_arrayContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPair(MODLParser.PairContext ctx) { }
+	@Override public void enterModl_pair(MODLParser.Modl_pairContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitPair(MODLParser.PairContext ctx) { }
+	@Override public void exitModl_pair(MODLParser.Modl_pairContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterValue_item(MODLParser.Value_itemContext ctx) { }
+	@Override public void enterModl_value_item(MODLParser.Modl_value_itemContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitValue_item(MODLParser.Value_itemContext ctx) { }
+	@Override public void exitModl_value_item(MODLParser.Modl_value_itemContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterTop_level_conditional(MODLParser.Top_level_conditionalContext ctx) { }
+	@Override public void enterModl_top_level_conditional(MODLParser.Modl_top_level_conditionalContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitTop_level_conditional(MODLParser.Top_level_conditionalContext ctx) { }
+	@Override public void exitModl_top_level_conditional(MODLParser.Modl_top_level_conditionalContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterTop_level_conditional_return(MODLParser.Top_level_conditional_returnContext ctx) { }
+	@Override public void enterModl_top_level_conditional_return(MODLParser.Modl_top_level_conditional_returnContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitTop_level_conditional_return(MODLParser.Top_level_conditional_returnContext ctx) { }
+	@Override public void exitModl_top_level_conditional_return(MODLParser.Modl_top_level_conditional_returnContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterMap_conditional(MODLParser.Map_conditionalContext ctx) { }
+	@Override public void enterModl_map_conditional(MODLParser.Modl_map_conditionalContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitMap_conditional(MODLParser.Map_conditionalContext ctx) { }
+	@Override public void exitModl_map_conditional(MODLParser.Modl_map_conditionalContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterMap_conditional_return(MODLParser.Map_conditional_returnContext ctx) { }
+	@Override public void enterModl_map_conditional_return(MODLParser.Modl_map_conditional_returnContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitMap_conditional_return(MODLParser.Map_conditional_returnContext ctx) { }
+	@Override public void exitModl_map_conditional_return(MODLParser.Modl_map_conditional_returnContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterMap_item(MODLParser.Map_itemContext ctx) { }
+	@Override public void enterModl_map_item(MODLParser.Modl_map_itemContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitMap_item(MODLParser.Map_itemContext ctx) { }
+	@Override public void exitModl_map_item(MODLParser.Modl_map_itemContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArray_conditional(MODLParser.Array_conditionalContext ctx) { }
+	@Override public void enterModl_array_conditional(MODLParser.Modl_array_conditionalContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArray_conditional(MODLParser.Array_conditionalContext ctx) { }
+	@Override public void exitModl_array_conditional(MODLParser.Modl_array_conditionalContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArray_conditional_return(MODLParser.Array_conditional_returnContext ctx) { }
+	@Override public void enterModl_array_conditional_return(MODLParser.Modl_array_conditional_returnContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArray_conditional_return(MODLParser.Array_conditional_returnContext ctx) { }
+	@Override public void exitModl_array_conditional_return(MODLParser.Modl_array_conditional_returnContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArray_item(MODLParser.Array_itemContext ctx) { }
+	@Override public void enterModl_array_item(MODLParser.Modl_array_itemContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArray_item(MODLParser.Array_itemContext ctx) { }
+	@Override public void exitModl_array_item(MODLParser.Modl_array_itemContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterValue_conditional(MODLParser.Value_conditionalContext ctx) { }
+	@Override public void enterModl_value_conditional(MODLParser.Modl_value_conditionalContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitValue_conditional(MODLParser.Value_conditionalContext ctx) { }
+	@Override public void exitModl_value_conditional(MODLParser.Modl_value_conditionalContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterValue_conditional_return(MODLParser.Value_conditional_returnContext ctx) { }
+	@Override public void enterModl_value_conditional_return(MODLParser.Modl_value_conditional_returnContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitValue_conditional_return(MODLParser.Value_conditional_returnContext ctx) { }
+	@Override public void exitModl_value_conditional_return(MODLParser.Modl_value_conditional_returnContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCondition_test(MODLParser.Condition_testContext ctx) { }
+	@Override public void enterModl_condition_test(MODLParser.Modl_condition_testContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitCondition_test(MODLParser.Condition_testContext ctx) { }
+	@Override public void exitModl_condition_test(MODLParser.Modl_condition_testContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterOperator(MODLParser.OperatorContext ctx) { }
+	@Override public void enterModl_operator(MODLParser.Modl_operatorContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitOperator(MODLParser.OperatorContext ctx) { }
+	@Override public void exitModl_operator(MODLParser.Modl_operatorContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCondition(MODLParser.ConditionContext ctx) { }
+	@Override public void enterModl_condition(MODLParser.Modl_conditionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitCondition(MODLParser.ConditionContext ctx) { }
+	@Override public void exitModl_condition(MODLParser.Modl_conditionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCondition_group(MODLParser.Condition_groupContext ctx) { }
+	@Override public void enterModl_condition_group(MODLParser.Modl_condition_groupContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitCondition_group(MODLParser.Condition_groupContext ctx) { }
+	@Override public void exitModl_condition_group(MODLParser.Modl_condition_groupContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterValue(MODLParser.ValueContext ctx) { }
+	@Override public void enterModl_value(MODLParser.Modl_valueContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitValue(MODLParser.ValueContext ctx) { }
+	@Override public void exitModl_value(MODLParser.Modl_valueContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArray_value_item(MODLParser.Array_value_itemContext ctx) { }
+	@Override public void enterModl_array_value_item(MODLParser.Modl_array_value_itemContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArray_value_item(MODLParser.Array_value_itemContext ctx) { }
+	@Override public void exitModl_array_value_item(MODLParser.Modl_array_value_itemContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

@@ -1,6 +1,5 @@
+// Generated from MODLParser.g4 by ANTLR 4.7.2
 package uk.modl.parser.antlr;
-
-// Generated from /Users/alex/code/NUM/MODL/interpreter/grammar/MODLParser.g4 by ANTLR 4.7
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
@@ -19,223 +18,223 @@ public interface MODLParserListener extends ParseTreeListener {
 	 */
 	void exitModl(MODLParser.ModlContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#structure}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_structure}.
 	 * @param ctx the parse tree
 	 */
-	void enterStructure(MODLParser.StructureContext ctx);
+	void enterModl_structure(MODLParser.Modl_structureContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#structure}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_structure}.
 	 * @param ctx the parse tree
 	 */
-	void exitStructure(MODLParser.StructureContext ctx);
+	void exitModl_structure(MODLParser.Modl_structureContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#map}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_map}.
 	 * @param ctx the parse tree
 	 */
-	void enterMap(MODLParser.MapContext ctx);
+	void enterModl_map(MODLParser.Modl_mapContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#map}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_map}.
 	 * @param ctx the parse tree
 	 */
-	void exitMap(MODLParser.MapContext ctx);
+	void exitModl_map(MODLParser.Modl_mapContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#array}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_array}.
 	 * @param ctx the parse tree
 	 */
-	void enterArray(MODLParser.ArrayContext ctx);
+	void enterModl_array(MODLParser.Modl_arrayContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#array}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_array}.
 	 * @param ctx the parse tree
 	 */
-	void exitArray(MODLParser.ArrayContext ctx);
+	void exitModl_array(MODLParser.Modl_arrayContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#nb_array}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_nb_array}.
 	 * @param ctx the parse tree
 	 */
-	void enterNb_array(MODLParser.Nb_arrayContext ctx);
+	void enterModl_nb_array(MODLParser.Modl_nb_arrayContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#nb_array}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_nb_array}.
 	 * @param ctx the parse tree
 	 */
-	void exitNb_array(MODLParser.Nb_arrayContext ctx);
+	void exitModl_nb_array(MODLParser.Modl_nb_arrayContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#pair}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_pair}.
 	 * @param ctx the parse tree
 	 */
-	void enterPair(MODLParser.PairContext ctx);
+	void enterModl_pair(MODLParser.Modl_pairContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#pair}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_pair}.
 	 * @param ctx the parse tree
 	 */
-	void exitPair(MODLParser.PairContext ctx);
+	void exitModl_pair(MODLParser.Modl_pairContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#value_item}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_value_item}.
 	 * @param ctx the parse tree
 	 */
-	void enterValue_item(MODLParser.Value_itemContext ctx);
+	void enterModl_value_item(MODLParser.Modl_value_itemContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#value_item}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_value_item}.
 	 * @param ctx the parse tree
 	 */
-	void exitValue_item(MODLParser.Value_itemContext ctx);
+	void exitModl_value_item(MODLParser.Modl_value_itemContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#top_level_conditional}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_top_level_conditional}.
 	 * @param ctx the parse tree
 	 */
-	void enterTop_level_conditional(MODLParser.Top_level_conditionalContext ctx);
+	void enterModl_top_level_conditional(MODLParser.Modl_top_level_conditionalContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#top_level_conditional}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_top_level_conditional}.
 	 * @param ctx the parse tree
 	 */
-	void exitTop_level_conditional(MODLParser.Top_level_conditionalContext ctx);
+	void exitModl_top_level_conditional(MODLParser.Modl_top_level_conditionalContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#top_level_conditional_return}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_top_level_conditional_return}.
 	 * @param ctx the parse tree
 	 */
-	void enterTop_level_conditional_return(MODLParser.Top_level_conditional_returnContext ctx);
+	void enterModl_top_level_conditional_return(MODLParser.Modl_top_level_conditional_returnContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#top_level_conditional_return}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_top_level_conditional_return}.
 	 * @param ctx the parse tree
 	 */
-	void exitTop_level_conditional_return(MODLParser.Top_level_conditional_returnContext ctx);
+	void exitModl_top_level_conditional_return(MODLParser.Modl_top_level_conditional_returnContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#map_conditional}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_map_conditional}.
 	 * @param ctx the parse tree
 	 */
-	void enterMap_conditional(MODLParser.Map_conditionalContext ctx);
+	void enterModl_map_conditional(MODLParser.Modl_map_conditionalContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#map_conditional}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_map_conditional}.
 	 * @param ctx the parse tree
 	 */
-	void exitMap_conditional(MODLParser.Map_conditionalContext ctx);
+	void exitModl_map_conditional(MODLParser.Modl_map_conditionalContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#map_conditional_return}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_map_conditional_return}.
 	 * @param ctx the parse tree
 	 */
-	void enterMap_conditional_return(MODLParser.Map_conditional_returnContext ctx);
+	void enterModl_map_conditional_return(MODLParser.Modl_map_conditional_returnContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#map_conditional_return}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_map_conditional_return}.
 	 * @param ctx the parse tree
 	 */
-	void exitMap_conditional_return(MODLParser.Map_conditional_returnContext ctx);
+	void exitModl_map_conditional_return(MODLParser.Modl_map_conditional_returnContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#map_item}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_map_item}.
 	 * @param ctx the parse tree
 	 */
-	void enterMap_item(MODLParser.Map_itemContext ctx);
+	void enterModl_map_item(MODLParser.Modl_map_itemContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#map_item}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_map_item}.
 	 * @param ctx the parse tree
 	 */
-	void exitMap_item(MODLParser.Map_itemContext ctx);
+	void exitModl_map_item(MODLParser.Modl_map_itemContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#array_conditional}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_array_conditional}.
 	 * @param ctx the parse tree
 	 */
-	void enterArray_conditional(MODLParser.Array_conditionalContext ctx);
+	void enterModl_array_conditional(MODLParser.Modl_array_conditionalContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#array_conditional}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_array_conditional}.
 	 * @param ctx the parse tree
 	 */
-	void exitArray_conditional(MODLParser.Array_conditionalContext ctx);
+	void exitModl_array_conditional(MODLParser.Modl_array_conditionalContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#array_conditional_return}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_array_conditional_return}.
 	 * @param ctx the parse tree
 	 */
-	void enterArray_conditional_return(MODLParser.Array_conditional_returnContext ctx);
+	void enterModl_array_conditional_return(MODLParser.Modl_array_conditional_returnContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#array_conditional_return}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_array_conditional_return}.
 	 * @param ctx the parse tree
 	 */
-	void exitArray_conditional_return(MODLParser.Array_conditional_returnContext ctx);
+	void exitModl_array_conditional_return(MODLParser.Modl_array_conditional_returnContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#array_item}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_array_item}.
 	 * @param ctx the parse tree
 	 */
-	void enterArray_item(MODLParser.Array_itemContext ctx);
+	void enterModl_array_item(MODLParser.Modl_array_itemContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#array_item}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_array_item}.
 	 * @param ctx the parse tree
 	 */
-	void exitArray_item(MODLParser.Array_itemContext ctx);
+	void exitModl_array_item(MODLParser.Modl_array_itemContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#value_conditional}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_value_conditional}.
 	 * @param ctx the parse tree
 	 */
-	void enterValue_conditional(MODLParser.Value_conditionalContext ctx);
+	void enterModl_value_conditional(MODLParser.Modl_value_conditionalContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#value_conditional}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_value_conditional}.
 	 * @param ctx the parse tree
 	 */
-	void exitValue_conditional(MODLParser.Value_conditionalContext ctx);
+	void exitModl_value_conditional(MODLParser.Modl_value_conditionalContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#value_conditional_return}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_value_conditional_return}.
 	 * @param ctx the parse tree
 	 */
-	void enterValue_conditional_return(MODLParser.Value_conditional_returnContext ctx);
+	void enterModl_value_conditional_return(MODLParser.Modl_value_conditional_returnContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#value_conditional_return}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_value_conditional_return}.
 	 * @param ctx the parse tree
 	 */
-	void exitValue_conditional_return(MODLParser.Value_conditional_returnContext ctx);
+	void exitModl_value_conditional_return(MODLParser.Modl_value_conditional_returnContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#condition_test}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_condition_test}.
 	 * @param ctx the parse tree
 	 */
-	void enterCondition_test(MODLParser.Condition_testContext ctx);
+	void enterModl_condition_test(MODLParser.Modl_condition_testContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#condition_test}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_condition_test}.
 	 * @param ctx the parse tree
 	 */
-	void exitCondition_test(MODLParser.Condition_testContext ctx);
+	void exitModl_condition_test(MODLParser.Modl_condition_testContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#operator}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_operator}.
 	 * @param ctx the parse tree
 	 */
-	void enterOperator(MODLParser.OperatorContext ctx);
+	void enterModl_operator(MODLParser.Modl_operatorContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#operator}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_operator}.
 	 * @param ctx the parse tree
 	 */
-	void exitOperator(MODLParser.OperatorContext ctx);
+	void exitModl_operator(MODLParser.Modl_operatorContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#condition}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_condition}.
 	 * @param ctx the parse tree
 	 */
-	void enterCondition(MODLParser.ConditionContext ctx);
+	void enterModl_condition(MODLParser.Modl_conditionContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#condition}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_condition}.
 	 * @param ctx the parse tree
 	 */
-	void exitCondition(MODLParser.ConditionContext ctx);
+	void exitModl_condition(MODLParser.Modl_conditionContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#condition_group}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_condition_group}.
 	 * @param ctx the parse tree
 	 */
-	void enterCondition_group(MODLParser.Condition_groupContext ctx);
+	void enterModl_condition_group(MODLParser.Modl_condition_groupContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#condition_group}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_condition_group}.
 	 * @param ctx the parse tree
 	 */
-	void exitCondition_group(MODLParser.Condition_groupContext ctx);
+	void exitModl_condition_group(MODLParser.Modl_condition_groupContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#value}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_value}.
 	 * @param ctx the parse tree
 	 */
-	void enterValue(MODLParser.ValueContext ctx);
+	void enterModl_value(MODLParser.Modl_valueContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#value}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_value}.
 	 * @param ctx the parse tree
 	 */
-	void exitValue(MODLParser.ValueContext ctx);
+	void exitModl_value(MODLParser.Modl_valueContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link MODLParser#array_value_item}.
+	 * Enter a parse tree produced by {@link MODLParser#modl_array_value_item}.
 	 * @param ctx the parse tree
 	 */
-	void enterArray_value_item(MODLParser.Array_value_itemContext ctx);
+	void enterModl_array_value_item(MODLParser.Modl_array_value_itemContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link MODLParser#array_value_item}.
+	 * Exit a parse tree produced by {@link MODLParser#modl_array_value_item}.
 	 * @param ctx the parse tree
 	 */
-	void exitArray_value_item(MODLParser.Array_value_itemContext ctx);
+	void exitModl_array_value_item(MODLParser.Modl_array_value_itemContext ctx);
 }
