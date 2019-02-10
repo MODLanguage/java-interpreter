@@ -76,11 +76,17 @@ public class StringTransformer {
 //                stringToTransform = runObjectReferencing(gravePart, stringToTransform, true);
                 ModlValue ret = runObjectReferencing(gravePart, stringToTransform, true);
                 if (ret instanceof ModlObject.String) {
-                    stringToTransform = ((ModlObject.String)ret).string;
+                    stringToTransform = ((ModlObject.String) ret).string;
                     String nonGravePart = gravePart.substring(1, gravePart.length() - 1);
                     stringToTransform = stringToTransform.replace(gravePart, nonGravePart);
+                } else if (ret instanceof ModlObject.Number) {
+                    if (gravePart.equals(stringToTransform)) {
+                        return ret;
+                    }
+                    String number = ((ModlObject.Number) ret).number;
+                    stringToTransform = stringToTransform.replace(gravePart, number);
                 } else {
-                    throw new RuntimeException("Can't have non-string in string transformation!");
+                    return ret;
                 }
             } else {
                 // else run “Punycode encoded parts”
@@ -98,7 +104,7 @@ public class StringTransformer {
                 if (percentPart.equals(stringToTransform)) {
                     return ret;
                 }
-                String number = ((ModlObject.Number)ret).number;
+                String number = ((ModlObject.Number) ret).number;
                 stringToTransform = stringToTransform.replace(percentPart, number);
             } else {
                 return ret;
@@ -120,24 +126,23 @@ public class StringTransformer {
                 Integer endIndex = null;
                 // If the first character after the % is a number, then keep reading until we get to a non-number (taking account of method chains)
                 // If the first character after the % is a letter, then keep reading until we get to a space
-                if (startIndex < stringToTransform.length() - 1 && !isNumber(stringToTransform.substring(startIndex +1, startIndex + 2))) {
+                if (startIndex < stringToTransform.length() - 1 && !isNumber(stringToTransform.substring(startIndex + 1, startIndex + 2))) {
                     // Just read to the next space
                     int spaceEndIndex = stringToTransform.indexOf(" ", startIndex);
                     int colonEndIndex = stringToTransform.indexOf(":", startIndex);
-                    if (spaceEndIndex == -1 ){
+                    if (spaceEndIndex == -1) {
                         spaceEndIndex = 99999;
                     }
-                    if (colonEndIndex == -1 ){
+                    if (colonEndIndex == -1) {
                         colonEndIndex = 99999;
                     }
                     endIndex = Math.min(spaceEndIndex, colonEndIndex);
                     if (endIndex > stringToTransform.length()) {
                         endIndex = stringToTransform.length();
                     }
-                } else if (startIndex == stringToTransform.length() -1 ){
+                } else if (startIndex == stringToTransform.length() - 1) {
                     return percentParts;
-                }
-                else {
+                } else {
                     endIndex = getEndOfNumber(stringToTransform, startIndex + 1);
                 }
                 if (endIndex != null && endIndex != -1) {
@@ -160,7 +165,7 @@ public class StringTransformer {
 
         // First, find the end of the number
         Integer currentIndex = startIndex;
-        if (currentIndex == stringToTransform.length() ) {
+        if (currentIndex == stringToTransform.length()) {
             return currentIndex;
         }
         while (isNumber(stringToTransform.substring(currentIndex, currentIndex + 1))) {
@@ -215,7 +220,7 @@ public class StringTransformer {
 
     private boolean isNumber(String substring) {
         if ((substring.equals("0") || substring.equals("1") || substring.equals("2") || substring.equals("3") || substring.equals("4"))
-                 || substring.equals("5") || substring.equals("6") || substring.equals("7") || substring.equals("8")
+                || substring.equals("5") || substring.equals("6") || substring.equals("7") || substring.equals("8")
                 || substring.equals("9")) {
             return true;
         }
@@ -282,7 +287,7 @@ public class StringTransformer {
             return stringToTransform;
         }
         if (stringToTransform.startsWith("`") && stringToTransform.endsWith("`")) {
-            stringToTransform = stringToTransform.substring(1, stringToTransform.length() -1);
+            stringToTransform = stringToTransform.substring(1, stringToTransform.length() - 1);
             String originalString = stringToTransform;
             stringToTransform = "xn--" + stringToTransform;
             String newStringToTransform = IDN.toUnicode(stringToTransform);
@@ -311,12 +316,12 @@ Loop through the array and pass the subject to the named method, transforming th
 
 Replace the part originally found (including graves) with the transformed subject.
      */
-    int startOffset = 1;
-    int endOffset = 0;
-    if (isGraved) {
-        startOffset = 2;
-        endOffset = 1;
-    }
+        int startOffset = 1;
+        int endOffset = 0;
+        if (isGraved) {
+            startOffset = 2;
+            endOffset = 1;
+        }
         ModlObject modlObject = new ModlObject();
         String subject = percentPart.substring(startOffset, percentPart.length() - endOffset);
 
@@ -326,11 +331,12 @@ Replace the part originally found (including graves) with the transformed subjec
             subject = percentPart.substring(startOffset, indexOfDot);
             methodChain = percentPart.substring(indexOfDot + 1, percentPart.length() - endOffset);
         }
+
         ModlValue value = getValueForReference(subject);
         if (value == null) {
-          return modlObject.new String(stringToTransform);
+            return modlObject.new String(stringToTransform);
         } else if (value instanceof ModlObject.String) {
-            subject = ((ModlObject.String)value).string;
+            subject = ((ModlObject.String) value).string;
         } else {
             return value;
         }
@@ -347,7 +353,7 @@ Replace the part originally found (including graves) with the transformed subjec
                     // We need to strip the "(<params>)" and apply the method to the subject AND the params!
                     // TODO (we might need to check for escaped "."s one day...
                     int startParamsIndex = method.indexOf("(");
-                    String paramsString = method.substring(startParamsIndex + 1, method.length()-1); //  - 1);
+                    String paramsString = method.substring(startParamsIndex + 1, method.length() - 1); //  - 1);
                     String methodString = method.substring(0, startParamsIndex);
                     subject = VariableMethods.transform(methodString, subject + "," + paramsString);
 
@@ -368,6 +374,19 @@ Replace the part originally found (including graves) with the transformed subjec
     }
 
     private ModlValue getValueForReference(String subject) {
+        // Subject might be a nested object reference, so handle it here
+        final int indexOfGreaterThanSymbol = subject.indexOf(">");
+        final boolean isNested = indexOfGreaterThanSymbol > -1;
+        final String remainder;
+        if (isNested) {
+            remainder = subject.substring(indexOfGreaterThanSymbol + 1);
+            subject = subject.substring(0, indexOfGreaterThanSymbol);
+        } else {
+            remainder = null;
+        }
+
+        // Find the first level object reference, whether nested or not
+
         ModlValue value = null;
         boolean found = false;
 
@@ -380,24 +399,89 @@ Replace the part originally found (including graves) with the transformed subjec
                     value = numberedVariables.get(i);
                 }
                 found = true;
+                break;
             }
         }
-        for (Map.Entry<String, ModlValue> variableEntry : variables.entrySet()) {
-            if (subject.equals(variableEntry.getKey())) {
-                value = variableEntry.getValue();
-                found = true;
+        if (!found) {
+            for (Map.Entry<String, ModlValue> variableEntry : variables.entrySet()) {
+                if (subject.equals(variableEntry.getKey())) {
+                    value = variableEntry.getValue();
+                    found = true;
+                    break;
+                }
             }
         }
-        for (Map.Entry<String, ModlValue> variableEntry : valuePairs.entrySet()) {
-            if (subject.equals(variableEntry.getKey()) || subject.equals("_"+variableEntry.getKey())) {
-                value = variableEntry.getValue();
-                found = true;
+        if (!found) {
+            for (Map.Entry<String, ModlValue> variableEntry : valuePairs.entrySet()) {
+                if (subject.equals(variableEntry.getKey()) || subject.equals("_" + variableEntry.getKey())) {
+                    value = variableEntry.getValue();
+                    break;
+                }
             }
         }
 
-        if (!found) {
-            return null;
+        // If we have a nested reference follow it recursively until we find the value we need.
+        if (value != null && isNested) {
+            return getValueForReferenceRecursive(value, remainder);
         }
         return value;
+    }
+
+    /**
+     * For keys such as a>b>c>d>e, each call to this method takes the first part and uses it to find the referenced
+     * object in the current ctx object, then calls itself with this new object as the context and the remaining part
+     * of the nested object reference (b>c>d>e in this case) until all the parts of the reference are used up.
+     *
+     * @param ctx The should contain a value for the given key
+     * @param key The key of the object that we need - possibly a nested reference.
+     * @return The value that was referenced, or a RuntimeException if the reference is invalid.
+     */
+    private ModlValue getValueForReferenceRecursive(final ModlValue ctx, final String key) {
+
+        // Check for nested keys
+        final int indexOfGreaterThanSymbol = key.indexOf(">");
+        final boolean isNested = indexOfGreaterThanSymbol > -1;
+        final String remainder;
+        final String currentKey;
+        if (isNested) {
+            remainder = key.substring(indexOfGreaterThanSymbol + 1);
+            currentKey = key.substring(0, indexOfGreaterThanSymbol);
+        } else {
+            remainder = null;
+            currentKey = key;
+        }
+
+        // Get the nested value via its name or number
+        final ModlValue newCtx;
+        if (isNumber(currentKey)) {
+            int index = Integer.parseInt(currentKey);
+            if (ctx instanceof ModlObject.Pair) {
+                if (index != 0) {
+                    throw new RuntimeException("Index should always be zero when reference the value of a Pair");
+                }
+                newCtx = ((ModlObject.Pair) ctx).getModlValue();
+            } else {
+                newCtx = ctx.get(index);
+            }
+        } else {
+            if (ctx instanceof ModlObject.Pair) {
+                if (!currentKey.equals(((ModlObject.Pair) ctx).getKey())) {
+                    throw new RuntimeException("Object reference should match the key name for a Pair");
+                }
+                newCtx = ((ModlObject.Pair) ctx).getModlValue();
+            } else {
+                newCtx = ctx.get(currentKey);
+            }
+        }
+
+        // Recurse if we're still nested
+        if (isNested) {
+            return getValueForReferenceRecursive(newCtx, remainder);
+        } else if (newCtx == null) {
+            // The currentKey number or name must be invalid.
+            throw new RuntimeException("Invalid Object Reference: " + currentKey);
+        }
+        // Success, return the value we found.
+        return newCtx;
     }
 }

@@ -304,8 +304,8 @@ public class ImportTest extends TestCase {
             ModlObject modlObject = Interpreter.interpret(input);
             String output = JsonPrinter.printModl(modlObject);
             System.out.println("Output : " + output);
-            assertEquals(expected.replace(" ", "").replace("\n", ""),
-                    output.replace(" ", "").replace("\n", ""));
+            assertEquals(expected.replace(" ", "").replace("\n", "").replace("\r",""),
+                    output.replace(" ", "").replace("\n", "").replace("\r",""));
         }
 
     }

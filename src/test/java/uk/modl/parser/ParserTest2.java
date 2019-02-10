@@ -1138,8 +1138,8 @@ public class ParserTest2 extends TestCase {
                         ModlObject modlObject = Interpreter.interpret(input);
                         String output = JsonPrinter.printModl(modlObject);
                         System.out.println("Output : " + output);
-                        assertEquals(expected.replace(" ", "").replace("\n", ""),
-                                output.replace(" ", "").replace("\n", ""));
+                        assertEquals(expected.replace(" ", "").replace("\n", "").replace("\r",""),
+                                output.replace(" ", "").replace("\n", "").replace("\r",""));
                 }
 
         }
@@ -1152,7 +1152,7 @@ public class ParserTest2 extends TestCase {
                 assertEquals("{\n" +
                         "  \"a\" : 1,\n" +
                         "  \"b\" : 2\n" +
-                        "}", output);
+                        "}", output.replace("\r",""));
         }
 
         // TODO Run some test inputs which should generate errors (e.g. re-defining uppercase OBJECTNAME)
