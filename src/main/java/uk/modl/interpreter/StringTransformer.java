@@ -388,6 +388,7 @@ Replace the part originally found (including graves) with the transformed subjec
         // Find the first level object reference, whether nested or not
 
         ModlValue value = null;
+        boolean found = false;
 
         // Make any variable replacements, etc.
         for (Integer i = 0; i < numberedVariables.size(); i++) {
@@ -397,19 +398,25 @@ Replace the part originally found (including graves) with the transformed subjec
                 } else {
                     value = numberedVariables.get(i);
                 }
+                found = true;
                 break;
             }
         }
-        for (Map.Entry<String, ModlValue> variableEntry : variables.entrySet()) {
-            if (subject.equals(variableEntry.getKey())) {
-                value = variableEntry.getValue();
-                break;
+        if (!found) {
+            for (Map.Entry<String, ModlValue> variableEntry : variables.entrySet()) {
+                if (subject.equals(variableEntry.getKey())) {
+                    value = variableEntry.getValue();
+                    found = true;
+                    break;
+                }
             }
         }
-        for (Map.Entry<String, ModlValue> variableEntry : valuePairs.entrySet()) {
-            if (subject.equals(variableEntry.getKey()) || subject.equals("_" + variableEntry.getKey())) {
-                value = variableEntry.getValue();
-                break;
+        if (!found) {
+            for (Map.Entry<String, ModlValue> variableEntry : valuePairs.entrySet()) {
+                if (subject.equals(variableEntry.getKey()) || subject.equals("_" + variableEntry.getKey())) {
+                    value = variableEntry.getValue();
+                    break;
+                }
             }
         }
 
@@ -421,37 +428,58 @@ Replace the part originally found (including graves) with the transformed subjec
     }
 
     /**
+     * For keys such as a>b>c>d>e, each call to this method takes the first part and uses it to find the referenced
+     * object in the current ctx object, then calls itself with this new object as the context and the remaining part
+     * of the nested object reference (b>c>d>e in this case) until all the parts of the reference are used up.
+     *
      * @param ctx The should contain a value for the given key
      * @param key The key of the object that we need - possibly a nested reference.
      * @return The value that was referenced, or a RuntimeException if the reference is invalid.
      */
-    private ModlValue getValueForReferenceRecursive(final ModlValue ctx, String key) {
+    private ModlValue getValueForReferenceRecursive(final ModlValue ctx, final String key) {
 
         // Check for nested keys
         final int indexOfGreaterThanSymbol = key.indexOf(">");
         final boolean isNested = indexOfGreaterThanSymbol > -1;
         final String remainder;
+        final String currentKey;
         if (isNested) {
             remainder = key.substring(indexOfGreaterThanSymbol + 1);
-            key = key.substring(0, indexOfGreaterThanSymbol);
+            currentKey = key.substring(0, indexOfGreaterThanSymbol);
         } else {
             remainder = null;
+            currentKey = key;
         }
 
         // Get the nested value via its name or number
         final ModlValue newCtx;
-        if (isNumber(key)) {
-            newCtx = ctx.get(Integer.parseInt(key));
+        if (isNumber(currentKey)) {
+            int index = Integer.parseInt(currentKey);
+            if (ctx instanceof ModlObject.Pair) {
+                if (index != 0) {
+                    throw new RuntimeException("Index should always be zero when reference the value of a Pair");
+                }
+                newCtx = ((ModlObject.Pair) ctx).getModlValue();
+            } else {
+                newCtx = ctx.get(index);
+            }
         } else {
-            newCtx = ctx.get(key);
+            if (ctx instanceof ModlObject.Pair) {
+                if (!currentKey.equals(((ModlObject.Pair) ctx).getKey())) {
+                    throw new RuntimeException("Object reference should match the key name for a Pair");
+                }
+                newCtx = ((ModlObject.Pair) ctx).getModlValue();
+            } else {
+                newCtx = ctx.get(currentKey);
+            }
         }
 
         // Recurse if we're still nested
         if (isNested) {
             return getValueForReferenceRecursive(newCtx, remainder);
         } else if (newCtx == null) {
-            // The key number or name is invalid.
-            throw new RuntimeException("Invalid Object Reference: " + key);
+            // The currentKey number or name must be invalid.
+            throw new RuntimeException("Invalid Object Reference: " + currentKey);
         }
         // Success, return the value we found.
         return newCtx;
