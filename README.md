@@ -104,3 +104,29 @@ git subtree merge --squash --prefix src/test/json removeme-tests-branch
 git branch -D removeme-export-branch removeme-tests-branch
 git remote rm grammar
 ```
+
+
+## Publishing to Maven Central
+
+The gradle configuration supports publishing to maven. You need to set your credentials
+and create a private key. Gradle will take cake of all the rest for you.
+
+Install gpg to create a key (for signing the files). Generate your key with
+`gpg --gen-key` and then export it with `gpg --export-secret-keys -o secring.gpg`.
+You can name the file differently but it's the path to that file that you will need
+to provide in the gradle configuration file.
+
+To set your credentials, please edit `~/.gradle/gradle.properties`. The file my not exist
+yet. Add the following properties:
+
+```
+signing.keyId=<GPG short key (8 hex characters)>
+signing.password=<passphrase for your key>
+signing.secretKeyRingFile=<path to the key ring file>
+
+sonatypeUsername=<Sonatype username provided by admin>
+sonatypePassword=<Sonatype password>
+```
+
+You can get the short key with `gpg --list-keys --keyid-format short`. Please request
+your sonatype credentials to an administrator of the project.

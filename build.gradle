@@ -4,15 +4,11 @@ plugins {
     id 'signing'
 }
 
-//group 'uk.modl'
-//version '0.0.1'
-
 
 apply plugin: 'java'
 apply plugin: 'java-library'
 apply plugin: 'antlr'
 apply plugin: 'maven-publish'
-apply plugin: 'signing'
 apply plugin: 'application'
 
 mainClassName = "uk.modl.server.ModlServer"
@@ -22,7 +18,9 @@ sourceCompatibility = 1.7
 group = "uk.modl"
 applicationName = "java-interpreter"
 archivesBaseName = "java-interpreter"
-version = "0.0.2"
+version = "0.0.2-SNAPSHOT"
+
+def isSnapshot = version.endsWith("SNAPSHOT")
 
 repositories {
     mavenCentral()
@@ -31,20 +29,17 @@ repositories {
 wrapper {
     gradleVersion = '4.10'
 }
-//task wrapper(type: Wrapper) {
-//    gradleVersion = '4.10'
-//}
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 
-// https://mvnrepository.com/artifact/org.antlr/antlr4
+    // https://mvnrepository.com/artifact/org.antlr/antlr4
     compile group: 'org.antlr', name: 'antlr4', version: '4.7'
 
-// https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.2'
 
-// https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server
+    // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server
     compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.8.v20171121'
 
     // https://mvnrepository.com/artifact/org.apache.commons/commons-text
@@ -52,73 +47,116 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
-
 }
+
 
 sourceSets {
     main.java.srcDirs = ['src/main/java', 'src/main/gen']
 }
 
-task sourcesJar(type: Jar) {
+
+task sourceJar(type: Jar) {
     from sourceSets.main.allJava
-    classifier = 'sources'
+    classifier 'sources'
 }
 
-task javadocJar(type: Jar) {
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc
-    classifier = 'javadoc'
+    classifier 'javadoc'
 }
+
 
 artifacts {
-    archives sourcesJar
+    archives jar
+    archives sourceJar
+    archives javadocJar
 }
 
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
+            customisePom(pom)
+
+            groupId = "uk.modl"
             artifactId = 'java-interpreter'
+
             from components.java
-            artifact sourcesJar
-            artifact javadocJar
-            pom {
-                name = 'java-interpreter'
-                description = 'Java interpreter for MODL language'
-                url = 'https://github.com/MODLanguage/java-interpreter'
-                licenses {
-                    license {
-                        name = 'MIT license'
-                        url = 'https://opensource.org/licenses/MIT'
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'alex@caerkettontech.com'
-                        name = 'Alex Dalitz'
-                        email = 'alex@caerkettontech.com'
-                    }
-                }
-                scm {
-                    connection = 'scm:git:git://MODLanguage/java-interpreter.git'
-                    developerConnection = 'scm:git:git://MODLanguage/java-interpreter.git'
-                    url = 'https://github.com/MODLanguage/java-interpreter'
-                }
+
+            artifact(sourceJar) {
+                classifier = 'source'
+            }
+
+            artifact(javadocJar) {
+                classifier = 'javadoc'
             }
         }
     }
     repositories {
         maven {
-            // change URLs to point to your repos, e.g. http://my.org/repo
-//            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2" {
-//                authentication(userName: ossrhUsername, password: ossrhPassword)
-//            }
-            def releasesRepoUrl = "$buildDir/repos/releases"
+            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
             def snapshotsRepoUrl = "$buildDir/repos/snapshots"
-            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
+            if(!isSnapshot) {
+                credentials {
+                    username sonatypeUsername
+                    password sonatypePassword
+                }
+            }
         }
     }
 }
 
+
 signing {
-    sign publishing.publications.mavenJava
+    required {
+        // signing is required if this is a release version and the artifacts are to be published
+        !isSnapshot && tasks.withType(PublishToMavenRepository).find {
+            gradle.taskGraph.hasTask it
+        }
+    }
+    sign publishing.publications
+}
+
+
+def customisePom(pom) {
+    pom.withXml {
+        def root = asNode()
+
+        // eliminate test-scoped dependencies (no need in maven central POMs)
+        root.dependencies.removeAll { dep ->
+            dep.scope == "test"
+        }
+
+        // add all items necessary for maven central publication
+        root.children().last() + {
+            resolveStrategy = Closure.DELEGATE_FIRST
+
+            name 'java-interpreter'
+            description 'Java interpreter for MODL language'
+            url 'https://github.com/MODLanguage/java-interpreter'
+
+            licenses {
+                license {
+                    name 'MIT license'
+                    url 'https://opensource.org/licenses/MIT'
+                    distribution 'repo'
+                }
+            }
+
+            scm {
+                connection 'scm:git:git://MODLanguage/java-interpreter.git'
+                developerConnection 'scm:git:git://MODLanguage/java-interpreter.git'
+                url 'https://github.com/MODLanguage/java-interpreter'
+            }
+            developers {
+                developer {
+                    id 'alex@caerkettontech.com'
+                    name 'Alex Dalitz'
+                    email 'alex@caerkettontech.com'
+                }
+            }
+        }
+    }
 }
