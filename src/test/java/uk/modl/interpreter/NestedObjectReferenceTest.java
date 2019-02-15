@@ -11,61 +11,70 @@ import java.util.List;
 public class NestedObjectReferenceTest {
 
     private final String nestedTestString01 = "_test=(\n" +
-            "  numbers=[[1;2;3;4;5];[6;7;8;9;10]]\n" +
-            ")\n" +
-            " \n" +
-            "testing=%test>numbers>0>0";
+                                              "  numbers=[[1;2;3;4;5];[6;7;8;9;10]]\n" +
+                                              ")\n" +
+                                              " \n" +
+                                              "testing=%test>numbers>0>0";
 
     private final String nestedTestString02 = "_test=(\n" +
-            "  numbers=(\"one\"=1)\n" +
-            ")\n" +
-            " \n" +
-            "testing = this is a string that includes a reference with a letter s after it `%test>numbers>one`s";
+                                              "  numbers=(\"one\"=1)\n" +
+                                              ")\n" +
+                                              " \n" +
+                                              "testing = this is a string that includes a reference with a letter s after it `%test>numbers>one`s";
 
     private final String nestedTestString03 = "_test=(\n" +
-            "  numbers=(\"one\"=1)\n" +
-            ")\n" +
-            " \n" +
-            "testing = this is a string that includes a reference with a letter s after it %test>numbers>ones";
+                                              "  numbers=(\"one\"=1)\n" +
+                                              ")\n" +
+                                              " \n" +
+                                              "testing = this is a string that includes a reference with a letter s after it %test>numbers>ones";
 
     private final String nestedTestString04 = "_test=(\n" +
-            "  numbers=(\"v\"=TEST)\n" +
-            ")\n" +
-            " \n" +
-            "testing = this is a string that includes extra transforms for the value `%test>numbers>v.d`_value";
+                                              "  numbers=(\"v\"=TEST)\n" +
+                                              ")\n" +
+                                              " \n" +
+                                              "testing = this is a string that includes extra transforms for the value `%test>numbers>v.d`_value";
 
     private final String nestedTestString05 = "_test=(\n" +
-            "  first=(\"v\"=TEST)\n" +
-            "  second=(\"v\"=TEST2)\n" +
-            ")\n" +
-            " \n" +
-            "testing = this is a string that includes extra transforms for the value `%test>second>v.d`_value";
+                                              "  first=(\"v\"=TEST)\n" +
+                                              "  second=(\"v\"=TEST2)\n" +
+                                              ")\n" +
+                                              " \n" +
+                                              "testing = this is a string that includes extra transforms for the value `%test>second>v.d`_value";
 
     private final String nestedTestString06 = "_test=(\n" +
-            "  first=(\"v1\"=one)\n" +
-            "  second=(\"v2\"=two:three)\n" +
-            ")\n" +
-            " \n" +
-            "testing = \"`%test>second>v2>1`\"";
+                                              "  first=(\"v1\"=one)\n" +
+                                              "  second=(\"v2\"=two:three)\n" +
+                                              ")\n" +
+                                              " \n" +
+                                              "testing = \"`%test>second>v2>1`\"";
 
     private final String nestedTestString07 = "_test=(\n" +
-            "  first=(\"v1\"=[one])\n" +
-            "  second=(\"v2\"=two:three)\n" +
-            ")\n" +
-            " \n" +
-            "testing = \"`%test>first>v1>0``%test>second>v2>0``%test>second>v2>1`\"";
+                                              "  first=(\"v1\"=[one])\n" +
+                                              "  second=(\"v2\"=two:three)\n" +
+                                              ")\n" +
+                                              " \n" +
+                                              "testing = \"`%test>first>v1>0``%test>second>v2>0``%test>second>v2>1`\"";
 
     private final String nestedTestString08 = "_test=(\n" +
-            "  first=(\"v1\"=(one=(two=three)))\n" +
-            ")\n" +
-            " \n" +
-            "testing = \"`%test>first>v1>0>0>0`\"";
+                                              "  first=(\"v1\"=(one=(two=three)))\n" +
+                                              ")\n" +
+                                              " \n" +
+                                              "testing = \"`%test>first>v1>0>0>0`\"";
 
     private final String nestedTestString09 = "_test=(\n" +
-            "  first=(\"v1\"=(one=(two=three)))\n" +
-            ")\n" +
-            " \n" +
-            "testing = \"`%test>first>v1>one>two`\"";
+                                              "  first=(\"v1\"=(one=(two=three)))\n" +
+                                              ")\n" +
+                                              " \n" +
+                                              "testing = \"`%test>first>v1>one>two`\"";
+
+    private final String nestedTestString10 = "test=(a=b=c=d=f)\n" +
+                                              "testing=%test>0>0>0>0>0";
+
+    private final String nestedTestString11 = "a(b(c(d(e(f=1)))))\n" +
+                                              "testing=%a>b>c>d>e>f";
+
+    private final String nestedTestString12 = "test=(a=b=c=d=f)\n" +
+                                              "x=%test>a>b>c>d";
 
     @Test
     public void test_01() {
@@ -135,7 +144,9 @@ public class NestedObjectReferenceTest {
             Assert.assertTrue("modlValue should be a ModlValue.String", modlValue instanceof ModlObject.String);
 
             final ModlObject.String stringValue = (ModlObject.String) modlValue;
-            Assert.assertEquals("modlValue has incorrect value.", "this is a string that includes a reference with a letter s after it 1s", stringValue.string);
+            Assert.assertEquals("modlValue has incorrect value.",
+                                "this is a string that includes a reference with a letter s after it 1s",
+                                stringValue.string);
 
 
         } catch (IOException e) {
@@ -148,7 +159,8 @@ public class NestedObjectReferenceTest {
         try {
             final ModlObject modlObject = Interpreter.interpret(nestedTestString03);
             Assert.assertNotNull(modlObject);
-            Assert.fail("Expected a RuntimeException since the variable name doesn't match anything from the input string.");
+            Assert.fail(
+                "Expected a RuntimeException since the variable name doesn't match anything from the input string.");
         } catch (IOException e) {
             Assert.fail(e.getLocalizedMessage());
         } catch (RuntimeException r) {
@@ -189,7 +201,9 @@ public class NestedObjectReferenceTest {
             Assert.assertTrue("modlValue should be a ModlValue.String", modlValue instanceof ModlObject.String);
 
             final ModlObject.String stringValue = (ModlObject.String) modlValue;
-            Assert.assertEquals("modlValue has incorrect value.", "this is a string that includes extra transforms for the value test_value", stringValue.string);
+            Assert.assertEquals("modlValue has incorrect value.",
+                                "this is a string that includes extra transforms for the value test_value",
+                                stringValue.string);
 
 
         } catch (IOException e) {
@@ -227,7 +241,9 @@ public class NestedObjectReferenceTest {
             Assert.assertTrue("modlValue should be a ModlValue.String", modlValue instanceof ModlObject.String);
 
             final ModlObject.String stringValue = (ModlObject.String) modlValue;
-            Assert.assertEquals("modlValue has incorrect value.", "this is a string that includes extra transforms for the value test2_value", stringValue.string);
+            Assert.assertEquals("modlValue has incorrect value.",
+                                "this is a string that includes extra transforms for the value test2_value",
+                                stringValue.string);
 
 
         } catch (IOException e) {
@@ -341,7 +357,9 @@ public class NestedObjectReferenceTest {
             Assert.assertTrue("modlValue should be a ModlValue.Pair", modlValue instanceof ModlObject.Pair);
 
             final ModlObject.Pair pair = (ModlObject.Pair) modlValue;
-            Assert.assertEquals("modlValue has incorrect value.", "three", ((ModlObject.String)pair.getModlValue()).string);
+            Assert.assertEquals("modlValue has incorrect value.",
+                                "three",
+                                ((ModlObject.String) pair.getModlValue()).string);
 
 
         } catch (IOException e) {
@@ -380,6 +398,69 @@ public class NestedObjectReferenceTest {
 
             final ModlObject.String stringValue = (ModlObject.String) modlValue;
             Assert.assertEquals("modlValue has incorrect value.", "three", stringValue.string);
+
+        } catch (IOException e) {
+            Assert.fail(e.getLocalizedMessage());
+        }
+    }
+
+    @Test
+    public void test_10() {
+        try {
+            final ModlObject modlObject = Interpreter.interpret(nestedTestString10);
+
+            final List<ModlObject.Structure> structures = modlObject.getStructures();
+
+            ModlObject.Structure structure = structures.get(1);
+
+            final List<? extends ModlValue> modlValues = structure.getModlValues();
+
+            final ModlValue modlValue = modlValues.get(0);
+
+            final ModlObject.String stringValue = (ModlObject.String) modlValue;
+            Assert.assertEquals("modlValue has incorrect value.", "f", stringValue.string);
+
+        } catch (IOException e) {
+            Assert.fail(e.getLocalizedMessage());
+        }
+    }
+
+    @Test
+    public void test_11() {
+        try {
+            final ModlObject modlObject = Interpreter.interpret(nestedTestString11);
+
+            final List<ModlObject.Structure> structures = modlObject.getStructures();
+
+            ModlObject.Structure structure = structures.get(1);
+
+            final List<? extends ModlValue> modlValues = structure.getModlValues();
+
+            final ModlValue modlValue = modlValues.get(0);
+
+            final ModlObject.Number numericValue = (ModlObject.Number) modlValue;
+            Assert.assertEquals("modlValue has incorrect value.", "1", numericValue.number);
+
+        } catch (IOException e) {
+            Assert.fail(e.getLocalizedMessage());
+        }
+    }
+
+    @Test
+    public void test_12() {
+        try {
+            final ModlObject modlObject = Interpreter.interpret(nestedTestString12);
+
+            final List<ModlObject.Structure> structures = modlObject.getStructures();
+
+            ModlObject.Structure structure = structures.get(1);
+
+            final List<? extends ModlValue> modlValues = structure.getModlValues();
+
+            final ModlValue modlValue = modlValues.get(0);
+
+            final ModlObject.String stringValue = (ModlObject.String) modlValue;
+            Assert.assertEquals("modlValue has incorrect value.", "f", stringValue.string);
 
         } catch (IOException e) {
             Assert.fail(e.getLocalizedMessage());

@@ -465,7 +465,7 @@ Replace the part originally found (including graves) with the transformed subjec
             }
         } else {
             if (ctx instanceof ModlObject.Pair) {
-                if (!currentKey.equals(((ModlObject.Pair) ctx).getKey())) {
+                if (!currentKey.equals(((ModlObject.Pair) ctx).getKey().string)) {
                     throw new RuntimeException("Object reference should match the key name for a Pair");
                 }
                 newCtx = ((ModlObject.Pair) ctx).getModlValue();
