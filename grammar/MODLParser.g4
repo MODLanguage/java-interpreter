@@ -21,36 +21,36 @@ options {
 
 modl
   // Valid MODL is zero or more MODL structures separated by semi-colons, newlines or both
-  : (NEWLINE* structure ( ( SC | NEWLINE+ | SC NEWLINE+ ) structure )* SC?)? NEWLINE* EOF;
+  : (NEWLINE* modl_structure ( NEWLINE* SC? NEWLINE* modl_structure NEWLINE*)* )? NEWLINE* SC? NEWLINE* EOF;
 
-structure
-  : map
-  | array
-  | top_level_conditional
-  | pair
+modl_structure
+  : modl_map
+  | modl_array
+  | modl_top_level_conditional
+  | modl_pair
   ;
 
-map
+modl_map
   // ( key = value; key = value )
   : LBRAC NEWLINE*
-        ( map_item (SC? NEWLINE* map_item )* NEWLINE* )?
+        ( modl_map_item (SC? NEWLINE* modl_map_item )* NEWLINE* )?
     RBRAC
   ;
 
-array
+modl_array
   // [ item; item ]
   : LSBRAC NEWLINE*
-        ( ( array_item | nb_array ) (SC? NEWLINE* ( array_item | nb_array ) )* SC? NEWLINE* )?
+        ( ( modl_array_item | modl_nb_array ) ((SC+ | NEWLINE+) ( modl_array_item | modl_nb_array ) )* NEWLINE* )?
     RSBRAC
   ;
 
-nb_array
-  // non-bracketed array
-  // numbers=1:2:3:4:5:6
-  : array_item (NEWLINE* COLON NEWLINE* array_item )+
+modl_nb_array
+  // non-bracketed array with missing elements
+  // numbers=1:2:3:::4:5:6
+  : modl_array_item (NEWLINE* COLON+ NEWLINE* modl_array_item )+
   ;
 
-pair
+modl_pair
   // A pair can be a traditional name-value pair split by an equals sign (standard pair),
   // e.g. name=John
   //
@@ -61,13 +61,13 @@ pair
   // It's also possible to do the same with an array pair
   // e.g. numbers[1;2;3] – equivalent to numbers=[1;2;3]
 
-  : ( STRING | QUOTED) EQUALS ( value_item )                              // key = value        (standard pair)
-  | STRING map                                                            // key( key = value ) (map pair)
-  | STRING array                                                          // key[ item; item ]  (array pair)
+  : ( STRING | QUOTED) NEWLINE* EQUALS NEWLINE* modl_value_item                // key = value        (standard pair)
+  | STRING modl_map                                                            // key( key = value ) (map pair)
+  | STRING modl_array                                                          // key[ item; item ]  (array pair)
   ;
 
-value_item
-  : ( value | value_conditional )
+modl_value_item
+  : ( modl_value | modl_value_conditional )
   ;
 
 // Four conditional rules are set because the grammar validates the conditional return depending on
@@ -75,89 +75,89 @@ value_item
 // MODL structure, a conditional within a map can only return a pair, a conditional within an array
 // can only return a value, a conditional assigned to a key MUST return a value. Each can return another
 // conditional of the same type.
-top_level_conditional
+modl_top_level_conditional
   // Conditionals at the top level do not require else
   // { country=gb? return=this /country=us? return=that }
   : LCBRAC NEWLINE*
-        condition_test QMARK NEWLINE*
-        top_level_conditional_return NEWLINE*
-        (FSLASH NEWLINE* condition_test? QMARK NEWLINE*
-        top_level_conditional_return )* NEWLINE*
+        modl_condition_test QMARK NEWLINE*
+        modl_top_level_conditional_return NEWLINE*
+        (FSLASH NEWLINE* modl_condition_test? QMARK NEWLINE*
+        modl_top_level_conditional_return )* NEWLINE*
     RCBRAC
   ;
-  top_level_conditional_return
-    : structure ( ( SC | NEWLINE | SC NEWLINE ) structure )* SC? NEWLINE*
+  modl_top_level_conditional_return
+    : modl_structure ( ( SC | NEWLINE | SC NEWLINE ) modl_structure )* SC? NEWLINE*
     ;
 
-map_conditional
+modl_map_conditional
   // Conditionals within maps do not require else
   // e.g. { country=gb? return=this /country=us? return=that }
   : LCBRAC NEWLINE*
-        condition_test QMARK NEWLINE* map_conditional_return NEWLINE*
-        (FSLASH NEWLINE* condition_test? QMARK NEWLINE*
-        map_conditional_return )* NEWLINE*
+        modl_condition_test QMARK NEWLINE* modl_map_conditional_return NEWLINE*
+        (FSLASH NEWLINE* modl_condition_test? QMARK NEWLINE*
+        modl_map_conditional_return )* NEWLINE*
     RCBRAC
   ;
-  map_conditional_return
-    : map_item ( ( SC | NEWLINE* | SC NEWLINE* ) map_item )* SC? NEWLINE*
+  modl_map_conditional_return
+    : modl_map_item ( ( SC | NEWLINE* | SC NEWLINE* ) modl_map_item )* SC? NEWLINE*
     ;
-    map_item
-      : pair | map_conditional
+    modl_map_item
+      : modl_pair | modl_map_conditional
       ;
 
-array_conditional
+modl_array_conditional
   // Conditionals within arrays do not require else
   // e.g. { country=gb? this /country=us? that }
   : LCBRAC NEWLINE*
-        condition_test QMARK NEWLINE* array_conditional_return NEWLINE*
-        (FSLASH NEWLINE* condition_test? QMARK NEWLINE*
-        array_conditional_return )* NEWLINE*
+        modl_condition_test QMARK NEWLINE* modl_array_conditional_return NEWLINE*
+        (FSLASH NEWLINE* modl_condition_test? QMARK NEWLINE*
+        modl_array_conditional_return )* NEWLINE*
     RCBRAC
   ;
-  array_conditional_return
-    : array_item ( ( SC | NEWLINE* | SC NEWLINE* ) array_item )* SC? NEWLINE*
+  modl_array_conditional_return
+    : modl_array_item ( ( SC | NEWLINE+ | SC NEWLINE* ) modl_array_item )* NEWLINE*
     ;
-    array_item
-      : array_value_item | array_conditional
+    modl_array_item
+      : modl_array_value_item | modl_array_conditional
       ;
 
-value_conditional
+modl_value_conditional
   // Conditionals within values DO require else
   // e.g. { country=gb? this /country=us? that /? other }
-  : LCBRAC NEWLINE* condition_test QMARK NEWLINE* value_conditional_return NEWLINE*
-        (FSLASH NEWLINE* condition_test QMARK NEWLINE* value_conditional_return )* NEWLINE*
-        (FSLASH NEWLINE* QMARK NEWLINE* value_conditional_return) NEWLINE*
+  : LCBRAC NEWLINE* modl_condition_test QMARK (NEWLINE* modl_value_conditional_return NEWLINE*
+        (FSLASH NEWLINE* modl_condition_test QMARK NEWLINE* modl_value_conditional_return )* NEWLINE*
+        (FSLASH NEWLINE* QMARK NEWLINE* modl_value_conditional_return) NEWLINE*)?
     RCBRAC
   ;
-  value_conditional_return
-    : value_item ( NEWLINE* COLON value_item ) *
+  modl_value_conditional_return
+    : modl_value_item ( NEWLINE* COLON modl_value_item ) *
     ;
 
-condition_test
+modl_condition_test
   // country=gb|language=en?
-  : EXCLAM? ( condition | condition_group ) (( AMP | PIPE ) EXCLAM? ( condition | condition_group ) )*
+  : EXCLAM? ( modl_condition | modl_condition_group ) (( AMP | PIPE ) EXCLAM? ( modl_condition | modl_condition_group ) )*
   ;
 
-operator
+modl_operator
   // operator within conditionals
   : EQUALS | GTHAN | GTHAN EQUALS | LTHAN | LTHAN EQUALS | EXCLAM EQUALS
   ;
 
-condition
+modl_condition
   // e.g. country=gb
-  : NEWLINE* STRING? operator? value (PIPE value )* NEWLINE*
+  : NEWLINE* STRING? modl_operator? modl_value (PIPE modl_value )* NEWLINE*
   ;
 
-condition_group
+modl_condition_group
   // { country=ca & language=fr }
-  : LCBRAC condition_test (( AMP | PIPE ) condition_test)* RCBRAC
+  : LCBRAC modl_condition_test (( AMP | PIPE ) modl_condition_test)* RCBRAC
   ;
 
-value
-  : map
-  | array
-  | nb_array
-  | pair
+modl_value
+  : modl_map
+  | modl_array
+  | modl_nb_array
+  | modl_pair
   | QUOTED
   | NUMBER
   | STRING
@@ -166,10 +166,10 @@ value
   | NULL
 ;
 
-array_value_item
-  : map
-  | pair
-  | array
+modl_array_value_item
+  : modl_map
+  | modl_pair
+  | modl_array
   | QUOTED
   | NUMBER
   | STRING
