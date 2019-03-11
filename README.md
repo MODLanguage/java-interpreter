@@ -50,6 +50,7 @@ git checkout -b branch-for-pr
 
 #we connect to the grammar repo that contains the files we want
 git remote add grammar git@github.com:MODLanguage/grammar
+git fetch grammar
 
 #we create a tmp branch with a copy of the grammar on master
 git checkout -b removeme-export-branch grammar/master
