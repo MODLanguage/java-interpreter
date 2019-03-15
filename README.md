@@ -105,3 +105,40 @@ git subtree merge --squash --prefix src/test/json removeme-tests-branch
 git branch -D removeme-export-branch removeme-tests-branch
 git remote rm grammar
 ```
+## Publishing to Maven Central
+
+The gradle configuration supports publishing to maven. You need to set your credentials
+and create a public/private key pair for signing the file. Gradle will take care of most
+of the process for you but you will need to configure your credentials.
+
+Install gpg to create a key (for signing the files). Generate your key with
+`gpg --gen-key` and then export it with `gpg --export-secret-keys -o secring.gpg`.
+You can name the file differently if you want. It's the path to that file that you will need
+to provide in the gradle configuration file.
+
+To set your credentials, please edit `~/.gradle/gradle.properties`. The file may not exist
+yet. Add the following properties:
+
+```
+signing.keyId=<GPG short key (8 hex characters)>
+signing.password=<passphrase for your key>
+signing.secretKeyRingFile=<path to the key ring file>
+
+sonatypeUsername=<Sonatype username provided by admin>
+sonatypePassword=<Sonatype password>
+```
+
+You can get the short key with `gpg --list-keys --keyid-format short`. Please contact
+an administrator of the project to get Sonatype credentials.
+
+You will now need to upload your public key to allow maven to check the file signatures.
+To achieve that, simply execute the following command: 
+`gpg --keyserver hkp://pool.sks-keyservers.net --send-key <hex code of the gpg key>`
+
+You're all set, you can now publish by running `gradle publish`. Once the operation is
+successful, go to `https://oss.sonatype.org` and log in with your sonatype credentials
+(the same as those used for the gradle config file). Go to the "Staging Repositories" page 
+and locate your build (it should be at the very bottom of the page). Select it and click "Close".
+After a while, you will get some feedback. If you get errors, fix the issues mentioned and try again.
+Once you get a successful build, click the "Release" button and the build will find its way to
+maven central after a few minutes/hours.
