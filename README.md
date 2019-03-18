@@ -99,7 +99,7 @@ git subtree split --prefix tests -b removeme-tests-branch
 git checkout branch-for-pr
 
 #we import the file we extracted in the interpreter project
-git subtree merge --squash --prefix src/test/json removeme-tests-branch
+git subtree merge --squash --prefix grammar_tests removeme-tests-branch
 
 #we clean up the temporary branches and remote connection
 git branch -D removeme-export-branch removeme-tests-branch
