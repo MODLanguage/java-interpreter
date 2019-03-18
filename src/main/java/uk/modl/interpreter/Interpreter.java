@@ -28,11 +28,12 @@ import uk.modl.parser.printers.JsonPrinter;
 
 import java.io.IOException;
 import java.util.*;
-//import java.util.function.Function;
 
 import static uk.modl.parser.ModlObjectCreator.MODL_VERSION;
 
 public class Interpreter {
+
+    private final static String IDENTIFIER_REGEX = "\\?|((_|\\*)?[a-zA-Z][0-9a-zA-Z_]*)";
 
     Map<String, Map<String, Object>> klasses = new LinkedHashMap<>();
     Map<String, ModlValue> variables = new HashMap<>();
@@ -140,6 +141,11 @@ public class Interpreter {
                     ((ModlObject.Pair) rawStructure).getKey().string != null &&
                     (((ModlObject.Pair) rawStructure).getKey().string.equals("*V") ||
                             (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*VERSION"))))) {
+                if (rawStructure instanceof ModlObject.Pair && ((ModlObject.Pair) rawStructure).getKey() != null &&
+                        ((ModlObject.Pair) rawStructure).getKey().string != null &&
+                        (((ModlObject.Pair) rawStructure).getKey().string.startsWith("*"))) {
+                    throw new RuntimeException("Unrecognised configuration instruction : " + ((ModlObject.Pair) rawStructure).getKey().string);
+                }
                 startedInterpreting = true;
             } else if (rawStructure instanceof ModlObject.Pair && ((ModlObject.Pair) rawStructure).getKey() != null &&
                     ((ModlObject.Pair) rawStructure).getKey().string != null &&
@@ -224,7 +230,11 @@ public class Interpreter {
             return null;
         }
         if (rawPair.getKey() != null && rawPair.getKey().string != null) {
+            if (!(rawPair.getKey().string.matches(IDENTIFIER_REGEX))) {
+                throw new RuntimeException("Pair name " + rawPair.getKey().string + " is illegal");
+            }
             if (rawPair.getKey().string.equals("?")) {
+                numberedVariables = new HashMap<>();
                 VariableLoader.loadConfigNumberedVariables(rawPair.getModlValue(), numberedVariables);
                 return null;
             }
@@ -312,61 +322,61 @@ public class Interpreter {
                 newValue = (transformString(((ModlObject.Pair) value).getKey().string));
             }
             // Now go through the object reference for value.getModlValue() until we are at the end of it!
-            newValue = runDeepReference((ModlObject.Pair) value, newValue);
+//            newValue = runDeepReference((ModlObject.Pair) value, newValue);
             pair.addModlValue(newValue);
         } else {
             pair.addModlValue(interpret(modlObject, value, parentPair));
         }
     }
 
-    private ModlValue runDeepReference(ModlObject.Pair value, ModlValue newValue) {
-        if (value.getModlValue() != null) {
-            ModlObject.Array array = ((ModlObject.Array) (value.getModlValue()));
-            while (array.getValues().size() > 1 || array.getValues().get(0) instanceof ModlObject.Pair) {
-                // Go down a level.
-                // The first value is a number/string, so to load newValue from Map or Array in newValue
-                // The second value is the next array in the loop - if there is one
-                ModlValue referenceValue = array.get(0);
-                if (array.getValues().get(0) instanceof ModlObject.Pair) {
-                    referenceValue = ((ModlObject.Pair) array.getValues().get(0)).getKey();
-                }
-                newValue = referenceObject(newValue, referenceValue);
-                if (array.getValues().size() > 1) {
-                    array = ((ModlObject.Array) array.getValues().get(1));
-                } else {
-                    array = ((ModlObject.Array) ((ModlObject.Pair) array.getValues().get(0)).getModlValue());
-                }
-            }
-            // We're down to the bottom now, so get the last number/string and load from the Map or Array in newValue
-            newValue = referenceObject(newValue, array.get(0));
-        }
-        return newValue;
-    }
-
-    private ModlValue referenceObject(ModlValue objectToReference, ModlValue referenceValue) {
-        if (objectToReference instanceof ModlObject.Pair) {
-            objectToReference = ((ModlObject.Pair) objectToReference).getModlValue();
-        }
-        if (objectToReference instanceof ModlObject.Map) {
-            if (referenceValue instanceof ModlObject.String) {
-                referenceValue = transformString(((ModlObject.String) referenceValue).string);
-                return (((ModlObject.Map) objectToReference).get(((ModlObject.String) referenceValue)));
-            }
-            if (referenceValue instanceof ModlObject.Number) {
-                return ((((ModlObject.Map) objectToReference).get(new Integer(((ModlObject.Number) referenceValue).number)))).getModlValue();
-            }
-        } else if (objectToReference instanceof ModlObject.Array) {
-            if (referenceValue instanceof ModlObject.String) {
-                referenceValue = transformString(((ModlObject.String) referenceValue).string);
-                return (((ModlObject.Array) objectToReference).get(((ModlObject.String) referenceValue)));
-            }
-            if (referenceValue instanceof ModlObject.Number) {
-                return (((ModlObject.Array) objectToReference).get(new Integer(((ModlObject.Number) referenceValue).number)));
-            }
-        }
-//        throw new RuntimeException("Can't reference " + objectToReference.getClass());
-        return objectToReference;
-    }
+//    private ModlValue runDeepReference(ModlObject.Pair value, ModlValue newValue) {
+//        if (value.getModlValue() != null) {
+//            ModlObject.Array array = ((ModlObject.Array) (value.getModlValue()));
+//            while (array.getValues().size() > 1 || array.getValues().get(0) instanceof ModlObject.Pair) {
+//                // Go down a level.
+//                // The first value is a number/string, so to load newValue from Map or Array in newValue
+//                // The second value is the next array in the loop - if there is one
+//                ModlValue referenceValue = array.get(0);
+//                if (array.getValues().get(0) instanceof ModlObject.Pair) {
+//                    referenceValue = ((ModlObject.Pair) array.getValues().get(0)).getKey();
+//                }
+//                newValue = referenceObject(newValue, referenceValue);
+//                if (array.getValues().size() > 1) {
+//                    array = ((ModlObject.Array) array.getValues().get(1));
+//                } else {
+//                    array = ((ModlObject.Array) ((ModlObject.Pair) array.getValues().get(0)).getModlValue());
+//                }
+//            }
+//            // We're down to the bottom now, so get the last number/string and load from the Map or Array in newValue
+//            newValue = referenceObject(newValue, array.get(0));
+//        }
+//        return newValue;
+//    }
+//
+//    private ModlValue referenceObject(ModlValue objectToReference, ModlValue referenceValue) {
+//        if (objectToReference instanceof ModlObject.Pair) {
+//            objectToReference = ((ModlObject.Pair) objectToReference).getModlValue();
+//        }
+//        if (objectToReference instanceof ModlObject.Map) {
+//            if (referenceValue instanceof ModlObject.String) {
+//                referenceValue = transformString(((ModlObject.String) referenceValue).string);
+//                return (((ModlObject.Map) objectToReference).get(((ModlObject.String) referenceValue)));
+//            }
+//            if (referenceValue instanceof ModlObject.Number) {
+//                return ((((ModlObject.Map) objectToReference).get(new Integer(((ModlObject.Number) referenceValue).number)))).getModlValue();
+//            }
+//        } else if (objectToReference instanceof ModlObject.Array) {
+//            if (referenceValue instanceof ModlObject.String) {
+//                referenceValue = transformString(((ModlObject.String) referenceValue).string);
+//                return (((ModlObject.Array) objectToReference).get(((ModlObject.String) referenceValue)));
+//            }
+//            if (referenceValue instanceof ModlObject.Number) {
+//                return (((ModlObject.Array) objectToReference).get(new Integer(((ModlObject.Number) referenceValue).number)));
+//            }
+//        }
+////        throw new RuntimeException("Can't reference " + objectToReference.getClass());
+//        return objectToReference;
+//    }
 
     private boolean generateModlClassObject(ModlObject modlObject, RawModlObject.Pair rawPair, ModlObject.Pair pair,
                                             String originalKey, String newKey, Object parentPair) {
@@ -687,7 +697,15 @@ public class Interpreter {
         }
         ModlObject.Array array = modlObject.new Array();
         for (ModlValue vi : (((ModlObject.Array) rawValueItem)).getValues()) {
-            array.addValue(interpret(modlObject, vi, parentPair));
+            // TODO If this is an ArrayConditional, then get its list of values here
+            if (vi instanceof RawModlObject.ArrayConditional) {
+                List<ModlValue> newValues = interpret(modlObject, (RawModlObject.ArrayConditional) vi, parentPair);
+                for (ModlValue viNew : newValues) {
+                    array.addValue(interpret(modlObject, viNew, parentPair));
+                }
+            } else {
+                array.addValue(interpret(modlObject, vi, parentPair));
+            }
         }
         return array;
     }
@@ -966,6 +984,9 @@ public class Interpreter {
             // Does this conditional evaluate?
             RawModlObject.ConditionTest conditionalTest = originalConditionalEntry.getKey();
             if (evaluates(conditionalTest)) {
+                if (originalConditionalEntry.getValue() == null) {
+                    return modlObject.new True();
+                }
                 if (originalConditionalEntry.getValue().getValues().size() == 1) {
                     return interpret(modlObject, originalConditionalEntry.getValue().getValues().get(0), parentPair);
                 }
@@ -976,6 +997,10 @@ public class Interpreter {
                 }
                 return returnValue;
             }
+            if (originalConditionalEntry.getValue() == null) {
+                return modlObject.new False();
+            }
+
         }
         return null;
     }

@@ -836,11 +836,22 @@ public class ModlParsed extends MODLParserBaseListener {
                         .modl_condition_test(i)
                         .enterRule(conditionTest);
 
-                ValueConditionalReturn conditionalReturn = new ValueConditionalReturn();
-                ctx
-                        .modl_value_conditional_return(i)
-                        .enterRule(conditionalReturn);
-                valueConditionalReturns.put(conditionTest, conditionalReturn);
+                if (ctx.modl_value_conditional_return().size() > 0) {
+                    ValueConditionalReturn conditionalReturn = new ValueConditionalReturn();
+                    ctx
+                            .modl_value_conditional_return(i)
+                            .enterRule(conditionalReturn);
+                    valueConditionalReturns.put(conditionTest, conditionalReturn);
+                } else {
+//                    List<ValueItem> valueItems = new LinkedList<>();
+//                    Value value = new Value();
+//                    value.falseVal = new False();
+//                    ValueItem valueItem = new ValueItem();
+//                    valueItem.value = (value);
+//                    valueItems.add(valueItem);
+//                    conditionalReturn.valueItems =valueItems;
+                    valueConditionalReturns.put(conditionTest, null);
+                }
             }
             if (ctx
                     .modl_value_conditional_return()

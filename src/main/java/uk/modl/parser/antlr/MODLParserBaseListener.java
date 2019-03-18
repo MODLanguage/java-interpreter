@@ -1,5 +1,5 @@
-// Generated from MODLParser.g4 by ANTLR 4.7.2
 package uk.modl.parser.antlr;
+// Generated from /Users/alex/code/NUM/MODL/interpreter/grammar/MODLParser.g4 by ANTLR 4.7
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;

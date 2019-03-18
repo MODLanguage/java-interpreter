@@ -115,7 +115,11 @@ public class ModlValueJsonSerializer extends JsonSerializer<ModlValue> {
             gen.writeStartObject();
         }
         gen.writeFieldName(pair.getKey().string);
-        serializeInternal(pair.getModlValue(), gen, serializers, startObject);
+        boolean newStartObject = startObject;
+        if (pair.getModlValue() instanceof ModlObject.Pair && !startObject) {
+            newStartObject = true;
+        }
+        serializeInternal(pair.getModlValue(), gen, serializers, newStartObject);
         if (startObject) {
             gen.writeEndObject();
         }

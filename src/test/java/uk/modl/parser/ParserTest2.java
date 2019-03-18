@@ -473,22 +473,22 @@ public class ParserTest2 extends TestCase {
                                 "]",
                         "true2=01;true1=01;false2=00;false1=00;null2=000;null1=000"},
                 {"?=[a;b;c;d]:[1;2;3;4;5]\n" +
-                        "test=%1[0]",
+                        "test=%1>0",
                         "{\n" +
                                 "    \"test\": 1\n" +
                                 "}",
-                "?=[a;b;c;d]:[1;2;3;4;5];test=%1[0]"},
+                "?=[a;b;c;d]:[1;2;3;4;5];test=%1>0"},
                 {"_person(  \n" +
                         "  name(\n" +
                         "    first=John\n" +
                         "    last=Smith\n" +
                         "  )\n" +
                         ")\n" +
-                        "say=%person[name[first]]",
+                        "say=%person>name>first",
                         "{\n" +
                                 "    \"say\": \"John\"\n" +
                                 "}",
-                "_person(name(first=John;last=Smith));say=%person[name[first]]"},
+                "_person(name(first=John;last=Smith));say=%person>name>first"},
                 {"_C=gb\n" +
                         "_COUNTRIES(\n" +
                         "  us=United States\n" +
@@ -496,10 +496,10 @@ public class ParserTest2 extends TestCase {
                         "  de=Germany\n" +
                         ")\n" +
                         "\n" +
-                        "country_name = %COUNTRIES[%C]", "{\n" +
+                        "country_name = %COUNTRIES>%C", "{\n" +
                         "  \"country_name\" : \"United Kingdom\"\n" +
                         "}",
-                "_C=gb;_COUNTRIES(us=United States;gb=United Kingdom;de=Germany);country_name=%COUNTRIES[%C]"},
+                "_C=gb;_COUNTRIES(us=United States;gb=United Kingdom;de=Germany);country_name=%COUNTRIES>%C"},
                 {"*class(\n" +
                         "  *id=car\n" +
                         "  *name=car\n" +
@@ -520,34 +520,34 @@ public class ParserTest2 extends TestCase {
                                 "  }\n" +
                                 "}",
                 "*c(*i=car;*n=car;*s=map;*a=[m]:[m;md]);_C=gb;car=Bentley:{C=ru?ContinentalRussia GT/?Continental GT}"},
-//                {"_person(  \n" +
-//                        "  name(\n" +
-//                        "    first=John\n" +
-//                        "    last=Smith\n" +
-//                        "  )\n" +
-//                        ")\n" +
-//                        "say=Hi %person[name[first]]",
-//                "{\n" +
-//                        "    \"say\": \"Hi John\"\n" +
-//                        "}"},
-//                {"_person(  \n" +
-//                        "  name(\n" +
-//                        "    first=John\n" +
-//                        "    last=Smith\n" +
-//                        "  )\n" +
-//                        ")\n" +
-//                        "say=\"Hi, my name is %person[name[first]] %person[name[last]]\"",
-//                "{\n" +
-//                        "  \"say\" : \"Hi, my name is John Smith\"\n" +
-//                        "}"},
+                {"_person(  \n" +
+                        "  name(\n" +
+                        "    first=John\n" +
+                        "    last=Smith\n" +
+                        "  )\n" +
+                        ")\n" +
+                        "say=Hi %person>name>first",
+                "{\n" +
+                        "    \"say\": \"Hi John\"\n" +
+                        "}"},
+                {"_person(  \n" +
+                        "  name(\n" +
+                        "    first=John\n" +
+                        "    last=Smith\n" +
+                        "  )\n" +
+                        ")\n" +
+                        "say=\"Hi, my name is %person>name>first %person>name>last\"",
+                "{\n" +
+                        "  \"say\" : \"Hi, my name is John Smith\"\n" +
+                        "}"},
                 {"_person(  \n" +
                         "  name(\n" +
                         "    first=\"John\"\n" +
                         "  )\n" +
                         ")\n" +
-                        "a=%person[name[first]]",
+                        "a=%person>name>first",
                         "{\"a\":\"John\"}",
-                "_person(name(first=John));a=%person[name[first]]"},
+                "_person(name(first=John));a=%person>name>first"},
 
                 {"?=[a;b;c;d]:[1;2;3;4;5]\n" +
                         "test=%1",
@@ -790,10 +790,10 @@ public class ParserTest2 extends TestCase {
                         "  two = 2\n" +
                         ")\n" +
                         "\n" +
-                        "first_number = %test_vars[one]", "{\n" +
+                        "first_number = %test_vars>one", "{\n" +
                         "  \"first_number\" : 1\n" +
                         "}",
-                "_test_vars(one=1;two=2);first_number=%test_vars[one]"},
+                "_test_vars(one=1;two=2);first_number=%test_vars>one"},
                 {"_C=gb\n" +
                         "_COUNTRIES[\n" +
                         "  United States\n" +
@@ -801,9 +801,9 @@ public class ParserTest2 extends TestCase {
                         "  Germany\n" +
                         "]\n" +
                         "\n" +
-                        "country_name = %COUNTRIES[0]",
+                        "country_name = %COUNTRIES>0",
                         "{ \"country_name\" : \"United States\" }",
-                "_C=gb;_COUNTRIES=United States:United Kingdom:Germany;country_name=%COUNTRIES[0]"},
+                "_C=gb;_COUNTRIES=United States:United Kingdom:Germany;country_name=%COUNTRIES>0"},
 
                 {"(_C=gb\n" +
                         "{C=gb?test1=123}\n" +

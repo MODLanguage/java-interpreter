@@ -22,7 +22,6 @@ package uk.modl.parser;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import uk.modl.modlObject.ModlObject;
 import uk.modl.modlObject.ModlValue;
-import uk.modl.parser.antlr.MODLParser;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -366,12 +365,15 @@ public class ModlObjectCreator {
                         array.addValue(value);
                     }
                 } else if (arrayItemParsed instanceof ModlParsed.NbArray) {
+                    ModlObject.Array nbArray = rawModlObject.new Array();
                     for (ModlParsed.ArrayItem ai : ((ModlParsed.NbArray)arrayItemParsed).getArrayItems()) {
                         ModlValue value = processModlParsed(rawModlObject, ai);
                         if (value != null) {
-                            array.addValue(value);
+//                            array.addValue(value);
+                            nbArray.addValue(value);
                         }
                     }
+                    array.addValue(nbArray);
                 }
             }
         }

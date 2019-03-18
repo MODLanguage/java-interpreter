@@ -67,6 +67,15 @@ public class NestedObjectReferenceTest {
             " \n" +
             "testing = \"`%test>first>v1>one>two`\"";
 
+    private final String nestedTestString10 = "test=(a=b=c=d=f)\n" +
+            "testing=%test>a>b>c>d";
+
+    private final String nestedTestString11 = "a(b(c(d(e(f=1)))))\n" +
+            "testing=%a>b>c>d>e>f";
+
+    private final String nestedTestString12 = "test=(a=b=c=d=f)\n" +
+            "x=%test>a>b>c>d";
+
     @Test
     public void test_01() {
         try {
@@ -315,37 +324,16 @@ public class NestedObjectReferenceTest {
     public void test_08() {
         try {
             final ModlObject modlObject = Interpreter.interpret(nestedTestString08);
-            Assert.assertNotNull("ModlObject should not be null", modlObject);
-
-            final List<ModlObject.Structure> structures = modlObject.getStructures();
-            Assert.assertNotNull("structures should not be null", structures);
-            Assert.assertEquals("structure should have only one element.", 1, structures.size());
-
-            ModlObject.Structure structure = structures.get(0);
-            Assert.assertNotNull("structure should not be null", structure);
-
-            final List<String> keys = structure.getKeys();
-            Assert.assertNotNull("keys should not be null", keys);
-            Assert.assertEquals("keys should have only one element.", 1, keys.size());
-
-            final String key = keys.get(0);
-            Assert.assertNotNull("key should not be null", key);
-            Assert.assertEquals("key has incorrect value.", "testing", key);
-
-            final List<? extends ModlValue> modlValues = structure.getModlValues();
-            Assert.assertNotNull("modlValues should not be null", modlValues);
-            Assert.assertEquals("modlValues should have only one element.", 1, modlValues.size());
-
-            final ModlValue modlValue = modlValues.get(0);
-            Assert.assertNotNull("modlValue should not be null", modlValue);
-            Assert.assertTrue("modlValue should be a ModlValue.Pair", modlValue instanceof ModlObject.Pair);
-
-            final ModlObject.Pair pair = (ModlObject.Pair) modlValue;
-            Assert.assertEquals("modlValue has incorrect value.", "three", ((ModlObject.String)pair.getModlValue()).string);
-
-
+            Assert.assertNotNull(modlObject);
+            Assert.fail("Expected a RuntimeException due to numerical indexing of maps");
         } catch (IOException e) {
             Assert.fail(e.getLocalizedMessage());
+        } catch (RuntimeException r) {
+            if (!r.getLocalizedMessage().startsWith("Object reference is numerical for non-Array value")) {
+                System.out.println(r.getLocalizedMessage());
+                Assert.fail("Wrong error message received, expected 'Object reference is numerical for non-Array value'.");
+            }
+            // Ok, the exception is valid.
         }
     }
 
@@ -386,5 +374,66 @@ public class NestedObjectReferenceTest {
         }
     }
 
+    @Test
+    public void test_10() {
+        try {
+            final ModlObject modlObject = Interpreter.interpret(nestedTestString10);
 
+            final List<ModlObject.Structure> structures = modlObject.getStructures();
+
+            ModlObject.Structure structure = structures.get(1);
+
+            final List<? extends ModlValue> modlValues = structure.getModlValues();
+
+            final ModlValue modlValue = modlValues.get(0);
+
+            final ModlObject.String stringValue = (ModlObject.String) modlValue;
+            Assert.assertEquals("modlValue has incorrect value.", "f", stringValue.string);
+
+        } catch (IOException e) {
+            Assert.fail(e.getLocalizedMessage());
+        }
+    }
+
+    @Test
+    public void test_11() {
+        try {
+            final ModlObject modlObject = Interpreter.interpret(nestedTestString11);
+
+            final List<ModlObject.Structure> structures = modlObject.getStructures();
+
+            ModlObject.Structure structure = structures.get(1);
+
+            final List<? extends ModlValue> modlValues = structure.getModlValues();
+
+            final ModlValue modlValue = modlValues.get(0);
+
+            final ModlObject.Number numericValue = (ModlObject.Number) modlValue;
+            Assert.assertEquals("modlValue has incorrect value.", "1", numericValue.number);
+
+        } catch (IOException e) {
+            Assert.fail(e.getLocalizedMessage());
+        }
+    }
+
+    @Test
+    public void test_12() {
+        try {
+            final ModlObject modlObject = Interpreter.interpret(nestedTestString12);
+
+            final List<ModlObject.Structure> structures = modlObject.getStructures();
+
+            ModlObject.Structure structure = structures.get(1);
+
+            final List<? extends ModlValue> modlValues = structure.getModlValues();
+
+            final ModlValue modlValue = modlValues.get(0);
+
+            final ModlObject.String stringValue = (ModlObject.String) modlValue;
+            Assert.assertEquals("modlValue has incorrect value.", "f", stringValue.string);
+
+        } catch (IOException e) {
+            Assert.fail(e.getLocalizedMessage());
+        }
+    }
 }

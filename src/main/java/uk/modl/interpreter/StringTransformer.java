@@ -176,9 +176,13 @@ public class StringTransformer {
         }
 
         // Check the first character after the number
-        if (!(stringToTransform.substring(currentIndex, currentIndex + 1).equals("."))) {
+        if (!(stringToTransform.substring(currentIndex, currentIndex + 1).equals(".")) &&
+                !(stringToTransform.substring(currentIndex, currentIndex + 1).equals(">"))) {
             // - if it is not a ".", then return the end of the number
             return currentIndex;
+        }
+        if ((stringToTransform.substring(currentIndex, currentIndex + 1).equals(">"))) {
+            return stringToTransform.length();
         }
         // If there is a ".", then keep reading until either :
         String newMethod = "";
@@ -198,7 +202,7 @@ public class StringTransformer {
                 }
             } else {
                 //   a) we don't have any more variable methods that match the lengthened string
-                if (!isLetter(nextChar.charAt(0))) {
+                if (!isLetter(nextChar.charAt(0)) && !isNumber(String.valueOf(nextChar.charAt(0)))) {
                     return currentIndex;
                 }
                 if (isVariableMethod(newMethod + nextChar)) {
@@ -436,13 +440,13 @@ Replace the part originally found (including graves) with the transformed subjec
      * @param key The key of the object that we need - possibly a nested reference.
      * @return The value that was referenced, or a RuntimeException if the reference is invalid.
      */
-    private ModlValue getValueForReferenceRecursive(final ModlValue ctx, final String key) {
+    private ModlValue getValueForReferenceRecursive(ModlValue ctx, final String key) {
 
         // Check for nested keys
         final int indexOfGreaterThanSymbol = key.indexOf(">");
         final boolean isNested = indexOfGreaterThanSymbol > -1;
         final String remainder;
-        final String currentKey;
+        String currentKey;
         if (isNested) {
             remainder = key.substring(indexOfGreaterThanSymbol + 1);
             currentKey = key.substring(0, indexOfGreaterThanSymbol);
@@ -451,21 +455,33 @@ Replace the part originally found (including graves) with the transformed subjec
             currentKey = key;
         }
 
+        if (ctx instanceof ModlObject.String) {
+//            ModlValue temp  = getValueForReference(((ModlObject.String)ctx).string);
+            ModlValue temp  = transformString(((ModlObject.String)ctx).string);
+            if (temp != null) {
+                ctx = temp;
+            }
+        }
+
         // Get the nested value via its name or number
         final ModlValue newCtx;
         if (isNumber(currentKey)) {
-            int index = Integer.parseInt(currentKey);
-            if (ctx instanceof ModlObject.Pair) {
-                if (index != 0) {
-                    throw new RuntimeException("Index should always be zero when reference the value of a Pair");
-                }
-                newCtx = ((ModlObject.Pair) ctx).getModlValue();
-            } else {
-                newCtx = ctx.get(index);
+            if (!(ctx instanceof ModlObject.Array)) {
+                throw new RuntimeException("Object reference is numerical for non-Array value");
             }
+            int index = Integer.parseInt(currentKey);
+//            if (ctx instanceof ModlObject.Pair) {
+//                if (index != 0) {
+//                    throw new RuntimeException("Index should always be zero when reference the value of a Pair");
+//                }
+//                newCtx = ((ModlObject.Pair) ctx).getModlValue();
+//            } else {
+                newCtx = ctx.get(index);
+//            }
         } else {
+            currentKey = ((ModlObject.String)(transformString(currentKey))).string;
             if (ctx instanceof ModlObject.Pair) {
-                if (!currentKey.equals(((ModlObject.Pair) ctx).getKey())) {
+                if (!currentKey.equals(((ModlObject.Pair) ctx).getKey().string)) {
                     throw new RuntimeException("Object reference should match the key name for a Pair");
                 }
                 newCtx = ((ModlObject.Pair) ctx).getModlValue();
