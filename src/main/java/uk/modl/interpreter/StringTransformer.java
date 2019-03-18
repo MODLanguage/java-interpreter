@@ -456,7 +456,6 @@ Replace the part originally found (including graves) with the transformed subjec
         }
 
         if (ctx instanceof ModlObject.String) {
-//            ModlValue temp  = getValueForReference(((ModlObject.String)ctx).string);
             ModlValue temp  = transformString(((ModlObject.String)ctx).string);
             if (temp != null) {
                 ctx = temp;
@@ -470,14 +469,7 @@ Replace the part originally found (including graves) with the transformed subjec
                 throw new RuntimeException("Object reference is numerical for non-Array value");
             }
             int index = Integer.parseInt(currentKey);
-//            if (ctx instanceof ModlObject.Pair) {
-//                if (index != 0) {
-//                    throw new RuntimeException("Index should always be zero when reference the value of a Pair");
-//                }
-//                newCtx = ((ModlObject.Pair) ctx).getModlValue();
-//            } else {
                 newCtx = ctx.get(index);
-//            }
         } else {
             currentKey = ((ModlObject.String)(transformString(currentKey))).string;
             if (ctx instanceof ModlObject.Pair) {

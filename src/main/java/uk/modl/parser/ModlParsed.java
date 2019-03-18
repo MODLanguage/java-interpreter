@@ -843,13 +843,6 @@ public class ModlParsed extends MODLParserBaseListener {
                             .enterRule(conditionalReturn);
                     valueConditionalReturns.put(conditionTest, conditionalReturn);
                 } else {
-//                    List<ValueItem> valueItems = new LinkedList<>();
-//                    Value value = new Value();
-//                    value.falseVal = new False();
-//                    ValueItem valueItem = new ValueItem();
-//                    valueItem.value = (value);
-//                    valueItems.add(valueItem);
-//                    conditionalReturn.valueItems =valueItems;
                     valueConditionalReturns.put(conditionTest, null);
                 }
             }
