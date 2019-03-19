@@ -19,7 +19,7 @@ sourceCompatibility = 1.7
 group = "uk.modl"
 applicationName = "java-interpreter"
 archivesBaseName = "java-interpreter"
-version = "0.0.3-SNAPSHOT"
+version = "0.0.3"
 
 def isSnapshot = version.endsWith("SNAPSHOT")
 
@@ -101,9 +101,28 @@ publishing {
             def snapshotsRepoUrl = "$buildDir/repos/snapshots"
             url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
             if(!isSnapshot) {
+                def stUser
+                def stPwd
+                
+                if (project.hasProperty('sonatypeUsername')) {
+                    stUser = sonatypeUsername
+                }
+                else{
+                    stUser = "notdefined"
+                    logger.warn("sonatypeUsername not defined. Please update your gradle config file")
+                }
+                
+                if (project.hasProperty('sonatypePassword')) {
+                    stPwd = sonatypePassword
+                }
+                else{
+                    stPwd = "notdefined"
+                    logger.warn("sonatypePassword not defined. Please update your gradle config file")
+                }
+                
                 credentials {
-                    username sonatypeUsername
-                    password sonatypePassword
+                    username stUser
+                    password stPwd
                 }
             }
         }
