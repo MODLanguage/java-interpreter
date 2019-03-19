@@ -162,3 +162,52 @@ def customisePom(pom) {
         }
     }
 }
+
+
+task createBranch(type: Exec){
+    commandLine "git", "checkout", "-b", "branch-for-pr"
+}
+
+task createRemote(type: Exec){
+    commandLine "git", "remote", "add", "grammar", "git@github.com:MODLanguage/grammar"
+}
+
+task fetchRemote(type: Exec, dependsOn: createRemote){
+    commandLine "git", "fetch", "grammar"
+}
+
+task checkoutGrammar(type: Exec){
+    dependsOn(fetchRemote)
+    dependsOn(createBranch)
+    commandLine "git", "checkout", "-b", "removeme-export-branch", "grammar/master"
+}
+
+task splitSubtree(type: Exec, dependsOn: checkoutGrammar){
+    commandLine "git", "subtree", "split", "--prefix", "antlr4", "-b", "removeme-antlr4-branch"
+}
+
+task switchBranch(type: Exec, dependsOn: splitSubtree){
+    commandLine "git", "checkout", "branch-for-pr"
+}
+
+task cleanBranches(type: Exec){
+    ignoreExitValue true
+    commandLine "git", "branch", "-D", "removeme-export-branch", "removeme-antlr4-branch"
+}
+
+
+task updateGrammar(type: Exec, dependsOn: switchBranch){
+    group = 'git'
+    description = 'Updates the grammar files from the grammar repo'
+    commandLine "git", "subtree", "merge", "--squash", "--prefix=grammar/", "removeme-antlr4-branch"
+}
+
+
+task gitClean(type: Exec, dependsOn: cleanBranches){
+    group = 'git'
+    description = 'Cleans items generated as part of the git tasks (branches, remote, ...)'
+    ignoreExitValue true
+    commandLine "git", "remote", "rm", "grammar"
+}
+
+updateGrammar.finalizedBy gitClean
