@@ -168,7 +168,7 @@ def customisePom(pom) {
 
 
 /***********
- * GRAMMAR FILES SYNC
+ * GRAMMAR REMOTE SETUP
  ***********/
 
 //we create the branch that we will contain the changes
@@ -203,6 +203,10 @@ task checkoutGrammar(type: Exec){
     commandLine "git", "checkout", "-b", "removeme-export-branch", "tags/" + grammarTag
 }
 
+/***********
+ * GRAMMAR FILES SYNC
+ ***********/
+
 //we extract the files we're intrested in (only the grammar antlr files)
 task splitSubtreeGrammar(type: Exec, dependsOn: checkoutGrammar){
     commandLine "git", "subtree", "split", "--prefix", "antlr4", "-b", "removeme-antlr4-branch"
@@ -224,13 +228,8 @@ task updateGrammar(type: Exec, dependsOn: switchBranchGrammar){
  * GRAMMAR TESTS SYNC
  ***********/
 
-//we go back to our main branch to do the subtree in the right place
-task switchExportBranchTests(type: Exec, dependsOn: updateGrammar){
-    commandLine "git", "checkout", "removeme-export-branch"
-}
-
-//we extract the files we're interested in (only the tests files)
-task splitSubtreeTests(type: Exec, dependsOn: switchExportBranchTests){
+//we extract the files we're intrested in (only the grammar antlr files)
+task splitSubtreeTests(type: Exec, dependsOn: checkoutGrammar){
     commandLine "git", "subtree", "split", "--prefix", "tests", "-b", "removeme-tests-branch"
 }
 
@@ -239,9 +238,35 @@ task switchBranchTests(type: Exec, dependsOn: splitSubtreeTests){
     commandLine "git", "checkout", branch
 }
 
+task updateTests(type: Exec, dependsOn: switchBranchTests){
+    group = 'git'
+    description = 'Updates the test files from the grammar repo'
+
+    commandLine "git", "subtree", "merge", "--squash", "--prefix=grammar_tests/", "removeme-tests-branch"
+}
+
+/***********
+ * GRAMMAR FILES AND TESTS SYNC
+ ***********/
+
+//we go back to our main branch to do the subtree in the right place
+task switchExportBranchGrammarAndTests(type: Exec, dependsOn: updateGrammar){
+    commandLine "git", "checkout", "removeme-export-branch"
+}
+
+//we extract the files we're interested in (only the tests files)
+task splitSubtreeGrammarAndTests(type: Exec, dependsOn: switchExportBranchGrammarAndTests){
+    commandLine "git", "subtree", "split", "--prefix", "tests", "-b", "removeme-tests-branch"
+}
+
+//we go back to our main branch to do the subtree in the right place
+task switchBranchGrammarAndTests(type: Exec, dependsOn: splitSubtreeGrammarAndTests){
+    commandLine "git", "checkout", branch
+}
+
 task updateGrammarWithTests(type: Exec){
     dependsOn(updateGrammar)
-    dependsOn(switchBranchTests)
+    dependsOn(switchBranchGrammarAndTests)
 
     group = 'git'
     description = 'Updates the grammar files and the test files from the grammar repo'
@@ -267,4 +292,5 @@ task gitClean(type: Exec, dependsOn: cleanBranches){
 }
 
 updateGrammar.finalizedBy gitClean
+updateTests.finalizedBy gitClean
 updateGrammarWithTests.finalizedBy gitClean

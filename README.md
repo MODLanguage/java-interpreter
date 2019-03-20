@@ -97,6 +97,22 @@ to the cleanup. This will only happen if the files were edited manually in the r
 
 ## Updating the json test files
 
+The tests can be synched from their original repository. It's possible to update the project to get the latest or even
+to get an older version.
+
+### Using Gradle
+
+Gradle has a task to deal with automate this process. You can run the following command: `./gradlew updateTests 
+-PgrammarTag=gammarVersion -Pbranch=branchName`. That will create a new branch called branchName. The branch will 
+contain the version of the tests on the grammar repo at the tag gammarVersion. You can use the tag called `latest` to 
+get the latest tests (it's also the default value). You can use an older tag to revert to an older version. Versions of 
+the grammar prior to v0.0.2 will cause an error due to files not existing in those versions.
+
+If something goes wrong, you can cleanup the git temporary artifacts by running `./gradlew gitClean`. You may need to
+also switch back to your initial branch and remove branchName if that one was created.
+
+### Manually
+
 The following commands will update the content of the `grammar_tests` directory with the new commits done to the test directory 
 of the grammar repository. Please keep them in sync as much as possible to avoid discrepancies.
 
