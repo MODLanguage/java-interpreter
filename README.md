@@ -54,6 +54,10 @@ grammar (it's also the default value). You can use an older tag to revert to an 
 If something goes wrong, you can cleanup the git temporary artifacts by running `./gradlew gitClean`. You may need to
 also switch back to your initial branch and remove branchName if that one was created.
 
+Gradle also has a task to update both the grammar source files and the grammar test files. The following command will
+do the update `./gradlew updateGrammarWithTests -PgrammarTag=gammarVersion -Pbranch=branchName`. Please note that
+versions of the grammar prior to v0.0.2 will cause an error due to files not existing in those versions.
+
 ### Manually
 
 The following commands will update the content of the `grammar` director with the new commits done to the antlr4 directory 
@@ -120,6 +124,7 @@ git subtree merge --squash --prefix grammar_tests removeme-tests-branch
 git branch -D removeme-export-branch removeme-tests-branch
 git remote rm grammar
 ```
+
 ## Publishing to Maven Central
 
 The gradle configuration supports publishing to maven. You need to set your credentials
