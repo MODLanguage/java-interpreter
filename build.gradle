@@ -75,6 +75,9 @@ artifacts {
     archives javadocJar
 }
 
+/***********
+ * MAVEN PUBLISHING
+ ***********/
 
 publishing {
     publications {
@@ -181,3 +184,132 @@ def customisePom(pom) {
         }
     }
 }
+
+
+/***********
+ * GRAMMAR REMOTE SETUP
+ ***********/
+
+//we create the branch that we will contain the changes
+task createBranch(type: Exec){
+    if(!project.hasProperty('branch')){
+        logger.warn("Branch not provided, using default: branch-for-pr")
+        project.ext.branch = "branch-for-pr"
+    }
+    if(!project.hasProperty('grammarTag')){
+        logger.warn("grammarTag not provided, using default: latest")
+        project.ext.grammarTag = "latest"
+    }
+
+    println "branch: " + project.findProperty('branch')
+    commandLine "git", "checkout", "-b", branch
+}
+
+//we connect to the grammar repo that contains the files we want
+task createRemote(type: Exec){
+    commandLine "git", "remote", "add", "grammar", "git@github.com:MODLanguage/grammar"
+}
+
+//we get the branches and tags from the grammar repo
+task fetchRemote(type: Exec, dependsOn: createRemote){
+    commandLine "git", "fetch", "--tags", "grammar"
+}
+
+//we create a tmp branch with a copy of the grammar on the tag we're interested in
+task checkoutGrammar(type: Exec){
+    dependsOn(fetchRemote)
+    dependsOn(createBranch)
+    commandLine "git", "checkout", "-b", "removeme-export-branch", "tags/" + grammarTag
+}
+
+/***********
+ * GRAMMAR FILES SYNC
+ ***********/
+
+//we extract the files we're intrested in (only the grammar antlr files)
+task splitSubtreeGrammar(type: Exec, dependsOn: checkoutGrammar){
+    commandLine "git", "subtree", "split", "--prefix", "antlr4", "-b", "removeme-antlr4-branch"
+}
+
+//we go back to our main branch to do the subtree in the right place
+task switchBranchGrammar(type: Exec, dependsOn: splitSubtreeGrammar){
+    commandLine "git", "checkout", branch
+}
+
+task updateGrammar(type: Exec, dependsOn: switchBranchGrammar){
+    group = 'git'
+    description = 'Updates the grammar files from the grammar repo'
+
+    commandLine "git", "subtree", "merge", "--squash", "--prefix=grammar/", "removeme-antlr4-branch"
+}
+
+/***********
+ * GRAMMAR TESTS SYNC
+ ***********/
+
+//we extract the files we're intrested in (only the grammar antlr files)
+task splitSubtreeTests(type: Exec, dependsOn: checkoutGrammar){
+    commandLine "git", "subtree", "split", "--prefix", "tests", "-b", "removeme-tests-branch"
+}
+
+//we go back to our main branch to do the subtree in the right place
+task switchBranchTests(type: Exec, dependsOn: splitSubtreeTests){
+    commandLine "git", "checkout", branch
+}
+
+task updateTests(type: Exec, dependsOn: switchBranchTests){
+    group = 'git'
+    description = 'Updates the test files from the grammar repo'
+
+    commandLine "git", "subtree", "merge", "--squash", "--prefix=grammar_tests/", "removeme-tests-branch"
+}
+
+/***********
+ * GRAMMAR FILES AND TESTS SYNC
+ ***********/
+
+//we go back to our main branch to do the subtree in the right place
+task switchExportBranchGrammarAndTests(type: Exec, dependsOn: updateGrammar){
+    commandLine "git", "checkout", "removeme-export-branch"
+}
+
+//we extract the files we're interested in (only the tests files)
+task splitSubtreeGrammarAndTests(type: Exec, dependsOn: switchExportBranchGrammarAndTests){
+    commandLine "git", "subtree", "split", "--prefix", "tests", "-b", "removeme-tests-branch"
+}
+
+//we go back to our main branch to do the subtree in the right place
+task switchBranchGrammarAndTests(type: Exec, dependsOn: splitSubtreeGrammarAndTests){
+    commandLine "git", "checkout", branch
+}
+
+task updateGrammarWithTests(type: Exec){
+    dependsOn(updateGrammar)
+    dependsOn(switchBranchGrammarAndTests)
+
+    group = 'git'
+    description = 'Updates the grammar files and the test files from the grammar repo'
+
+    commandLine "git", "subtree", "merge", "--squash", "--prefix=grammar_tests/", "removeme-tests-branch"
+}
+
+/***********
+ * GIT CLEANUP
+ ***********/
+
+//we clean the temporary branches used in the process
+task cleanBranches(type: Exec){
+    ignoreExitValue true
+    commandLine "git", "branch", "-D", "removeme-export-branch", "removeme-antlr4-branch", "removeme-tests-branch"
+}
+
+task gitClean(type: Exec, dependsOn: cleanBranches){
+    group = 'git'
+    description = 'Cleans items generated as part of the git tasks (branches, remote, ...)'
+    ignoreExitValue true
+    commandLine "git", "remote", "rm", "grammar"
+}
+
+updateGrammar.finalizedBy gitClean
+updateTests.finalizedBy gitClean
+updateGrammarWithTests.finalizedBy gitClean
