@@ -165,7 +165,17 @@ def customisePom(pom) {
 
 
 task createBranch(type: Exec){
-    commandLine "git", "checkout", "-b", "branch-for-pr"
+    if(!project.hasProperty('branch')){
+        logger.warn("Branch not provided, using default: branch-for-pr")
+        project.ext.branch = "branch-for-pr"
+    }
+    if(!project.hasProperty('grammarTag')){
+        logger.warn("grammarTag not provided, using default: latest")
+        project.ext.grammarTag = "latest"
+    }
+
+    println "branch: " + project.findProperty('branch')
+    commandLine "git", "checkout", "-b", branch
 }
 
 task createRemote(type: Exec){
@@ -173,13 +183,13 @@ task createRemote(type: Exec){
 }
 
 task fetchRemote(type: Exec, dependsOn: createRemote){
-    commandLine "git", "fetch", "grammar"
+    commandLine "git", "fetch", "--tags", "grammar"
 }
 
 task checkoutGrammar(type: Exec){
     dependsOn(fetchRemote)
     dependsOn(createBranch)
-    commandLine "git", "checkout", "-b", "removeme-export-branch", "grammar/master"
+    commandLine "git", "checkout", "-b", "removeme-export-branch", "tags/" + grammarTag
 }
 
 task splitSubtree(type: Exec, dependsOn: checkoutGrammar){
@@ -187,7 +197,7 @@ task splitSubtree(type: Exec, dependsOn: checkoutGrammar){
 }
 
 task switchBranch(type: Exec, dependsOn: splitSubtree){
-    commandLine "git", "checkout", "branch-for-pr"
+    commandLine "git", "checkout", branch
 }
 
 task cleanBranches(type: Exec){
@@ -199,6 +209,7 @@ task cleanBranches(type: Exec){
 task updateGrammar(type: Exec, dependsOn: switchBranch){
     group = 'git'
     description = 'Updates the grammar files from the grammar repo'
+
     commandLine "git", "subtree", "merge", "--squash", "--prefix=grammar/", "removeme-antlr4-branch"
 }
 
