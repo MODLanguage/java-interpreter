@@ -42,6 +42,8 @@ public class Interpreter {
     Set<String> pairNames; // TODO Get rid of this!
     Map<String, ModlValue> valuePairs;
 
+    List<String> PRIMITIVES = Arrays.asList("num", "str", "map", "arr");
+
     public static String parseToJson(String input) throws IOException {
         ModlObject modlObject = interpret(input);
 
@@ -354,6 +356,7 @@ public class Interpreter {
 
         // If it's not already a map pair, and one of the parent classes in the class hierarchy includes pairs, then it is transformed to a map pair.
         if (anyClassContainsPairs(originalKey) || mapPairAlready(rawPair) || (hasParams)) {
+//        if (anyClassContainsPairs(newKey) || mapPairAlready(rawPair) || (hasParams)) {
             pair.setKey(modlObject.new String(newKey)); // TODO Do we need to do this again here?!
 
             List<ModlObject.Pair> pairs = null;
@@ -593,7 +596,36 @@ public class Interpreter {
         }
     }
 
-    private ModlValue makeValueString(ModlObject modlObject, ModlValue value) {
+    private ModlObject.Number makeValueNumber(ModlObject modlObject, ModlValue value) {
+        if (value == null) {
+            return null;
+        }
+        String newNumber = null;
+        if (value instanceof ModlObject.String) {
+            newNumber = new Float(Float.parseFloat(((ModlObject.String) value).string)).toString();
+        }
+        if (value instanceof ModlObject.Number) {
+            newNumber = ((ModlObject.Number) value).number;
+        }
+        if (value instanceof ModlObject.True) {
+            newNumber = "1";
+        }
+        if (value instanceof ModlObject.False) {
+            newNumber = "0";
+        }
+        if (value instanceof ModlObject.Null) {
+            // TODO - is this right?
+            newNumber = "";
+        }
+        if (newNumber == null) {
+            throw new RuntimeException("Illegal value for number transformation : " + value.toString());
+        }
+
+        ModlObject.Number n = modlObject.new Number(newNumber);
+        return n;
+    }
+
+    private ModlObject.String makeValueString(ModlObject modlObject, ModlValue value) {
         if (value == null) {
             return null;
         }
@@ -615,8 +647,8 @@ public class Interpreter {
         }
 
 
-        ModlValue v = modlObject.new String(newString);
-        return v;
+        ModlObject.String s = modlObject.new String(newString);
+        return s;
     }
 
     private void addMapItemsToPair(ModlObject modlObject, List<RawModlObject.Pair> mapItems, List<ModlObject.Pair> pairs, Object parentPair) {
@@ -768,14 +800,15 @@ public class Interpreter {
     }
 
     private String transformKey(String originalKey) {
-        if (getModlClass(originalKey) != null) {
-            if ((getModlClass(originalKey).get("*name")) != null &&
-                    (getModlClass(originalKey).get("*name")) instanceof ModlObject.String) {
-                return ((ModlObject.String) ((getModlClass(originalKey).get("*name")))).string;
+        Map<String, Object> map = getModlClass(originalKey);
+        if (map != null) {
+            if ((map.get("*name")) != null &&
+                    (map.get("*name")) instanceof ModlObject.String) {
+                return ((ModlObject.String) (map.get("*name"))).string;
             }
-            if ((getModlClass(originalKey).get("*n")) != null &&
-                    (getModlClass(originalKey).get("*n")) instanceof ModlObject.String) {
-                return ((ModlObject.String) ((getModlClass(originalKey).get("*n")))).string;
+            if ((map.get("*n")) != null &&
+                    (map.get("*n")) instanceof ModlObject.String) {
+                return ((ModlObject.String) ((map.get("*n")))).string;
             }
         }
         return originalKey;
@@ -783,32 +816,74 @@ public class Interpreter {
 
     private RawModlObject.Pair transformValue(ModlObject modlObject, RawModlObject.Pair originalPair) {
         RawModlObject rawModlObject = new RawModlObject();
-        if (getModlClass(originalPair.getKey().string) != null) {
-            if ((getModlClass(originalPair.getKey().string).get("*name") != null && ((getModlClass(originalPair.getKey().string).get("*name").equals("_v")) ||
-                    (getModlClass(originalPair.getKey().string).get("*name").equals("var")))) ||
-                    (getModlClass(originalPair.getKey().string).get("*n") != null &&
-                            ((getModlClass(originalPair.getKey().string).get("*n").equals("_v")) ||
-                                    (getModlClass(originalPair.getKey().string).get("*n").equals("var"))))) {
+        Map<String, Object> classMap = getModlClass(originalPair.getKey().string);
+        if (classMap != null) {
+            if ((classMap.get("*name") != null && ((classMap.get("*name").equals("_v")) ||
+                    (classMap.get("*name").equals("var")))) ||
+                    (classMap.get("*n") != null &&
+                            ((classMap.get("*n").equals("_v")) ||
+                                    (classMap.get("*n").equals("var"))))) {
                 VariableLoader.loadConfigNumberedVariables(originalPair.getModlValue(), numberedVariables);
             } else {
-                if (getModlClass(originalPair.getKey().string).get("*superclass") != null &&
-                        getModlClass(originalPair.getKey().string).get("*superclass").equals("str")) {
-                    RawModlObject.Pair pair = rawModlObject.new Pair();
-                    pair.setKey(originalPair.getKey());
+                // Work up the superclass chain until we get to a basic class
+                if (classMap.get("*superclass") != null) {
+                    final String superclassString;
+                    if (classMap.get("*superclass") instanceof String) {
+                        superclassString = (String)classMap.get("*superclass");
+                    } else {
+                        superclassString = ((ModlObject.String)classMap.get("*superclass")).string;
+                    }
+                    String mostSuperClass = getSuperclassPrimitive(superclassString);
                     if (originalPair.getModlValue() == null) {
                         return originalPair;
                     }
-                    if (originalPair.getModlValue() instanceof ModlObject.String) {
-                        return originalPair;
+                    RawModlObject.Pair pair = rawModlObject.new Pair();
+                    pair.setKey(originalPair.getKey());
+                    if (mostSuperClass.equals("str")) {
+                        if (originalPair.getModlValue() instanceof ModlObject.String) {
+                            return originalPair;
+                        }
+                        ModlObject.String s = makeValueString(modlObject, originalPair.getModlValue());
+                        pair.addModlValue(s);
+                        return pair;
+                    } else if (mostSuperClass.equals("num")) {
+                        if (originalPair.getModlValue() instanceof ModlObject.Number) {
+                            return originalPair;
+                        }
+                        ModlObject.Number number = makeValueNumber(modlObject, originalPair.getModlValue());
+                        pair.addModlValue(number);
+                        return pair;
+                    } else {
+                        if (!(superclassString.equals("map") || (superclassString.equals("arr")))) {
+                            throw new RuntimeException("Superclass " + superclassString + " is not available for " + originalPair.getModlValue().getClass());
+                        }
                     }
-                    ModlValue value = makeValueString(modlObject, originalPair.getModlValue());
-                    ModlValue v = rawModlObject.new String(((ModlObject.String) value).string);
-                    pair.addModlValue(v);
-                    return pair;
                 }
             }
         }
         return originalPair;
+    }
+
+    private String getSuperclassPrimitive(String originalSuperClass) {
+        // Work up the chain until we come to a primitive superclass - i.e. map, arr, str or num
+        // If we can't find one, then return null
+        String currentSuperclass = originalSuperClass;
+        while (!PRIMITIVES.contains(currentSuperclass)) {
+            currentSuperclass = getNextSuperclassUp(currentSuperclass);
+        }
+        if (PRIMITIVES.contains(currentSuperclass)) {
+            return currentSuperclass;
+        }
+        return null;
+    }
+
+    private String getNextSuperclassUp(String currentSuperclass) {
+        Map<String, Object> classMap = getModlClass(currentSuperclass);
+        if (classMap.get("*superclass") instanceof String) {
+            return (String)classMap.get("*superclass");
+        } else {
+            return ((ModlObject.String)classMap.get("*superclass")).string;
+        }
     }
 
     private ModlValue interpretValue(ModlObject modlObject, ModlValue rawValue, Object parentPair) {

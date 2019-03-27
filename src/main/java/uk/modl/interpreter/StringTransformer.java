@@ -341,6 +341,11 @@ Replace the part originally found (including graves) with the transformed subjec
             return modlObject.new String(stringToTransform);
         } else if (value instanceof ModlObject.String) {
             subject = ((ModlObject.String) value).string;
+        } else if (value instanceof ModlObject.Number) {
+            if (methodChain == null) {
+                return value;
+            }
+            subject = ((ModlObject.Number) value).number;
         } else {
             return value;
         }
@@ -379,9 +384,9 @@ Replace the part originally found (including graves) with the transformed subjec
 
     private ModlValue getValueForReference(String subject) {
         // Subject might be a nested object reference, so handle it here
-        final int indexOfGreaterThanSymbol = subject.indexOf(">");
-        final boolean isNested = indexOfGreaterThanSymbol > -1;
-        final String remainder;
+        int indexOfGreaterThanSymbol = subject.indexOf(">");
+        boolean isNested = indexOfGreaterThanSymbol > -1;
+        String remainder;
         if (isNested) {
             remainder = subject.substring(indexOfGreaterThanSymbol + 1);
             subject = subject.substring(0, indexOfGreaterThanSymbol);
@@ -401,6 +406,15 @@ Replace the part originally found (including graves) with the transformed subjec
                     value = numberedVariables.get(i);
                 } else {
                     value = numberedVariables.get(i);
+                }
+                if (remainder != null) {
+                    indexOfGreaterThanSymbol = remainder.indexOf(">");
+                    if (indexOfGreaterThanSymbol > -1) {
+                        remainder = remainder.substring(indexOfGreaterThanSymbol + 1);
+                        subject = remainder.substring(0, indexOfGreaterThanSymbol);
+                    }
+                } else {
+                    subject = null;
                 }
                 found = true;
                 break;
@@ -425,7 +439,7 @@ Replace the part originally found (including graves) with the transformed subjec
         }
 
         // If we have a nested reference follow it recursively until we find the value we need.
-        if (value != null && isNested) {
+        if (value != null && isNested ) {
             return getValueForReferenceRecursive(value, remainder);
         }
         return value;
