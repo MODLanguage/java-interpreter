@@ -286,7 +286,7 @@ public class ModlObjectCreator {
 
         pair.setKey(rawModlObject.new String(pairParsed.getKey()));
 
-        if (pairParsed.getKey() != null &&  (pairParsed.getKey().equals("*I") || pairParsed.getKey().equals("*IMPORT"))) {
+        if (pairParsed.getKey() != null &&  (pairParsed.getKey().equals("*L") || pairParsed.getKey().equals("*LOAD"))) {
             // Make a new Pair for each valueItem or item in the array for the IMPORT statement!
             return processImportStatement(rawModlObject, pairParsed);
         } else {

@@ -59,7 +59,7 @@ public class ParserTest2 extends TestCase {
                                 "downcase_example = %testing.d\n" +
                                 "initcap_example = %testing.i\n" +
                                 "sentence_example = %testing.s\n" +
-                                "url_encode_example = %testing.ue",
+                                "url_encode_example = %testing.u.e",
                         "[\n" +
                                 "  {\n" +
                                 "    \"upcase_example\" : \"QUICK-TEST OF JOHN'S VARIABLE_METHODS\"\n" +
@@ -74,7 +74,7 @@ public class ParserTest2 extends TestCase {
                                 "    \"sentence_example\" :  \"Quick-test of John's variable_methods\"\n" +
                                 "  },\n" +
                                 "  {\n" +
-                                "    \"url_encode_example\" : \"quick-test+of+John%27s+variable_methods\"\n" +
+                                "    \"url_encode_example\" : \"QUICK-TEST+OF+JOHN%27S+VARIABLE_METHODS\"\n" +
                                 "  }\n" +
                                 "]",
                         "_testing=quick-test of John's variable_methods;upcase_example=%testing.u;downcase_example=%testing.d;initcap_example=%testing.i;sentence_example=%testing.s;url_encode_example=%testing.ue"},

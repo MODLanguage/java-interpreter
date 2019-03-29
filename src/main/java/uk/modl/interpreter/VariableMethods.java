@@ -160,7 +160,7 @@ public class VariableMethods {
                 }
             }
         };
-        methods.put("ue", task);
+        methods.put("e", task);
     }
 
     public static String transform(String methodName, String input) {

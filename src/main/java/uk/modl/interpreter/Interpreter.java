@@ -98,8 +98,8 @@ public class Interpreter {
             }
             if (rawStructure instanceof ModlObject.Pair && (((ModlObject.Pair) rawStructure).getKey() != null &&
                     (((ModlObject.Pair) rawStructure).getKey().string != null &&
-                            (((ModlObject.Pair) rawStructure).getKey().string.equals("*I") ||
-                                    (((ModlObject.Pair) rawStructure).getKey().string.equals("*IMPORT")))))) {
+                            (((ModlObject.Pair) rawStructure).getKey().string.equals("*L") ||
+                                    (((ModlObject.Pair) rawStructure).getKey().string.equals("*LOAD")))))) {
                 if (startedInterpreting) {
 //                    throw new UnsupportedOperationException("Cannot have *I config file after other objects");
                 }
@@ -309,7 +309,8 @@ public class Interpreter {
                 ModlValue storedValue = valuePairs.get(key.replaceFirst("%", ""));
                 if (storedValue instanceof ModlObject.Map) {
                     ModlObject.Map map = (ModlObject.Map) storedValue;
-                    newValue = modlObject.new Pair(modlObject.new String("obsolete"), map);
+//                    newValue = modlObject.new Pair(modlObject.new String("obsolete"), map);
+                    newValue = modlObject.new Pair(((ModlObject.Pair) value).getKey(), rawPair.getModlValue());
                 } else if (storedValue instanceof ModlObject.Array) {
                     List<ModlValue> list = ((ModlObject.Array) storedValue).getValues();
                     Integer index = null;

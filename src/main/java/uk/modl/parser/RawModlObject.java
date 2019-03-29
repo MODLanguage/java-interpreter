@@ -41,7 +41,7 @@ public class RawModlObject extends ModlObject {
         for (Structure structure : structures) {
             if (structure instanceof Pair) {
                 Pair pair =((Pair)structure);
-                if ((pair.getKey().string.equals("*I")) || (pair.getKey().string.equals("*IMPORT"))) {
+                if ((pair.getKey().string.equals("*L")) || (pair.getKey().string.equals("*LOAD"))) {
                     java.lang.String importLocation = null;
                     if (pair.getModlValue() instanceof ModlObject.String) {
                         importLocation = ((String) pair.getModlValue()).string;
