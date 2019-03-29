@@ -309,8 +309,8 @@ public class Interpreter {
                 ModlValue storedValue = valuePairs.get(key.replaceFirst("%", ""));
                 if (storedValue instanceof ModlObject.Map) {
                     ModlObject.Map map = (ModlObject.Map) storedValue;
-//                    newValue = modlObject.new Pair(modlObject.new String("obsolete"), map);
-                    newValue = modlObject.new Pair(((ModlObject.Pair) value).getKey(), rawPair.getModlValue());
+                    pair.addModlValue(rawPair.getModlValue());
+                    return;
                 } else if (storedValue instanceof ModlObject.Array) {
                     List<ModlValue> list = ((ModlObject.Array) storedValue).getValues();
                     Integer index = null;
