@@ -22,6 +22,7 @@ package uk.modl.interpreter;
 import org.apache.commons.text.WordUtils;
 
 import java.io.UnsupportedEncodingException;
+import java.net.IDN;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -51,6 +52,7 @@ public class VariableMethods {
         addUrlEncodeTask();
         addSentenceTask();
         addReplaceTask();
+        addPunycodeTask();
     }
 
     private static void addTrimTask() {
@@ -163,6 +165,19 @@ public class VariableMethods {
         methods.put("e", task);
     }
 
+    private static void addPunycodeTask() {
+        TaskRunner task = new TaskRunner() {
+            @Override
+            public void run() {
+                if (parameter == null) {
+                    result = null;
+                }
+                result = replacePunycode(parameter);
+            }
+        };
+        methods.put("p", task);
+    }
+
     public static String transform(String methodName, String input) {
         if (methods == null) {
             initialiseMethods();
@@ -189,7 +204,6 @@ public class VariableMethods {
 
 
 
-
     private static String makeSentence(String parameter) {
         // Now, Capitalise the first word.
         String[] splits = parameter.split(" ");
@@ -205,6 +219,25 @@ public class VariableMethods {
             ret += s;
         }
         return ret;
+    }
+
+    private static String replacePunycode(String stringToTransform) {
+        // Prefix it with xn-- (the letters xn and two dashes) and decode using punycode / IDN library. Replace the full part (including graves) with the decoded value.
+        if (stringToTransform == null) {
+            return stringToTransform;
+        }
+        if (stringToTransform.startsWith("`") && stringToTransform.endsWith("`")) {
+            stringToTransform = stringToTransform.substring(1, stringToTransform.length() - 1);
+        }
+        String originalString = stringToTransform;
+        stringToTransform = "xn--" + stringToTransform;
+        String newStringToTransform = IDN.toUnicode(stringToTransform);
+        if (newStringToTransform.equals(stringToTransform)) {
+            stringToTransform = originalString;
+        } else {
+            stringToTransform = newStringToTransform;
+        }
+        return stringToTransform;
     }
 
 

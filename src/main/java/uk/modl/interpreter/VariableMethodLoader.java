@@ -31,7 +31,7 @@ import java.util.Map;
  * Created by alex on 19/09/2018.
  */
 public class VariableMethodLoader {
-    public static void loadVariableMethod(RawModlObject.Structure structure) {
+    public static void loadVariableMethod(RawModlObject.Structure structure, Interpreter interpreter) {
         /*
 *method(
   *id=us
@@ -40,20 +40,20 @@ public class VariableMethodLoader {
 )
          */
         // Load up the values : e.g. :
-        String methodName = ModlClassLoader.getPairValueFor(structure, "*id");
+        String methodName = ModlClassLoader.getPairValueFor(structure, "*id", interpreter);
         if (methodName == null) {
-            methodName = ModlClassLoader.getPairValueFor(structure, "*i");
+            methodName = ModlClassLoader.getPairValueFor(structure, "*i", interpreter);
         }
-        String description = ModlClassLoader.getPairValueFor(   structure, "*name");
+        String description = ModlClassLoader.getPairValueFor(   structure, "*name", interpreter);
         if (description == null) {
-            description = ModlClassLoader.getPairValueFor(structure, "*n");
+            description = ModlClassLoader.getPairValueFor(structure, "*n", interpreter);
         }
         if (description == null) {
             description = methodName;
         }
-        String methodString = ModlClassLoader.getPairValueFor(structure, "*transform");
+        String methodString = ModlClassLoader.getPairValueFor(structure, "*transform", interpreter);
         if (methodString == null) {
-            methodString = ModlClassLoader.getPairValueFor(structure, "*t");
+            methodString = ModlClassLoader.getPairValueFor(structure, "*t", interpreter);
         }
         methodString = methodString.replace("`", "");
         createVariableMethod(methodName, methodString);

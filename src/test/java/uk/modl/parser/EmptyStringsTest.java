@@ -21,6 +21,8 @@ package uk.modl.parser;
 
 import org.junit.Assert;
 import org.junit.Test;
+import uk.modl.interpreter.Interpreter;
+import uk.modl.modlObject.ModlObject;
 import uk.modl.parser.printers.JsonPrinter;
 
 import java.io.IOException;
@@ -87,7 +89,8 @@ public class EmptyStringsTest {
         System.out.println("Input : " + input);
         System.out.println("Expected : " + expected);
 
-        RawModlObject rawModlObject = ModlObjectCreator.processModlParsed(input);
+//        RawModlObject rawModlObject = ModlObjectCreator.processModlParsed(input);
+        ModlObject rawModlObject = Interpreter.interpret(input);
         String output = JsonPrinter.printModl(rawModlObject);
         System.out.println("Output : " + output);
         Assert.assertEquals(expected

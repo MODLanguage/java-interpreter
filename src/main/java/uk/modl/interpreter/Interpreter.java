@@ -38,6 +38,8 @@ public class Interpreter {
     Map<String, Map<String, Object>> klasses = new LinkedHashMap<>();
     Map<String, ModlValue> variables = new HashMap<>();
     Map<Integer, ModlValue> numberedVariables = new HashMap<>();
+    // Store any uppercase instructions we've seen, so we know not to allow them again
+    Set<String> uppercaseInstructions = new HashSet<>();
 
     Set<String> pairNames; // TODO Get rid of this!
     Map<String, ModlValue> valuePairs;
@@ -87,8 +89,9 @@ public class Interpreter {
 
             if (rawStructure instanceof ModlObject.Pair && (((ModlObject.Pair) rawStructure).getKey() != null &&
                     (((ModlObject.Pair) rawStructure).getKey().string != null &&
-                            (((ModlObject.Pair) rawStructure).getKey().string.equals("*V") ||
-                                    (((ModlObject.Pair) rawStructure).getKey().string.equals("*VERSION")))))) {
+                            (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*v") ||
+                                    (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*version")))))) {
+                addToUpperCaseInstructions(((ModlObject.Pair) rawStructure).getKey().string);
                 // This is the version number - check it and then ignore it
                 String versionString = ((ModlObject.Number) ((ModlObject.Pair) rawStructure).getModlValue()).number;
                 if (!(versionString.equals(String.valueOf(MODL_VERSION)))) {
@@ -98,12 +101,13 @@ public class Interpreter {
             }
             if (rawStructure instanceof ModlObject.Pair && (((ModlObject.Pair) rawStructure).getKey() != null &&
                     (((ModlObject.Pair) rawStructure).getKey().string != null &&
-                            (((ModlObject.Pair) rawStructure).getKey().string.equals("*L") ||
-                                    (((ModlObject.Pair) rawStructure).getKey().string.equals("*LOAD")))))) {
+                            (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*l") ||
+                                    (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*load")))))) {
+                addToUpperCaseInstructions(((ModlObject.Pair) rawStructure).getKey().string);
                 if (startedInterpreting) {
 //                    throw new UnsupportedOperationException("Cannot have *I config file after other objects");
                 }
-                // Load in the config file specified by the "I" object
+                // Load in the config file specified by the "l" object
                 if (((ModlObject.Pair) rawStructure).getModlValue() instanceof ModlObject.String) {
                     importFileValue = ((ModlObject.String) ((ModlObject.Pair) rawStructure).getModlValue()).string;
                     loadedRawModlObject = loadConfigFile(importFileValue);
@@ -119,17 +123,20 @@ public class Interpreter {
             }
             if (rawStructure instanceof ModlObject.Pair && ((ModlObject.Pair) rawStructure).getKey() != null &&
                     ((ModlObject.Pair) rawStructure).getKey().string != null &&
-                    ((((((ModlObject.Pair) rawStructure).getKey().string.equals("*class")) ||
-                            (((ModlObject.Pair) rawStructure).getKey().string.equals("*c"))) || (
-                            (((ModlObject.Pair) rawStructure).getKey().string.equals("*m"))) || ((((ModlObject.Pair) rawStructure).getKey().string.equals("*method"))) ||
-                            (((ModlObject.Pair) rawStructure).getKey().string.equals("?"))
+                    ((((((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*class")) ||
+                            (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*c"))) || (
+                            (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*m"))) ||
+                            ((((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*method"))) ||
+                            (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("?"))
                     ))) {
                 ModlObject.Pair pair = (ModlObject.Pair) rawStructure;
-                if (pair.getKey().string.equals("*class") || pair.getKey().string.equals("*c")) {
-                    ModlClassLoader.loadClass(rawStructure, klasses);
+                if (pair.getKey().string.toLowerCase().equals("*class") || pair.getKey().string.toLowerCase().equals("*c")) {
+                    addToUpperCaseInstructions(pair.getKey().string);
+                    ModlClassLoader.loadClass(rawStructure, klasses, this);
                     continue;
-                } else if (pair.getKey().string.equals("*method") || pair.getKey().string.equals("*m")) {
-                    VariableMethodLoader.loadVariableMethod(pair);
+                } else if (pair.getKey().string.toLowerCase().equals("*method") || pair.getKey().string.toLowerCase().equals("*m")) {
+                    addToUpperCaseInstructions(pair.getKey().string);
+                    VariableMethodLoader.loadVariableMethod(pair, this);
                 } else if (pair.getKey().string.equals("?")) {
                     VariableLoader.loadConfigNumberedVariables(pair.getModlValue(), numberedVariables);
                 } else {
@@ -141,8 +148,8 @@ public class Interpreter {
                 }
             } else if (!(rawStructure instanceof ModlObject.Pair && ((ModlObject.Pair) rawStructure).getKey() != null &&
                     ((ModlObject.Pair) rawStructure).getKey().string != null &&
-                    (((ModlObject.Pair) rawStructure).getKey().string.equals("*V") ||
-                            (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*VERSION"))))) {
+                    (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*v") ||
+                            (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*version"))))) {
                 if (rawStructure instanceof ModlObject.Pair && ((ModlObject.Pair) rawStructure).getKey() != null &&
                         ((ModlObject.Pair) rawStructure).getKey().string != null &&
                         (((ModlObject.Pair) rawStructure).getKey().string.startsWith("*"))) {
@@ -167,6 +174,15 @@ public class Interpreter {
             throw new RequireRestart();
         } else {
             return modlObject;
+        }
+    }
+
+    public void addToUpperCaseInstructions(String string) {
+        if (uppercaseInstructions.contains(string.toUpperCase())) {
+            throw new RuntimeException("Already defined " + string + " as final!");
+        }
+        if (string.toUpperCase().equals(string)) {
+            uppercaseInstructions.add(string);
         }
     }
 

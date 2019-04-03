@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ModlParsed extends MODLParserBaseListener {
@@ -277,12 +276,12 @@ public class ModlParsed extends MODLParserBaseListener {
     private static java.lang.String additionalStringProcessing(final java.lang.String text) {
 
         // Special case for a possibly empty graved string ``
-        if (text != null) {
-            final Matcher matcher = gravedPattern.matcher(text);
-            if (matcher.matches()) {
-                return matcher.group(1);
-            }
-        }
+//        if (text != null) {
+//            final Matcher matcher = gravedPattern.matcher(text);
+//            if (matcher.matches()) {
+//                return matcher.group(1);
+//            }
+//        }
         return text;
     }
 

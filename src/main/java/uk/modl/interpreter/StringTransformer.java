@@ -23,13 +23,13 @@ import org.apache.commons.text.StringEscapeUtils;
 import uk.modl.modlObject.ModlObject;
 import uk.modl.modlObject.ModlValue;
 
-import java.net.IDN;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-//import java.util.function.Function;
 
 import static java.lang.Character.isLetter;
+
+//import java.util.function.Function;
 
 public class StringTransformer {
 
@@ -89,8 +89,7 @@ public class StringTransformer {
                     return ret;
                 }
             } else {
-                // else run “Punycode encoded parts”
-                newGravePart = replacePunycode(gravePart);
+                newGravePart = gravePart.substring(1, gravePart.length() -1);
                 stringToTransform = stringToTransform.replace(gravePart, newGravePart);
             }
         }
@@ -285,26 +284,6 @@ public class StringTransformer {
     }
 
 
-    private String replacePunycode(String stringToTransform) {
-        // Prefix it with xn-- (the letters xn and two dashes) and decode using punycode / IDN library. Replace the full part (including graves) with the decoded value.
-        if (stringToTransform == null) {
-            return stringToTransform;
-        }
-        if (stringToTransform.startsWith("`") && stringToTransform.endsWith("`")) {
-            stringToTransform = stringToTransform.substring(1, stringToTransform.length() - 1);
-            String originalString = stringToTransform;
-            stringToTransform = "xn--" + stringToTransform;
-            String newStringToTransform = IDN.toUnicode(stringToTransform);
-            if (newStringToTransform.equals(stringToTransform)) {
-                stringToTransform = originalString;
-            } else {
-                stringToTransform = newStringToTransform;
-            }
-        }
-        return stringToTransform;
-    }
-
-
     public ModlValue runObjectReferencing(String percentPart, String stringToTransform, boolean isGraved) {
     /*
     Object Referencing
@@ -323,8 +302,8 @@ Replace the part originally found (including graves) with the transformed subjec
         int startOffset = 1;
         int endOffset = 0;
         if (isGraved) {
-            startOffset = 2;
-            endOffset = 1;
+            startOffset += 1;
+            endOffset += 1;
         }
         ModlObject modlObject = new ModlObject();
         String subject = percentPart.substring(startOffset, percentPart.length() - endOffset);
@@ -339,6 +318,7 @@ Replace the part originally found (including graves) with the transformed subjec
         ModlValue value = getValueForReference(subject);
         if (value == null) {
             return modlObject.new String(stringToTransform);
+//            value = modlObject.new String(subject);
         } else if (value instanceof ModlObject.String) {
             subject = ((ModlObject.String) value).string;
         } else if (value instanceof ModlObject.Number) {
@@ -402,20 +382,20 @@ Replace the part originally found (including graves) with the transformed subjec
         // Make any variable replacements, etc.
         for (Integer i = 0; i < numberedVariables.size(); i++) {
             if (subject.equals(i.toString())) {
-                if (numberedVariables.get(i) instanceof ModlObject.String) {
+//                if (numberedVariables.get(i) instanceof ModlObject.String) {
+//                    value = numberedVariables.get(i);
+//                } else {
                     value = numberedVariables.get(i);
-                } else {
-                    value = numberedVariables.get(i);
-                }
-                if (remainder != null) {
-                    indexOfGreaterThanSymbol = remainder.indexOf(">");
-                    if (indexOfGreaterThanSymbol > -1) {
-                        remainder = remainder.substring(indexOfGreaterThanSymbol + 1);
-                        subject = remainder.substring(0, indexOfGreaterThanSymbol);
-                    }
-                } else {
-                    subject = null;
-                }
+//                }
+//                if (remainder != null) {
+//                    indexOfGreaterThanSymbol = remainder.indexOf(">");
+//                    if (indexOfGreaterThanSymbol > -1) {
+//                        remainder = remainder.substring(indexOfGreaterThanSymbol + 1);
+//                        subject = remainder.substring(0, indexOfGreaterThanSymbol);
+//                    }
+//                } else {
+//                    subject = null;
+//                }
                 found = true;
                 break;
             }
@@ -469,21 +449,14 @@ Replace the part originally found (including graves) with the transformed subjec
             currentKey = key;
         }
 
-        if (ctx instanceof ModlObject.String) {
-            ModlValue temp  = transformString(((ModlObject.String)ctx).string);
-            if (temp != null) {
-                ctx = temp;
-            }
-        }
-
         // Get the nested value via its name or number
-        final ModlValue newCtx;
+        ModlValue newCtx;
         if (isNumber(currentKey)) {
             if (!(ctx instanceof ModlObject.Array)) {
                 throw new RuntimeException("Object reference is numerical for non-Array value");
             }
             int index = Integer.parseInt(currentKey);
-                newCtx = ctx.get(index);
+            newCtx = ctx.get(index);
         } else {
             currentKey = ((ModlObject.String)(transformString(currentKey))).string;
             if (ctx instanceof ModlObject.Pair) {
@@ -491,7 +464,8 @@ Replace the part originally found (including graves) with the transformed subjec
                     throw new RuntimeException("Object reference should match the key name for a Pair");
                 }
                 newCtx = ((ModlObject.Pair) ctx).getModlValue();
-            } else {
+            }
+            else {
                 newCtx = ctx.get(currentKey);
             }
         }

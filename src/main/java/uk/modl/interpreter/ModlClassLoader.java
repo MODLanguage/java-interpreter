@@ -27,36 +27,37 @@ import java.util.*;
 
 public class ModlClassLoader {
 
-    public static void loadClass(RawModlObject.Structure structure, Map<String, Map<String, Object>> klasses) {
+    public static void loadClass(RawModlObject.Structure structure, Map<String, Map<String, Object>> klasses, Interpreter interpreter) {
         if (structure instanceof ModlObject.Pair) {
             ModlObject.Pair pair = (ModlObject.Pair)structure;
-            if (pair == null || (!(((pair.getKey().string.equals("*class")) ||
-                    (pair.getKey().string.equals("*c")))))) {
+            if (pair == null || (!(((pair.getKey().string.toLowerCase().equals("*class")) ||
+                    (pair.getKey().string.toLowerCase().equals("*c")))))) {
                 throw new RuntimeException("Expecting '*class' in ModlClassLoader");
             }
-                loadClassStructure(structure, klasses);
+//            interpreter.addToUpperCaseInstructions(pair.getKey().string);
+                loadClassStructure(structure, klasses, interpreter);
         }
     }
 
-    private static void loadClassStructure(RawModlObject.Structure structure, Map<String, Map<String, Object>> klasses) {
+    private static void loadClassStructure(RawModlObject.Structure structure, Map<String, Map<String, Object>> klasses, Interpreter interpreter) {
         // Load in the new klass
         HashMap<String, Object> values = new LinkedHashMap<>();
-        String id = getPairValueFor(structure, "*id");
+        String id = getPairValueFor(structure, "*id", interpreter);
         if (id == null) {
-            id = getPairValueFor(structure, "*i");
+            id = getPairValueFor(structure, "*i", interpreter);
         }
         if (id == null) {
             throw new RuntimeException("Can't find *id in *class");
         }
         klasses.put(id, values);
-        String superclass = getPairValueFor(structure, "*superclass");
+        String superclass = getPairValueFor(structure, "*superclass", interpreter);
         if (superclass == null) {
-            superclass = getPairValueFor(structure, "*s");
+            superclass = getPairValueFor(structure, "*s", interpreter);
         }
         values.put("*superclass", superclass);
-        String name = getPairValueFor(structure, "*name");
+        String name = getPairValueFor(structure, "*name", interpreter);
         if (name == null) {
-            name = getPairValueFor(structure, "*n");
+            name = getPairValueFor(structure, "*n", interpreter);
         }
         if (name == null) {
             name = id;
@@ -78,18 +79,19 @@ public class ModlClassLoader {
         // Go through the structure and find all the new values and add them (replacing any already there from superklass)
         for (RawModlObject.Pair mapItem : ((ModlObject.Map)((ModlObject.Pair)structure).getModlValue()).getPairs()) {
             // Remember to avoid "_id" and "_sc" !
-            if (mapItem.getKey().string.equals("*id") || mapItem.getKey().string.equals("*i") ||
-                    mapItem.getKey().string.equals("*superclass") || mapItem.getKey().string.equals("*s")) {
+            if (mapItem.getKey().string.toLowerCase().equals("*id") || mapItem.getKey().string.toLowerCase().equals("*i") ||
+                    mapItem.getKey().string.toLowerCase().equals("*superclass") || mapItem.getKey().string.toLowerCase().equals("*s")) {
                 continue;
             }
-            if (mapItem.getKey().string.equals("*assign") || mapItem.getKey().string.equals("*a")) {
+            if (mapItem.getKey().string.toLowerCase().equals("*assign") || mapItem.getKey().string.toLowerCase().equals("*a")) {
+                interpreter.addToUpperCaseInstructions(mapItem.getKey().string);
                 if (mapItem.getModlValue() instanceof ModlObject.Array) {
                     loadParams(values, (ModlObject.Array) (mapItem.getModlValue()));
                 }
                 continue;
             }
             // Now add the new value
-            if (mapItem.getKey().string.equals("*n")) {
+            if (mapItem.getKey().string.toLowerCase().equals("*n") || mapItem.getKey().string.toLowerCase().equals("*name")) {
                 values.put("*name", mapItem.getModlValue());
             } else {
                 values.put(mapItem.getKey().string, mapItem.getModlValue());
@@ -110,9 +112,10 @@ public class ModlClassLoader {
         }
     }
 
-    public static String getPairValueFor(RawModlObject.Structure structure, String pairValue) {
+    public static String getPairValueFor(RawModlObject.Structure structure, String pairValue, Interpreter interpreter) {
         for (RawModlObject.Pair mapItem : ((ModlObject.Map)((ModlObject.Pair)structure).getModlValue()).getPairs()) {
-            if (mapItem.getKey().string.equals(pairValue)) {
+            if (mapItem.getKey().string.toLowerCase().equals(pairValue.toLowerCase())) {
+                interpreter.addToUpperCaseInstructions(mapItem.getKey().string);
                 // TODO This does not need to be a String!
                 return ((ModlObject.String)mapItem.getModlValue()).string;
             }

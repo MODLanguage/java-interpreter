@@ -286,7 +286,7 @@ public class ModlObjectCreator {
 
         pair.setKey(rawModlObject.new String(pairParsed.getKey()));
 
-        if (pairParsed.getKey() != null &&  (pairParsed.getKey().equals("*L") || pairParsed.getKey().equals("*LOAD"))) {
+        if (pairParsed.getKey() != null &&  (pairParsed.getKey().toLowerCase().equals("*l") || pairParsed.getKey().toLowerCase().equals("*load"))) {
             // Make a new Pair for each valueItem or item in the array for the IMPORT statement!
             return processImportStatement(rawModlObject, pairParsed);
         } else {
@@ -320,9 +320,18 @@ public class ModlObjectCreator {
             }
         }
         if (array != null) {
+            int count = 0;
+            boolean isFinal = false;
             for (ModlValue v : array.getValues()) {
+                if (count++ == array.getValues().size()) {
+                    isFinal = true;
+                }
                 RawModlObject.Pair pair = rawModlObject.new Pair();
-                pair.setKey(rawModlObject.new String(pairParsed.getKey()));
+                String key = pairParsed.getKey();
+                if (!isFinal) {
+                    key = key.toLowerCase();
+                }
+                pair.setKey(rawModlObject.new String(key));
 //                if (v instanceof RawModlObject.Number) {
 //                    v = rawModlObject.new String(((RawModlObject.Number)v).number);
 //                }
