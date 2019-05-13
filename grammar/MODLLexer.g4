@@ -15,14 +15,14 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 lexer grammar MODLLexer;
   // These tokens are for default mode (outside of conditionals)
-  WS        : [ \t] + -> skip ;
+  WS        : [ \t\r\n] + -> skip ;
   NULL      : '000' | 'null' | 'NULL' ;
   TRUE      : '01' | 'true' | 'TRUE' ;
   FALSE     : '00' | 'false' | 'FALSE' ;
-  NEWLINE   : ( '\n' | '\r' | '\r\n' ) ;
   COLON     : ':' ;
   EQUALS    : '=' ;
-  SC        : ';' ;
+  STRUCT_SEP : ';' ;
+  ARR_SEP   : ',' ;
   LBRAC     : '(' ;
   RBRAC     : ')' ;
   LSBRAC    : '[' ;
@@ -85,14 +85,13 @@ lexer grammar MODLLexer;
   LCBRAC  : '{' -> pushMode(CONDITIONAL);
 mode CONDITIONAL;
   // These tokens must be redefined for this mode
-  CWS       : [ \t] + -> skip;
+  CWS       : [ \t\r\n] + -> skip;
   CNULL     : ('000' | 'null' | 'NULL') -> type(NULL);
   CTRUE     : ('01' | 'true' | 'TRUE') -> type(TRUE);
   CFALSE    : ('00' | 'false' | 'FALSE') -> type(FALSE);
-  CNEWLINE  : ( '\n' | '\r' | '\r\n' ) -> type(NEWLINE);
   CCOLON    : ':' -> type(COLON);
   CEQUALS   : '=' -> type(EQUALS);
-  CSC       : ';' -> type(SC);
+  CSTRUCT_SEP       : ';' -> type(STRUCT_SEP);
   CLBRAC    : '(' -> type(LBRAC);
   CRBRAC    : ')' -> type(RBRAC);
   CLSBRAC   : '[' -> type(LSBRAC);

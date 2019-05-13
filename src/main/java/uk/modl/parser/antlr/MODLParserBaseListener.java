@@ -1,5 +1,5 @@
+// Generated from /Users/tonywalmsley/work/num/grammar/antlr4/MODLParser.g4 by ANTLR 4.7.2
 package uk.modl.parser.antlr;
-// Generated from /Users/alex/code/NUM/MODL/interpreter/grammar/MODLParser.g4 by ANTLR 4.7
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -287,6 +287,18 @@ public class MODLParserBaseListener implements MODLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitModl_array_value_item(MODLParser.Modl_array_value_itemContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterModl_primitive(MODLParser.Modl_primitiveContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitModl_primitive(MODLParser.Modl_primitiveContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

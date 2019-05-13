@@ -162,21 +162,11 @@ public class ModlParsed extends MODLParserBaseListener {
         Array array;
         NbArray nbArray;
         Pair pair;
-        Quoted quoted;
-        Number number;
-        True trueVal;
-        False falseVal;
-        Null nullVal;
-        String string;
+        Primitive primitive;
 
         @Override
         public void enterModl_value(MODLParser.Modl_valueContext ctx) {
-            if (ctx.NUMBER() != null) {
-                number =
-                        new Number(ctx
-                                .NUMBER()
-                                .getText());
-            } else if (ctx.modl_map() != null) {
+            if (ctx.modl_map() != null) {
                 map = new Map();
                 ctx
                         .modl_map()
@@ -196,51 +186,14 @@ public class ModlParsed extends MODLParserBaseListener {
                 ctx
                         .modl_pair()
                         .enterRule(pair);
-            } else if (ctx.STRING() != null) {
-                java.lang.String textValue = additionalStringProcessing(ctx
-                        .STRING()
-                        .getText());
-                string =
-                        new String(textValue);
-            } else if (ctx.QUOTED() != null) {
-                java.lang.String textValue = additionalStringProcessing(ctx
-                        .QUOTED()
-                        .getText());
-                quoted =
-                        new Quoted(textValue);
-            } else if (ctx.NULL() != null) {
-                nullVal = new Null();
-            } else if (ctx.TRUE() != null) {
-                trueVal = new True();
-            } else if (ctx.FALSE() != null) {
-                falseVal = new False();
+            } else if (ctx.modl_primitive() != null) {
+                primitive = new Primitive();
+                ctx
+                        .modl_primitive()
+                        .enterRule(primitive);
             }
 
             // ignoring comments!
-        }
-
-        public Quoted getQuoted() {
-            return quoted;
-        }
-
-        public Number getNumber() {
-            return number;
-        }
-
-        public True getTrueVal() {
-            return trueVal;
-        }
-
-        public False getFalseVal() {
-            return falseVal;
-        }
-
-        public Null getNullVal() {
-            return nullVal;
-        }
-
-        public String getString() {
-            return string;
         }
 
         public Map getMap() {
@@ -258,11 +211,12 @@ public class ModlParsed extends MODLParserBaseListener {
         public NbArray getNbArray() {
             return nbArray;
         }
+
+        public Primitive getPrimitive() { return primitive; }
     }
 
     /**
      * Regex to find (possibly empty) strings of the form `abcd`
-     *
      */
     private static final Pattern gravedPattern = Pattern.compile("^`([^`]*)`$");
 
@@ -285,11 +239,7 @@ public class ModlParsed extends MODLParserBaseListener {
         return text;
     }
 
-    public class ArrayValueItem extends MODLParserBaseListener implements ValueObject {
-        //        ValueObject valueObject; // can be one of Pair or Conditional
-        Map map;
-        Array array;
-        Pair pair;
+    public class Primitive extends MODLParserBaseListener implements ValueObject {
         Quoted quoted;
         Number number;
         True trueVal;
@@ -298,27 +248,12 @@ public class ModlParsed extends MODLParserBaseListener {
         String string;
 
         @Override
-        public void enterModl_array_value_item(MODLParser.Modl_array_value_itemContext ctx) {
+        public void enterModl_primitive(MODLParser.Modl_primitiveContext ctx) {
             if (ctx.NUMBER() != null) {
                 number =
                         new Number(ctx
                                 .NUMBER()
                                 .getText());
-            } else if (ctx.modl_map() != null) {
-                map = new Map();
-                ctx
-                        .modl_map()
-                        .enterRule(map);
-            } else if (ctx.modl_array() != null) {
-                array = new Array();
-                ctx
-                        .modl_array()
-                        .enterRule(array);
-            } else if (ctx.modl_pair() != null) {
-                pair = new Pair();
-                ctx
-                        .modl_pair()
-                        .enterRule(pair);
             } else if (ctx.STRING() != null) {
                 java.lang.String textValue = additionalStringProcessing(ctx
                         .STRING()
@@ -365,6 +300,41 @@ public class ModlParsed extends MODLParserBaseListener {
         public String getString() {
             return string;
         }
+    }
+
+    public class ArrayValueItem extends MODLParserBaseListener implements ValueObject {
+        //        ValueObject valueObject; // can be one of Pair or Conditional
+        Map map;
+        Array array;
+        Pair pair;
+        Primitive primitive;
+
+        @Override
+        public void enterModl_array_value_item(MODLParser.Modl_array_value_itemContext ctx) {
+            if (ctx.modl_map() != null) {
+                map = new Map();
+                ctx
+                        .modl_map()
+                        .enterRule(map);
+            } else if (ctx.modl_array() != null) {
+                array = new Array();
+                ctx
+                        .modl_array()
+                        .enterRule(array);
+            } else if (ctx.modl_pair() != null) {
+                pair = new Pair();
+                ctx
+                        .modl_pair()
+                        .enterRule(pair);
+            } else if (ctx.modl_primitive() != null) {
+                primitive = new Primitive();
+                ctx
+                        .modl_primitive()
+                        .enterRule(primitive);
+            }
+
+            // ignoring comments!
+        }
 
         public Map getMap() {
             return map;
@@ -377,6 +347,8 @@ public class ModlParsed extends MODLParserBaseListener {
         public Pair getPair() {
             return pair;
         }
+
+        public Primitive getPrimitive() { return primitive; }
     }
 
     public class ValueItem extends MODLParserBaseListener implements ValueObject {
@@ -889,7 +861,7 @@ public class ModlParsed extends MODLParserBaseListener {
                         int prevSymbol = ((TerminalNode) previous).getSymbol().getType();
                         int currentSymbol = ((TerminalNode) pt).getSymbol().getType();
 
-                        if (prevSymbol != MODLLexer.NEWLINE && currentSymbol != MODLLexer.NEWLINE) {
+                        if (prevSymbol != MODLLexer.STRUCT_SEP && currentSymbol != MODLLexer.STRUCT_SEP) {
                             ArrayItem arrayItem = handleEmptyArrayItem();
 
                             arrayItems.add(i++, arrayItem);
@@ -916,7 +888,8 @@ public class ModlParsed extends MODLParserBaseListener {
         ArrayItem arrayItem = new ArrayItem();
 
         arrayItem.arrayValueItem = new ArrayValueItem();
-        arrayItem.arrayValueItem.nullVal = new Null();
+        arrayItem.arrayValueItem.primitive = new Primitive();
+        arrayItem.arrayValueItem.primitive.nullVal = new Null();
         return arrayItem;
     }
 
@@ -959,7 +932,7 @@ public class ModlParsed extends MODLParserBaseListener {
                             continue; // This allows empty arrays
                         }
 
-                        if (prevSymbol != MODLLexer.NEWLINE && currentSymbol != MODLLexer.NEWLINE) {
+                        if (prevSymbol != MODLLexer.STRUCT_SEP && currentSymbol != MODLLexer.STRUCT_SEP) {
 
                             // Create something for the blank array item
                             //

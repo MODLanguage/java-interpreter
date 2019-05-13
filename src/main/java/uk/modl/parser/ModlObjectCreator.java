@@ -148,6 +148,21 @@ public class ModlObjectCreator {
         if (value != null) {
             return value;
         }
+        value = processModlParsed(rawModlObject, parsedValue.getPrimitive());
+        if (value != null) {
+            return value;
+        }
+        return value;
+
+    }
+
+    private static ModlValue processModlParsed(RawModlObject rawModlObject, ModlParsed.Primitive parsedValue) {
+        if (parsedValue == null) {
+            return null;
+        }
+
+        ModlValue value = null;
+
         value = processModlParsed(rawModlObject, parsedValue.getQuoted());
         if (value != null) {
             return value;
@@ -195,27 +210,7 @@ public class ModlObjectCreator {
         if (value != null) {
             return value;
         }
-        value = processModlParsed(rawModlObject, parsedValue.getQuoted());
-        if (value != null) {
-            return value;
-        }
-        value = processModlParsed(rawModlObject, parsedValue.getNumber());
-        if (value != null) {
-            return value;
-        }
-        value = processModlParsed(rawModlObject, parsedValue.getTrueVal());
-        if (value != null) {
-            return value;
-        }
-        value = processModlParsed(rawModlObject, parsedValue.getFalseVal());
-        if (value != null) {
-            return value;
-        }
-        value = processModlParsed(rawModlObject, parsedValue.getNullVal());
-        if (value != null) {
-            return value;
-        }
-        value = processModlParsed(rawModlObject, parsedValue.getString());
+        value = processModlParsed(rawModlObject, parsedValue.getPrimitive());
         if (value != null) {
             return value;
         }

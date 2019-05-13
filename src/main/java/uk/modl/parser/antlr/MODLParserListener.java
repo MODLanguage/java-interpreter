@@ -1,5 +1,5 @@
+// Generated from /Users/tonywalmsley/work/num/grammar/antlr4/MODLParser.g4 by ANTLR 4.7.2
 package uk.modl.parser.antlr;
-// Generated from /Users/alex/code/NUM/MODL/interpreter/grammar/MODLParser.g4 by ANTLR 4.7
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
@@ -237,4 +237,14 @@ public interface MODLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitModl_array_value_item(MODLParser.Modl_array_value_itemContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link MODLParser#modl_primitive}.
+	 * @param ctx the parse tree
+	 */
+	void enterModl_primitive(MODLParser.Modl_primitiveContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link MODLParser#modl_primitive}.
+	 * @param ctx the parse tree
+	 */
+	void exitModl_primitive(MODLParser.Modl_primitiveContext ctx);
 }

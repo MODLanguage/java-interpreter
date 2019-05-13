@@ -21,7 +21,7 @@ options {
 
 modl
   // Valid MODL is zero or more MODL structures separated by semi-colons, newlines or both
-  : (NEWLINE* modl_structure ( NEWLINE* SC? NEWLINE* modl_structure NEWLINE*)* )? NEWLINE* SC? NEWLINE* EOF;
+  : (( modl_structure?) | (modl_structure (STRUCT_SEP modl_structure )* ) STRUCT_SEP?) EOF;
 
 modl_structure
   : modl_map
@@ -32,22 +32,22 @@ modl_structure
 
 modl_map
   // ( key = value; key = value )
-  : LBRAC NEWLINE*
-        ( modl_map_item (SC? NEWLINE* modl_map_item )* NEWLINE* )?
+  : LBRAC
+        ( modl_map_item (STRUCT_SEP modl_map_item )* )?
     RBRAC
   ;
 
 modl_array
   // [ item; item ]
-  : LSBRAC NEWLINE*
-        ( ( modl_array_item | modl_nb_array ) ((SC+ | NEWLINE+) ( modl_array_item | modl_nb_array ) )* NEWLINE* )?
+  : LSBRAC
+        ( ( modl_array_item | modl_nb_array ) (STRUCT_SEP+ ( modl_array_item | modl_nb_array ) STRUCT_SEP* )* )?
     RSBRAC
   ;
 
 modl_nb_array
   // non-bracketed array with missing elements
   // numbers=1:2:3:::4:5:6
-  : modl_array_item (NEWLINE* COLON+ NEWLINE* modl_array_item )+
+  : (modl_array_item COLON+ )+ (modl_array_item)* COLON?
   ;
 
 modl_pair
@@ -61,7 +61,7 @@ modl_pair
   // It's also possible to do the same with an array pair
   // e.g. numbers[1;2;3] – equivalent to numbers=[1;2;3]
 
-  : ( STRING | QUOTED) NEWLINE* EQUALS NEWLINE* modl_value_item                // key = value        (standard pair)
+  : ( STRING | QUOTED | NUMBER | NULL | TRUE | FALSE) EQUALS  modl_value_item                // key = value        (standard pair)
   | STRING modl_map                                                            // key( key = value ) (map pair)
   | STRING modl_array                                                          // key[ item; item ]  (array pair)
   ;
@@ -78,28 +78,28 @@ modl_value_item
 modl_top_level_conditional
   // Conditionals at the top level do not require else
   // { country=gb? return=this /country=us? return=that }
-  : LCBRAC NEWLINE*
-        modl_condition_test QMARK NEWLINE*
-        modl_top_level_conditional_return NEWLINE*
-        (FSLASH NEWLINE* modl_condition_test? QMARK NEWLINE*
-        modl_top_level_conditional_return )* NEWLINE*
+  : LCBRAC
+        modl_condition_test QMARK
+        modl_top_level_conditional_return
+        (FSLASH modl_condition_test? QMARK
+        modl_top_level_conditional_return )*
     RCBRAC
   ;
   modl_top_level_conditional_return
-    : modl_structure ( ( SC | NEWLINE | SC NEWLINE ) modl_structure )* SC? NEWLINE*
+    : (modl_structure)*
     ;
 
 modl_map_conditional
   // Conditionals within maps do not require else
   // e.g. { country=gb? return=this /country=us? return=that }
-  : LCBRAC NEWLINE*
-        modl_condition_test QMARK NEWLINE* modl_map_conditional_return NEWLINE*
-        (FSLASH NEWLINE* modl_condition_test? QMARK NEWLINE*
-        modl_map_conditional_return )* NEWLINE*
+  : LCBRAC
+        modl_condition_test QMARK modl_map_conditional_return
+        (FSLASH modl_condition_test? QMARK
+        modl_map_conditional_return )*
     RCBRAC
   ;
   modl_map_conditional_return
-    : modl_map_item ( ( SC | NEWLINE* | SC NEWLINE* ) modl_map_item )* SC? NEWLINE*
+    : (modl_map_item )+
     ;
     modl_map_item
       : modl_pair | modl_map_conditional
@@ -108,14 +108,14 @@ modl_map_conditional
 modl_array_conditional
   // Conditionals within arrays do not require else
   // e.g. { country=gb? this /country=us? that }
-  : LCBRAC NEWLINE*
-        modl_condition_test QMARK NEWLINE* modl_array_conditional_return NEWLINE*
-        (FSLASH NEWLINE* modl_condition_test? QMARK NEWLINE*
-        modl_array_conditional_return )* NEWLINE*
+  : LCBRAC
+        modl_condition_test QMARK  modl_array_conditional_return
+        (FSLASH  modl_condition_test? QMARK
+        modl_array_conditional_return )*
     RCBRAC
   ;
   modl_array_conditional_return
-    : modl_array_item ( ( SC | NEWLINE+ | SC NEWLINE* ) modl_array_item )* NEWLINE*
+    : (modl_array_item )+
     ;
     modl_array_item
       : modl_array_value_item | modl_array_conditional
@@ -124,13 +124,13 @@ modl_array_conditional
 modl_value_conditional
   // Conditionals within values DO require else
   // e.g. { country=gb? this /country=us? that /? other }
-  : LCBRAC NEWLINE* modl_condition_test QMARK (NEWLINE* modl_value_conditional_return NEWLINE*
-        (FSLASH NEWLINE* modl_condition_test QMARK NEWLINE* modl_value_conditional_return )* NEWLINE*
-        (FSLASH NEWLINE* QMARK NEWLINE* modl_value_conditional_return) NEWLINE*)?
+  : LCBRAC modl_condition_test QMARK (modl_value_conditional_return
+        (FSLASH  modl_condition_test QMARK  modl_value_conditional_return )*
+        (FSLASH  QMARK  modl_value_conditional_return))?
     RCBRAC
   ;
   modl_value_conditional_return
-    : modl_value_item ( NEWLINE* COLON modl_value_item ) *
+    : modl_value_item ( COLON modl_value_item ) *
     ;
 
 modl_condition_test
@@ -145,7 +145,7 @@ modl_operator
 
 modl_condition
   // e.g. country=gb
-  : NEWLINE* STRING? modl_operator? modl_value (PIPE modl_value )* NEWLINE*
+  : STRING? modl_operator? modl_value (FSLASH modl_value )*
   ;
 
 modl_condition_group
@@ -158,7 +158,18 @@ modl_value
   | modl_array
   | modl_nb_array
   | modl_pair
-  | QUOTED
+  | modl_primitive
+;
+
+modl_array_value_item
+  : modl_map
+  | modl_pair
+  | modl_array
+  | modl_primitive
+;
+
+modl_primitive
+  : QUOTED
   | NUMBER
   | STRING
   | TRUE
@@ -166,14 +177,3 @@ modl_value
   | NULL
 ;
 
-modl_array_value_item
-  : modl_map
-  | modl_pair
-  | modl_array
-  | QUOTED
-  | NUMBER
-  | STRING
-  | TRUE
-  | FALSE
-  | NULL
-;
