@@ -40,6 +40,7 @@ public class Interpreter {
     Map<Integer, ModlValue> numberedVariables = new HashMap<>();
     // Store any uppercase instructions we've seen, so we know not to allow them again
     Set<String> uppercaseInstructions = new HashSet<>();
+    List<String> loadedFiles = new ArrayList<>();
 
     Set<String> pairNames; // TODO Get rid of this!
     Map<String, ModlValue> valuePairs;
@@ -76,7 +77,7 @@ public class Interpreter {
 
     private ModlObject interpretPrivate(RawModlObject rawModlObject) throws RequireRestart {
         ModlObject modlObject = new ModlObject();
-        ModlClassLoader.loadModlKlassO(rawModlObject, klasses);
+        //ModlClassLoader.loadModlKlassO(rawModlObject, klasses);
         pairNames = new HashSet<>();
         valuePairs = new HashMap<>();
 
@@ -195,7 +196,7 @@ public class Interpreter {
         } else {
             throw new RuntimeException("Was expecting String for location, but got " + value.getClass());
         }
-        RawModlObject rawModlObject = FileLoader.loadFile(location);
+        RawModlObject rawModlObject = FileLoader.loadFile(loadedFiles, location);
         return rawModlObject;
     }
 
@@ -846,9 +847,9 @@ public class Interpreter {
                 if (classMap.get("*superclass") != null) {
                     final String superclassString;
                     if (classMap.get("*superclass") instanceof String) {
-                        superclassString = (String)classMap.get("*superclass");
+                        superclassString = (String) classMap.get("*superclass");
                     } else {
-                        superclassString = ((ModlObject.String)classMap.get("*superclass")).string;
+                        superclassString = ((ModlObject.String) classMap.get("*superclass")).string;
                     }
                     String mostSuperClass = getSuperclassPrimitive(superclassString);
                     if (originalPair.getModlValue() == null) {
@@ -897,9 +898,9 @@ public class Interpreter {
     private String getNextSuperclassUp(String currentSuperclass) {
         Map<String, Object> classMap = getModlClass(currentSuperclass);
         if (classMap.get("*superclass") instanceof String) {
-            return (String)classMap.get("*superclass");
+            return (String) classMap.get("*superclass");
         } else {
-            return ((ModlObject.String)classMap.get("*superclass")).string;
+            return ((ModlObject.String) classMap.get("*superclass")).string;
         }
     }
 
@@ -1418,6 +1419,15 @@ public class Interpreter {
     private ModlValue interpret(RawModlObject.String string) {
         if (string != null) {
             ModlValue value = transformString(string.string);
+
+            if (string.string.startsWith("%*")) {
+                if (string.string.equals("%*class")) {
+                    value = InstructionProcessor.processClassInstruction(klasses);
+                }
+                if (string.string.equals("%*load")) {
+                    value = InstructionProcessor.processLoadInstruction(loadedFiles);
+                }
+            }
             return value;
         }
         return null;

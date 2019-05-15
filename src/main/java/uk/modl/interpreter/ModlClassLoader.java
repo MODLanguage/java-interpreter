@@ -29,13 +29,13 @@ public class ModlClassLoader {
 
     public static void loadClass(RawModlObject.Structure structure, Map<String, Map<String, Object>> klasses, Interpreter interpreter) {
         if (structure instanceof ModlObject.Pair) {
-            ModlObject.Pair pair = (ModlObject.Pair)structure;
+            ModlObject.Pair pair = (ModlObject.Pair) structure;
             if (pair == null || (!(((pair.getKey().string.toLowerCase().equals("*class")) ||
                     (pair.getKey().string.toLowerCase().equals("*c")))))) {
                 throw new RuntimeException("Expecting '*class' in ModlClassLoader");
             }
 //            interpreter.addToUpperCaseInstructions(pair.getKey().string);
-                loadClassStructure(structure, klasses, interpreter);
+            loadClassStructure(structure, klasses, interpreter);
         }
     }
 
@@ -72,12 +72,14 @@ public class ModlClassLoader {
         }
         if (superKlass != null) {
             for (Map.Entry<String, Object> entry : superKlass.entrySet()) {
-                values.put(entry.getKey(), entry.getValue());
+                if (!entry.getKey().startsWith("*")) {
+                    values.put(entry.getKey(), entry.getValue());
+                }
             }
         }
 
         // Go through the structure and find all the new values and add them (replacing any already there from superklass)
-        for (RawModlObject.Pair mapItem : ((ModlObject.Map)((ModlObject.Pair)structure).getModlValue()).getPairs()) {
+        for (RawModlObject.Pair mapItem : ((ModlObject.Map) ((ModlObject.Pair) structure).getModlValue()).getPairs()) {
             // Remember to avoid "_id" and "_sc" !
             if (mapItem.getKey().string.toLowerCase().equals("*id") || mapItem.getKey().string.toLowerCase().equals("*i") ||
                     mapItem.getKey().string.toLowerCase().equals("*superclass") || mapItem.getKey().string.toLowerCase().equals("*s")) {
@@ -102,7 +104,7 @@ public class ModlClassLoader {
     private static void loadParams(HashMap<String, Object> values, RawModlObject.Array array) {
         // _params : add like _params<n> where n is number of values in array
         for (ModlValue v : array.getValues()) {
-            RawModlObject.Array a = (ModlObject.Array)v;
+            RawModlObject.Array a = (ModlObject.Array) v;
             String key = "*params" + a.getValues().size();
             List<ModlValue> vs = new LinkedList<>();
             for (ModlValue ai : a.getValues()) {
@@ -113,11 +115,11 @@ public class ModlClassLoader {
     }
 
     public static String getPairValueFor(RawModlObject.Structure structure, String pairValue, Interpreter interpreter) {
-        for (RawModlObject.Pair mapItem : ((ModlObject.Map)((ModlObject.Pair)structure).getModlValue()).getPairs()) {
+        for (RawModlObject.Pair mapItem : ((ModlObject.Map) ((ModlObject.Pair) structure).getModlValue()).getPairs()) {
             if (mapItem.getKey().string.toLowerCase().equals(pairValue.toLowerCase())) {
                 interpreter.addToUpperCaseInstructions(mapItem.getKey().string);
                 // TODO This does not need to be a String!
-                return ((ModlObject.String)mapItem.getModlValue()).string;
+                return ((ModlObject.String) mapItem.getModlValue()).string;
             }
         }
         return null;

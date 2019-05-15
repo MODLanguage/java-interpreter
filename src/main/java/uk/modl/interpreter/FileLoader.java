@@ -27,6 +27,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -36,7 +37,7 @@ import java.util.Scanner;
 public class FileLoader {
     private static Map<String, ModlAndTtl> cache = new HashMap<>();
 
-    public static RawModlObject loadFile(String location) {
+    public static RawModlObject loadFile(final List<String> filesLoaded, String location) {
         String contents = null;
         boolean forceReload = false;
         if (location.endsWith("!")) {
@@ -50,6 +51,7 @@ public class FileLoader {
         if (!forceReload) {
             if (cache.get(location) != null) {
                 if (cache.get(location).endTime >= (System.currentTimeMillis() / 1000)) {
+                    filesLoaded.add(location);
                     return cache.get(location).rawModlObject;
                 } else {
                     cache.remove(location);
@@ -58,7 +60,7 @@ public class FileLoader {
         } else {
             cache.remove(location);
         }
-        if (location.startsWith("http:")) {
+        if (location.startsWith("http")) {
             // Load from URI
             try {
                 contents = new Scanner(new URL(location).openStream(), "UTF-8").useDelimiter("\\A").next();
@@ -81,6 +83,7 @@ public class FileLoader {
         long endTime = (System.currentTimeMillis() / 1000) + 3600;
         ModlAndTtl modlAndTtl = new ModlAndTtl(endTime, rawModlObject);
         cache.put(location, modlAndTtl);
+        filesLoaded.add(location);
         return rawModlObject;
     }
 }
