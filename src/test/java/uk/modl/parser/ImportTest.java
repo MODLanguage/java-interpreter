@@ -39,7 +39,7 @@ public class ImportTest extends TestCase {
                     "  *assign=[\n" +
                     "    [direction;date_time;message]\n" +
                     "  ]\n" +
-                    "  method=sms\n" +
+                    "  transform=sms\n" +
                     ")\n" +
                     "\n" +
                     "m=out:2018-03-22 15\\:25:Hi\n" +
@@ -54,52 +54,52 @@ public class ImportTest extends TestCase {
                             "    \"direction\" : \"out\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:25\",\n" +
                             "    \"message\" : \"Hi\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "}, {\n" +
                             "  \"message\" : {\n" +
                             "    \"direction\" : \"in\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:26\",\n" +
                             "    \"message\" : \"Hello, how are you?\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "}, {\n" +
                             "  \"message\" : {\n" +
                             "    \"direction\" : \"out\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:25\",\n" +
                             "    \"message\" : \"Hi, good thanks\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "}, {\n" +
                             "  \"message\" : {\n" +
                             "    \"direction\" : \"out\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:26\",\n" +
                             "    \"message\" : \"How about you?\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "}, {\n" +
                             "  \"message\" : {\n" +
                             "    \"direction\" : \"in\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:26\",\n" +
                             "    \"message\" : \"Yes, fine thanks. What are you up to?\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "}, {\n" +
                             "  \"message\" : {\n" +
                             "    \"direction\" : \"out\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:25\",\n" +
                             "    \"message\" : \"Just testing out MODL\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "}, {\n" +
                             "  \"message\" : {\n" +
                             "    \"direction\" : \"in\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:26\",\n" +
                             "    \"message\" : \"Cool!\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "} ]\n",
-            "*L=http~://config.modl.uk/demo/message-thread.txt;*c(*i=m;*n=message;*s=map;*a[[direction;date_time;message]];method=sms);m=out:2018-03-22 15~:25:Hi;m=in:2018-03-22 15~:26:Hello, how are you?;m=out:2018-03-22 15~:25:Hi, good thanks;m=out:2018-03-22 15~:26:How about you?;m=in:2018-03-22 15~:26:Yes, fine thanks. What are you up to?;m=out:2018-03-22 15~:25:Just testing out MODL;m=in:2018-03-22 15~:26:Cool!"},
+            "*L=http~://config.modl.uk/demo/message-thread.txt;*c(*i=m;*n=message;*s=map;*a[[direction;date_time;message]];transform=sms);m=out:2018-03-22 15~:25:Hi;m=in:2018-03-22 15~:26:Hello, how are you?;m=out:2018-03-22 15~:25:Hi, good thanks;m=out:2018-03-22 15~:26:How about you?;m=in:2018-03-22 15~:26:Yes, fine thanks. What are you up to?;m=out:2018-03-22 15~:25:Just testing out MODL;m=in:2018-03-22 15~:26:Cool!"},
             {"_var=2\n" +
                     "*L=\"http://s3-eu-west-1.amazonaws.com/modltestfiles/testing.txt!\"\n" +
                     "print=%update_date\n",
@@ -142,7 +142,7 @@ public class ImportTest extends TestCase {
                     "  *assign=[\n" +
                     "    [direction;date_time;message]\n" +
                     "  ]\n" +
-                    "  method=sms\n" +
+                    "  transform=sms\n" +
                     ")\n" +
                     "\n" +
                     "m=out:2018-03-22 15\\:25:Hi\n" +
@@ -157,52 +157,52 @@ public class ImportTest extends TestCase {
                             "    \"direction\" : \"out\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:25\",\n" +
                             "    \"message\" : \"Hi\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "}, {\n" +
                             "  \"message\" : {\n" +
                             "    \"direction\" : \"in\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:26\",\n" +
                             "    \"message\" : \"Hello, how are you?\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "}, {\n" +
                             "  \"message\" : {\n" +
                             "    \"direction\" : \"out\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:25\",\n" +
                             "    \"message\" : \"Hi, good thanks\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "}, {\n" +
                             "  \"message\" : {\n" +
                             "    \"direction\" : \"out\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:26\",\n" +
                             "    \"message\" : \"How about you?\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "}, {\n" +
                             "  \"message\" : {\n" +
                             "    \"direction\" : \"in\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:26\",\n" +
                             "    \"message\" : \"Yes, fine thanks. What are you up to?\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "}, {\n" +
                             "  \"message\" : {\n" +
                             "    \"direction\" : \"out\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:25\",\n" +
                             "    \"message\" : \"Just testing out MODL\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "}, {\n" +
                             "  \"message\" : {\n" +
                             "    \"direction\" : \"in\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:26\",\n" +
                             "    \"message\" : \"Cool!\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "} ]\n",
-            "*L=grammar_tests/demo_config;*c(*i=m;*n=message;*s=map;*a[[direction;date_time;message]];method=sms);m=out:2018-03-22 15~:25:Hi;m=in:2018-03-22 15~:26:Hello, how are you?;m=out:2018-03-22 15~:25:Hi, good thanks;m=out:2018-03-22 15~:26:How about you?;m=in:2018-03-22 15~:26:Yes, fine thanks. What are you up to?;m=out:2018-03-22 15~:25:Just testing out MODL;m=in:2018-03-22 15~:26:Cool!"},
+            "*L=grammar_tests/demo_config;*c(*i=m;*n=message;*s=map;*a[[direction;date_time;message]];transform=sms);m=out:2018-03-22 15~:25:Hi;m=in:2018-03-22 15~:26:Hello, how are you?;m=out:2018-03-22 15~:25:Hi, good thanks;m=out:2018-03-22 15~:26:How about you?;m=in:2018-03-22 15~:26:Yes, fine thanks. What are you up to?;m=out:2018-03-22 15~:25:Just testing out MODL;m=in:2018-03-22 15~:26:Cool!"},
             {"## country\n" +
                     "_c = us\n" +
                     "## language\n" +
@@ -227,7 +227,7 @@ public class ImportTest extends TestCase {
                     "  *assign=[\n" +
                     "    [direction;date_time;message]\n" +
                     "  ]\n" +
-                    "  method=sms\n" +
+                    "  transform=sms\n" +
                     ")\n" +
                     "\n" +
                     "m=out:2018-03-22 15\\:25:Hi\n" +
@@ -242,52 +242,52 @@ public class ImportTest extends TestCase {
                             "    \"direction\" : \"out\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:25\",\n" +
                             "    \"message\" : \"Hi\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "}, {\n" +
                             "  \"message\" : {\n" +
                             "    \"direction\" : \"in\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:26\",\n" +
                             "    \"message\" : \"Hello, how are you?\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "}, {\n" +
                             "  \"message\" : {\n" +
                             "    \"direction\" : \"out\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:25\",\n" +
                             "    \"message\" : \"Hi, good thanks\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "}, {\n" +
                             "  \"message\" : {\n" +
                             "    \"direction\" : \"out\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:26\",\n" +
                             "    \"message\" : \"How about you?\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "}, {\n" +
                             "  \"message\" : {\n" +
                             "    \"direction\" : \"in\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:26\",\n" +
                             "    \"message\" : \"Yes, fine thanks. What are you up to?\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "}, {\n" +
                             "  \"message\" : {\n" +
                             "    \"direction\" : \"out\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:25\",\n" +
                             "    \"message\" : \"Just testing out MODL\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "}, {\n" +
                             "  \"message\" : {\n" +
                             "    \"direction\" : \"in\",\n" +
                             "    \"date_time\" : \"2018-03-22 15:26\",\n" +
                             "    \"message\" : \"Cool!\",\n" +
-                            "    \"method\" : \"sms\"\n" +
+                            "    \"transform\" : \"sms\"\n" +
                             "  }\n" +
                             "} ]\n",
-            "*L=grammar_tests/test_import_dir/test_import.txt;*c(*i=m;*n=message;*s=map;*a[[direction;date_time;message]];method=sms);m=out:2018-03-22 15~:25:Hi;m=in:2018-03-22 15~:26:Hello, how are you?;m=out:2018-03-22 15~:25:Hi, good thanks;m=out:2018-03-22 15~:26:How about you?;m=in:2018-03-22 15~:26:Yes, fine thanks. What are you up to?;m=out:2018-03-22 15~:25:Just testing out MODL;m=in:2018-03-22 15~:26:Cool!"}
+            "*L=grammar_tests/test_import_dir/test_import.txt;*c(*i=m;*n=message;*s=map;*a[[direction;date_time;message]];transform=sms);m=out:2018-03-22 15~:25:Hi;m=in:2018-03-22 15~:26:Hello, how are you?;m=out:2018-03-22 15~:25:Hi, good thanks;m=out:2018-03-22 15~:26:How about you?;m=in:2018-03-22 15~:26:Yes, fine thanks. What are you up to?;m=out:2018-03-22 15~:25:Just testing out MODL;m=in:2018-03-22 15~:26:Cool!"}
     });
 
     @Test

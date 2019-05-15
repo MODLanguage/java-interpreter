@@ -21,10 +21,21 @@ public class GrammarTestRunnerTest extends TestCase {
     ObjectMapper mapper = new ObjectMapper();
 
     public static class TestInput {
-        public TestInput() {}
+        public TestInput() {
+        }
+
         String input;
         String minimised_modl;
         String expected_output;
+        String [] tested_features;
+
+        public String[] getTested_features() {
+            return tested_features;
+        }
+
+        public void setTested_features(String[] tested_features) {
+            this.tested_features = tested_features;
+        }
 
         public String getInput() {
             return input;
@@ -54,8 +65,9 @@ public class GrammarTestRunnerTest extends TestCase {
     @Test
     public void testBaseTest() throws Exception {
         // TODO Go through grammar_tests/base_tests.json making sure all expected stuff is correct
-        try(InputStream fileStream = new FileInputStream("grammar_tests/base_tests.json")) {
-            List<TestInput> list = mapper.readValue(fileStream, new TypeReference<LinkedList<TestInput>>() {});
+        try (InputStream fileStream = new FileInputStream("grammar_tests/base_tests.json")) {
+            List<TestInput> list = mapper.readValue(fileStream, new TypeReference<LinkedList<TestInput>>() {
+            });
             for (TestInput testInput : list) {
                 checkValidTestInput(testInput);
             }
@@ -71,16 +83,17 @@ public class GrammarTestRunnerTest extends TestCase {
         ModlObject modlObject = Interpreter.interpret(testInput.input);
         String output = JsonPrinter.printModl(modlObject);
         System.out.println("Output : " + output);
-        assertEquals(testInput.expected_output.replace(" ", "").replace("\n", "").replace("\r",""),
-                output.replace(" ", "").replace("\n", "").replace("\r",""));
+        assertEquals(testInput.expected_output.replace(" ", "").replace("\n", "").replace("\r", ""),
+                output.replace(" ", "").replace("\n", "").replace("\r", ""));
 
     }
 
     @Test
     public void testErrorTest() throws Exception {
         // Go through grammar_test/error_tests.json making sure all tests raise an error of some kind
-        try(InputStream fileStream = new FileInputStream("grammar_tests/error_tests.json")) {
-            List<String> list = mapper.readValue(fileStream, new TypeReference<LinkedList<String>>() {});
+        try (InputStream fileStream = new FileInputStream("grammar_tests/error_tests.json")) {
+            List<String> list = mapper.readValue(fileStream, new TypeReference<LinkedList<String>>() {
+            });
             for (String testInput : list) {
                 checkInValidTestInput(testInput);
             }

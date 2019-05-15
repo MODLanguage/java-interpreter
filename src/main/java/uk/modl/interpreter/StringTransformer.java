@@ -123,7 +123,7 @@ public class StringTransformer {
             Integer startIndex = getNextPercent(stringToTransform, currentIndex);
             if (startIndex != null) {
                 Integer endIndex = null;
-                // If the first character after the % is a number, then keep reading until we get to a non-number (taking account of method chains)
+                // If the first character after the % is a number, then keep reading until we get to a non-number (taking account of transform chains)
                 // If the first character after the % is a letter, then keep reading until we get to a space
                 if (startIndex < stringToTransform.length() - 1 && !isNumber(stringToTransform.substring(startIndex + 1, startIndex + 2))) {
                     // Just read to the next space
@@ -160,7 +160,7 @@ public class StringTransformer {
     private Integer getEndOfNumber(String stringToTransform, Integer startIndex) {
         // We actually need to keep processing this string until we get to an end
         // The end (for the number type) can be a space, or else any non-number character
-        // If the end is a ".", then check to see if we have a variable method
+        // If the end is a ".", then check to see if we have a variable transform
 
         // First, find the end of the number
         Integer currentIndex = startIndex;
@@ -193,7 +193,7 @@ public class StringTransformer {
             }
             String nextChar = stringToTransform.substring(currentIndex, currentIndex + 1);
             if (nextChar.equals(".")) {
-                // or b) we come to another "." - in which case keep going and build up a new method name from the characters
+                // or b) we come to another "." - in which case keep going and build up a new transform name from the characters
                 if (newMethod.length() > 0) {
                     newMethod = "";
                 } else {
@@ -293,9 +293,9 @@ If the reference includes any part enclosed in [ and ] this is a deep object ref
 
 Replace the reference key with the value of that key. We will call this the subject.
 
-If there was a period in the original string, any part to the right of the first period (until the end of the part not including the end grave) is considered the method chain. Split the method chain by . (dot / full stop / period) and create an array from the methods.
+If there was a period in the original string, any part to the right of the first period (until the end of the part not including the end grave) is considered the transform chain. Split the transform chain by . (dot / full stop / period) and create an array from the methods.
 
-Loop through the array and pass the subject to the named method, transforming the subject. Repeat the process (with the transformed subject) until all methods in the chain have been applied and the subject is fully transformed.
+Loop through the array and pass the subject to the named transform, transforming the subject. Repeat the process (with the transformed subject) until all methods in the chain have been applied and the subject is fully transformed.
 
 Replace the part originally found (including graves) with the transformed subject.
      */
@@ -339,7 +339,7 @@ Replace the part originally found (including graves) with the transformed subjec
             for (String method : methods) {
                 if (method.indexOf("(") >= 0) {
                     // HANDLE TRIM AND REPLACE HERE!!
-                    // We need to strip the "(<params>)" and apply the method to the subject AND the params!
+                    // We need to strip the "(<params>)" and apply the transform to the subject AND the params!
                     // TODO (we might need to check for escaped "."s one day...
                     int startParamsIndex = method.indexOf("(");
                     String paramsString = method.substring(startParamsIndex + 1, method.length() - 1); //  - 1);
@@ -426,7 +426,7 @@ Replace the part originally found (including graves) with the transformed subjec
     }
 
     /**
-     * For keys such as a>b>c>d>e, each call to this method takes the first part and uses it to find the referenced
+     * For keys such as a>b>c>d>e, each call to this transform takes the first part and uses it to find the referenced
      * object in the current ctx object, then calls itself with this new object as the context and the remaining part
      * of the nested object reference (b>c>d>e in this case) until all the parts of the reference are used up.
      *

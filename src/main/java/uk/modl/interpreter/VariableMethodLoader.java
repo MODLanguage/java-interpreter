@@ -31,23 +31,32 @@ import java.util.Map;
  * Created by alex on 19/09/2018.
  */
 public class VariableMethodLoader {
-    public static void loadVariableMethod(RawModlObject.Structure structure, Interpreter interpreter) {
+    public static class MethodDescriptor {
+        public String id;
+        public String name;
+        public String transform;
+    }
+
+    public static void loadVariableMethod(List<MethodDescriptor> methodList, RawModlObject.Structure structure, Interpreter interpreter) {
         /*
-*method(
+*transform(
   *id=us
   *name=replace_underscores_with_spaces
   *transform=`replace(_, )`
 )
          */
+        final MethodDescriptor desc = new MethodDescriptor();
         // Load up the values : e.g. :
         String methodName = ModlClassLoader.getPairValueFor(structure, "*id", interpreter);
         if (methodName == null) {
             methodName = ModlClassLoader.getPairValueFor(structure, "*i", interpreter);
         }
-        String description = ModlClassLoader.getPairValueFor(   structure, "*name", interpreter);
+        desc.id = methodName;
+        String description = ModlClassLoader.getPairValueFor(structure, "*name", interpreter);
         if (description == null) {
             description = ModlClassLoader.getPairValueFor(structure, "*n", interpreter);
         }
+        desc.name = description;
         if (description == null) {
             description = methodName;
         }
@@ -56,7 +65,10 @@ public class VariableMethodLoader {
             methodString = ModlClassLoader.getPairValueFor(structure, "*t", interpreter);
         }
         methodString = methodString.replace("`", "");
+        desc.transform = methodString;
+
         createVariableMethod(methodName, methodString);
+        methodList.add(desc);
     }
 
     private static void createVariableMethod(String methodName, String methodString) {
@@ -66,10 +78,10 @@ public class VariableMethodLoader {
         VariableMethods.TaskRunner newTask = new VariableMethods.TaskRunner() {
             @Override
             public void run() {
-                // Make the new method!!!
+                // Make the new transform!!!
                 String intermediateResult = parameter;
                 for (Map<String, String> methodAndParam : methodsAndParams) {
-                    String method = (String)(methodAndParam.keySet().toArray()[0]);
+                    String method = (String) (methodAndParam.keySet().toArray()[0]);
                     String params = methodAndParam.get(method);
                     if (params == null || params.length() == 0) {
                         intermediateResult = VariableMethods.transform(method, intermediateResult);
@@ -87,12 +99,12 @@ public class VariableMethodLoader {
     private static List<Map<String, String>> getMethodsAndParams(String methodString) {
         // Need to go through the methodString, and add a new "apply" in the new function for ech of the vairable methods called!
         // e.g. "replace(-, ).trim(.).initcap"
-        // So find the first method and its parameters, and add that to the method list
-        // Then continue from the end of the params for the first method, and find the second method and its params, and add that to the lambda
+        // So find the first transform and its parameters, and add that to the transform list
+        // Then continue from the end of the params for the first transform, and find the second transform and its params, and add that to the lambda
         // Keep going until we reach the end of the methodString
         List<Map<String, String>> methodsAndParams = new LinkedList<>();
         while (methodString.indexOf("(") > 0 || methodString.length() > 0) {
-            // Find the next method
+            // Find the next transform
             // This can either be by the first bracket, or the first "." - whichever comes first
             int bracketIndex = methodString.indexOf("(");
             int dotIndex = methodString.indexOf(".");
@@ -130,7 +142,7 @@ public class VariableMethodLoader {
                 }
             }
 
-            // We can build up all the method names and parameters, as we do here
+            // We can build up all the transform names and parameters, as we do here
             //  - and then we can build up the whole new function in ONE lambda, with a series of function calls
             //  - each one operating on the last
             //
@@ -138,7 +150,7 @@ public class VariableMethodLoader {
             methodAndParam.put(intermediateMethodName, params);
             methodsAndParams.add(methodAndParam);
 
-            // Adjust the method string
+            // Adjust the transform string
             methodString = methodString.substring(endIndex, methodString.length());
         }
         return methodsAndParams;

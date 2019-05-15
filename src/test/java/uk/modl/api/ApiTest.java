@@ -98,7 +98,7 @@ public class ApiTest extends TestCase {
         ModlObject modlObject = getModlObject();
 
         // Now iterate through the object without knowing what is there, printing everything as we go
-        // We'd like to use a generic method here, so that we don't have to inspect each bloody thing
+        // We'd like to use a generic transform here, so that we don't have to inspect each bloody thing
 
         String traversal = traverseModlValue(modlObject, false);
         System.out.println(traversal);

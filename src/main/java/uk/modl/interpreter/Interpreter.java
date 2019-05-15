@@ -41,6 +41,7 @@ public class Interpreter {
     // Store any uppercase instructions we've seen, so we know not to allow them again
     Set<String> uppercaseInstructions = new HashSet<>();
     List<String> loadedFiles = new ArrayList<>();
+    List<VariableMethodLoader.MethodDescriptor> methodList = new ArrayList<>();
 
     Set<String> pairNames; // TODO Get rid of this!
     Map<String, ModlValue> valuePairs;
@@ -137,7 +138,7 @@ public class Interpreter {
                     continue;
                 } else if (pair.getKey().string.toLowerCase().equals("*method") || pair.getKey().string.toLowerCase().equals("*m")) {
                     addToUpperCaseInstructions(pair.getKey().string);
-                    VariableMethodLoader.loadVariableMethod(pair, this);
+                    VariableMethodLoader.loadVariableMethod(methodList, pair, this);
                 } else if (pair.getKey().string.equals("?")) {
                     VariableLoader.loadConfigNumberedVariables(pair.getModlValue(), numberedVariables);
                 } else {
@@ -1426,6 +1427,9 @@ public class Interpreter {
                 }
                 if (string.string.equals("%*load")) {
                     value = InstructionProcessor.processLoadInstruction(loadedFiles);
+                }
+                if (string.string.equals("%*method")) {
+                    value = InstructionProcessor.processMethodInstruction(methodList);
                 }
             }
             return value;

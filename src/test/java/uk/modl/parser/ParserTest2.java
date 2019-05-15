@@ -338,7 +338,7 @@ public class ParserTest2 extends TestCase {
                         "  *a=[\n" +
                         "    [direction;date_time;message]\n" +
                         "  ]\n" +
-                        "  method=sms\n" +
+                        "  transform=sms\n" +
                         ")\n" +
                         "m=in:2018-03-22:hi",
                         "{\n" +
@@ -346,10 +346,10 @@ public class ParserTest2 extends TestCase {
                                 "    \"direction\" : \"in\",\n" +
                                 "    \"date_time\" : \"2018-03-22\",\n" +
                                 "    \"message\" : \"hi\",\n" +
-                                "    \"method\" : \"sms\"\n" +
+                                "    \"transform\" : \"sms\"\n" +
                                 "  }\n" +
                                 "}",
-                        "*c(*i=m;*n=message;*s=map;*a[[direction;date_time;message]];method=sms);m=in:2018-03-22:hi"},
+                        "*c(*i=m;*n=message;*s=map;*a[[direction;date_time;message]];transform=sms);m=in:2018-03-22:hi"},
                 {"*class(\n" +
                         "  *id=car\n" +
                         "  *name=car\n" +
@@ -1098,11 +1098,11 @@ public class ParserTest2 extends TestCase {
                         "test=123",
                         "{ \"test\" : 123 }",
                 "_co=gb;test=123"},
-                {"*method(\n" +
-                        "  ## The method can be called by it's ID or name\n" +
+                {"*transform(\n" +
+                        "  ## The transform can be called by it's ID or name\n" +
                         "  *id=cn\n" +
                         "  *name=company_name\n" +
-                        "  ## The value of the object that the method is called on is transformed using the following methods:\n" +
+                        "  ## The value of the object that the transform is called on is transformed using the following methods:\n" +
                         "  *transform=`replace(-, ).trim(.).initcap`\n" +
                         ")\n" +
                         "\n" +
@@ -1112,7 +1112,7 @@ public class ParserTest2 extends TestCase {
                                 "    \"friendly_name\": \"Smiths Limited\"\n" +
                                 "}",
                         "*m(*i=cn;*n=company_name;*transform=`replace(-, ).trim(.).initcap`);_domain=smiths-limited.com;friendly_name=%domain.cn"},
-                {"*method(\n" +
+                {"*transform(\n" +
                         "  *id=rt\n" +
                         "  *name=remove_two\n" +
                         "  *transform=`replace(two,)`\n" +

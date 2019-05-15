@@ -191,7 +191,7 @@ public class VariableMethods {
             String result = taskRunner.getResult();
             return result;
         } catch (Exception e) {
-            throw new RuntimeException("Can't call variable method " + methodName + " : " + e);
+            throw new RuntimeException("Can't call variable transform " + methodName + " : " + e);
         }
     }
 
