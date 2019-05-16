@@ -1,11 +1,11 @@
 [
   { "input": "*l=grammar_tests/test_import_dir/nested_import1.txt;\nfiles=%*load",
-    "minimised_modl": "*L=grammar_tests/test_import_dir/nested_import1.txt;files=%*load",
+    "minimised_modl": "*l=grammar_tests/test_import_dir/nested_import1.txt;files=%*load",
     "expected_output": "{\"files\":[\"grammar_tests/test_import_dir/nested_import1.txt\",\"grammar_tests/test_import_dir/nested_import2.txt\",\"grammar_tests/test_import_dir/nested_import3.txt\",\"grammar_tests/test_import_dir/test_import.txt\"]}",
     "tested_features":["load"]
   },
   { "input": "*l=grammar_tests/1:grammar_tests/2:grammar_tests/3:grammar_tests/1;\nfiles=%*load",
-    "minimised_modl": "*L=grammar_tests/1:grammar_tests/2:grammar_tests/3:grammar_tests/1;files=%*load",
+    "minimised_modl": "*l=grammar_tests/1:grammar_tests/2:grammar_tests/3:grammar_tests/1;files=%*load",
     "expected_output": "{\"files\":[\"grammar_tests/1.modl\",\"grammar_tests/2.modl\",\"grammar_tests/3.modl\",\"grammar_tests/1.modl\"]}",
     "tested_features":["load"]
   },
@@ -601,7 +601,7 @@
   { "input": "_C=gb;\no(\n{C=gb?test1=123};\ntest2=456\n)",
     "minimised_modl": "_C=gb;o({C=gb?test1=123};test2=456)",
     "expected_output": "{\n \"o\" : {\n   \"test1\" : 123,\n   \"test2\" : 456\n }\n}\n",
-    "tested_features":["object_ref"]
+    "tested_features":["object_ref", "conditional"]
   },
   { "input": "{\ntrue?\n test=1\n}",
     "minimised_modl": "{01?test=1}",
@@ -888,27 +888,27 @@
     "tested_features":["load"]
   },
   { "input": "*l=grammar_tests/1;*l=grammar_tests/1;a=1",
-    "minimised_modl": "*L=grammar_tests/1;*l=grammar_tests/1;a=1",
+    "minimised_modl": "*l=grammar_tests/1;*l=grammar_tests/1;a=1",
     "expected_output": "{\n \"a\" : 1\n}\n",
     "tested_features":["load"]
   },
-  { "input": "*L=grammar_tests/1:grammar_tests/2:grammar_tests/3;\nthe_number=%number",
-    "minimised_modl": "*L=grammar_tests/1:grammar_tests/2:grammar_tests/3;the_number=%number",
+  { "input": "*l=grammar_tests/1:grammar_tests/2:grammar_tests/3;\nthe_number=%number",
+    "minimised_modl": "*l=grammar_tests/1:grammar_tests/2:grammar_tests/3;the_number=%number",
     "expected_output": "{\n \"the_number\" : 3\n}\n",
     "tested_features":["object_ref", "load"]
   },
-  { "input": "*L=grammar_tests/1:grammar_tests/2:grammar_tests/3:grammar_tests/1;\nthe_number=%number",
-    "minimised_modl": "*L=grammar_tests/1:grammar_tests/2:grammar_tests/3:grammar_tests/1;the_number=%number",
+  { "input": "*l=grammar_tests/1:grammar_tests/2:grammar_tests/3:grammar_tests/1;\nthe_number=%number",
+    "minimised_modl": "*l=grammar_tests/1:grammar_tests/2:grammar_tests/3:grammar_tests/1;the_number=%number",
     "expected_output": "{\n \"the_number\" : 1\n}\n",
     "tested_features":["object_ref", "load"]
   },
-  { "input": "*L[grammar_tests/1;grammar_tests/2;grammar_tests/3;grammar_tests/1];\nthe_number=%number",
-    "minimised_modl": "*L=grammar_tests/1:grammar_tests/2:grammar_tests/3:grammar_tests/1;the_number=%number",
+  { "input": "*l[grammar_tests/1;grammar_tests/2;grammar_tests/3;grammar_tests/1];\nthe_number=%number",
+    "minimised_modl": "*l=grammar_tests/1:grammar_tests/2:grammar_tests/3:grammar_tests/1;the_number=%number",
     "expected_output": "{\n \"the_number\" : 1\n}\n",
     "tested_features":["object_ref", "load"]
   },
-  { "input": "*L=grammar_tests/a:grammar_tests/b:grammar_tests/c;\nvar=%var",
-    "minimised_modl": "*L=grammar_tests/a:grammar_tests/b:grammar_tests/c;var=%var",
+  { "input": "*l=grammar_tests/a:grammar_tests/b:grammar_tests/c;\nvar=%var",
+    "minimised_modl": "*l=grammar_tests/a:grammar_tests/b:grammar_tests/c;var=%var",
     "expected_output": "{\n \"var\" : \"abc\"\n}\n",
     "tested_features":["object_ref", "load"]
   },
