@@ -333,7 +333,7 @@ Replace the part originally found (including graves) with the transformed subjec
                     String paramsString = method.substring(startParamsIndex + 1, method.length() - 1); //  - 1);
                     String methodString = method.substring(0, startParamsIndex);
                     subject = VariableMethods.transform(methodString, subject + "," + paramsString);
-
+                    remainder = null;
                 } else {
                     if (!VariableMethods.isVariableMethod(method)) {
                         // Nothing to do - leave it alone!

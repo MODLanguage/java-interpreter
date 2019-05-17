@@ -1365,13 +1365,22 @@ public class Interpreter {
             // Then do whatever the conditionOperator says!
             String valObj = getObjectFromValueForCondition(values.get(0));
             String origKeyString = valObj.toString();
+            String val = origKeyString;
             if (origKeyString.startsWith("%")) {
                 origKeyString = origKeyString.substring(1);
+                val = transformConditionalArgument(origKeyString);
+            } else {
+                // Does it reference a pair?
+                if(pairNames.contains(val) || pairNames.contains("_"+val)) {
+                    final ModlValue pairValue = valuePairs.get(val);
+                    if(pairValue.isString()) {
+                        val = (String) pairValue.getValue();
+                    } else if(pairValue.isNumber()) {
+                        val = ((ModlObject.Number) pairValue).number;
+                    }
+                }
             }
-            String val = transformConditionalArgument(origKeyString);
-            if (val.startsWith("%")) {
-                val = val.substring(1, val.length());
-            }
+
             if (conditionOperator.equals("=")) {
                 if (conditionalEquals(key.toString(), val)) {
                     return true;

@@ -27,10 +27,10 @@ public class ScratchTest extends TestCase {
             List<TestInput> list = mapper.readValue(fileStream, new TypeReference<LinkedList<TestInput>>() {
             });
             int testNumber = 1;
-            int targetTest = 33;
+            int targetTest = 1;
             for (TestInput testInput : list) {
                 for (String feature : testInput.tested_features) {
-                    if (feature.equals("object_ref")) {
+                    if (feature.equals("puny")) {
                         if (testNumber >= targetTest) {
                             System.out.println("Running test number: " + testNumber);
                             checkValidTestInput(testInput);
