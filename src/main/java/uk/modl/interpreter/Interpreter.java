@@ -1273,7 +1273,11 @@ public class Interpreter {
             // Then cast it to Object
             // Then do whatever the conditionOperator says!
             String valObj = getObjectFromValueForCondition(values.get(0));
-            String val = transformConditionalArgument(valObj.toString());
+            String origKeyString = valObj.toString();
+            if(origKeyString.startsWith("%")) {
+                origKeyString = origKeyString.substring(1);
+            }
+            String val = transformConditionalArgument(origKeyString);
             if (val.startsWith("%")) {
                 val = val.substring(1, val.length());
             }

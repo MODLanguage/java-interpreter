@@ -90,7 +90,7 @@
   },
   { "input": "_x=[1;2;3;4];\n_y=[1;2;3;4];\nx={%x.2=%y.2?}",
     "minimised_modl":  "_x=[1;2;3;4];_y=[1;2;3;4];x={%x.2=%y.2?}",
-    "expected_output":   "{\"x\":false}",
+    "expected_output":   "{\"x\":true}",
     "tested_features":["conditional", "object_ref"]
   },
   { "input": "_country=gb;\n{\n  country = gb | country = us?\n    support_number=+441270123456\n  /?\n    support_number=+14161234567\n}",

@@ -89,7 +89,7 @@ public class StringTransformer {
                     return ret;
                 }
             } else {
-                newGravePart = gravePart.substring(1, gravePart.length() -1);
+                newGravePart = gravePart.substring(1, gravePart.length() - 1);
                 stringToTransform = stringToTransform.replace(gravePart, newGravePart);
             }
         }
@@ -176,11 +176,11 @@ public class StringTransformer {
 
         // Check the first character after the number
         if (!(stringToTransform.substring(currentIndex, currentIndex + 1).equals(".")) &&
-                !(stringToTransform.substring(currentIndex, currentIndex + 1).equals(">"))) {
+                !(stringToTransform.substring(currentIndex, currentIndex + 1).equals("."))) {
             // - if it is not a ".", then return the end of the number
             return currentIndex;
         }
-        if ((stringToTransform.substring(currentIndex, currentIndex + 1).equals(">"))) {
+        if ((stringToTransform.substring(currentIndex, currentIndex + 1).equals("."))) {
             return stringToTransform.length();
         }
         // If there is a ".", then keep reading until either :
@@ -308,21 +308,27 @@ Replace the part originally found (including graves) with the transformed subjec
         ModlObject modlObject = new ModlObject();
         String subject = percentPart.substring(startOffset, percentPart.length() - endOffset);
 
-        String methodChain = null;
+        String remainder = null;
         int indexOfDot = percentPart.indexOf(".");
         if (indexOfDot != -1) {
             subject = percentPart.substring(startOffset, indexOfDot);
-            methodChain = percentPart.substring(indexOfDot + 1, percentPart.length() - endOffset);
+            remainder = percentPart.substring(indexOfDot + 1, percentPart.length() - endOffset);
         }
 
         ModlValue value = getValueForReference(subject);
+        if (remainder != null) {
+            final String[] remainderHolder = {remainder};
+            value = getValueForReferenceRecursive(value, remainderHolder);
+            remainder = remainderHolder[0];
+        }
+
         if (value == null) {
             return modlObject.new String(stringToTransform);
 //            value = modlObject.new String(subject);
         } else if (value instanceof ModlObject.String) {
             subject = ((ModlObject.String) value).string;
         } else if (value instanceof ModlObject.Number) {
-            if (methodChain == null) {
+            if (remainder == null) {
                 return value;
             }
             subject = ((ModlObject.Number) value).number;
@@ -330,11 +336,11 @@ Replace the part originally found (including graves) with the transformed subjec
             return value;
         }
 
-        if (methodChain != null) {
-            String[] methods = methodChain.split("\\.");
+        if (remainder != null) {
+            String[] methods = remainder.split("\\.");
             if (methods.length == 0) {
                 methods = new String[1];
-                methods[0] = methodChain;
+                methods[0] = remainder;
             }
             for (String method : methods) {
                 if (method.indexOf("(") >= 0) {
@@ -364,7 +370,7 @@ Replace the part originally found (including graves) with the transformed subjec
 
     private ModlValue getValueForReference(String subject) {
         // Subject might be a nested object reference, so handle it here
-        int indexOfGreaterThanSymbol = subject.indexOf(">");
+        int indexOfGreaterThanSymbol = subject.indexOf(".");
         boolean isNested = indexOfGreaterThanSymbol > -1;
         String remainder;
         if (isNested) {
@@ -385,10 +391,10 @@ Replace the part originally found (including graves) with the transformed subjec
 //                if (numberedVariables.get(i) instanceof ModlObject.String) {
 //                    value = numberedVariables.get(i);
 //                } else {
-                    value = numberedVariables.get(i);
+                value = numberedVariables.get(i);
 //                }
 //                if (remainder != null) {
-//                    indexOfGreaterThanSymbol = remainder.indexOf(">");
+//                    indexOfGreaterThanSymbol = remainder.indexOf(".");
 //                    if (indexOfGreaterThanSymbol > -1) {
 //                        remainder = remainder.substring(indexOfGreaterThanSymbol + 1);
 //                        subject = remainder.substring(0, indexOfGreaterThanSymbol);
@@ -419,8 +425,8 @@ Replace the part originally found (including graves) with the transformed subjec
         }
 
         // If we have a nested reference follow it recursively until we find the value we need.
-        if (value != null && isNested ) {
-            return getValueForReferenceRecursive(value, remainder);
+        if (value != null && isNested) {
+            return getValueForReferenceRecursive(value, new String[]{remainder});
         }
         return value;
     }
@@ -431,13 +437,14 @@ Replace the part originally found (including graves) with the transformed subjec
      * of the nested object reference (b>c>d>e in this case) until all the parts of the reference are used up.
      *
      * @param ctx The should contain a value for the given key
-     * @param key The key of the object that we need - possibly a nested reference.
+     * @param keyHolder The key of the object that we need - possibly a nested reference.
      * @return The value that was referenced, or a RuntimeException if the reference is invalid.
      */
-    private ModlValue getValueForReferenceRecursive(ModlValue ctx, final String key) {
+    private ModlValue getValueForReferenceRecursive(ModlValue ctx, final String[] keyHolder) {
 
+        String key = keyHolder[0];
         // Check for nested keys
-        final int indexOfGreaterThanSymbol = key.indexOf(">");
+        final int indexOfGreaterThanSymbol = key.indexOf(".");
         final boolean isNested = indexOfGreaterThanSymbol > -1;
         final String remainder;
         String currentKey;
@@ -458,21 +465,21 @@ Replace the part originally found (including graves) with the transformed subjec
             int index = Integer.parseInt(currentKey);
             newCtx = ctx.get(index);
         } else {
-            currentKey = ((ModlObject.String)(transformString(currentKey))).string;
+            currentKey = ((ModlObject.String) (transformString(currentKey))).string;
             if (ctx instanceof ModlObject.Pair) {
                 if (!currentKey.equals(((ModlObject.Pair) ctx).getKey().string)) {
                     throw new RuntimeException("Object reference should match the key name for a Pair");
                 }
                 newCtx = ((ModlObject.Pair) ctx).getModlValue();
-            }
-            else {
+            } else {
                 newCtx = ctx.get(currentKey);
             }
         }
 
         // Recurse if we're still nested
         if (isNested) {
-            return getValueForReferenceRecursive(newCtx, remainder);
+            keyHolder[0] = remainder;
+            return getValueForReferenceRecursive(newCtx, keyHolder);
         } else if (newCtx == null) {
             // The currentKey number or name must be invalid.
             throw new RuntimeException("Invalid Object Reference: " + currentKey);
