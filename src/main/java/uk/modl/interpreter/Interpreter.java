@@ -101,114 +101,127 @@ public class Interpreter {
         //ModlClassLoader.loadModlKlassO(rawModlObject, klasses);
         pairNames = new HashSet<>();
         valuePairs = new HashMap<>();
+        String versionString = null;
+        boolean versionNumberIsWrong = false;
 
         // Interpret rawModlObject based on specified config files
         boolean startedInterpreting = false;
         boolean needRestart = false;
         RawModlObject loadedRawModlObject = null;
         String importFileValue = null;
-        for (RawModlObject.Structure rawStructure : rawModlObject.getStructures()) {
+        try {
+            for (RawModlObject.Structure rawStructure : rawModlObject.getStructures()) {
 
-            if (rawStructure instanceof ModlObject.Pair && (((ModlObject.Pair) rawStructure).getKey() != null &&
-                                                            (((ModlObject.Pair) rawStructure).getKey().string != null &&
-                                                             (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase()
-                                                                                                              .equals(
-                                                                                                                  "*v") ||
-                                                              (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase()
-                                                                                                               .equals(
-                                                                                                                   "*version")))))) {
-                addToUpperCaseInstructions(((ModlObject.Pair) rawStructure).getKey().string);
-                // This is the version number - check it and then ignore it
-                String versionString = ((ModlObject.Number) ((ModlObject.Pair) rawStructure).getModlValue()).number;
-                if (!(versionString.equals(String.valueOf(MODL_VERSION)))) {
-                    throw new UnsupportedOperationException("Can't handle MODL version " + versionString);
-                }
-                continue;
-            }
-            if (rawStructure instanceof ModlObject.Pair && (((ModlObject.Pair) rawStructure).getKey() != null &&
-                                                            (((ModlObject.Pair) rawStructure).getKey().string != null &&
-                                                             (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase()
-                                                                                                              .equals(
-                                                                                                                  "*l") ||
-                                                              (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase()
-                                                                                                               .equals(
-                                                                                                                   "*load")))))) {
-                addToUpperCaseInstructions(((ModlObject.Pair) rawStructure).getKey().string);
-                if (startedInterpreting) {
-                    //                    throw new UnsupportedOperationException("Cannot have *I config file after other objects");
-                }
-                // Load in the config file specified by the "l" object
-                if (((ModlObject.Pair) rawStructure).getModlValue() instanceof ModlObject.String) {
-                    importFileValue = ((ModlObject.String) ((ModlObject.Pair) rawStructure).getModlValue()).string;
-                    loadedRawModlObject = loadConfigFile(importFileValue);
-                    needRestart = true;
-                    break;
-                } else if (((ModlObject.Pair) rawStructure).getModlValue() instanceof ModlObject.Number) {
-                    importFileValue =
-                        ((ModlObject.Number) ((ModlObject.Pair) rawStructure).getModlValue()).number.toString();
-                    loadedRawModlObject = loadConfigFile(importFileValue);
-                    needRestart = true;
-                    break;
-                }
-                continue;
-            }
-            if (rawStructure instanceof ModlObject.Pair && ((ModlObject.Pair) rawStructure).getKey() != null &&
-                ((ModlObject.Pair) rawStructure).getKey().string != null &&
-                ((((((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*class")) ||
-                   (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*c"))) || (
-                      (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*m"))) ||
-                  ((((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*method"))) ||
-                  (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("?"))
-                ))) {
-                ModlObject.Pair pair = (ModlObject.Pair) rawStructure;
-                if (pair.getKey().string.toLowerCase().equals("*class") ||
-                    pair.getKey().string.toLowerCase().equals("*c")) {
-                    addToUpperCaseInstructions(pair.getKey().string);
-                    ModlClassLoader.loadClass(rawStructure, klasses, this);
-                    continue;
-                } else if (pair.getKey().string.toLowerCase().equals("*method") ||
-                           pair.getKey().string.toLowerCase().equals("*m")) {
-                    addToUpperCaseInstructions(pair.getKey().string);
-                    VariableMethodLoader.loadVariableMethod(methodList, pair, this);
-                } else if (pair.getKey().string.equals("?")) {
-                    VariableLoader.loadConfigNumberedVariables(pair.getModlValue(), numberedVariables);
-                } else {
-                    if (pair.getKey().string.startsWith("_")) {
-                        VariableLoader.loadConfigVar(pair.getKey().string.replaceFirst("_", ""), pair, variables);
-                    } else if (pair.getKey().string.startsWith("*")) {
-                        throw new RuntimeException("Unrecognised configuration instruction : " + pair.getKey());
+                if (rawStructure instanceof ModlObject.Pair && (((ModlObject.Pair) rawStructure).getKey() != null &&
+                                                                (((ModlObject.Pair) rawStructure).getKey().string !=
+                                                                 null &&
+                                                                 (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase()
+                                                                                                                  .equals(
+                                                                                                                      "*v") ||
+                                                                  (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase()
+                                                                                                                   .equals(
+                                                                                                                       "*version")))))) {
+                    addToUpperCaseInstructions(((ModlObject.Pair) rawStructure).getKey().string);
+                    // This is the version number - check it and then ignore it
+                    versionString = ((ModlObject.Number) ((ModlObject.Pair) rawStructure).getModlValue()).number;
+                    if (!(versionString.equals(String.valueOf(MODL_VERSION)))) {
+                        versionNumberIsWrong = true;
                     }
+                    continue;
                 }
-            } else if (!(rawStructure instanceof ModlObject.Pair && ((ModlObject.Pair) rawStructure).getKey() != null &&
-                         ((ModlObject.Pair) rawStructure).getKey().string != null &&
-                         (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*v") ||
-                          (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*version"))))) {
+                if (rawStructure instanceof ModlObject.Pair && (((ModlObject.Pair) rawStructure).getKey() != null &&
+                                                                (((ModlObject.Pair) rawStructure).getKey().string !=
+                                                                 null &&
+                                                                 (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase()
+                                                                                                                  .equals(
+                                                                                                                      "*l") ||
+                                                                  (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase()
+                                                                                                                   .equals(
+                                                                                                                       "*load")))))) {
+                    addToUpperCaseInstructions(((ModlObject.Pair) rawStructure).getKey().string);
+                    if (startedInterpreting) {
+                        //                    throw new UnsupportedOperationException("Cannot have *I config file after other objects");
+                    }
+                    // Load in the config file specified by the "l" object
+                    if (((ModlObject.Pair) rawStructure).getModlValue() instanceof ModlObject.String) {
+                        importFileValue = ((ModlObject.String) ((ModlObject.Pair) rawStructure).getModlValue()).string;
+                        loadedRawModlObject = loadConfigFile(importFileValue);
+                        needRestart = true;
+                        break;
+                    } else if (((ModlObject.Pair) rawStructure).getModlValue() instanceof ModlObject.Number) {
+                        importFileValue =
+                            ((ModlObject.Number) ((ModlObject.Pair) rawStructure).getModlValue()).number.toString();
+                        loadedRawModlObject = loadConfigFile(importFileValue);
+                        needRestart = true;
+                        break;
+                    }
+                    continue;
+                }
                 if (rawStructure instanceof ModlObject.Pair && ((ModlObject.Pair) rawStructure).getKey() != null &&
                     ((ModlObject.Pair) rawStructure).getKey().string != null &&
-                    (((ModlObject.Pair) rawStructure).getKey().string.startsWith("*"))) {
+                    ((((((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*class")) ||
+                       (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*c"))) || (
+                          (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*m"))) ||
+                      ((((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*method"))) ||
+                      (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("?"))
+                    ))) {
+                    ModlObject.Pair pair = (ModlObject.Pair) rawStructure;
+                    if (pair.getKey().string.toLowerCase().equals("*class") ||
+                        pair.getKey().string.toLowerCase().equals("*c")) {
+                        addToUpperCaseInstructions(pair.getKey().string);
+                        ModlClassLoader.loadClass(rawStructure, klasses, this);
+                        continue;
+                    } else if (pair.getKey().string.toLowerCase().equals("*method") ||
+                               pair.getKey().string.toLowerCase().equals("*m")) {
+                        addToUpperCaseInstructions(pair.getKey().string);
+                        VariableMethodLoader.loadVariableMethod(methodList, pair, this);
+                    } else if (pair.getKey().string.equals("?")) {
+                        VariableLoader.loadConfigNumberedVariables(pair.getModlValue(), numberedVariables);
+                    } else {
+                        if (pair.getKey().string.startsWith("_")) {
+                            VariableLoader.loadConfigVar(pair.getKey().string.replaceFirst("_", ""), pair, variables);
+                        } else if (pair.getKey().string.startsWith("*")) {
+                            throw new RuntimeException("Unrecognised configuration instruction : " + pair.getKey());
+                        }
+                    }
+                } else if (!(rawStructure instanceof ModlObject.Pair &&
+                             ((ModlObject.Pair) rawStructure).getKey() != null &&
+                             ((ModlObject.Pair) rawStructure).getKey().string != null &&
+                             (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*v") ||
+                              (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*version"))))) {
+                    if (rawStructure instanceof ModlObject.Pair && ((ModlObject.Pair) rawStructure).getKey() != null &&
+                        ((ModlObject.Pair) rawStructure).getKey().string != null &&
+                        (((ModlObject.Pair) rawStructure).getKey().string.startsWith("*"))) {
+                        throw new RuntimeException("Unrecognised configuration instruction : " +
+                                                   ((ModlObject.Pair) rawStructure).getKey().string);
+                    }
+                    startedInterpreting = true;
+                } else if (rawStructure instanceof ModlObject.Pair &&
+                           ((ModlObject.Pair) rawStructure).getKey() != null &&
+                           ((ModlObject.Pair) rawStructure).getKey().string != null &&
+                           (((ModlObject.Pair) rawStructure).getKey().string.startsWith("*"))) {
                     throw new RuntimeException("Unrecognised configuration instruction : " +
                                                ((ModlObject.Pair) rawStructure).getKey().string);
                 }
-                startedInterpreting = true;
-            } else if (rawStructure instanceof ModlObject.Pair && ((ModlObject.Pair) rawStructure).getKey() != null &&
-                       ((ModlObject.Pair) rawStructure).getKey().string != null &&
-                       (((ModlObject.Pair) rawStructure).getKey().string.startsWith("*"))) {
-                throw new RuntimeException("Unrecognised configuration instruction : " +
-                                           ((ModlObject.Pair) rawStructure).getKey().string);
-            }
-            List<ModlObject.Structure> structures = interpret(modlObject, rawStructure);
-            if (structures != null) {
-                for (ModlObject.Structure structure : structures) {
-                    modlObject.addStructure(structure);
+                List<ModlObject.Structure> structures = interpret(modlObject, rawStructure);
+                if (structures != null) {
+                    for (ModlObject.Structure structure : structures) {
+                        modlObject.addStructure(structure);
+                    }
                 }
             }
-        }
 
-        if (needRestart) {
-            rawModlObject.replaceFirstImport(importFileValue, loadedRawModlObject);
-            throw new RequireRestart();
-        } else {
-            return modlObject;
+            if (needRestart) {
+                rawModlObject.replaceFirstImport(importFileValue, loadedRawModlObject);
+                throw new RequireRestart();
+            } else {
+                return modlObject;
+            }
+        } catch (final Exception e) {
+            if (versionNumberIsWrong) {
+                throw new UnsupportedOperationException("Can't handle MODL version " + versionString);
+            } else
+                throw e;
         }
     }
 
@@ -533,20 +546,18 @@ public class Interpreter {
                                     } else if (superclass.equals("map")) {
                                         ModlObject.String
                                             innerClassName =
-                                            ((ModlObject.String) ((Map.Entry<String, LinkedList<ModlValue>>) ((LinkedHashMap<String,
-                                                LinkedList<ModlValue>>) modlClassObj).entrySet()
-                                                                                     .toArray()[valueItemSize])
-                                                .getValue().get(innerParamNum++));
+                                            ((ModlObject.String) (((LinkedHashMap<String,
+                                                LinkedList<ModlValue>>) modlClassObj).get(paramsKeyString).get(innerParamNum++)));
 
-                                        RawModlObject.Pair newRawPair = rawModlObject.new Pair();
+                                                RawModlObject.Pair newRawPair = rawModlObject.new Pair();
                                         newRawPair.setKey(innerClassName);
-                                        newRawPair.addModlValue(vi);
+                                                newRawPair.addModlValue(vi);
 
-                                        ModlValue v = interpret(modlObject, newRawPair, parentPair);
+                                                ModlValue v = interpret(modlObject, newRawPair, parentPair);
 
-                                        //  And add it to the pair
-                                        valuePair.addModlValue(v);
-                                        innerPair.addModlValue(valuePair);
+                                                //  And add it to the pair
+                                                valuePair.addModlValue(v);
+                                                innerPair.addModlValue(valuePair);
                                     } else {
                                         throw new RuntimeException("Superclass " +
                                                                    superclass +

@@ -453,7 +453,7 @@ Replace the part originally found (including graves) with the transformed subjec
         String key = keyHolder[0];
         // Check for nested keys
         final int indexOfGreaterThanSymbol = key.indexOf(".");
-        final boolean isNested = indexOfGreaterThanSymbol > -1;
+        boolean isNested = indexOfGreaterThanSymbol > -1;
         final String remainder;
         String currentKey;
         if (isNested) {
@@ -486,6 +486,7 @@ Replace the part originally found (including graves) with the transformed subjec
                 } else {
                     keyHolder[0] = key;
                     newCtx = ctx;
+                    isNested = false;
                 }
             }
         }
@@ -494,9 +495,6 @@ Replace the part originally found (including graves) with the transformed subjec
         if (isNested) {
             keyHolder[0] = remainder;
             return getValueForReferenceRecursive(newCtx, keyHolder);
-        } else if (newCtx == null) {
-            // The currentKey number or name must be invalid.
-            throw new RuntimeException("Invalid Object Reference: " + currentKey);
         }
         // Success, return the value we found.
         return newCtx;
