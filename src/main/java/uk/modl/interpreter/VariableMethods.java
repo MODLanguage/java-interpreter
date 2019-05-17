@@ -27,21 +27,14 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class VariableMethods {
 
     static private Map<String, TaskRunner> methods = null;
 
-    public static abstract class TaskRunner implements Runnable {
-        protected String parameter;
-        protected String result;
-        public void setParameter(String s) {
-            parameter = s;
-        }
-        public String getResult() {
-            return result;
-        }
-    }
+    public static Pattern STRING = Pattern.compile("(\\w+)");
 
     private static void initialiseMethods() {
         methods = new HashMap<>();
@@ -84,6 +77,7 @@ public class VariableMethods {
             }
         };
         methods.put("u", upperCaseTask);
+        methods.put("uupcase", upperCaseTask);
     }
 
     private static void addSentenceTask() {
@@ -97,6 +91,7 @@ public class VariableMethods {
             }
         };
         methods.put("s", sentenceTask);
+        methods.put("sentence", sentenceTask);
     }
 
     private static void addDownCaseTask() {
@@ -110,6 +105,7 @@ public class VariableMethods {
             }
         };
         methods.put("d", downCaseTask);
+        methods.put("downcase", downCaseTask);
     }
 
     private static void addInitCapsTask() {
@@ -119,7 +115,8 @@ public class VariableMethods {
                 if (parameter == null) {
                     result = null;
                 }
-                result = WordUtils.capitalize(parameter);;
+                result = WordUtils.capitalize(parameter);
+                ;
             }
         };
         methods.put("i", task);
@@ -163,6 +160,7 @@ public class VariableMethods {
             }
         };
         methods.put("e", task);
+        methods.put("urlencode", task);
     }
 
     private static void addPunycodeTask() {
@@ -176,12 +174,14 @@ public class VariableMethods {
             }
         };
         methods.put("p", task);
+        methods.put("punydecode", task);
     }
 
     public static String transform(String methodName, String input) {
         if (methods == null) {
             initialiseMethods();
         }
+
         TaskRunner taskRunner = methods.get(methodName);
 
         // Now call it!!!
@@ -202,13 +202,11 @@ public class VariableMethods {
         methods.put(shortName, taskRunner);
     }
 
-
-
     private static String makeSentence(String parameter) {
         // Now, Capitalise the first word.
         String[] splits = parameter.split(" ");
         splits[0] = WordUtils.capitalize(splits[0]);
-//        return String.join(" ", splits);
+        //        return String.join(" ", splits);
         String ret = "";
         int count = 0;
         for (String s : splits) {
@@ -240,15 +238,32 @@ public class VariableMethods {
         return stringToTransform;
     }
 
-
     public static boolean isVariableMethod(String s) {
         if (methods == null) {
             initialiseMethods();
         }
-        if (methods.get(s) != null) {
-            return true;
+        final Matcher matcher = STRING.matcher(s);
+
+        if (matcher.find() && matcher.groupCount() > 0) {
+            final String match = matcher.group(0);
+            if (methods.get(match) != null) {
+                return true;
+            }
         }
         return false;
+    }
+
+    public static abstract class TaskRunner implements Runnable {
+        protected String parameter;
+        protected String result;
+
+        public void setParameter(String s) {
+            parameter = s;
+        }
+
+        public String getResult() {
+            return result;
+        }
     }
 
 }

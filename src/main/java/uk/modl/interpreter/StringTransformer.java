@@ -26,8 +26,7 @@ import uk.modl.modlObject.ModlValue;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import static java.lang.Character.isLetter;
+import java.util.regex.Matcher;
 
 //import java.util.function.Function;
 
@@ -73,7 +72,7 @@ public class StringTransformer {
             //     If a part begins with a % then run “Object Referencing”, else run “Punycode encoded parts”
             String newGravePart = null;
             if (gravePart.startsWith("`%")) {
-//                stringToTransform = runObjectReferencing(gravePart, stringToTransform, true);
+                //                stringToTransform = runObjectReferencing(gravePart, stringToTransform, true);
                 ModlValue ret = runObjectReferencing(gravePart, stringToTransform, true);
                 if (ret instanceof ModlObject.String) {
                     stringToTransform = ((ModlObject.String) ret).string;
@@ -123,9 +122,10 @@ public class StringTransformer {
             Integer startIndex = getNextPercent(stringToTransform, currentIndex);
             if (startIndex != null) {
                 Integer endIndex = null;
-                // If the first character after the % is a number, then keep reading until we get to a non-number (taking account of transform chains)
+                // If the first character after the % is a number, then keep reading until we get to a non-number (taking account of method chains)
                 // If the first character after the % is a letter, then keep reading until we get to a space
-                if (startIndex < stringToTransform.length() - 1 && !isNumber(stringToTransform.substring(startIndex + 1, startIndex + 2))) {
+                if (startIndex < stringToTransform.length() - 1 &&
+                    !isNumber(stringToTransform.substring(startIndex + 1, startIndex + 2))) {
                     // Just read to the next space
                     int spaceEndIndex = stringToTransform.indexOf(" ", startIndex);
                     int colonEndIndex = stringToTransform.indexOf(":", startIndex);
@@ -160,7 +160,7 @@ public class StringTransformer {
     private Integer getEndOfNumber(String stringToTransform, Integer startIndex) {
         // We actually need to keep processing this string until we get to an end
         // The end (for the number type) can be a space, or else any non-number character
-        // If the end is a ".", then check to see if we have a variable transform
+        // If the end is a ".", then check to see if we have a variable method
 
         // First, find the end of the number
         Integer currentIndex = startIndex;
@@ -175,44 +175,22 @@ public class StringTransformer {
         }
 
         // Check the first character after the number
-        if (!(stringToTransform.substring(currentIndex, currentIndex + 1).equals(".")) &&
-                !(stringToTransform.substring(currentIndex, currentIndex + 1).equals("."))) {
+        if (!(stringToTransform.substring(currentIndex, currentIndex + 1).equals("."))) {
             // - if it is not a ".", then return the end of the number
             return currentIndex;
         }
-        if ((stringToTransform.substring(currentIndex, currentIndex + 1).equals("."))) {
-            return stringToTransform.length();
-        }
+
         // If there is a ".", then keep reading until either :
-        String newMethod = "";
         while (true) {
 
             currentIndex++;
             if (currentIndex > stringToTransform.length() - 1) {
                 return currentIndex;
             }
-            String nextChar = stringToTransform.substring(currentIndex, currentIndex + 1);
-            if (nextChar.equals(".")) {
-                // or b) we come to another "." - in which case keep going and build up a new transform name from the characters
-                if (newMethod.length() > 0) {
-                    newMethod = "";
-                } else {
-                    return currentIndex;
-                }
-            } else {
-                //   a) we don't have any more variable methods that match the lengthened string
-                if (!isLetter(nextChar.charAt(0)) && !isNumber(String.valueOf(nextChar.charAt(0)))) {
-                    return currentIndex;
-                }
-                if (isVariableMethod(newMethod + nextChar)) {
-                    newMethod += nextChar;
-                } else {
-                    if (newMethod.length() > 0) {
-                        return currentIndex;
-                    } else {
-                        return currentIndex - 1; // cope with "."
-                    }
-                }
+            char nextChar = stringToTransform.charAt(currentIndex);
+            if (nextChar != '.' && !Character.isLetterOrDigit(nextChar)) {
+                // or b) we come to another "." - in which case keep going and build up a new method name from the characters
+                return currentIndex;
             }
         }
     }
@@ -222,9 +200,13 @@ public class StringTransformer {
     }
 
     private boolean isNumber(String substring) {
-        if ((substring.equals("0") || substring.equals("1") || substring.equals("2") || substring.equals("3") || substring.equals("4"))
-                || substring.equals("5") || substring.equals("6") || substring.equals("7") || substring.equals("8")
-                || substring.equals("9")) {
+        if ((substring.equals("0") ||
+             substring.equals("1") ||
+             substring.equals("2") ||
+             substring.equals("3") ||
+             substring.equals("4"))
+            || substring.equals("5") || substring.equals("6") || substring.equals("7") || substring.equals("8")
+            || substring.equals("9")) {
             return true;
         }
         return false;
@@ -293,9 +275,9 @@ If the reference includes any part enclosed in [ and ] this is a deep object ref
 
 Replace the reference key with the value of that key. We will call this the subject.
 
-If there was a period in the original string, any part to the right of the first period (until the end of the part not including the end grave) is considered the transform chain. Split the transform chain by . (dot / full stop / period) and create an array from the methods.
+If there was a period in the original string, any part to the right of the first period (until the end of the part not including the end grave) is considered the method chain. Split the method chain by . (dot / full stop / period) and create an array from the methods.
 
-Loop through the array and pass the subject to the named transform, transforming the subject. Repeat the process (with the transformed subject) until all methods in the chain have been applied and the subject is fully transformed.
+Loop through the array and pass the subject to the named method, transforming the subject. Repeat the process (with the transformed subject) until all methods in the chain have been applied and the subject is fully transformed.
 
 Replace the part originally found (including graves) with the transformed subject.
      */
@@ -324,7 +306,7 @@ Replace the part originally found (including graves) with the transformed subjec
 
         if (value == null) {
             return modlObject.new String(stringToTransform);
-//            value = modlObject.new String(subject);
+            //            value = modlObject.new String(subject);
         } else if (value instanceof ModlObject.String) {
             subject = ((ModlObject.String) value).string;
         } else if (value instanceof ModlObject.Number) {
@@ -345,7 +327,7 @@ Replace the part originally found (including graves) with the transformed subjec
             for (String method : methods) {
                 if (method.indexOf("(") >= 0) {
                     // HANDLE TRIM AND REPLACE HERE!!
-                    // We need to strip the "(<params>)" and apply the transform to the subject AND the params!
+                    // We need to strip the "(<params>)" and apply the method to the subject AND the params!
                     // TODO (we might need to check for escaped "."s one day...
                     int startParamsIndex = method.indexOf("(");
                     String paramsString = method.substring(startParamsIndex + 1, method.length() - 1); //  - 1);
@@ -356,10 +338,23 @@ Replace the part originally found (including graves) with the transformed subjec
                     if (!VariableMethods.isVariableMethod(method)) {
                         // Nothing to do - leave it alone!
                         subject = subject + "." + method;
+                        remainder = null;
                     } else {
-                        subject = VariableMethods.transform(method, subject);
+                        final Matcher matcher = VariableMethods.STRING.matcher(method);
+
+                        if (matcher.find() && matcher.groupCount() > 0) {
+                            final String match = matcher.group(0);
+                            remainder = method.substring(match.length());
+                            if (!match.equals(method)) {
+                                method = match;
+                            }
+                            subject = VariableMethods.transform(method, subject);
+                        }
                     }
                 }
+            }
+            if (remainder != null) {
+                subject = subject + remainder;
             }
         }
 
@@ -388,20 +383,20 @@ Replace the part originally found (including graves) with the transformed subjec
         // Make any variable replacements, etc.
         for (Integer i = 0; i < numberedVariables.size(); i++) {
             if (subject.equals(i.toString())) {
-//                if (numberedVariables.get(i) instanceof ModlObject.String) {
-//                    value = numberedVariables.get(i);
-//                } else {
+                //                if (numberedVariables.get(i) instanceof ModlObject.String) {
+                //                    value = numberedVariables.get(i);
+                //                } else {
                 value = numberedVariables.get(i);
-//                }
-//                if (remainder != null) {
-//                    indexOfGreaterThanSymbol = remainder.indexOf(".");
-//                    if (indexOfGreaterThanSymbol > -1) {
-//                        remainder = remainder.substring(indexOfGreaterThanSymbol + 1);
-//                        subject = remainder.substring(0, indexOfGreaterThanSymbol);
-//                    }
-//                } else {
-//                    subject = null;
-//                }
+                //                }
+                //                if (remainder != null) {
+                //                    indexOfGreaterThanSymbol = remainder.indexOf(".");
+                //                    if (indexOfGreaterThanSymbol > -1) {
+                //                        remainder = remainder.substring(indexOfGreaterThanSymbol + 1);
+                //                        subject = remainder.substring(0, indexOfGreaterThanSymbol);
+                //                    }
+                //                } else {
+                //                    subject = null;
+                //                }
                 found = true;
                 break;
             }
@@ -432,11 +427,11 @@ Replace the part originally found (including graves) with the transformed subjec
     }
 
     /**
-     * For keys such as a>b>c>d>e, each call to this transform takes the first part and uses it to find the referenced
+     * For keys such as a>b>c>d>e, each call to this method takes the first part and uses it to find the referenced
      * object in the current ctx object, then calls itself with this new object as the context and the remaining part
      * of the nested object reference (b>c>d>e in this case) until all the parts of the reference are used up.
      *
-     * @param ctx The should contain a value for the given key
+     * @param ctx       The should contain a value for the given key
      * @param keyHolder The key of the object that we need - possibly a nested reference.
      * @return The value that was referenced, or a RuntimeException if the reference is invalid.
      */
@@ -453,6 +448,7 @@ Replace the part originally found (including graves) with the transformed subjec
             currentKey = key.substring(0, indexOfGreaterThanSymbol);
         } else {
             remainder = null;
+            keyHolder[0] = remainder;
             currentKey = key;
         }
 
@@ -472,7 +468,12 @@ Replace the part originally found (including graves) with the transformed subjec
                 }
                 newCtx = ((ModlObject.Pair) ctx).getModlValue();
             } else {
-                newCtx = ctx.get(currentKey);
+                if (ctx instanceof ModlObject.Map || ctx instanceof ModlObject.Array) {
+                    newCtx = ctx.get(currentKey);
+                } else {
+                    keyHolder[0] = key;
+                    newCtx = ctx;
+                }
             }
         }
 

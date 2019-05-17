@@ -65,11 +65,15 @@ public class JsonPrinter {
     public static String printModl(ModlObject modl, boolean pretty) throws JsonProcessingException {
         mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
 
+        ModlObject toConvert = modl;
+        if(modl.getStructures().isEmpty()) {
+            toConvert = null;
+        }
         if (pretty) {
-            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(modl);
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(toConvert);
         }
 
-        return mapper.writeValueAsString(modl);
+        return mapper.writeValueAsString(toConvert);
     }
 
 }
