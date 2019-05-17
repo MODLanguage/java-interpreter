@@ -68,8 +68,14 @@ public class GrammarTestRunnerTest extends TestCase {
         try (InputStream fileStream = new FileInputStream("grammar_tests/base_tests.json")) {
             List<TestInput> list = mapper.readValue(fileStream, new TypeReference<LinkedList<TestInput>>() {
             });
+            int testNumber = 1;
+            int startFromTestNumber = 71;
             for (TestInput testInput : list) {
-                checkValidTestInput(testInput);
+                if (testNumber >= startFromTestNumber) {
+                    System.out.println("Running test number: " + testNumber);
+                    checkValidTestInput(testInput);
+                }
+                testNumber++;
             }
         }
 

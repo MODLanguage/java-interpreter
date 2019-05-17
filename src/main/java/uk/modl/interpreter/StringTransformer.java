@@ -90,6 +90,14 @@ public class StringTransformer {
             } else {
                 newGravePart = gravePart.substring(1, gravePart.length() - 1);
                 stringToTransform = stringToTransform.replace(gravePart, newGravePart);
+
+                final int dotIndex = stringToTransform.indexOf('.');
+                if (dotIndex > -1) {
+                    String firstPart = stringToTransform.substring(0, dotIndex);
+                    String methods = stringToTransform.substring(dotIndex+1);
+                    stringToTransform = runMethods(firstPart, methods);
+
+                }
             }
         }
         // 4: Find all non-space parts of the string that are prefixed with % (percent sign). These are object references – run “Object Referencing”
@@ -319,48 +327,53 @@ Replace the part originally found (including graves) with the transformed subjec
         }
 
         if (remainder != null) {
-            String[] methods = remainder.split("\\.");
-            if (methods.length == 0) {
-                methods = new String[1];
-                methods[0] = remainder;
-            }
-            for (String method : methods) {
-                if (method.indexOf("(") >= 0) {
-                    // HANDLE TRIM AND REPLACE HERE!!
-                    // We need to strip the "(<params>)" and apply the method to the subject AND the params!
-                    // TODO (we might need to check for escaped "."s one day...
-                    int startParamsIndex = method.indexOf("(");
-                    String paramsString = method.substring(startParamsIndex + 1, method.length() - 1); //  - 1);
-                    String methodString = method.substring(0, startParamsIndex);
-                    subject = VariableMethods.transform(methodString, subject + "," + paramsString);
-                    remainder = null;
-                } else {
-                    if (!VariableMethods.isVariableMethod(method)) {
-                        // Nothing to do - leave it alone!
-                        subject = subject + "." + method;
-                        remainder = null;
-                    } else {
-                        final Matcher matcher = VariableMethods.STRING.matcher(method);
-
-                        if (matcher.find() && matcher.groupCount() > 0) {
-                            final String match = matcher.group(0);
-                            remainder = method.substring(match.length());
-                            if (!match.equals(method)) {
-                                method = match;
-                            }
-                            subject = VariableMethods.transform(method, subject);
-                        }
-                    }
-                }
-            }
-            if (remainder != null) {
-                subject = subject + remainder;
-            }
+            subject = runMethods(subject, remainder);
         }
 
         stringToTransform = stringToTransform.replace(percentPart, subject);
 
         return modlObject.new String(stringToTransform);
+    }
+
+    private String runMethods(String subject, String remainder) {
+        String[] methods = remainder.split("\\.");
+        if (methods.length == 0) {
+            methods = new String[1];
+            methods[0] = remainder;
+        }
+        for (String method : methods) {
+            if (method.indexOf("(") >= 0) {
+                // HANDLE TRIM AND REPLACE HERE!!
+                // We need to strip the "(<params>)" and apply the method to the subject AND the params!
+                // TODO (we might need to check for escaped "."s one day...
+                int startParamsIndex = method.indexOf("(");
+                String paramsString = method.substring(startParamsIndex + 1, method.length() - 1); //  - 1);
+                String methodString = method.substring(0, startParamsIndex);
+                subject = VariableMethods.transform(methodString, subject + "," + paramsString);
+                remainder = null;
+            } else {
+                if (!VariableMethods.isVariableMethod(method)) {
+                    // Nothing to do - leave it alone!
+                    subject = subject + "." + method;
+                    remainder = null;
+                } else {
+                    final Matcher matcher = VariableMethods.STRING.matcher(method);
+
+                    if (matcher.find() && matcher.groupCount() > 0) {
+                        final String match = matcher.group(0);
+                        remainder = method.substring(match.length());
+                        if (!match.equals(method)) {
+                            method = match;
+                        }
+                        subject = VariableMethods.transform(method, subject);
+                    }
+                }
+            }
+        }
+        if (remainder != null) {
+            subject = subject + remainder;
+        }
+        return subject;
     }
 
     private ModlValue getValueForReference(String subject) {

@@ -50,6 +50,7 @@ public class ModlClassLoader {
             throw new RuntimeException("Can't find *id in *class");
         }
         klasses.put(id, values);
+        values.put("*id", id);
         String superclass = getPairValueFor(structure, "*superclass", interpreter);
         if (superclass == null) {
             superclass = getPairValueFor(structure, "*s", interpreter);
@@ -63,21 +64,6 @@ public class ModlClassLoader {
             name = id;
         }
         values.put("*name", name); // TODO ???
-        // Remember to see if there is a superclass - if so, then copy all its values in first
-        Map<String, Object> superKlass = klasses.get(superclass);
-        if (superclass != null) {
-            if (superclass.toUpperCase().equals(superclass)) {
-                throw new RuntimeException("Can't derive from " + superclass + ", as it in upper case and therefore fixed");
-            }
-        }
-        if (superKlass != null) {
-            for (Map.Entry<String, Object> entry : superKlass.entrySet()) {
-                if (!entry.getKey().startsWith("*")) {
-                    values.put(entry.getKey(), entry.getValue());
-                }
-            }
-        }
-
         // Go through the structure and find all the new values and add them (replacing any already there from superklass)
         for (RawModlObject.Pair mapItem : ((ModlObject.Map) ((ModlObject.Pair) structure).getModlValue()).getPairs()) {
             // Remember to avoid "_id" and "_sc" !
@@ -99,6 +85,33 @@ public class ModlClassLoader {
                 values.put(mapItem.getKey().string, mapItem.getModlValue());
             }
         }
+    }
+
+    private static Map<String, Object> findSuperclassByNameOrId(final Map<String, Map<String, Object>> klasses,
+                                                                final String idOrName) {
+        // Try getting by ID
+        Map<String, Object> parentClass = klasses.get(idOrName);
+        if(parentClass == null) {
+            // Failed so search by name instead
+            for(final Map<String, Object> parent : klasses.values()) {
+                final Object parentName = parent.get("*name");
+                if(parentName != null) {
+                    if(parentName instanceof ModlObject.String) {
+                        if (((ModlObject.String)parentName).string.equals(idOrName)) {
+                            parentClass = parent;
+                            break;
+                        }
+                    }
+                    if(parentName instanceof String) {
+                        if ((parentName).equals(idOrName)) {
+                            parentClass = parent;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return parentClass;
     }
 
     private static void loadParams(HashMap<String, Object> values, RawModlObject.Array array) {
