@@ -421,7 +421,7 @@ public class Interpreter {
         }
         numParams = getNumParams(rawPair, numParams);
         String paramsKeyString = "*params" + numParams;
-        Object obj = getModlClass(rawPair.getKey().string).get(paramsKeyString);
+        Object obj = findParamsObject(rawPair, paramsKeyString);
         boolean hasParams = (obj != null);
 
         // If it's not already a map pair, and one of the parent classes in the class hierarchy includes pairs, then it is transformed to a map pair.
@@ -570,6 +570,29 @@ public class Interpreter {
             return true;
         }
         return false;
+    }
+
+    private Object findParamsObject(final ModlObject.Pair rawPair, final String paramsKeyString) {
+        final Map<String, Object> klass = getModlClass(rawPair.getKey().string);
+        Object result = klass.get(paramsKeyString);
+
+        // Search up the class hierarchy to find a params object of the right length
+        if (result == null) {
+            String superclass = (String) klass.get("*superclass");
+            while (superclass != null) {
+                final Map<String, Object> sk = getModlClass(superclass);
+                if (sk != null) {
+                    result = sk.get(paramsKeyString);
+                    if (result != null) {
+                        break;
+                    }
+                    superclass = (String) sk.get("*superclass");
+                } else {
+                    superclass = null;
+                }
+            }
+        }
+        return result;
     }
 
     private void addNewClassParamValue(ModlObject modlObject,

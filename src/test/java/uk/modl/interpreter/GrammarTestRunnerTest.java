@@ -69,7 +69,9 @@ public class GrammarTestRunnerTest extends TestCase {
             List<TestInput> list = mapper.readValue(fileStream, new TypeReference<LinkedList<TestInput>>() {
             });
             int testNumber = 1;
-            int startFromTestNumber = 0;
+            int
+                startFromTestNumber =
+                0;// Use this to skip tests manually to make it easier for debugging a specific test.
             for (TestInput testInput : list) {
                 if (testNumber >= startFromTestNumber) {
                     System.out.println("Running test number: " + testNumber);

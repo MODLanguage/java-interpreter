@@ -1236,7 +1236,7 @@
   },
   { "input": "*LOAD=\"http://modules.num.uk/1.txt\";o=Tesco:Every Little Helps:[t=Customer Service:0845555555];",
     "minimised_modl": "*LOAD=\"http://modules.num.uk/1.txt\";o=Tesco:Every Little Helps:[t=Customer Service:0845555555];",
-    "expected_output": "{\"organisation\":{\"name\":\"Tesco\",\"slogan\":\"Every Little Helps\",\"objects\":[{\"telephone\":{\"description\":\"Customer Service\",\"value\":\"0845555555\",\"object_type\":\"media\",\"object_display_name\":\"Telephone\",\"description_default\":\"Call\",\"prefix\":\"tel://\",\"media_type\":\"core\"}}],\"object_type\":\"entity\",\"object_display_name\":\"Organisation\",\"description_default\":\"View Organisation\"}}",
+    "expected_output": "{\"organisation\":{\"name\":\"Tesco\",\"slogan\":\"EveryLittleHelps\",\"objects\":{\"telephone\":{\"description\":\"CustomerService\",\"value\":\"0845555555\",\"object_type\":\"media\",\"object_display_name\":\"Telephone\",\"description_default\":\"Call\",\"prefix\":\"tel://\",\"media_type\":\"core\"}},\"object_type\":\"entity\",\"object_display_name\":\"Organisation\",\"description_default\":\"ViewOrganisation\"}}",
     "tested_features":["load"]
   }
 ]
