@@ -350,10 +350,10 @@ Replace the part originally found (including graves) with the transformed subjec
                 int startParamsIndex = method.indexOf("(");
                 String paramsString = method.substring(startParamsIndex + 1, method.length() - 1); //  - 1);
                 String methodString = method.substring(0, startParamsIndex);
-                subject = VariableMethods.transform(methodString, subject + "," + paramsString);
+                subject = Interpreter.variableMethods.transform(methodString, subject + "," + paramsString);
                 remainder = null;
             } else {
-                if (!VariableMethods.isVariableMethod(method)) {
+                if (!Interpreter.variableMethods.isVariableMethod(method)) {
                     // Nothing to do - leave it alone!
                     subject = subject + "." + method;
                     remainder = null;
@@ -366,7 +366,7 @@ Replace the part originally found (including graves) with the transformed subjec
                         if (!match.equals(method)) {
                             method = match;
                         }
-                        subject = VariableMethods.transform(method, subject);
+                        subject = Interpreter.variableMethods.transform(method, subject);
                     }
                 }
             }

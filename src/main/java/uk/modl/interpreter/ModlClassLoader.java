@@ -27,6 +27,10 @@ import java.util.*;
 
 class ModlClassLoader {
 
+    private static final Set<String>
+        NAMES =
+        Collections.unmodifiableSet(new HashSet<>(Arrays.asList("map", "str", "num", "arr")));
+
     static void loadClass(RawModlObject.Structure structure,
                           Map<String, Map<String, Object>> klasses,
                           Interpreter interpreter) {
@@ -71,6 +75,13 @@ class ModlClassLoader {
         }
         values.put("*name", name); // TODO ???
 
+        // Is the name or id a built-in type ?
+        if (NAMES.contains(name)) {
+            throw new RuntimeException("Interpreter Error: Reserved class id - cannot redefine: " + name);
+        }
+        if (NAMES.contains(id)) {
+            throw new RuntimeException("Interpreter Error: Reserved class id - cannot redefine: " + id);
+        }
         // Is the name already defined as an id or name?
         if (klasses.containsKey(name)) {
             throw new RuntimeException("Interpreter Error: Class name or id already defined - cannot redefine: " +
@@ -79,8 +90,9 @@ class ModlClassLoader {
             for (Map<String, Object> kl : klasses.values()) {
                 final String existingName = kl.get("*name").toString();
                 if (existingName.equals(name) || existingName.equals(id)) {
-                    throw new RuntimeException("Interpreter Error: Class name or id already defined - cannot redefine: " +
-                                               name);
+                    throw new RuntimeException(
+                        "Interpreter Error: Class name or id already defined - cannot redefine: " +
+                        name);
                 }
             }
         }

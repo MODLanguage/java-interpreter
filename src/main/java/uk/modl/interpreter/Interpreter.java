@@ -33,6 +33,7 @@ import static uk.modl.parser.ModlObjectCreator.MODL_VERSION;
 
 public class Interpreter {
 
+    public static VariableMethods variableMethods = null;
     private Map<String, Map<String, Object>> klasses = new LinkedHashMap<>();
     private Map<String, ModlValue> variables = new HashMap<>();
     private Map<Integer, ModlValue> numberedVariables = new HashMap<>();
@@ -40,10 +41,8 @@ public class Interpreter {
     private Set<String> uppercaseInstructions = new HashSet<>();
     private List<String> loadedFiles = new ArrayList<>();
     private List<VariableMethodLoader.MethodDescriptor> methodList = new ArrayList<>();
-
     private Set<String> pairNames; // TODO Get rid of this!
     private Map<String, ModlValue> valuePairs;
-
     private List<String> PRIMITIVES = Arrays.asList("num", "str", "map", "arr");
 
     public static String parseToJson(String input) throws IOException {
@@ -61,6 +60,7 @@ public class Interpreter {
 
     public static ModlObject interpret(RawModlObject rawModlObject) {
         Interpreter interpreter = new Interpreter();
+        variableMethods = new VariableMethods();
         ModlObject modlObject = null;
         while (modlObject == null) {
             try {
@@ -105,6 +105,7 @@ public class Interpreter {
         RawModlObject loadedRawModlObject = null;
         String importFileValue = null;
         try {
+            int i = 0;
             for (RawModlObject.Structure rawStructure : rawModlObject.getStructures()) {
 
                 if (rawStructure instanceof ModlObject.Pair && (((ModlObject.Pair) rawStructure).getKey() != null &&
@@ -119,8 +120,16 @@ public class Interpreter {
                     addToUpperCaseInstructions(((ModlObject.Pair) rawStructure).getKey().string);
                     // This is the version number - check it and then ignore it
                     versionString = ((ModlObject.Number) ((ModlObject.Pair) rawStructure).getModlValue()).number;
+                    float versionNumber = Float.valueOf(versionString);
+                    if (versionNumber < 1.0 || versionNumber != Math.abs(versionNumber)) {
+                        throw new RuntimeException("Interpreter Error: Invalid MODL version: " + versionString);
+                    }
                     if (!(versionString.equals(String.valueOf(MODL_VERSION)))) {
                         versionNumberIsWrong = true;
+                    }
+                    if (i != 0) {
+                        throw new RuntimeException(
+                            "Interpreter Error: MODL version should be on the first line if specified.");
                     }
                     continue;
                 }
@@ -201,6 +210,7 @@ public class Interpreter {
                         modlObject.addStructure(structure);
                     }
                 }
+                i++;
             }
 
             if (needRestart) {
@@ -324,13 +334,20 @@ public class Interpreter {
         // We might now have a de-referenced key this is all numeric so catch it here.
         boolean keyIsAllDigits = true;
         char invalidCharacter = '\0';
+        int i = 0;
         for (char c : newKey.toCharArray()) {
             if (!Character.isDigit(c)) {
+                if (i == 0 && c == '_') {
+                    continue;
+                }
                 keyIsAllDigits = false;
             }
-            if ("!$@-+'#^£&".contains("" + c)) {
-                invalidCharacter = c;
+            if ("!$@-+'#^*£&".contains("" + c)) {
+                if (i != 0 || c != '*') {
+                    invalidCharacter = c;
+                }
             }
+            i++;
         }
         if (keyIsAllDigits) {
             throw new RuntimeException("Entirely numeric keys are not allowed: " + newKey);

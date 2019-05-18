@@ -33,9 +33,12 @@ import java.util.regex.Pattern;
 class VariableMethods {
 
     static Pattern STRING = Pattern.compile("(\\w+)");
-    static private Map<String, TaskRunner> methods = null;
+    private Map<String, TaskRunner> methods = null;
 
-    private static void initialiseMethods() {
+    public VariableMethods() {
+    }
+
+    private void initialiseMethods() {
         methods = new HashMap<>();
         addTrimTask();
         addUpperCaseTask();
@@ -47,7 +50,7 @@ class VariableMethods {
         addPunycodeTask();
     }
 
-    private static void addTrimTask() {
+    private void addTrimTask() {
         TaskRunner trimTask = new TaskRunner() {
             @Override
             public void run() {
@@ -66,7 +69,7 @@ class VariableMethods {
         methods.put("trim", trimTask);
     }
 
-    private static void addUpperCaseTask() {
+    private void addUpperCaseTask() {
         TaskRunner upperCaseTask = new TaskRunner() {
             @Override
             public void run() {
@@ -81,7 +84,7 @@ class VariableMethods {
         methods.put("uupcase", upperCaseTask);
     }
 
-    private static void addSentenceTask() {
+    private void addSentenceTask() {
         TaskRunner sentenceTask = new TaskRunner() {
             @Override
             public void run() {
@@ -96,7 +99,7 @@ class VariableMethods {
         methods.put("sentence", sentenceTask);
     }
 
-    private static void addDownCaseTask() {
+    private void addDownCaseTask() {
         TaskRunner downCaseTask = new TaskRunner() {
             @Override
             public void run() {
@@ -111,7 +114,7 @@ class VariableMethods {
         methods.put("downcase", downCaseTask);
     }
 
-    private static void addInitCapsTask() {
+    private void addInitCapsTask() {
         TaskRunner task = new TaskRunner() {
             @Override
             public void run() {
@@ -125,7 +128,7 @@ class VariableMethods {
         methods.put("initcap", task);
     }
 
-    private static void addReplaceTask() {
+    private void addReplaceTask() {
         TaskRunner task = new TaskRunner() {
             @Override
             public void run() {
@@ -147,7 +150,7 @@ class VariableMethods {
         methods.put("replace", task);
     }
 
-    private static void addUrlEncodeTask() {
+    private void addUrlEncodeTask() {
         TaskRunner task = new TaskRunner() {
             @Override
             public void run() {
@@ -167,7 +170,7 @@ class VariableMethods {
         methods.put("urlencode", task);
     }
 
-    private static void addPunycodeTask() {
+    private void addPunycodeTask() {
         TaskRunner task = new TaskRunner() {
             @Override
             public void run() {
@@ -181,7 +184,7 @@ class VariableMethods {
         methods.put("punydecode", task);
     }
 
-    static String transform(String methodName, String input) {
+    String transform(String methodName, String input) {
         if (methods == null) {
             initialiseMethods();
         }
@@ -198,17 +201,14 @@ class VariableMethods {
         }
     }
 
-    static void addMethod(String shortName, TaskRunner taskRunner) {
+    void addMethod(String shortName, TaskRunner taskRunner) {
         if (methods == null) {
             initialiseMethods();
-        }
-        if (methods.keySet().contains(shortName)) {
-            throw new RuntimeException("Interpreter Error: Duplicate method id: " + shortName);
         }
         methods.put(shortName, taskRunner);
     }
 
-    private static String makeSentence(String parameter) {
+    private String makeSentence(String parameter) {
         // Now, Capitalise the first word.
         String[] splits = parameter.split(" ");
         splits[0] = WordUtils.capitalize(splits[0]);
@@ -225,7 +225,7 @@ class VariableMethods {
         return ret.toString();
     }
 
-    private static String replacePunycode(String stringToTransform) {
+    private String replacePunycode(String stringToTransform) {
         // Prefix it with xn-- (the letters xn and two dashes) and decode using punycode / IDN library. Replace the full part (including graves) with the decoded value.
         if (stringToTransform == null) {
             return null;
@@ -244,7 +244,7 @@ class VariableMethods {
         return stringToTransform;
     }
 
-    static boolean isVariableMethod(String s) {
+    boolean isVariableMethod(String s) {
         if (methods == null) {
             initialiseMethods();
         }

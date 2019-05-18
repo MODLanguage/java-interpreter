@@ -21,10 +21,7 @@ package uk.modl.interpreter;
 
 import uk.modl.parser.RawModlObject;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 //import java.util.function.Function;
 
 /**
@@ -58,6 +55,16 @@ class VariableMethodLoader {
         desc.transform = methodString;
 
         createVariableMethod(methodName, methodString);
+
+        for (MethodDescriptor d : methodList) {
+            if (Objects.equals(d.id, desc.id) ||
+                Objects.equals(d.id, desc.name) ||
+                Objects.equals(d.name, desc.name) ||
+                Objects.equals(d.name, desc.id)) {
+                throw new RuntimeException("Interpreter Error: Duplicate method id or name: " + desc.name);
+            }
+        }
+
         methodList.add(desc);
     }
 
@@ -74,15 +81,16 @@ class VariableMethodLoader {
                     String method = (String) (methodAndParam.keySet().toArray()[0]);
                     String params = methodAndParam.get(method);
                     if (params == null || params.length() == 0) {
-                        intermediateResult = VariableMethods.transform(method, intermediateResult);
+                        intermediateResult = Interpreter.variableMethods.transform(method, intermediateResult);
                     } else {
-                        intermediateResult = VariableMethods.transform(method, intermediateResult + "," + params);
+                        intermediateResult =
+                            Interpreter.variableMethods.transform(method, intermediateResult + "," + params);
                     }
                 }
                 result = intermediateResult;
             }
         };
-        VariableMethods.addMethod(methodName, newTask);
+        Interpreter.variableMethods.addMethod(methodName, newTask);
 
     }
 
