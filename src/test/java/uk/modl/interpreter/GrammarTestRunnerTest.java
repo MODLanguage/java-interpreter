@@ -29,7 +29,7 @@ public class GrammarTestRunnerTest extends TestCase {
             int testNumber = 1;
             int
                 startFromTestNumber =
-                250;// Use this to skip tests manually to make it easier for debugging a specific test.
+                0;// Use this to skip tests manually to make it easier for debugging a specific test.
             for (TestInput testInput : list) {
                 if (testNumber >= startFromTestNumber) {
                     System.out.println("Running test number: " + testNumber);
