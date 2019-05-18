@@ -106,18 +106,18 @@ public class ConditionalTest extends TestCase {
         {
             "_country=gb;\n" +
             "{\n" +
-            "  country=us|gb|au?\n" +
+            "  country=us/gb/au?\n" +
             "    support_number=441270123456\n" +
             "  /?\n" +
             "    support_number=International Clients:14161234567\n" +
             "}",
             "{\"support_number\":441270123456}",
-            "_country=gb;{country=us|gb|au?support_number=441270123456/?support_number=International Clients:14161234567}"
+            "_country=gb;{country=us/gb/au?support_number=441270123456/?support_number=International Clients:14161234567}"
         },
         {
             "_test=gb;\n" +
-            "result={test=gb|au?No/?Yes}", "{ \"result\": \"No\" }",
-            "_test=gb;result={test=gb|au?No/?Yes}"
+            "result={test=gb/au?No/?Yes}", "{ \"result\": \"No\" }",
+            "_test=gb;result={test=gb/au?No/?Yes}"
         },
         {
             "_number=42;\n" +
@@ -133,7 +133,7 @@ public class ConditionalTest extends TestCase {
         {
             "_country=gb;\n" +
             "{\n" +
-            "  !{country=us|gb|au}?\n" +
+            "  !{country=us/gb/au}?\n" +
             "    support_number=441270123456\n" +
             "  /?\n" +
             "    support_number=International Clients:14161234567\n" +
