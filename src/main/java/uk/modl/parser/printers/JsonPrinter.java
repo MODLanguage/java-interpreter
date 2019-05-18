@@ -28,7 +28,7 @@ import uk.modl.modlObject.ModlValue;
 import uk.modl.parser.RawModlObject;
 
 public class JsonPrinter {
-    static ObjectMapper mapper = new ObjectMapper();
+    private static ObjectMapper mapper = new ObjectMapper();
 
     public static String printModl(RawModlObject modl) throws JsonProcessingException {
         return printModl(modl, true);
@@ -66,7 +66,7 @@ public class JsonPrinter {
         mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
 
         ModlObject toConvert = modl;
-        if(modl.getStructures().isEmpty()) {
+        if (modl.getStructures().isEmpty()) {
             toConvert = null;
         }
         if (pretty) {

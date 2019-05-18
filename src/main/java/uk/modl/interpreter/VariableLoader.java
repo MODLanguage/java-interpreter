@@ -23,44 +23,32 @@ import uk.modl.modlObject.ModlObject;
 import uk.modl.modlObject.ModlValue;
 import uk.modl.parser.RawModlObject;
 
-import java.util.List;
 import java.util.Map;
 
 /**
  * Created by alex on 20/09/2018.
  */
-public class VariableLoader {
+class VariableLoader {
 
-    public static void loadConfigNumberedVariables(ModlValue value, Map<Integer, ModlValue> numberedVariables) { // , int paramNum) {
+    static void loadConfigNumberedVariables(ModlValue value,
+                                            Map<Integer, ModlValue> numberedVariables) { // , int paramNum) {
         if (value != null) {
             if (value instanceof ModlObject.Array) {
                 for (ModlValue val : ((ModlObject.Array) value).getValues()) {
                     addConfigNumberedVariable(val, numberedVariables);
                 }
                 return;
-            } else if (value instanceof ModlObject.Pair) {
-//                if (((ModlObject.Pair)value).getValue() instanceof Array) {
-//                    return;
-//                }
             }
-                addConfigNumberedVariable(value, numberedVariables);
+            addConfigNumberedVariable(value, numberedVariables);
         }
     }
 
-    private static int addConfigNumberedVariable(ModlValue val, Map<Integer, ModlValue> numberedVariables) {
+    private static void addConfigNumberedVariable(ModlValue val, Map<Integer, ModlValue> numberedVariables) {
         int paramNum = numberedVariables.size();
         numberedVariables.put(paramNum, val);
-        return paramNum;
     }
 
-    private static void loadConfigVariable(List<RawModlObject.Pair> mapItems, Map<String, ModlValue> variables) {
-        // Load in the variable
-        for (RawModlObject.Pair mapItem : mapItems) {
-            loadConfigVar(mapItem.getKey().string, mapItem, variables);
-        }
-    }
-
-    public static void loadConfigVar(String key, RawModlObject.Pair pair, Map<String, ModlValue> variables) {
+    static void loadConfigVar(String key, RawModlObject.Pair pair, Map<String, ModlValue> variables) {
         ModlValue v = pair.getModlValue();
         variables.put(key, v);
     }

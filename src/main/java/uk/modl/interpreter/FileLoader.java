@@ -24,6 +24,7 @@ import uk.modl.parser.RawModlObject;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -34,11 +35,11 @@ import java.util.Scanner;
 /**
  * Created by alex on 20/09/2018.
  */
-public class FileLoader {
+class FileLoader {
     private static Map<String, ModlAndTtl> cache = new HashMap<>();
 
-    public static RawModlObject loadFile(final List<String> filesLoaded, String location) {
-        String contents = null;
+    static RawModlObject loadFile(final List<String> filesLoaded, String location) {
+        String contents;
         boolean forceReload = false;
         if (location.endsWith("!")) {
             forceReload = true;
@@ -63,7 +64,9 @@ public class FileLoader {
         if (location.startsWith("http")) {
             // Load from URI
             try {
-                contents = new Scanner(new URL(location).openStream(), "UTF-8").useDelimiter("\\A").next();
+                contents =
+                    new Scanner(new URL(location).openStream(), StandardCharsets.UTF_8.name()).useDelimiter("\\A")
+                                                                                              .next();
             } catch (IOException e) {
                 throw new RuntimeException(("Could not make URI : " + location + ", error : " + e));
             }
@@ -74,7 +77,7 @@ public class FileLoader {
                 throw new RuntimeException(("Could not open file : " + location + ", error : " + e));
             }
         }
-        RawModlObject rawModlObject = null;
+        RawModlObject rawModlObject;
         try {
             rawModlObject = ModlObjectCreator.processModlParsed(contents);
         } catch (IOException e) {

@@ -30,11 +30,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class VariableMethods {
+class VariableMethods {
 
+    static Pattern STRING = Pattern.compile("(\\w+)");
     static private Map<String, TaskRunner> methods = null;
-
-    public static Pattern STRING = Pattern.compile("(\\w+)");
 
     private static void initialiseMethods() {
         methods = new HashMap<>();
@@ -54,12 +53,13 @@ public class VariableMethods {
             public void run() {
                 if (parameter == null) {
                     result = null;
+                } else {
+                    String[] split = parameter.split(",");
+                    String subject = split[0];
+                    String trim = split[1];
+                    int indexOfTrim = subject.indexOf(trim);
+                    result = subject.substring(0, indexOfTrim);
                 }
-                String[] split = parameter.split(",");
-                String subject = split[0];
-                String trim = split[1];
-                int indexOfTrim = subject.indexOf(trim);
-                result = subject.substring(0, indexOfTrim);
             }
         };
         methods.put("t", trimTask);
@@ -72,8 +72,9 @@ public class VariableMethods {
             public void run() {
                 if (parameter == null) {
                     result = null;
+                } else {
+                    result = parameter.toUpperCase();
                 }
-                result = parameter.toUpperCase();
             }
         };
         methods.put("u", upperCaseTask);
@@ -86,8 +87,9 @@ public class VariableMethods {
             public void run() {
                 if (parameter == null) {
                     result = null;
+                } else {
+                    result = makeSentence(parameter);
                 }
-                result = makeSentence(parameter);
             }
         };
         methods.put("s", sentenceTask);
@@ -100,8 +102,9 @@ public class VariableMethods {
             public void run() {
                 if (parameter == null) {
                     result = null;
+                } else {
+                    result = parameter.toLowerCase();
                 }
-                result = parameter.toLowerCase();
             }
         };
         methods.put("d", downCaseTask);
@@ -116,7 +119,6 @@ public class VariableMethods {
                     result = null;
                 }
                 result = WordUtils.capitalize(parameter);
-                ;
             }
         };
         methods.put("i", task);
@@ -129,15 +131,16 @@ public class VariableMethods {
             public void run() {
                 if (parameter == null) {
                     result = null;
+                } else {
+                    String[] split = parameter.split(",");
+                    String subject = split[0];
+                    String search = split[1];
+                    String replace = "";
+                    if (split.length > 2) {
+                        replace = split[2];
+                    }
+                    result = subject.replace(search, replace);
                 }
-                String[] split = parameter.split(",");
-                String subject = split[0];
-                String search = split[1];
-                String replace = "";
-                if (split.length > 2) {
-                    replace = split[2];
-                }
-                result = subject.replace(search, replace);
             }
         };
         methods.put("r", task);
@@ -150,12 +153,13 @@ public class VariableMethods {
             public void run() {
                 if (parameter == null) {
                     result = null;
-                }
-                try {
-                    result = URLEncoder.encode(parameter, StandardCharsets.UTF_8.toString());
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                    result = null;
+                } else {
+                    try {
+                        result = URLEncoder.encode(parameter, StandardCharsets.UTF_8.toString());
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                        result = null;
+                    }
                 }
             }
         };
@@ -177,7 +181,7 @@ public class VariableMethods {
         methods.put("punydecode", task);
     }
 
-    public static String transform(String methodName, String input) {
+    static String transform(String methodName, String input) {
         if (methods == null) {
             initialiseMethods();
         }
@@ -188,14 +192,13 @@ public class VariableMethods {
         try {
             taskRunner.setParameter(input);
             taskRunner.run();
-            String result = taskRunner.getResult();
-            return result;
+            return taskRunner.getResult();
         } catch (Exception e) {
             throw new RuntimeException("Can't call variable transform " + methodName + " : " + e);
         }
     }
 
-    public static void addMethod(String shortName, TaskRunner taskRunner) {
+    static void addMethod(String shortName, TaskRunner taskRunner) {
         if (methods == null) {
             initialiseMethods();
         }
@@ -207,22 +210,22 @@ public class VariableMethods {
         String[] splits = parameter.split(" ");
         splits[0] = WordUtils.capitalize(splits[0]);
         //        return String.join(" ", splits);
-        String ret = "";
+        StringBuilder ret = new StringBuilder();
         int count = 0;
         for (String s : splits) {
             if (count > 0) {
-                ret += " ";
+                ret.append(" ");
             }
             count++;
-            ret += s;
+            ret.append(s);
         }
-        return ret;
+        return ret.toString();
     }
 
     private static String replacePunycode(String stringToTransform) {
         // Prefix it with xn-- (the letters xn and two dashes) and decode using punycode / IDN library. Replace the full part (including graves) with the decoded value.
         if (stringToTransform == null) {
-            return stringToTransform;
+            return null;
         }
         if (stringToTransform.startsWith("`") && stringToTransform.endsWith("`")) {
             stringToTransform = stringToTransform.substring(1, stringToTransform.length() - 1);
@@ -238,7 +241,7 @@ public class VariableMethods {
         return stringToTransform;
     }
 
-    public static boolean isVariableMethod(String s) {
+    static boolean isVariableMethod(String s) {
         if (methods == null) {
             initialiseMethods();
         }
@@ -246,22 +249,20 @@ public class VariableMethods {
 
         if (matcher.find() && matcher.groupCount() > 0) {
             final String match = matcher.group(0);
-            if (methods.get(match) != null) {
-                return true;
-            }
+            return methods.get(match) != null;
         }
         return false;
     }
 
-    public static abstract class TaskRunner implements Runnable {
-        protected String parameter;
-        protected String result;
+    static abstract class TaskRunner implements Runnable {
+        String parameter;
+        String result;
 
-        public void setParameter(String s) {
+        void setParameter(String s) {
             parameter = s;
         }
 
-        public String getResult() {
+        String getResult() {
             return result;
         }
     }

@@ -23,7 +23,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import uk.modl.modlObject.ModlObject;
-import uk.modl.modlObject.ModlValue;
 
 import java.io.IOException;
 
@@ -37,7 +36,7 @@ public class ModlObjectJsonSerializer extends JsonSerializer<ModlObject> {
             gen.writeStartArray();
         }
         for (ModlObject.Structure structure : modlObject.getStructures()) {
-//            serialize(structure, gen, serializers);
+            //            serialize(structure, gen, serializers);
             ModlValueJsonSerializer.serializeStructure(structure, gen, serializers);
         }
         if (modlObject.getStructures().size() > 1) {

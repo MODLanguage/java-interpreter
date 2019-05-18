@@ -122,7 +122,7 @@ public class ApiTest extends TestCase {
                     ret += mv.getKeys().get(0) + "=";
                 }
 
-                ret += traverseModlValue(mv, ++count == modlValue.getModlValues().size() ? true : false);
+                ret += traverseModlValue(mv, ++count == modlValue.getModlValues().size());
 
                 if (mv.isArray()) {
                     ret += "]";

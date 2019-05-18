@@ -30,21 +30,11 @@ import java.util.Map;
 /**
  * Created by alex on 19/09/2018.
  */
-public class VariableMethodLoader {
-    public static class MethodDescriptor {
-        public String id;
-        public String name;
-        public String transform;
-    }
+class VariableMethodLoader {
+    static void loadVariableMethod(List<MethodDescriptor> methodList,
+                                   RawModlObject.Structure structure,
+                                   Interpreter interpreter) {
 
-    public static void loadVariableMethod(List<MethodDescriptor> methodList, RawModlObject.Structure structure, Interpreter interpreter) {
-        /*
-*transform(
-  *id=us
-  *name=replace_underscores_with_spaces
-  *transform=`replace(_, )`
-)
-         */
         final MethodDescriptor desc = new MethodDescriptor();
         // Load up the values : e.g. :
         String methodName = ModlClassLoader.getPairValueFor(structure, "*id", interpreter);
@@ -57,14 +47,14 @@ public class VariableMethodLoader {
             description = ModlClassLoader.getPairValueFor(structure, "*n", interpreter);
         }
         desc.name = description;
-        if (description == null) {
-            description = methodName;
-        }
+
         String methodString = ModlClassLoader.getPairValueFor(structure, "*transform", interpreter);
         if (methodString == null) {
             methodString = ModlClassLoader.getPairValueFor(structure, "*t", interpreter);
         }
-        methodString = methodString.replace("`", "");
+        if (methodString != null) {
+            methodString = methodString.replace("`", "");
+        }
         desc.transform = methodString;
 
         createVariableMethod(methodName, methodString);
@@ -151,9 +141,15 @@ public class VariableMethodLoader {
             methodsAndParams.add(methodAndParam);
 
             // Adjust the transform string
-            methodString = methodString.substring(endIndex, methodString.length());
+            methodString = methodString.substring(endIndex);
         }
         return methodsAndParams;
+    }
+
+    public static class MethodDescriptor {
+        public String name;
+        String id;
+        String transform;
     }
 
 }

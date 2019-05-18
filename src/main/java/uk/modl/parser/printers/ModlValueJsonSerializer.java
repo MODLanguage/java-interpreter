@@ -32,35 +32,38 @@ import java.io.IOException;
  */
 public class ModlValueJsonSerializer extends JsonSerializer<ModlValue> {
 
-    @Override
-    public void serialize(ModlValue value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        serializeInternal(value, gen ,serializers, false);
-    }
-
-    public static void serializeStructure(ModlObject.Structure structure, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    static void serializeStructure(ModlObject.Structure structure,
+                                   JsonGenerator gen,
+                                   SerializerProvider serializers) throws IOException {
         serializeInternal(structure, gen, serializers);
     }
 
-    private static void serializeInternal(ModlObject.Structure structure, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private static void serializeInternal(ModlObject.Structure structure,
+                                          JsonGenerator gen,
+                                          SerializerProvider serializers) throws IOException {
         serializeInternal(structure, gen, serializers, true);
     }
 
-    public static void serializeInternal(ModlObject.Structure structure, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
+    private static void serializeInternal(ModlObject.Structure structure,
+                                          JsonGenerator gen,
+                                          SerializerProvider serializers,
+                                          boolean startObject) throws IOException {
         if (structure == null) {
             return;
         }
         if (structure instanceof ModlObject.Array) {
-            serializeInternal((ModlObject.Array)structure, gen, serializers);
+            serializeInternal((ModlObject.Array) structure, gen, serializers);
         }
         if (structure instanceof ModlObject.Pair) {
-            serializeInternal((ModlObject.Pair)structure, gen, serializers, startObject);
+            serializeInternal((ModlObject.Pair) structure, gen, serializers, startObject);
         }
         if (structure instanceof ModlObject.Map) {
-            serializeInternal((ModlObject.Map)structure, gen, serializers);
+            serializeInternal((ModlObject.Map) structure, gen, serializers);
         }
     }
 
-    private static void serializeInternal(ModlObject.Map map, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private static void serializeInternal(ModlObject.Map map, JsonGenerator gen, SerializerProvider serializers)
+        throws IOException {
         if (map == null) {
             return;
         }
@@ -70,44 +73,49 @@ public class ModlValueJsonSerializer extends JsonSerializer<ModlValue> {
                 serializeInternal(pair, gen, serializers, false);
             }
             gen.writeEndObject();
-        }
-        else {
+        } else {
             gen.writeStartObject();
             gen.writeEndObject();
         }
     }
 
-    public static void serializeInternal(ModlValue value, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
+    private static void serializeInternal(ModlValue value,
+                                          JsonGenerator gen,
+                                          SerializerProvider serializers,
+                                          boolean startObject) throws IOException {
         if (value == null) {
             return;
         }
         if (value instanceof ModlObject.Pair) {
-            serializeInternal((ModlObject.Pair)value, gen, serializers, startObject);
+            serializeInternal((ModlObject.Pair) value, gen, serializers, startObject);
         }
         if (value instanceof ModlObject.Map) {
-            serializeInternal((ModlObject.Map)value, gen, serializers);
+            serializeInternal((ModlObject.Map) value, gen, serializers);
         }
         if (value instanceof ModlObject.Array) {
-            serializeInternal((ModlObject.Array)value, gen, serializers);
+            serializeInternal((ModlObject.Array) value, gen, serializers);
         }
         if (value instanceof ModlObject.Number) {
-            serializeInternal((ModlObject.Number)value, gen, serializers);
+            serializeInternal((ModlObject.Number) value, gen);
         }
         if (value instanceof ModlObject.True) {
-            serializeInternal((ModlObject.True)value, gen, serializers);
+            serializeInternal((ModlObject.True) value, gen);
         }
         if (value instanceof ModlObject.False) {
-            serializeInternal((ModlObject.False)value, gen, serializers);
+            serializeInternal((ModlObject.False) value, gen);
         }
         if (value instanceof ModlObject.Null) {
-            serializeInternal((ModlObject.Null)value, gen, serializers);
+            serializeInternal((ModlObject.Null) value, gen);
         }
         if (value instanceof ModlObject.String) {
-            serializeInternal((ModlObject.String)value, gen, serializers);
+            serializeInternal((ModlObject.String) value, gen);
         }
     }
 
-    private static void serializeInternal(ModlObject.Pair pair, JsonGenerator gen, SerializerProvider serializers, boolean startObject) throws IOException {
+    private static void serializeInternal(ModlObject.Pair pair,
+                                          JsonGenerator gen,
+                                          SerializerProvider serializers,
+                                          boolean startObject) throws IOException {
         if (pair == null) {
             return;
         }
@@ -125,7 +133,8 @@ public class ModlValueJsonSerializer extends JsonSerializer<ModlValue> {
         }
     }
 
-    private static void serializeInternal(ModlObject.Array array, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private static void serializeInternal(ModlObject.Array array, JsonGenerator gen, SerializerProvider serializers)
+        throws IOException {
         if (array == null) {
             return;
         }
@@ -145,7 +154,8 @@ public class ModlValueJsonSerializer extends JsonSerializer<ModlValue> {
         }
     }
 
-    private static void serializeInternal(ModlObject.Number number, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private static void serializeInternal(ModlObject.Number number, JsonGenerator gen)
+        throws IOException {
         if (number == null) {
             return;
         }
@@ -153,28 +163,32 @@ public class ModlValueJsonSerializer extends JsonSerializer<ModlValue> {
         gen.writeNumber(number.number);
     }
 
-    private static void serializeInternal(ModlObject.True trueVal, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private static void serializeInternal(ModlObject.True trueVal, JsonGenerator gen)
+        throws IOException {
         if (trueVal == null) {
             return;
         }
         gen.writeBoolean(true);
     }
 
-    private static void serializeInternal(ModlObject.False falseVal, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private static void serializeInternal(ModlObject.False falseVal, JsonGenerator gen)
+        throws IOException {
         if (falseVal == null) {
             return;
         }
         gen.writeBoolean(false);
     }
 
-    private static void serializeInternal(ModlObject.Null nullVal, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private static void serializeInternal(ModlObject.Null nullVal, JsonGenerator gen)
+        throws IOException {
         if (nullVal == null) {
             return;
         }
         gen.writeNull();
     }
 
-    private static void serializeInternal(ModlObject.String string, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    private static void serializeInternal(ModlObject.String string, JsonGenerator gen)
+        throws IOException {
         if (string == null) {
             return;
         }
@@ -183,5 +197,10 @@ public class ModlValueJsonSerializer extends JsonSerializer<ModlValue> {
         } else {
             gen.writeString("");
         }
+    }
+
+    @Override
+    public void serialize(ModlValue value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        serializeInternal(value, gen, serializers, false);
     }
 }

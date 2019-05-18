@@ -26,19 +26,24 @@ import uk.modl.interpreter.Interpreter;
 import uk.modl.modlObject.ModlObject;
 import uk.modl.parser.printers.JsonPrinter;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class ModlServer extends AbstractHandler
-{
+public class ModlServer extends AbstractHandler {
+    public static void main(String[] args) throws Exception {
+        Server server = new Server(8080);
+        server.setHandler(new ModlServer());
+
+        server.start();
+        server.join();
+    }
+
     public void handle(String target,
                        Request baseRequest,
                        HttpServletRequest request,
                        HttpServletResponse response)
-            throws IOException, ServletException
-    {
+        throws IOException {
         // TODO Take POST request
 
         response.setContentType("application/json;charSet=UTF-8");
@@ -59,14 +64,5 @@ public class ModlServer extends AbstractHandler
             baseRequest.setHandled(true);
             response.getWriter().println(e.getMessage());
         }
-    }
-
-    public static void main(String[] args) throws Exception
-    {
-        Server server = new Server(8080);
-        server.setHandler(new ModlServer());
-
-        server.start();
-        server.join();
     }
 }

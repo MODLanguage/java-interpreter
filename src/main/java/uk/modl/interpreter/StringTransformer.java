@@ -30,26 +30,25 @@ import java.util.regex.Matcher;
 
 //import java.util.function.Function;
 
-public class StringTransformer {
+class StringTransformer {
 
-    Map<String, ModlValue> valuePairs;
-    Map<String, ModlValue> variables;
-    Map<Integer, ModlValue> numberedVariables;
+    private Map<String, ModlValue> valuePairs;
+    private Map<String, ModlValue> variables;
+    private Map<Integer, ModlValue> numberedVariables;
 
 
-    public StringTransformer(Map<String, ModlValue> valuePairs,
-                             Map<String, ModlValue> variables,
-                             Map<Integer, ModlValue> numberedVariables) {
+    StringTransformer(Map<String, ModlValue> valuePairs,
+                      Map<String, ModlValue> variables,
+                      Map<Integer, ModlValue> numberedVariables) {
         this.valuePairs = valuePairs;
         this.variables = variables;
         this.numberedVariables = numberedVariables;
     }
 
-    protected ModlValue transformString(String stringToTransform) {
+    ModlValue transformString(String stringToTransform) {
         if (stringToTransform == null) {
             return null;
         }
-        ModlObject modlObject = new ModlObject();
         if (stringToTransform.toLowerCase().equals("true")) {
             return new ModlObject.True();
         }
@@ -70,7 +69,7 @@ public class StringTransformer {
         // 3 : If parts are found loop through them in turn:
         for (String gravePart : graveParts) {
             //     If a part begins with a % then run “Object Referencing”, else run “Punycode encoded parts”
-            String newGravePart = null;
+            String newGravePart;
             if (gravePart.startsWith("`%")) {
                 //                stringToTransform = runObjectReferencing(gravePart, stringToTransform, true);
                 ModlValue ret = runObjectReferencing(gravePart, stringToTransform, true);
@@ -94,7 +93,7 @@ public class StringTransformer {
                 final int dotIndex = stringToTransform.indexOf('.');
                 if (dotIndex > -1) {
                     String firstPart = stringToTransform.substring(0, dotIndex);
-                    String methods = stringToTransform.substring(dotIndex+1);
+                    String methods = stringToTransform.substring(dotIndex + 1);
                     stringToTransform = runMethods(firstPart, methods);
 
                 }
@@ -129,7 +128,7 @@ public class StringTransformer {
             finished = true;
             Integer startIndex = getNextPercent(stringToTransform, currentIndex);
             if (startIndex != null) {
-                Integer endIndex = null;
+                Integer endIndex;
                 // If the first character after the % is a number, then keep reading until we get to a non-number (taking account of method chains)
                 // If the first character after the % is a letter, then keep reading until we get to a space
                 if (startIndex < stringToTransform.length() - 1 &&
@@ -203,21 +202,14 @@ public class StringTransformer {
         }
     }
 
-    private boolean isVariableMethod(String s) {
-        return VariableMethods.isVariableMethod(s);
-    }
-
     private boolean isNumber(String substring) {
-        if ((substring.equals("0") ||
-             substring.equals("1") ||
-             substring.equals("2") ||
-             substring.equals("3") ||
-             substring.equals("4"))
-            || substring.equals("5") || substring.equals("6") || substring.equals("7") || substring.equals("8")
-            || substring.equals("9")) {
-            return true;
-        }
-        return false;
+        return (substring.equals("0") ||
+                substring.equals("1") ||
+                substring.equals("2") ||
+                substring.equals("3") ||
+                substring.equals("4"))
+               || substring.equals("5") || substring.equals("6") || substring.equals("7") || substring.equals("8")
+               || substring.equals("9");
     }
 
     private Integer getNextPercent(String stringToTransform, Integer startIndex) {
@@ -274,7 +266,7 @@ public class StringTransformer {
     }
 
 
-    public ModlValue runObjectReferencing(String percentPart, String stringToTransform, boolean isGraved) {
+    ModlValue runObjectReferencing(String percentPart, String stringToTransform, boolean isGraved) {
     /*
     Object Referencing
 If the reference includes a . (dot / full stop / period) then the reference key should be considered everything to the left of the . (dot / full stop / period).
@@ -295,7 +287,6 @@ Replace the part originally found (including graves) with the transformed subjec
             startOffset += 1;
             endOffset += 1;
         }
-        ModlObject modlObject = new ModlObject();
         String subject = percentPart.substring(startOffset, percentPart.length() - endOffset);
 
         String remainder = null;
@@ -342,7 +333,7 @@ Replace the part originally found (including graves) with the transformed subjec
             methods[0] = remainder;
         }
         for (String method : methods) {
-            if (method.indexOf("(") >= 0) {
+            if (method.contains("(")) {
                 // HANDLE TRIM AND REPLACE HERE!!
                 // We need to strip the "(<params>)" and apply the method to the subject AND the params!
                 // TODO (we might need to check for escaped "."s one day...

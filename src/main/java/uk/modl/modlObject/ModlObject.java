@@ -32,19 +32,21 @@ import java.util.List;
 @JsonSerialize(using = ModlObjectJsonSerializer.class)
 public class ModlObject extends ModlValue {
 
-    @Override
-    public boolean isModlObject() { return true; };
-
-    public abstract static class Structure extends ModlValue {}
-
     protected List<Structure> structures = new LinkedList<>();
+
+    @Override
+    public boolean isModlObject() {
+        return true;
+    }
 
     public List<Structure> getStructures() {
         return structures;
     }
 
     @Override
-    public List<? extends ModlValue> getModlValues() { return structures; }
+    public List<? extends ModlValue> getModlValues() {
+        return structures;
+    }
 
     public void addStructure(Structure structure) {
         if (structure != null) {
@@ -57,7 +59,7 @@ public class ModlObject extends ModlValue {
         List<java.lang.String> keys = new LinkedList<>();
         for (Structure structure : structures) {
             if (structure instanceof Pair) {
-                Pair pair = (Pair)structure;
+                Pair pair = (Pair) structure;
                 keys.add(pair.getKey().string);
             }
         }
@@ -68,7 +70,7 @@ public class ModlObject extends ModlValue {
     public ModlValue get(java.lang.String name) {
         for (Structure structure : structures) {
             if (structure instanceof Pair) {
-                Pair pair = (Pair)structure;
+                Pair pair = (Pair) structure;
                 if (pair.getKey().string.equals(name)) {
                     return pair.getModlValue();
                 }
@@ -81,23 +83,28 @@ public class ModlObject extends ModlValue {
         return structures.get(index);
     }
 
-//    public static class Map implements Structure, ModlValue {
+    public abstract static class Structure extends ModlValue {
+    }
+
+    //    public static class Map implements Structure, ModlValue {
     public static class Map extends Structure {
 
-        @Override
-        public boolean isMap() { return true; };
-
         List<Pair> pairs = new LinkedList<>();
+
+        @Override
+        public boolean isMap() {
+            return true;
+        }
 
         public void addPair(Pair pair) {
             pairs.add(pair);
         }
 
-//        public List<Value> get(String key) {
+        //        public List<Value> get(String key) {
         public ModlValue get(String key) {
             for (Pair pair : pairs) {
                 if (pair.getKey().string.equals(key.string)) {
-//                    return pair.getValues();
+                    //                    return pair.getValues();
                     return pair.getModlValue();
                 }
             }
@@ -114,39 +121,31 @@ public class ModlObject extends ModlValue {
         }
 
         @Override
-        public List<? extends ModlValue> getModlValues() { return pairs; }
-
-        @Override
-        public List<java.lang.String> getKeys() {
-            List<java.lang.String> keys = new LinkedList<>();
-            for (Structure structure : pairs) {
-                if (structure instanceof Pair) {
-                    Pair pair = (Pair)structure;
-                    keys.add(pair.getKey().string);
-                }
-            }
-            return keys;
+        public List<? extends ModlValue> getModlValues() {
+            return pairs;
         }
 
         @Override
         public ModlValue get(java.lang.String name) {
             for (Pair pair : pairs) {
-                    if (pair.getKey().string.equals(name)) {
-                        return pair.getModlValue();
-                    }
+                if (pair.getKey().string.equals(name)) {
+                    return pair.getModlValue();
                 }
+            }
             return null;
         }
 
     }
 
-//    public static class Array implements Structure, ModlValue {
+    //    public static class Array implements Structure, ModlValue {
     public static class Array extends Structure {
 
-        @Override
-        public boolean isArray() { return true; };
-
         List<ModlValue> values = new LinkedList<>();
+
+        @Override
+        public boolean isArray() {
+            return true;
+        }
 
         public void addValue(ModlValue value) {
             values.add(value);
@@ -160,8 +159,8 @@ public class ModlObject extends ModlValue {
         public Pair get(String name) {
             for (ModlValue v : values) {
                 if (v instanceof Pair) {
-                    if (((Pair)v).getKey().string.equals(name.string)) {
-                        return (Pair)v;
+                    if (((Pair) v).getKey().string.equals(name.string)) {
+                        return (Pair) v;
                     }
                 }
             }
@@ -173,28 +172,37 @@ public class ModlObject extends ModlValue {
         }
 
         @Override
-        public List<? extends ModlValue> getModlValues() { return values; }
+        public List<? extends ModlValue> getModlValues() {
+            return values;
+        }
 
     }
 
-//    public static class Pair implements Structure, ModlValue {
+    //    public static class Pair implements Structure, ModlValue {
     public static class Pair extends Structure {
-
-        @Override
-        public boolean isPair() { return true; };
 
         private String key;
         private ModlValue modlValue;
 
-        public Pair() {}
+        public Pair() {
+        }
 
         public Pair(String key, ModlValue modlValue) {
             this.key = key;
             this.modlValue = (modlValue);
         }
 
+        @Override
+        public boolean isPair() {
+            return true;
+        }
+
         public String getKey() {
             return key;
+        }
+
+        public void setKey(String key) {
+            this.key = key;
         }
 
         @Override
@@ -202,10 +210,6 @@ public class ModlObject extends ModlValue {
             List<java.lang.String> keys = new LinkedList<>();
             keys.add(key.string);
             return keys;
-        }
-
-        public void setKey(String key) {
-            this.key = key;
         }
 
         public ModlValue getModlValue() {
@@ -222,11 +226,11 @@ public class ModlObject extends ModlValue {
             }
             ModlValue oldValue = this.modlValue;
             if (this.modlValue instanceof ModlObject.Map) {
-                ((Map)this.modlValue).addPair((Pair)value);
+                ((Map) this.modlValue).addPair((Pair) value);
             } else if (this.modlValue instanceof ModlObject.Pair && value instanceof ModlObject.Pair) {
                 this.modlValue = new Map();
-                ((Map)this.modlValue).addPair((Pair)oldValue);
-                ((Map)this.modlValue).addPair((Pair)value);
+                ((Map) this.modlValue).addPair((Pair) oldValue);
+                ((Map) this.modlValue).addPair((Pair) value);
             } else {
                 this.modlValue = new Array();
                 ((Array) this.modlValue).addValue(oldValue);
@@ -245,26 +249,26 @@ public class ModlObject extends ModlValue {
             values.add(modlValue);
             return values;
         }
-
-        public void setModlValue(ModlValue mv) {
-            this.modlValue = mv;
-        }
     }
 
     public static class String extends ModlValue {
-
-        @Override
-        public boolean isString() { return true; };
 
         public final java.lang.String string;
 
         public String(java.lang.String string) {
 
             this.string = StringEscapeReplacer.replace(string);
-            
+
         }
 
-        public java.lang.String toString() {return string;}
+        @Override
+        public boolean isString() {
+            return true;
+        }
+
+        public java.lang.String toString() {
+            return string;
+        }
 
         @Override
         public Object getValue() {
@@ -272,14 +276,13 @@ public class ModlObject extends ModlValue {
         }
 
         @Override
-        public boolean isTerminal() { return true; };
+        public boolean isTerminal() {
+            return true;
+        }
 
     }
 
     public static class Number extends ModlValue {
-
-        @Override
-        public boolean isNumber() { return true; };
 
         public final java.lang.String number;
 
@@ -288,22 +291,33 @@ public class ModlObject extends ModlValue {
         }
 
         @Override
+        public boolean isNumber() {
+            return true;
+        }
+
+        @Override
         public Object getValue() {
             return number;
         }
 
         @Override
-        public boolean isTerminal() { return true; };
+        public boolean isTerminal() {
+            return true;
+        }
 
     }
 
     public static class True extends ModlValue {
 
         @Override
-        public boolean isTrue() { return true; };
+        public boolean isTrue() {
+            return true;
+        }
 
         @Override
-        public boolean isTerminal() { return true; };
+        public boolean isTerminal() {
+            return true;
+        }
 
         @Override
         public Object getValue() {
@@ -315,10 +329,14 @@ public class ModlObject extends ModlValue {
     public static class False extends ModlValue {
 
         @Override
-        public boolean isFalse() { return true; };
+        public boolean isFalse() {
+            return true;
+        }
 
         @Override
-        public boolean isTerminal() { return true; };
+        public boolean isTerminal() {
+            return true;
+        }
 
         @Override
         public Object getValue() {
@@ -329,10 +347,14 @@ public class ModlObject extends ModlValue {
     public static class Null extends ModlValue {
 
         @Override
-        public boolean isNull() { return true; };
+        public boolean isNull() {
+            return true;
+        }
 
         @Override
-        public boolean isTerminal() { return true; };
+        public boolean isTerminal() {
+            return true;
+        }
 
         @Override
         public Object getValue() {

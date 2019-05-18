@@ -23,14 +23,15 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class StringEscapeReplacer {
-    static Map<String, String> replacements = new LinkedHashMap<>();
+    private static Map<String, String> replacements = new LinkedHashMap<>();
+
     public static String replace(String stringToTransform) {
         // String-replacement.text to replace escaped characters
         if (replacements.isEmpty()) {
             loadReplacements();
         }
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
-            if (stringToTransform.indexOf(replacement.getKey()) > -1) {
+            if (stringToTransform.contains(replacement.getKey())) {
                 stringToTransform = stringToTransform.replace(replacement.getKey(), replacement.getValue());
             }
         }

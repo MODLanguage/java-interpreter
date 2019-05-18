@@ -25,21 +25,24 @@ import uk.modl.parser.RawModlObject;
 
 import java.util.*;
 
-public class ModlClassLoader {
+class ModlClassLoader {
 
-    public static void loadClass(RawModlObject.Structure structure, Map<String, Map<String, Object>> klasses, Interpreter interpreter) {
+    static void loadClass(RawModlObject.Structure structure,
+                          Map<String, Map<String, Object>> klasses,
+                          Interpreter interpreter) {
         if (structure instanceof ModlObject.Pair) {
             ModlObject.Pair pair = (ModlObject.Pair) structure;
-            if (pair == null || (!(((pair.getKey().string.toLowerCase().equals("*class")) ||
-                    (pair.getKey().string.toLowerCase().equals("*c")))))) {
+            if (!(((pair.getKey().string.toLowerCase().equals("*class")) ||
+                   (pair.getKey().string.toLowerCase().equals("*c"))))) {
                 throw new RuntimeException("Expecting '*class' in ModlClassLoader");
             }
-//            interpreter.addToUpperCaseInstructions(pair.getKey().string);
             loadClassStructure(structure, klasses, interpreter);
         }
     }
 
-    private static void loadClassStructure(RawModlObject.Structure structure, Map<String, Map<String, Object>> klasses, Interpreter interpreter) {
+    private static void loadClassStructure(RawModlObject.Structure structure,
+                                           Map<String, Map<String, Object>> klasses,
+                                           Interpreter interpreter) {
         // Load in the new klass
         HashMap<String, Object> values = new LinkedHashMap<>();
         String id = getPairValueFor(structure, "*id", interpreter);
@@ -67,11 +70,14 @@ public class ModlClassLoader {
         // Go through the structure and find all the new values and add them (replacing any already there from superklass)
         for (RawModlObject.Pair mapItem : ((ModlObject.Map) ((ModlObject.Pair) structure).getModlValue()).getPairs()) {
             // Remember to avoid "_id" and "_sc" !
-            if (mapItem.getKey().string.toLowerCase().equals("*id") || mapItem.getKey().string.toLowerCase().equals("*i") ||
-                    mapItem.getKey().string.toLowerCase().equals("*superclass") || mapItem.getKey().string.toLowerCase().equals("*s")) {
+            if (mapItem.getKey().string.toLowerCase().equals("*id") ||
+                mapItem.getKey().string.toLowerCase().equals("*i") ||
+                mapItem.getKey().string.toLowerCase().equals("*superclass") ||
+                mapItem.getKey().string.toLowerCase().equals("*s")) {
                 continue;
             }
-            if (mapItem.getKey().string.toLowerCase().equals("*assign") || mapItem.getKey().string.toLowerCase().equals("*a")) {
+            if (mapItem.getKey().string.toLowerCase().equals("*assign") ||
+                mapItem.getKey().string.toLowerCase().equals("*a")) {
                 interpreter.addToUpperCaseInstructions(mapItem.getKey().string);
                 if (mapItem.getModlValue() instanceof ModlObject.Array) {
                     loadParams(values, (ModlObject.Array) (mapItem.getModlValue()));
@@ -79,7 +85,8 @@ public class ModlClassLoader {
                 continue;
             }
             // Now add the new value
-            if (mapItem.getKey().string.toLowerCase().equals("*n") || mapItem.getKey().string.toLowerCase().equals("*name")) {
+            if (mapItem.getKey().string.toLowerCase().equals("*n") ||
+                mapItem.getKey().string.toLowerCase().equals("*name")) {
                 values.put("*name", mapItem.getModlValue());
             } else {
                 values.put(mapItem.getKey().string, mapItem.getModlValue());
@@ -87,47 +94,17 @@ public class ModlClassLoader {
         }
     }
 
-    private static Map<String, Object> findSuperclassByNameOrId(final Map<String, Map<String, Object>> klasses,
-                                                                final String idOrName) {
-        // Try getting by ID
-        Map<String, Object> parentClass = klasses.get(idOrName);
-        if(parentClass == null) {
-            // Failed so search by name instead
-            for(final Map<String, Object> parent : klasses.values()) {
-                final Object parentName = parent.get("*name");
-                if(parentName != null) {
-                    if(parentName instanceof ModlObject.String) {
-                        if (((ModlObject.String)parentName).string.equals(idOrName)) {
-                            parentClass = parent;
-                            break;
-                        }
-                    }
-                    if(parentName instanceof String) {
-                        if ((parentName).equals(idOrName)) {
-                            parentClass = parent;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return parentClass;
-    }
-
     private static void loadParams(HashMap<String, Object> values, RawModlObject.Array array) {
         // _params : add like _params<n> where n is number of values in array
         for (ModlValue v : array.getValues()) {
             RawModlObject.Array a = (ModlObject.Array) v;
             String key = "*params" + a.getValues().size();
-            List<ModlValue> vs = new LinkedList<>();
-            for (ModlValue ai : a.getValues()) {
-                vs.add(ai);
-            }
+            List<ModlValue> vs = new LinkedList<>(a.getValues());
             values.put(key, vs);
         }
     }
 
-    public static String getPairValueFor(RawModlObject.Structure structure, String pairValue, Interpreter interpreter) {
+    static String getPairValueFor(RawModlObject.Structure structure, String pairValue, Interpreter interpreter) {
         for (RawModlObject.Pair mapItem : ((ModlObject.Map) ((ModlObject.Pair) structure).getModlValue()).getPairs()) {
             if (mapItem.getKey().string.toLowerCase().equals(pairValue.toLowerCase())) {
                 interpreter.addToUpperCaseInstructions(mapItem.getKey().string);
@@ -136,28 +113,5 @@ public class ModlClassLoader {
             }
         }
         return null;
-    }
-
-    public static void loadModlKlassO(RawModlObject rawModlObject, Map<String, Map<String, Object>> klasses) {
-                /*
-        klass(
-            _id=o;
-            _sc=map;
-            _name=object;
-              _help="All objects without a class use this class";
-            _output=m
-          )
-         */
-        // TODO Get this to work for including more files during the load. Anything to do?
-        Map<String, Object> o = new LinkedHashMap<>();
-        RawModlObject.String superclass = new ModlObject.String("map");
-        o.put("*superclass", superclass);
-        RawModlObject.String name = new ModlObject.String("o");
-        o.put("*name", name);
-        RawModlObject.String output = new ModlObject.String("map");
-        o.put("*output", output);
-
-
-        klasses.put("o", o);
     }
 }

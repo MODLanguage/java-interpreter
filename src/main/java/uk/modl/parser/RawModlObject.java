@@ -25,14 +25,15 @@ import uk.modl.modlObject.ModlObject;
 import uk.modl.modlObject.ModlValue;
 import uk.modl.parser.printers.ModlObjectJsonSerializer;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 @JsonSerialize(using = ModlObjectJsonSerializer.class)
 public class RawModlObject extends ModlObject {
 
     // TODO Add manipulation methods to this class
-
-    public interface SubCondition {}
 
     public void replaceFirstImport(java.lang.String importValue, RawModlObject newRawModlObject) {
         // Replace the first import pair that we find with the given value
@@ -40,13 +41,14 @@ public class RawModlObject extends ModlObject {
         int count = 0;
         for (Structure structure : structures) {
             if (structure instanceof Pair) {
-                Pair pair =((Pair)structure);
-                if ((pair.getKey().string.toLowerCase().equals("*l")) || (pair.getKey().string.toLowerCase().equals("*load"))) {
-                    java.lang.String importLocation = null;
+                Pair pair = ((Pair) structure);
+                if ((pair.getKey().string.toLowerCase().equals("*l")) ||
+                    (pair.getKey().string.toLowerCase().equals("*load"))) {
+                    java.lang.String importLocation;
                     if (pair.getModlValue() instanceof ModlObject.String) {
                         importLocation = ((String) pair.getModlValue()).string;
                     } else {
-                        importLocation = ((Number)pair.getModlValue()).number.toString();
+                        importLocation = ((Number) pair.getModlValue()).number;
                     }
                     if (importLocation.equals(importValue)) {
                         break;
@@ -66,18 +68,53 @@ public class RawModlObject extends ModlObject {
 
     }
 
-    public class Quoted extends String {
-        public Quoted(java.lang.String s) {
-            super(s);
+    public interface SubCondition {
+    }
+
+    interface Conditional {
+    }
+
+    public static class ArrayConditional extends Array implements Conditional {
+        java.util.Map<ConditionTest, ArrayConditionalReturn> conditionals;
+
+        public java.util.Map<ConditionTest, ArrayConditionalReturn> getConditionals() {
+            return conditionals;
+        }
+
+        void addConditional(ConditionTest conditionTest, ArrayConditionalReturn conditionalReturn) {
+            if (conditionals == null) {
+                conditionals = new LinkedHashMap<>();
+            }
+            conditionals.put(conditionTest, conditionalReturn);
         }
     }
 
+    public static class ArrayConditionalReturn extends Array {
+    }
 
-    public class ConditionTest {
-        java.util.Map<RawModlObject.SubCondition, ImmutablePair<java.lang.String, Boolean>> subConditionMap = new HashMap<>();
+    //    public static class MapConditional extends Pair implements Conditional {
+    public static class MapConditional extends Pair implements Conditional {
+        java.util.Map<ConditionTest, Map> conditionals;
 
-        public void addSubCondition(java.lang.String operator, boolean shouldNegate, SubCondition subCondition) {
-            subConditionMap.put(subCondition, new ImmutablePair<java.lang.String, Boolean>(operator, shouldNegate));
+        public java.util.Map<ConditionTest, Map> getConditionals() {
+            return conditionals;
+        }
+
+        void addConditional(ConditionTest conditionTest, Map conditionalReturn) {
+            if (conditionals == null) {
+                conditionals = new LinkedHashMap<>();
+            }
+            conditionals.put(conditionTest, conditionalReturn);
+        }
+    }
+
+    public static class ConditionTest {
+        java.util.Map<RawModlObject.SubCondition, ImmutablePair<java.lang.String, Boolean>>
+            subConditionMap =
+            new HashMap<>();
+
+        void addSubCondition(java.lang.String operator, boolean shouldNegate, SubCondition subCondition) {
+            subConditionMap.put(subCondition, new ImmutablePair<>(operator, shouldNegate));
         }
 
         public java.util.Map<SubCondition, ImmutablePair<java.lang.String, Boolean>> getSubConditionMap() {
@@ -85,12 +122,12 @@ public class RawModlObject extends ModlObject {
         }
     }
 
-    public class Condition implements SubCondition {
+    public static class Condition implements SubCondition {
         java.lang.String key;
         java.lang.String operator;
-        List<ModlValue> values = new LinkedList<>();
+        List<ModlValue> values;
 
-        public Condition(java.lang.String key, java.lang.String operator, List<ModlValue> values) {
+        Condition(java.lang.String key, java.lang.String operator, List<ModlValue> values) {
             this.key = key;
             this.operator = operator;
             this.values = values;
@@ -109,11 +146,11 @@ public class RawModlObject extends ModlObject {
         }
     }
 
-    public class ConditionGroup implements SubCondition {
+    public static class ConditionGroup implements SubCondition {
         java.util.List<ImmutablePair<ConditionTest, java.lang.String>> conditionsTestList = new LinkedList<>();
 
-        public void addConditionTest(ConditionTest conditionTest, java.lang.String operator) {
-            conditionsTestList.add(new ImmutablePair<ConditionTest, java.lang.String>(conditionTest, operator));
+        void addConditionTest(ConditionTest conditionTest, java.lang.String operator) {
+            conditionsTestList.add(new ImmutablePair<>(conditionTest, operator));
         }
 
         public List<ImmutablePair<ConditionTest, java.lang.String>> getConditionsTestList() {
@@ -121,15 +158,14 @@ public class RawModlObject extends ModlObject {
         }
     }
 
-
-    public class ValueConditional extends ModlValue implements Conditional {
+    public static class ValueConditional extends ModlValue implements Conditional {
         java.util.Map<ConditionTest, ValueConditionalReturn> conditionals;
 
         public java.util.Map<ConditionTest, ValueConditionalReturn> getConditionals() {
             return conditionals;
         }
 
-        public void addConditional(ConditionTest conditionTest, ValueConditionalReturn conditionalReturn) {
+        void addConditional(ConditionTest conditionTest, ValueConditionalReturn conditionalReturn) {
             if (conditionals == null) {
                 conditionals = new LinkedHashMap<>();
             }
@@ -137,10 +173,10 @@ public class RawModlObject extends ModlObject {
         }
     }
 
-    public class ValueConditionalReturn extends ModlValue {
+    public static class ValueConditionalReturn extends ModlValue {
         List<ModlValue> values;
 
-        public void addValue(ModlValue value) {
+        void addValue(ModlValue value) {
             if (values == null) {
                 values = new LinkedList<>();
             }
@@ -152,50 +188,14 @@ public class RawModlObject extends ModlObject {
         }
     }
 
-    public static class ArrayConditional extends Array implements Conditional {
-        java.util.Map<ConditionTest, ArrayConditionalReturn> conditionals;
-
-        public java.util.Map<ConditionTest, ArrayConditionalReturn> getConditionals() {
-            return conditionals;
-        }
-
-        public void addConditional(ConditionTest conditionTest, ArrayConditionalReturn conditionalReturn) {
-            if (conditionals == null) {
-                conditionals = new LinkedHashMap<>();
-            }
-            conditionals.put(conditionTest, conditionalReturn);
-        }
-    }
-
-    public static class ArrayConditionalReturn extends Array {
-    }
-
-    public interface Conditional {}
-
-    //    public class MapConditional extends Pair implements Conditional {
-    public static class MapConditional extends Pair implements Conditional {
-        java.util.Map<ConditionTest, Map> conditionals;
-
-        public java.util.Map<ConditionTest, Map> getConditionals() {
-            return conditionals;
-        }
-
-        public void addConditional(ConditionTest conditionTest, Map conditionalReturn) {
-            if (conditionals == null) {
-                conditionals = new LinkedHashMap<>();
-            }
-            conditionals.put(conditionTest, conditionalReturn);
-        }
-    }
-
-    public class TopLevelConditional extends Structure {
+    public static class TopLevelConditional extends Structure {
         java.util.Map<ConditionTest, TopLevelConditionalReturn> conditionals;
 
         public java.util.Map<ConditionTest, TopLevelConditionalReturn> getConditionals() {
             return conditionals;
         }
 
-        public void addConditional(ConditionTest conditionTest, TopLevelConditionalReturn conditionalReturn) {
+        void addConditional(ConditionTest conditionTest, TopLevelConditionalReturn conditionalReturn) {
             if (conditionals == null) {
                 conditionals = new LinkedHashMap<>();
             }
@@ -203,10 +203,10 @@ public class RawModlObject extends ModlObject {
         }
     }
 
-    public class TopLevelConditionalReturn extends Structure {
+    public static class TopLevelConditionalReturn extends Structure {
         List<Structure> structures;
 
-        public void addStructure(Structure structure) {
+        void addStructure(Structure structure) {
             if (structures == null) {
                 structures = new LinkedList<>();
             }
