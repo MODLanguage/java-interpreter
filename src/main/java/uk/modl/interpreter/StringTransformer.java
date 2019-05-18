@@ -51,10 +51,10 @@ public class StringTransformer {
         }
         ModlObject modlObject = new ModlObject();
         if (stringToTransform.toLowerCase().equals("true")) {
-            return modlObject.new True();
+            return new ModlObject.True();
         }
         if (stringToTransform.toLowerCase().equals("false")) {
-            return modlObject.new False();
+            return new ModlObject.False();
         }
 
         // 5: Replace the strings as per the txt document attached "string-replacement.txt"
@@ -117,7 +117,7 @@ public class StringTransformer {
             }
         }
 
-        return modlObject.new String(stringToTransform);
+        return new ModlObject.String(stringToTransform);
     }
 
     private List<String> getPercentPartsFromString(String stringToTransform) {
@@ -313,8 +313,8 @@ Replace the part originally found (including graves) with the transformed subjec
         }
 
         if (value == null) {
-            return modlObject.new String(stringToTransform);
-            //            value = modlObject.new String(subject);
+            return new ModlObject.String(stringToTransform);
+            //            value = new ModlObject.String(subject);
         } else if (value instanceof ModlObject.String) {
             subject = ((ModlObject.String) value).string;
         } else if (value instanceof ModlObject.Number) {
@@ -332,7 +332,7 @@ Replace the part originally found (including graves) with the transformed subjec
 
         stringToTransform = stringToTransform.replace(percentPart, subject);
 
-        return modlObject.new String(stringToTransform);
+        return new ModlObject.String(stringToTransform);
     }
 
     private String runMethods(String subject, String remainder) {

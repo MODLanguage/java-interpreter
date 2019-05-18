@@ -152,7 +152,7 @@ public class RawModlObject extends ModlObject {
         }
     }
 
-    public class ArrayConditional extends Array implements Conditional {
+    public static class ArrayConditional extends Array implements Conditional {
         java.util.Map<ConditionTest, ArrayConditionalReturn> conditionals;
 
         public java.util.Map<ConditionTest, ArrayConditionalReturn> getConditionals() {
@@ -167,13 +167,13 @@ public class RawModlObject extends ModlObject {
         }
     }
 
-    public class ArrayConditionalReturn extends Array {
+    public static class ArrayConditionalReturn extends Array {
     }
 
     public interface Conditional {}
 
     //    public class MapConditional extends Pair implements Conditional {
-    public class MapConditional extends Pair implements Conditional {
+    public static class MapConditional extends Pair implements Conditional {
         java.util.Map<ConditionTest, Map> conditionals;
 
         public java.util.Map<ConditionTest, Map> getConditionals() {

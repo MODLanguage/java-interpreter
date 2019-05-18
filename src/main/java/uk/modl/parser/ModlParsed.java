@@ -861,7 +861,7 @@ public class ModlParsed extends MODLParserBaseListener {
                         int prevSymbol = ((TerminalNode) previous).getSymbol().getType();
                         int currentSymbol = ((TerminalNode) pt).getSymbol().getType();
 
-                        if (prevSymbol != MODLLexer.STRUCT_SEP && currentSymbol != MODLLexer.STRUCT_SEP) {
+                        if (prevSymbol == MODLLexer.COLON && currentSymbol == MODLLexer.COLON) {
                             ArrayItem arrayItem = handleEmptyArrayItem();
 
                             arrayItems.add(i++, arrayItem);
@@ -932,7 +932,7 @@ public class ModlParsed extends MODLParserBaseListener {
                             continue; // This allows empty arrays
                         }
 
-                        if (prevSymbol != MODLLexer.STRUCT_SEP && currentSymbol != MODLLexer.STRUCT_SEP) {
+                        if (prevSymbol == MODLLexer.STRUCT_SEP && currentSymbol == MODLLexer.STRUCT_SEP) {
 
                             // Create something for the blank array item
                             //

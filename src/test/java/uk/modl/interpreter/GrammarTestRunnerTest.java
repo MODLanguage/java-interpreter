@@ -69,7 +69,7 @@ public class GrammarTestRunnerTest extends TestCase {
             List<TestInput> list = mapper.readValue(fileStream, new TypeReference<LinkedList<TestInput>>() {
             });
             int testNumber = 1;
-            int startFromTestNumber = 212;
+            int startFromTestNumber = 0;
             for (TestInput testInput : list) {
                 if (testNumber >= startFromTestNumber) {
                     System.out.println("Running test number: " + testNumber);

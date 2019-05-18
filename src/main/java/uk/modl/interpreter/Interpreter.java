@@ -313,11 +313,11 @@ public class Interpreter {
                 if (newString.matches("^[0-9]*$")) {
                     throw new RuntimeException("Pair name " + rawPair.getKey().string + " is illegal");
                 }
-                rawPair.setKey(modlObject.new String(newString));
+                rawPair.setKey(new ModlObject.String(newString));
             }
         }
 
-        ModlObject.Pair pair = modlObject.new Pair();
+        ModlObject.Pair pair = new ModlObject.Pair();
 
         if (rawPair.getKey() == null) {
             return null;
@@ -359,7 +359,7 @@ public class Interpreter {
 
         }
 
-        pair.setKey(modlObject.new String(newKey));
+        pair.setKey(new ModlObject.String(newKey));
 
         if (pair.getModlValue() instanceof ModlObject.Array) {
             for (ModlValue value : ((ModlObject.Array) (rawPair.getModlValue())).getValues()) {
@@ -415,7 +415,7 @@ public class Interpreter {
 
     private boolean generateModlClassObject(ModlObject modlObject, RawModlObject.Pair rawPair, ModlObject.Pair pair,
                                             String originalKey, String newKey, Object parentPair) {
-        pair.setKey(modlObject.new String(newKey));
+        pair.setKey(new ModlObject.String(newKey));
 
         int numParams = 0;
         if (rawPair.getModlValue() != null) {
@@ -439,7 +439,7 @@ public class Interpreter {
         // If it's not already a map pair, and one of the parent classes in the class hierarchy includes pairs, then it is transformed to a map pair.
         if (anyClassContainsPairs(originalKey) || mapPairAlready(rawPair) || (hasParams)) {
             //        if (anyClassContainsPairs(newKey) || mapPairAlready(rawPair) || (hasParams)) {
-            pair.setKey(modlObject.new String(newKey)); // TODO Do we need to do this again here?!
+            pair.setKey(new ModlObject.String(newKey)); // TODO Do we need to do this again here?!
 
             List<ModlObject.Pair> pairs = null;
             boolean wasArray = false;
@@ -517,8 +517,8 @@ public class Interpreter {
                                 addNewClassParamValue(modlObject, pair, parentPair, currentClass, valueItem);
                             } else {
                                 int innerParamNum = 0;
-                                ModlObject.Pair innerPair = modlObject.new Pair();
-                                ModlObject.Pair valuePair = modlObject.new Pair();
+                                ModlObject.Pair innerPair = new ModlObject.Pair();
+                                ModlObject.Pair valuePair = new ModlObject.Pair();
                                 String fullClassName = currentClass; // TODO GET THIS FROM THE MODLOBJ!!
                                 try {
                                     String
@@ -531,12 +531,8 @@ public class Interpreter {
                                     fullClassName = nameString;
                                 } catch (Exception e) {
                                 }
-                                valuePair.setKey(modlObject.new String(fullClassName));
+                                valuePair.setKey(new ModlObject.String(fullClassName));
                                 for (ModlValue vi : ((ModlObject.Array) valueItem).getValues()) {
-                                    int valueItemSize = 1;
-                                    if (valueItem instanceof ModlObject.Array) {
-                                        valueItemSize = ((ModlObject.Array) valueItem).getValues().size();
-                                    }
 
                                     Map<String, Object> modlClassMap = (getModlClass(currentClass));
                                     String superclass = ((String) (modlClassMap.get("*superclass")));
@@ -549,7 +545,7 @@ public class Interpreter {
                                             ((ModlObject.String) (((LinkedHashMap<String,
                                                 LinkedList<ModlValue>>) modlClassObj).get(paramsKeyString).get(innerParamNum++)));
 
-                                                RawModlObject.Pair newRawPair = rawModlObject.new Pair();
+                                                RawModlObject.Pair newRawPair = new ModlObject.Pair();
                                         newRawPair.setKey(innerClassName);
                                                 newRawPair.addModlValue(vi);
 
@@ -591,13 +587,13 @@ public class Interpreter {
                                        String currentClass,
                                        ModlValue valueItem) {
         ModlValue newValue = interpret(modlObject, valueItem, parentPair);
-        ModlObject.Pair valuePair = modlObject.new Pair();
+        ModlObject.Pair valuePair = new ModlObject.Pair();
         String fullClassName = currentClass;
         try {
             fullClassName = ((ModlObject.String) ((ModlValue) getModlClass(currentClass).get("*name"))).string;
         } catch (Exception e) {
         }
-        valuePair.setKey(modlObject.new String(fullClassName));
+        valuePair.setKey(new ModlObject.String(fullClassName));
         valuePair.addModlValue(newValue);
         pair.addModlValue(valuePair);
     }
@@ -624,12 +620,12 @@ public class Interpreter {
         if (parentPair == null) {
             if (newKey.startsWith("_")) {
                 if (originalPair.getModlValue() instanceof ModlObject.Map) {
-                    originalPair.setKey(rawModlObject.new String(transformedKey));
+                    originalPair.setKey(new ModlObject.String(transformedKey));
                     Map newMap = new HashMap();
                     interpret(rawModlObject, (ModlObject.Map) (originalPair.getModlValue()), newMap);
                 }
                 if (originalPair.getModlValue() instanceof ModlObject.Array) {
-                    originalPair.setKey(rawModlObject.new String(transformedKey));
+                    originalPair.setKey(new ModlObject.String(transformedKey));
                     List newList = new LinkedList();
                     interpret(rawModlObject, (ModlObject.Array) (originalPair.getModlValue()), newList);
                 }
@@ -693,7 +689,7 @@ public class Interpreter {
                             map = (ModlObject.Map) pair.getModlValue();
                         }
                         if (map == null) {
-                            map = modlObject.new Map();
+                            map = new ModlObject.Map();
                             pair.addModlValue(map);
                         }
                         if (map.get(newMapPair.getKey()) != null) {
@@ -733,7 +729,7 @@ public class Interpreter {
             throw new RuntimeException("Illegal value for number transformation : " + value.toString());
         }
 
-        ModlObject.Number n = modlObject.new Number(newNumber);
+        ModlObject.Number n = new ModlObject.Number(newNumber);
         return n;
     }
 
@@ -759,7 +755,7 @@ public class Interpreter {
         }
 
 
-        ModlObject.String s = modlObject.new String(newString);
+        ModlObject.String s = new ModlObject.String(newString);
         return s;
     }
 
@@ -795,7 +791,7 @@ public class Interpreter {
         if (!(rawValueItem instanceof ModlObject.Array)) {
             return interpretValue(modlObject, rawValueItem, parentPair);
         }
-        ModlObject.Array array = modlObject.new Array();
+        ModlObject.Array array = new ModlObject.Array();
         for (ModlValue vi : (((ModlObject.Array) rawValueItem)).getValues()) {
             // TODO If this is an ArrayConditional, then get its list of values here
             if (vi instanceof RawModlObject.ArrayConditional) {
@@ -878,8 +874,8 @@ public class Interpreter {
                         // Only add the new key if it does not already exist in the pair!
                         continue;
                     }
-                    ModlObject.Pair newPair = modlObject.new Pair();
-                    newPair.setKey(modlObject.new String(entry.getKey()));
+                    ModlObject.Pair newPair = new ModlObject.Pair();
+                    newPair.setKey(new ModlObject.String(entry.getKey()));
                     newPair.addModlValue(interpret(modlObject, (ModlValue) (entry.getValue()), null));
                     if (pair.getModlValue() != null && pair.getModlValue() instanceof ModlObject.Map) {
                         ((ModlObject.Map) (pair.getModlValue())).addPair(newPair);
@@ -902,7 +898,7 @@ public class Interpreter {
             }
         } else {
             if (pair.getModlValue() instanceof ModlObject.Map) {
-                if (((ModlObject.Map) pair.getModlValue()).get(modlObject.new String(key)) != null) {
+                if (((ModlObject.Map) pair.getModlValue()).get(new ModlObject.String(key)) != null) {
                     return true;
                 }
             }
@@ -964,7 +960,7 @@ public class Interpreter {
                     if (originalPair.getModlValue() == null) {
                         return originalPair;
                     }
-                    RawModlObject.Pair pair = rawModlObject.new Pair();
+                    RawModlObject.Pair pair = new ModlObject.Pair();
                     pair.setKey(originalPair.getKey());
                     if (mostSuperClass.equals("str")) {
                         if (originalPair.getModlValue() instanceof ModlObject.String) {
@@ -1053,7 +1049,7 @@ public class Interpreter {
             return null;
         }
 
-        ModlObject.Map map = modlObject.new Map();
+        ModlObject.Map map = new ModlObject.Map();
 
         if (originalMap.getPairs() != null) {
             for (RawModlObject.Pair originalMapItem : originalMap.getPairs()) {
@@ -1100,7 +1096,7 @@ public class Interpreter {
         if (rawArray == null) {
             return null;
         }
-        ModlObject.Array array = modlObject.new Array();
+        ModlObject.Array array = new ModlObject.Array();
 
         if (rawArray.getValues() != null) {
             for (ModlValue originalArrayItem : rawArray.getValues()) {
@@ -1146,12 +1142,12 @@ public class Interpreter {
             RawModlObject.ConditionTest conditionalTest = originalConditionalEntry.getKey();
             if (evaluates(conditionalTest)) {
                 if (originalConditionalEntry.getValue() == null) {
-                    return modlObject.new True();
+                    return new ModlObject.True();
                 }
                 if (originalConditionalEntry.getValue().getValues().size() == 1) {
                     return interpret(modlObject, originalConditionalEntry.getValue().getValues().get(0), parentPair);
                 }
-                ModlValue returnValue = modlObject.new Array();
+                ModlValue returnValue = new ModlObject.Array();
                 for (ModlValue valueItem : originalConditionalEntry.getValue().getValues()) {
                     ModlValue v = interpret(modlObject, valueItem, parentPair);
                     ((ModlObject.Array) returnValue).addValue(v);
@@ -1159,7 +1155,7 @@ public class Interpreter {
                 return returnValue;
             }
             if (originalConditionalEntry.getValue() == null) {
-                return modlObject.new False();
+                return new ModlObject.False();
             }
 
         }
@@ -1511,7 +1507,7 @@ public class Interpreter {
 
     private ModlObject.False interpret(ModlObject modlObject, RawModlObject.False falseVal) {
         if (falseVal != null) {
-            ModlObject.False f = modlObject.new False();
+            ModlObject.False f = new ModlObject.False();
             return f;
         }
         return null;
@@ -1519,7 +1515,7 @@ public class Interpreter {
 
     private ModlObject.Null interpret(ModlObject modlObject, RawModlObject.Null val) {
         if (val != null) {
-            ModlObject.Null n = modlObject.new Null();
+            ModlObject.Null n = new ModlObject.Null();
             return n;
         }
         return null;
@@ -1527,7 +1523,7 @@ public class Interpreter {
 
     private ModlObject.True interpret(ModlObject modlObject, RawModlObject.True trueVal) {
         if (trueVal != null) {
-            ModlObject.True t = modlObject.new True();
+            ModlObject.True t = new ModlObject.True();
             return t;
         }
         return null;
@@ -1535,7 +1531,7 @@ public class Interpreter {
 
     private ModlObject.Number interpret(ModlObject modlObject, RawModlObject.Number originalNumber) {
         if (originalNumber != null) {
-            ModlObject.Number number = modlObject.new Number(originalNumber.number);
+            ModlObject.Number number = new ModlObject.Number(originalNumber.number);
             return number;
         }
         return null;

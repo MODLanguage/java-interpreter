@@ -150,11 +150,11 @@ public class ModlClassLoader {
          */
         // TODO Get this to work for including more files during the load. Anything to do?
         Map<String, Object> o = new LinkedHashMap<>();
-        RawModlObject.String superclass = rawModlObject.new String("map");
+        RawModlObject.String superclass = new ModlObject.String("map");
         o.put("*superclass", superclass);
-        RawModlObject.String name = rawModlObject.new String("o");
+        RawModlObject.String name = new ModlObject.String("o");
         o.put("*name", name);
-        RawModlObject.String output = rawModlObject.new String("map");
+        RawModlObject.String output = new ModlObject.String("map");
         o.put("*output", output);
 
 

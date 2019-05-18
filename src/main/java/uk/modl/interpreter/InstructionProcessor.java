@@ -17,23 +17,23 @@ public class InstructionProcessor {
 
     public static ModlValue processLoadInstruction(final List<String> filenames) {
         final ModlObject modlObject = new ModlObject();
-        ModlObject.Array result = modlObject.new Array();
+        ModlObject.Array result = new ModlObject.Array();
 
         for (final String filename : filenames) {
-            result.addValue(modlObject.new String(filename));
+            result.addValue(new ModlObject.String(filename));
         }
         return result;
     }
 
     public static ModlValue processClassInstruction(final Map<String, Map<String, Object>> classes) {
         final ModlObject modlObject = new ModlObject();
-        final ModlObject.Array result = modlObject.new Array();
+        final ModlObject.Array result = new ModlObject.Array();
 
         for (final String key : classes.keySet()) {
             // Create a map of the class details
-            final ModlObject.Map map = modlObject.new Map();
-            final ModlObject.String pairKey = modlObject.new String(key);
-            final ModlObject.Map classDetails = modlObject.new Map();
+            final ModlObject.Map map = new ModlObject.Map();
+            final ModlObject.String pairKey = new ModlObject.String(key);
+            final ModlObject.Map classDetails = new ModlObject.Map();
 
             final Map<String, Object> klass = classes.get(key);
 
@@ -51,7 +51,7 @@ public class InstructionProcessor {
                     addClassField(modlObject, classDetails, klass, k, k);
                 }
             }
-            final ModlObject.Pair pair = modlObject.new Pair(pairKey, classDetails);
+            final ModlObject.Pair pair = new ModlObject.Pair(pairKey, classDetails);
             map.addPair(pair);
             result.addValue(map);
         }
@@ -61,35 +61,35 @@ public class InstructionProcessor {
     private static void addClassField(ModlObject modlObject, ModlObject.Map classDetails, Map<String, Object> klass, String fieldName, String keyName) {
         final Object nameObject = klass.get(keyName);
         if (nameObject != null) {
-            final ModlObject.String classKeyObject = modlObject.new String(fieldName);
+            final ModlObject.String classKeyObject = new ModlObject.String(fieldName);
             if (nameObject instanceof String) {
                 final String value = (String) nameObject;
-                final ModlObject.String classValueObject = modlObject.new String(value);
-                classDetails.addPair(modlObject.new Pair(classKeyObject, classValueObject));
+                final ModlObject.String classValueObject = new ModlObject.String(value);
+                classDetails.addPair(new ModlObject.Pair(classKeyObject, classValueObject));
             } else if (nameObject instanceof ModlObject.String) {
                 final String value = ((ModlObject.String) nameObject).string;
-                ModlObject.String classValueObject = modlObject.new String(value);
-                classDetails.addPair(modlObject.new Pair(classKeyObject, classValueObject));
+                ModlObject.String classValueObject = new ModlObject.String(value);
+                classDetails.addPair(new ModlObject.Pair(classKeyObject, classValueObject));
             } else if (nameObject instanceof ModlObject.Array) {
                 final List<ModlValue> values = ((ModlObject.Array) nameObject).getValues();
-                final ModlObject.Array array = modlObject.new Array();
+                final ModlObject.Array array = new ModlObject.Array();
                 for (final ModlValue v : values) {
                     array.addValue(v);
                 }
-                classDetails.addPair(modlObject.new Pair(classKeyObject, array));
+                classDetails.addPair(new ModlObject.Pair(classKeyObject, array));
             } else {
                 final String value = "Unknown field type for class " + nameObject.getClass().getName();
-                ModlObject.String classValueObject = modlObject.new String(value);
-                classDetails.addPair(modlObject.new Pair(classKeyObject, classValueObject));
+                ModlObject.String classValueObject = new ModlObject.String(value);
+                classDetails.addPair(new ModlObject.Pair(classKeyObject, classValueObject));
             }
         }
     }
 
     private static void addClassParams(ModlObject modlObject, ModlObject.Map classDetails, Map<String, Object> klass, String fieldName) {
 
-        final ModlObject.String classKeyObject = modlObject.new String(fieldName);
+        final ModlObject.String classKeyObject = new ModlObject.String(fieldName);
 
-        final ModlObject.Array paramsArray = modlObject.new Array();
+        final ModlObject.Array paramsArray = new ModlObject.Array();
 
         for(final String key : klass.keySet()) {
             if(key.startsWith("*param")) {
@@ -97,7 +97,7 @@ public class InstructionProcessor {
 
                 if (nameObject instanceof List) {
                     final List<ModlObject> values = (List<ModlObject>) nameObject;
-                    final ModlObject.Array array = modlObject.new Array();
+                    final ModlObject.Array array = new ModlObject.Array();
                     for (final ModlValue v : values) {
                         array.addValue(v);
                     }
@@ -109,24 +109,24 @@ public class InstructionProcessor {
         }
 
         if (paramsArray.getModlValues().size() > 0) {
-            classDetails.addPair(modlObject.new Pair(classKeyObject, paramsArray));
+            classDetails.addPair(new ModlObject.Pair(classKeyObject, paramsArray));
         }
     }
 
     public static ModlValue processMethodInstruction(List<VariableMethodLoader.MethodDescriptor> methodList) {
         final ModlObject modlObject = new ModlObject();
-        final ModlObject.Array result = modlObject.new Array();
+        final ModlObject.Array result = new ModlObject.Array();
         for (final VariableMethodLoader.MethodDescriptor mthd : methodList) {
             // Create a map of the transform details
-            final ModlObject.Map map = modlObject.new Map();
-            final ModlObject.String pairKey = modlObject.new String(mthd.id);
-            final ModlObject.Map methodDetails = modlObject.new Map();
+            final ModlObject.Map map = new ModlObject.Map();
+            final ModlObject.String pairKey = new ModlObject.String(mthd.id);
+            final ModlObject.Map methodDetails = new ModlObject.Map();
 
-            //methodDetails.addPair(modlObject.new Pair(modlObject.new String("id"), modlObject.new String(mthd.id)));
-            methodDetails.addPair(modlObject.new Pair(modlObject.new String("name"), modlObject.new String(mthd.name)));
-            methodDetails.addPair(modlObject.new Pair(modlObject.new String("transform"), modlObject.new String(mthd.transform)));
+            //methodDetails.addPair(new ModlObject.Pair(new ModlObject.String("id"), new ModlObject.String(mthd.id)));
+            methodDetails.addPair(new ModlObject.Pair(new ModlObject.String("name"), new ModlObject.String(mthd.name)));
+            methodDetails.addPair(new ModlObject.Pair(new ModlObject.String("transform"), new ModlObject.String(mthd.transform)));
 
-            final ModlObject.Pair pair = modlObject.new Pair(pairKey, methodDetails);
+            final ModlObject.Pair pair = new ModlObject.Pair(pairKey, methodDetails);
             map.addPair(pair);
             result.addValue(map);
         }

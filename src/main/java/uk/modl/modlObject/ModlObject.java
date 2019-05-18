@@ -35,7 +35,7 @@ public class ModlObject extends ModlValue {
     @Override
     public boolean isModlObject() { return true; };
 
-    public abstract class Structure extends ModlValue {}
+    public abstract static class Structure extends ModlValue {}
 
     protected List<Structure> structures = new LinkedList<>();
 
@@ -81,8 +81,8 @@ public class ModlObject extends ModlValue {
         return structures.get(index);
     }
 
-//    public class Map implements Structure, ModlValue {
-    public class Map extends Structure {
+//    public static class Map implements Structure, ModlValue {
+    public static class Map extends Structure {
 
         @Override
         public boolean isMap() { return true; };
@@ -140,8 +140,8 @@ public class ModlObject extends ModlValue {
 
     }
 
-//    public class Array implements Structure, ModlValue {
-    public class Array extends Structure {
+//    public static class Array implements Structure, ModlValue {
+    public static class Array extends Structure {
 
         @Override
         public boolean isArray() { return true; };
@@ -177,8 +177,8 @@ public class ModlObject extends ModlValue {
 
     }
 
-//    public class Pair implements Structure, ModlValue {
-    public class Pair extends Structure {
+//    public static class Pair implements Structure, ModlValue {
+    public static class Pair extends Structure {
 
         @Override
         public boolean isPair() { return true; };
@@ -251,7 +251,7 @@ public class ModlObject extends ModlValue {
         }
     }
 
-    public class String extends ModlValue {
+    public static class String extends ModlValue {
 
         @Override
         public boolean isString() { return true; };
@@ -276,7 +276,7 @@ public class ModlObject extends ModlValue {
 
     }
 
-    public class Number extends ModlValue {
+    public static class Number extends ModlValue {
 
         @Override
         public boolean isNumber() { return true; };
@@ -297,7 +297,7 @@ public class ModlObject extends ModlValue {
 
     }
 
-    public class True extends ModlValue {
+    public static class True extends ModlValue {
 
         @Override
         public boolean isTrue() { return true; };
@@ -312,7 +312,7 @@ public class ModlObject extends ModlValue {
 
     }
 
-    public class False extends ModlValue {
+    public static class False extends ModlValue {
 
         @Override
         public boolean isFalse() { return true; };
@@ -326,7 +326,7 @@ public class ModlObject extends ModlValue {
         }
     }
 
-    public class Null extends ModlValue {
+    public static class Null extends ModlValue {
 
         @Override
         public boolean isNull() { return true; };

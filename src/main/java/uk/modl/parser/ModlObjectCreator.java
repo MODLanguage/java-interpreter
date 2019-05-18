@@ -94,7 +94,7 @@ public class ModlObjectCreator {
             return null;
         }
 
-        RawModlObject.Map map = rawModlObject.new Map();
+        RawModlObject.Map map = new RawModlObject.Map();
 
         if (parsedMap.getMapItems() != null) {
             for (ModlParsed.MapItem mapItemParsed : parsedMap.getMapItems()) {
@@ -277,9 +277,9 @@ public class ModlObjectCreator {
         if (pairParsed == null) {
             return null;
         }
-        RawModlObject.Pair pair = rawModlObject.new Pair();
+        RawModlObject.Pair pair = new RawModlObject.Pair();
 
-        pair.setKey(rawModlObject.new String(pairParsed.getKey()));
+        pair.setKey(new RawModlObject.String(pairParsed.getKey()));
 
         if (pairParsed.getKey() != null &&  (pairParsed.getKey().toLowerCase().equals("*l") || pairParsed.getKey().toLowerCase().equals("*load"))) {
             // Make a new Pair for each valueItem or item in the array for the IMPORT statement!
@@ -321,26 +321,26 @@ public class ModlObjectCreator {
                 if (count++ == array.getValues().size()) {
                     isFinal = true;
                 }
-                RawModlObject.Pair pair = rawModlObject.new Pair();
+                RawModlObject.Pair pair = new RawModlObject.Pair();
                 String key = pairParsed.getKey();
                 if (!isFinal) {
                     key = key.toLowerCase();
                 }
-                pair.setKey(rawModlObject.new String(key));
+                pair.setKey(new RawModlObject.String(key));
 //                if (v instanceof RawModlObject.Number) {
-//                    v = rawModlObject.new String(((RawModlObject.Number)v).number);
+//                    v = new RawModlObject.String(((RawModlObject.Number)v).number);
 //                }
                 pair.addModlValue(v);
                 structures.add(pair);
             }
         } else {
             if (pairParsed.getValueItem() != null) {
-                    RawModlObject.Pair pair = rawModlObject.new Pair();
-                    pair.setKey(rawModlObject.new String(pairParsed.getKey()));
+                    RawModlObject.Pair pair = new RawModlObject.Pair();
+                    pair.setKey(new RawModlObject.String(pairParsed.getKey()));
                     ModlParsed.ValueItem valueParsed = pairParsed.getValueItem();
                     ModlValue v = processModlParsed(rawModlObject, valueParsed, pair);
 //                    if (v instanceof RawModlObject.Number) {
-//                        v = rawModlObject.new String(((RawModlObject.Number)v).number);
+//                        v = new RawModlObject.String(((RawModlObject.Number)v).number);
 //                    }
                     pair.addModlValue(v);
                     structures.add(pair);
@@ -353,7 +353,7 @@ public class ModlObjectCreator {
         if (arrayParsed == null) {
             return null;
         }
-        RawModlObject.Array array = rawModlObject.new Array();
+        RawModlObject.Array array = new RawModlObject.Array();
 
         if (arrayParsed.getAbstractArrayItems() != null) {
             for (ModlParsed.AbstractArrayItem arrayItemParsed : arrayParsed.getAbstractArrayItems()) {
@@ -369,7 +369,7 @@ public class ModlObjectCreator {
                         array.addValue(value);
                     }
                 } else if (arrayItemParsed instanceof ModlParsed.NbArray) {
-                    ModlObject.Array nbArray = rawModlObject.new Array();
+                    ModlObject.Array nbArray = new RawModlObject.Array();
                     for (ModlParsed.ArrayItem ai : ((ModlParsed.NbArray)arrayItemParsed).getArrayItems()) {
                         ModlValue value = processModlParsed(rawModlObject, ai);
                         if (value != null) {
@@ -389,7 +389,7 @@ public class ModlObjectCreator {
         if (nbArray == null || nbArray.getArrayItems().size() == 0) {
             return null;
         }
-        ModlObject.Array array = rawModlObject.new Array();
+        ModlObject.Array array = new RawModlObject.Array();
         for (ModlParsed.ArrayItem arrayItem : nbArray.getArrayItems()) {
             ModlValue value = processModlParsed(rawModlObject, arrayItem);
             array.addValue(value);
@@ -445,7 +445,7 @@ public class ModlObjectCreator {
 
     private static RawModlObject.False processModlParsed(RawModlObject rawModlObject, ModlParsed.False falseVal) {
         if (falseVal != null) {
-            RawModlObject.False f = rawModlObject.new False();
+            RawModlObject.False f = new RawModlObject.False();
             return f;
         }
         return null;
@@ -453,7 +453,7 @@ public class ModlObjectCreator {
 
     private static RawModlObject.Null processModlParsed(RawModlObject rawModlObject, ModlParsed.Null val) {
         if (val != null) {
-            RawModlObject.Null n = rawModlObject.new Null();
+            RawModlObject.Null n = new RawModlObject.Null();
             return n;
         }
         return null;
@@ -461,7 +461,7 @@ public class ModlObjectCreator {
 
     private static RawModlObject.True processModlParsed(RawModlObject rawModlObject, ModlParsed.True trueVal) {
         if (trueVal != null) {
-            RawModlObject.True t = rawModlObject.new True();
+            RawModlObject.True t = new RawModlObject.True();
             return t;
         }
         return null;
@@ -478,7 +478,7 @@ ElseIf all chars are numbers except one and that char is a dot in position two o
 Else it’s a string.
 End
              */
-            RawModlObject.Number n = rawModlObject.new Number(number.string);
+            RawModlObject.Number n = new RawModlObject.Number(number.string);
             return n;
         }
         return null;
@@ -486,7 +486,7 @@ End
 
     private static RawModlObject.String processModlParsed(RawModlObject rawModlObject, ModlParsed.String string) {
         if (string != null) {
-            RawModlObject.String str = rawModlObject.new String(string.string);
+            RawModlObject.String str = new RawModlObject.String(string.string);
             return str;
         }
         return null;
@@ -501,7 +501,7 @@ End
             }
 //            RawModlObject.Quoted q = rawModlObject.new Quoted(s);
 //            return q;
-            RawModlObject.String str = rawModlObject.new String(s);
+            RawModlObject.String str = new RawModlObject.String(s);
             return str;
         }
         return null;
@@ -539,7 +539,7 @@ End
         if (conditionalParsed == null) {
             return null;
         }
-        RawModlObject.ArrayConditional conditional = rawModlObject.new ArrayConditional();
+        RawModlObject.ArrayConditional conditional = new RawModlObject.ArrayConditional();
         if (conditionalParsed.getArrayConditionalReturns() != null) {
             for (Map.Entry<ModlParsed.ConditionTest, ModlParsed.ArrayConditionalReturn> conditionalParsedEntry : conditionalParsed.getArrayConditionalReturns().entrySet()) {
                 conditional.addConditional(processModlParsed(rawModlObject, conditionalParsedEntry.getKey()),
@@ -553,7 +553,7 @@ End
         if (conditionalReturnParsed == null) {
             return null;
         }
-        RawModlObject.ArrayConditionalReturn conditionalReturn = rawModlObject.new ArrayConditionalReturn();
+        RawModlObject.ArrayConditionalReturn conditionalReturn = new RawModlObject.ArrayConditionalReturn();
         if (conditionalReturnParsed.getArrayItems() != null) {
             for (ModlParsed.ArrayItem valueParsed : conditionalReturnParsed.getArrayItems()) {
                 ModlValue value = processModlParsed(rawModlObject, valueParsed);
@@ -567,7 +567,7 @@ End
         if (conditionalParsed == null) {
             return null;
         }
-        RawModlObject.MapConditional conditional = rawModlObject.new MapConditional();
+        RawModlObject.MapConditional conditional = new RawModlObject.MapConditional();
         for (Map.Entry<ModlParsed.ConditionTest, ModlParsed.MapConditionalReturn> conditionalParsedEntry : conditionalParsed.getMapConditionals().entrySet()) {
             conditional.addConditional(processModlParsed(rawModlObject, conditionalParsedEntry.getKey()),
                     processModlParsed(rawModlObject, conditionalParsedEntry.getValue()));
@@ -579,7 +579,7 @@ End
         if (conditionalReturnParsed == null) {
             return null;
         }
-        RawModlObject.Map map = rawModlObject.new Map();
+        RawModlObject.Map map = new RawModlObject.Map();
         if (conditionalReturnParsed.getMapItems() != null) {
             for (ModlParsed.MapItem valueParsed : conditionalReturnParsed.getMapItems()) {
                 RawModlObject.Pair p = processModlParsed(rawModlObject, valueParsed);
