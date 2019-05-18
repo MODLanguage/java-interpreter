@@ -20,14 +20,79 @@ public class GrammarTestRunnerTest extends TestCase {
 
     ObjectMapper mapper = new ObjectMapper();
 
-    public static class TestInput {
-        public TestInput() {
+    @Test
+    public void testBaseTest() throws Exception {
+        // TODO Go through grammar_tests/base_tests.json making sure all expected stuff is correct
+        try (InputStream fileStream = new FileInputStream("grammar_tests/base_tests.json")) {
+            List<TestInput> list = mapper.readValue(fileStream, new TypeReference<LinkedList<TestInput>>() {
+            });
+            int testNumber = 1;
+            int
+                startFromTestNumber =
+                0;// Use this to skip tests manually to make it easier for debugging a specific test.
+            for (TestInput testInput : list) {
+                if (testNumber >= startFromTestNumber) {
+                    System.out.println("Running test number: " + testNumber);
+                    checkValidTestInput(testInput);
+                }
+                testNumber++;
+            }
         }
 
+    }
+
+    private void checkValidTestInput(TestInput testInput) throws IOException {
+        System.out.println("Input : " + testInput.input);
+        System.out.println("Minimised : " + testInput.minimised_modl);
+        System.out.println("Expected : " + testInput.expected_output);
+
+        ModlObject modlObject = Interpreter.interpret(testInput.input);
+        String output = JsonPrinter.printModl(modlObject);
+        System.out.println("Output : " + output);
+        assertEquals(testInput.expected_output.replace(" ", "").replace("\n", "").replace("\r", ""),
+                     output.replace(" ", "").replace("\n", "").replace("\r", ""));
+
+    }
+
+    @Test
+    public void testErrorTest() throws Exception {
+        // Go through grammar_test/error_tests.json making sure all tests raise an error of some kind
+        try (InputStream fileStream = new FileInputStream("grammar_tests/error_tests.json")) {
+            List<String> list = mapper.readValue(fileStream, new TypeReference<LinkedList<String>>() {
+            });
+            int testNumber = 1;
+            int
+                startFromTestNumber =
+                0;// Use this to skip tests manually to make it easier for debugging a specific test.
+            for (String testInput : list) {
+                if (testNumber >= startFromTestNumber) {
+                    System.out.println("Running test number: " + testNumber);
+                    checkInValidTestInput(testInput);
+                }
+                testNumber++;
+            }
+        }
+
+    }
+
+    private void checkInValidTestInput(String testInput) {
+        System.out.println("Failing Input : " + testInput);
+        try {
+            ModlObject modlObject = Interpreter.interpret(testInput);
+            fail("Expected error");
+        } catch (Exception e) {
+            // OK
+        }
+    }
+
+    public static class TestInput {
         String input;
         String minimised_modl;
         String expected_output;
-        String [] tested_features;
+        String[] tested_features;
+
+        public TestInput() {
+        }
 
         public String[] getTested_features() {
             return tested_features;
@@ -59,63 +124,6 @@ public class GrammarTestRunnerTest extends TestCase {
 
         public void setExpected_output(String expected_output) {
             this.expected_output = expected_output;
-        }
-    }
-
-    @Test
-    public void testBaseTest() throws Exception {
-        // TODO Go through grammar_tests/base_tests.json making sure all expected stuff is correct
-        try (InputStream fileStream = new FileInputStream("grammar_tests/base_tests.json")) {
-            List<TestInput> list = mapper.readValue(fileStream, new TypeReference<LinkedList<TestInput>>() {
-            });
-            int testNumber = 1;
-            int
-                startFromTestNumber =
-                0;// Use this to skip tests manually to make it easier for debugging a specific test.
-            for (TestInput testInput : list) {
-                if (testNumber >= startFromTestNumber) {
-                    System.out.println("Running test number: " + testNumber);
-                    checkValidTestInput(testInput);
-                }
-                testNumber++;
-            }
-        }
-
-    }
-
-    private void checkValidTestInput(TestInput testInput) throws IOException {
-        System.out.println("Input : " + testInput.input);
-        System.out.println("Minimised : " + testInput.minimised_modl);
-        System.out.println("Expected : " + testInput.expected_output);
-
-        ModlObject modlObject = Interpreter.interpret(testInput.input);
-        String output = JsonPrinter.printModl(modlObject);
-        System.out.println("Output : " + output);
-        assertEquals(testInput.expected_output.replace(" ", "").replace("\n", "").replace("\r", ""),
-                output.replace(" ", "").replace("\n", "").replace("\r", ""));
-
-    }
-
-    @Test
-    public void testErrorTest() throws Exception {
-        // Go through grammar_test/error_tests.json making sure all tests raise an error of some kind
-        try (InputStream fileStream = new FileInputStream("grammar_tests/error_tests.json")) {
-            List<String> list = mapper.readValue(fileStream, new TypeReference<LinkedList<String>>() {
-            });
-            for (String testInput : list) {
-                checkInValidTestInput(testInput);
-            }
-        }
-
-    }
-
-    private void checkInValidTestInput(String testInput) {
-        System.out.println("Failing Input : " + testInput);
-        try {
-            ModlObject modlObject = Interpreter.interpret(testInput);
-            fail("Expected error");
-        } catch (Exception e) {
-            // OK
         }
     }
 

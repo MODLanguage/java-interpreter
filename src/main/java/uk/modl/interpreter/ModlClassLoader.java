@@ -52,7 +52,10 @@ class ModlClassLoader {
         if (id == null) {
             throw new RuntimeException("Can't find *id in *class");
         }
-        klasses.put(id, values);
+        if (klasses.containsKey(id)) {
+            throw new RuntimeException("Interpreter Error: Class name or id already defined - cannot redefine: " + id);
+        }
+
         values.put("*id", id);
         String superclass = getPairValueFor(structure, "*superclass", interpreter);
         if (superclass == null) {
@@ -67,6 +70,23 @@ class ModlClassLoader {
             name = id;
         }
         values.put("*name", name); // TODO ???
+
+        // Is the name already defined as an id or name?
+        if (klasses.containsKey(name)) {
+            throw new RuntimeException("Interpreter Error: Class name or id already defined - cannot redefine: " +
+                                       name);
+        } else {
+            for (Map<String, Object> kl : klasses.values()) {
+                final String existingName = kl.get("*name").toString();
+                if (existingName.equals(name) || existingName.equals(id)) {
+                    throw new RuntimeException("Interpreter Error: Class name or id already defined - cannot redefine: " +
+                                               name);
+                }
+            }
+        }
+
+        klasses.put(id, values);
+
         // Go through the structure and find all the new values and add them (replacing any already there from superklass)
         for (RawModlObject.Pair mapItem : ((ModlObject.Map) ((ModlObject.Pair) structure).getModlValue()).getPairs()) {
             // Remember to avoid "_id" and "_sc" !
@@ -96,9 +116,18 @@ class ModlClassLoader {
 
     private static void loadParams(HashMap<String, Object> values, RawModlObject.Array array) {
         // _params : add like _params<n> where n is number of values in array
+        int previousParamSize = -1;
         for (ModlValue v : array.getValues()) {
             RawModlObject.Array a = (ModlObject.Array) v;
-            String key = "*params" + a.getValues().size();
+            final int numberOfParams = a.getValues().size();
+            if (numberOfParams > previousParamSize) {
+                previousParamSize = numberOfParams;
+            } else {
+                throw new RuntimeException(
+                    "Interpreter Error: Error: Key lists in *assign are not in ascending order of list length: " +
+                    a.toString());
+            }
+            String key = "*params" + numberOfParams;
             List<ModlValue> vs = new LinkedList<>(a.getValues());
             values.put(key, vs);
         }

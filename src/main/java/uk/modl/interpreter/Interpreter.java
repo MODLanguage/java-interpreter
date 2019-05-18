@@ -321,6 +321,26 @@ public class Interpreter {
             rawPair = transformValue(rawPair);
         }
 
+        // We might now have a de-referenced key this is all numeric so catch it here.
+        boolean keyIsAllDigits = true;
+        char invalidCharacter = '\0';
+        for (char c : newKey.toCharArray()) {
+            if (!Character.isDigit(c)) {
+                keyIsAllDigits = false;
+            }
+            if ("!$@-+'#^£&".contains("" + c)) {
+                invalidCharacter = c;
+            }
+        }
+        if (keyIsAllDigits) {
+            throw new RuntimeException("Entirely numeric keys are not allowed: " + newKey);
+        }
+        if (invalidCharacter != '\0') {
+            throw new RuntimeException("Interpreter Error: Invalid key - '" +
+                                       invalidCharacter +
+                                       "' character not allowed: " +
+                                       newKey);
+        }
         // IF WE ALREADY HAVE A PAIR WITH THIS NAME, AND THE NAME IS UPPER-CASE, THEN RAISE AN ERROR
         if (newKey != null) {
             if (newKey.toUpperCase().equals(newKey)) {
@@ -422,6 +442,12 @@ public class Interpreter {
         numParams = getNumParams(rawPair, numParams);
         String paramsKeyString = "*params" + numParams;
         Object obj = findParamsObject(rawPair, paramsKeyString);
+        if (obj == null && rawPair.getModlValue() instanceof ModlObject.Array) {
+            throw new RuntimeException(
+                "Interpreter Error: No key list of the correct length in class t - looking for one of length " +
+                numParams);
+        }
+
         boolean hasParams = (obj != null);
 
         // If it's not already a map pair, and one of the parent classes in the class hierarchy includes pairs, then it is transformed to a map pair.
@@ -646,8 +672,11 @@ public class Interpreter {
                 }
             }
             if (originalPair.getModlValue() instanceof ModlObject.String) {
+                final ModlValue
+                    transformedValue =
+                    transformString(((ModlObject.String) (originalPair.getModlValue())).string);
                 valuePairs.put(transformedKey,
-                               transformString(((ModlObject.String) (originalPair.getModlValue())).string));
+                               transformedValue);
             } else {
                 valuePairs.put(transformedKey, originalPair.getModlValue());
             }

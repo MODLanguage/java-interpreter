@@ -104,7 +104,17 @@ class StringTransformer {
         for (String percentPart : percentParts) {
             ModlValue ret = runObjectReferencing(percentPart, stringToTransform, false);
             if (ret instanceof ModlObject.String) {
-                stringToTransform = ((ModlObject.String) ret).string;
+                final ModlObject.String theString = (ModlObject.String) ret;
+                if (stringToTransform.equals(theString.string) &&
+                    !stringToTransform.startsWith("%*") &&
+                    stringToTransform.contains(".") &&
+                    stringToTransform.contains("%") &&
+                    stringToTransform.indexOf("%") == stringToTransform.lastIndexOf("%")) {
+                    throw new RuntimeException("Interpreter Error: Cannot resolve reference in: \"" +
+                                               stringToTransform +
+                                               "\"");
+                }
+                stringToTransform = theString.string;
             } else if (ret instanceof ModlObject.Number) {
                 if (percentPart.equals(stringToTransform)) {
                     return ret;

@@ -202,6 +202,9 @@ class VariableMethods {
         if (methods == null) {
             initialiseMethods();
         }
+        if (methods.keySet().contains(shortName)) {
+            throw new RuntimeException("Interpreter Error: Duplicate method id: " + shortName);
+        }
         methods.put(shortName, taskRunner);
     }
 
