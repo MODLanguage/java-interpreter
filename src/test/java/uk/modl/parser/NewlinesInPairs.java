@@ -11,10 +11,10 @@ import java.io.IOException;
  */
 public class NewlinesInPairs {
     private final static String[][] expected = {{
-            "a = \n" +
-                    "     b =\n" +
-                    "     c\n" +
-                    "d=e", "[ {\n" +
+                                                    "a = \n" +
+                                                    "     b =\n" +
+                                                    "     c;\n" +
+                                                    "d=e", "[ {\n" +
             "  \"a\" : {\n" +
             "    \"b\" : \"c\"\n" +
             "  }\n" +

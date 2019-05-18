@@ -15,15 +15,15 @@ import java.util.List;
 public class ApiTest extends TestCase {
 
     String inputString = "grandparent(\n" +
-            "  val=g\n" +
-            "  parent(\n" +
-            "    val=p\n" +
-            "    child(\n" +
-            "      val=c\n" +
-            "      letters[a;b;c;d;e]\n" +
-            "    )\n" +
-            "  )\n" +
-            ")";
+                         "  val=g;\n" +
+                         "  parent(\n" +
+                         "    val=p;\n" +
+                         "    child(\n" +
+                         "      val=c;\n" +
+                         "      letters[a;b;c;d;e;]\n" +
+                         "    )\n" +
+                         "  )\n" +
+                         ")";
 
     @Test
     public void testApi() throws Exception {
@@ -45,7 +45,7 @@ public class ApiTest extends TestCase {
 
         ModlValue grandparentValue = modlObject.get(0);
         assertTrue(grandparentValue.isPair());
-        assertTrue(((ModlObject.Pair)grandparentValue).getModlValue().isMap());
+        assertTrue(((ModlObject.Pair) grandparentValue).getModlValue().isMap());
         assertFalse(grandparentValue.isModlObject());
 
         grandparentValue = modlObject.get("grandparent");
@@ -54,17 +54,17 @@ public class ApiTest extends TestCase {
 
         ModlValue val = grandparentValue.get(0);
         assertTrue(val.isPair());
-        assertEquals("g", ((ModlObject.String)((ModlObject.Pair)val).getModlValue()).string);
+        assertEquals("g", ((ModlObject.String) ((ModlObject.Pair) val).getModlValue()).string);
         assertEquals("g", ((ModlObject.Pair) val).getModlValue().getValue());
 
         val = grandparentValue.get("val");
         assertTrue(val.isString());
-        assertEquals("g", ((ModlObject.String)val).string);
+        assertEquals("g", ((ModlObject.String) val).string);
         assertEquals("g", val.getValue());
 
         ModlValue parent = grandparentValue.get(1);
         assertTrue(parent.isPair());
-        assertTrue(((ModlObject.Pair)parent).getModlValue().isMap());
+        assertTrue(((ModlObject.Pair) parent).getModlValue().isMap());
 
         parent = grandparentValue.get("parent");
         assertTrue(parent.isMap());
@@ -72,7 +72,7 @@ public class ApiTest extends TestCase {
 
         val = parent.get("val");
         assertTrue(val.isString());
-        assertEquals("p", ((ModlObject.String)val).string);
+        assertEquals("p", ((ModlObject.String) val).string);
         assertEquals("p", val.getValue());
 
         ModlValue child = parent.get("child");
@@ -81,7 +81,7 @@ public class ApiTest extends TestCase {
 
         val = child.get("val");
         assertTrue(val.isString());
-        assertEquals("c", ((ModlObject.String)val).string);
+        assertEquals("c", ((ModlObject.String) val).string);
         assertEquals("c", val.getValue());
 
         ModlValue letters = child.get("letters");
@@ -98,13 +98,13 @@ public class ApiTest extends TestCase {
         ModlObject modlObject = getModlObject();
 
         // Now iterate through the object without knowing what is there, printing everything as we go
-        // We'd like to use a generic transform here, so that we don't have to inspect each bloody thing
+        // We'd like to use a generic transform here, so that we don't have to inspect each thing
 
         String traversal = traverseModlValue(modlObject, false);
         System.out.println(traversal);
 
-        assertEquals(inputString.replace(" ", "").replace("\n", "").replace("=",""),
-                traversal.replace(" ", "").replace("\n", "").replace("=",""));
+        assertEquals(inputString.replace(" ", "").replace("\n", "").replace("=", ""),
+                     traversal.replace(" ", "").replace("\n", "").replace("=", ""));
     }
 
     private String traverseModlValue(ModlValue modlValue, boolean isLast) {
@@ -136,9 +136,7 @@ public class ApiTest extends TestCase {
             }
         } else {
             ret = modlValue.getValue().toString();
-            if (!isLast) {
-                ret += ";";
-            }
+            ret += ";";
         }
         return ret;
     }

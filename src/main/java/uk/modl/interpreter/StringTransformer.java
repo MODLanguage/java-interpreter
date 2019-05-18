@@ -496,6 +496,10 @@ Replace the part originally found (including graves) with the transformed subjec
         if (isNested) {
             keyHolder[0] = remainder;
             return getValueForReferenceRecursive(newCtx, keyHolder);
+        } else {
+            if (newCtx == null) {
+                keyHolder[0] = currentKey;
+            }
         }
         // Success, return the value we found.
         return newCtx;

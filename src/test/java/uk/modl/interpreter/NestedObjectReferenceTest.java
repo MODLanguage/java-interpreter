@@ -11,70 +11,70 @@ import java.util.List;
 public class NestedObjectReferenceTest {
 
     private final String nestedTestString01 = "_test=(\n" +
-            "  numbers=[[1;2;3;4;5];[6;7;8;9;10]]\n" +
-            ")\n" +
-            " \n" +
-            "testing=%test>numbers>0>0";
+                                              "  numbers=[[1;2;3;4;5];[6;7;8;9;10]]\n" +
+                                              ");\n" +
+                                              " \n" +
+                                              "testing=%test.numbers.0.0";
 
     private final String nestedTestString02 = "_test=(\n" +
-            "  numbers=(\"one\"=1)\n" +
-            ")\n" +
-            " \n" +
-            "testing = this is a string that includes a reference with a letter s after it `%test>numbers>one`s";
+                                              "  numbers=(\"one\"=1)\n" +
+                                              ");\n" +
+                                              " \n" +
+                                              "testing = this is a string that includes a reference with a letter s after it `%test.numbers.one`s";
 
     private final String nestedTestString03 = "_test=(\n" +
-            "  numbers=(\"one\"=1)\n" +
-            ")\n" +
-            " \n" +
-            "testing = this is a string that includes a reference with a letter s after it %test>numbers>ones";
+                                              "  numbers=(\"one\"=1)\n" +
+                                              ");\n" +
+                                              " \n" +
+                                              "testing = this is a string that includes a reference with a letter s after it %test.numbers.ones";
 
     private final String nestedTestString04 = "_test=(\n" +
-            "  numbers=(\"v\"=TEST)\n" +
-            ")\n" +
-            " \n" +
-            "testing = this is a string that includes extra transforms for the value `%test>numbers>v.d`_value";
+                                              "  numbers=(\"v\"=TEST)\n" +
+                                              ");\n" +
+                                              " \n" +
+                                              "testing = this is a string that includes extra transforms for the value `%test.numbers.v.d`_value";
 
     private final String nestedTestString05 = "_test=(\n" +
-            "  first=(\"v\"=TEST)\n" +
-            "  second=(\"v\"=TEST2)\n" +
-            ")\n" +
-            " \n" +
-            "testing = this is a string that includes extra transforms for the value `%test>second>v.d`_value";
+                                              "  first=(\"v\"=TEST);\n" +
+                                              "  second=(\"v\"=TEST2)\n" +
+                                              ");\n" +
+                                              " \n" +
+                                              "testing = this is a string that includes extra transforms for the value `%test.second.v.d`_value";
 
     private final String nestedTestString06 = "_test=(\n" +
-            "  first=(\"v1\"=one)\n" +
-            "  second=(\"v2\"=two:three)\n" +
-            ")\n" +
-            " \n" +
-            "testing = \"`%test>second>v2>1`\"";
+                                              "  first=(\"v1\"=one);\n" +
+                                              "  second=(\"v2\"=two:three)\n" +
+                                              ");\n" +
+                                              " \n" +
+                                              "testing = \"`%test.second.v2.1`\"";
 
     private final String nestedTestString07 = "_test=(\n" +
-            "  first=(\"v1\"=[one])\n" +
-            "  second=(\"v2\"=two:three)\n" +
-            ")\n" +
-            " \n" +
-            "testing = \"`%test>first>v1>0``%test>second>v2>0``%test>second>v2>1`\"";
+                                              "  first=(\"v1\"=[one]);\n" +
+                                              "  second=(\"v2\"=two:three)\n" +
+                                              ");\n" +
+                                              " \n" +
+                                              "testing = \"`%test.first.v1.0``%test.second.v2.0``%test.second.v2.1`\"";
 
     private final String nestedTestString08 = "_test=(\n" +
-            "  first=(\"v1\"=(one=(two=three)))\n" +
-            ")\n" +
-            " \n" +
-            "testing = \"`%test>first>v1>0>0>0`\"";
+                                              "  first=(\"v1\"=(one=(two=three)))\n" +
+                                              ");\n" +
+                                              " \n" +
+                                              "testing = \"`%test.first.v1.0.0.0`\"";
 
     private final String nestedTestString09 = "_test=(\n" +
-            "  first=(\"v1\"=(one=(two=three)))\n" +
-            ")\n" +
-            " \n" +
-            "testing = \"`%test>first>v1>one>two`\"";
+                                              "  first=(\"v1\"=(one=(two=three)))\n" +
+                                              ");\n" +
+                                              " \n" +
+                                              "testing = \"`%test.first.v1.one.two`\"";
 
-    private final String nestedTestString10 = "test=(a=b=c=d=f)\n" +
-            "testing=%test>a>b>c>d";
+    private final String nestedTestString10 = "test=(a=b=c=d=f);\n" +
+                                              "testing=%test.a.b.c.d";
 
-    private final String nestedTestString11 = "a(b(c(d(e(f=1)))))\n" +
-            "testing=%a>b>c>d>e>f";
+    private final String nestedTestString11 = "a(b(c(d(e(f=1)))));\n" +
+                                              "testing=%a.b.c.d.e.f";
 
-    private final String nestedTestString12 = "test=(a=b=c=d=f)\n" +
-            "x=%test>a>b>c>d";
+    private final String nestedTestString12 = "test=(a=b=c=d=f);\n" +
+                                              "x=%test.a.b.c.d";
 
     @Test
     public void test_01() {
@@ -161,7 +161,7 @@ public class NestedObjectReferenceTest {
         } catch (IOException e) {
             Assert.fail(e.getLocalizedMessage());
         } catch (RuntimeException r) {
-            if (!r.getLocalizedMessage().startsWith("Invalid Object Reference:")) {
+            if (!r.getLocalizedMessage().startsWith("Interpreter Error: Cannot resolve reference in")) {
                 Assert.fail("Wrong error message received, expected 'Invalid Object Reference'.");
             }
             // Ok, the exception is valid.

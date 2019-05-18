@@ -29,9 +29,9 @@ import java.io.IOException;
  */
 public class HashtagTest {
     private final static String[][] expected = {{
-            // Normal NB array
-            "test=this is a #hashtag test\n" +
-                    "test2=#testing 123", "[ {\n" +
+                                                    // Normal NB array
+                                                    "test=this is a #hashtag test;\n" +
+                                                    "test2=#testing 123", "[ {\n" +
             "  \"test\" : \"this is a #hashtag test\"\n" +
             "}, {\n" +
             "  \"test2\" : \"#testing 123\"\n" +

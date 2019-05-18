@@ -19,7 +19,6 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 package uk.modl.parser;
 
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.junit.Assert;
 import org.junit.Test;
 import uk.modl.interpreter.Interpreter;
@@ -36,8 +35,18 @@ import java.io.IOException;
  */
 public class InstructionProcessorTest {
     private final static String[][] expected = {{
-            // Normal NB array
-            "*class(*id=a;*name=b;*superclass=str);a=%*class", ""}
+                                                    // Normal NB array
+                                                    "*class(*id=a;*name=b;*superclass=str);a=%*class", "{\n" +
+                                                                                                       "    \"b\": [\n" +
+                                                                                                       "        {\n" +
+                                                                                                       "            \"a\": {\n" +
+                                                                                                       "                \"name\": \"b\",\n" +
+                                                                                                       "                \"superclass\": \"str\"\n" +
+                                                                                                       "            }\n" +
+                                                                                                       "        }\n" +
+                                                                                                       "    ]\n" +
+                                                                                                       "}"
+                                                }
     };
 
     /**

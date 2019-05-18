@@ -1238,5 +1238,13 @@
     "minimised_modl": "*LOAD=\"http://modules.num.uk/1.txt\";o=Tesco:Every Little Helps:[t=Customer Service:0845555555];",
     "expected_output": "{\"organisation\":{\"name\":\"Tesco\",\"slogan\":\"EveryLittleHelps\",\"objects\":{\"telephone\":{\"description\":\"CustomerService\",\"value\":\"0845555555\",\"object_type\":\"media\",\"object_display_name\":\"Telephone\",\"description_default\":\"Call\",\"prefix\":\"tel://\",\"media_type\":\"core\"}},\"object_type\":\"entity\",\"object_display_name\":\"Organisation\",\"description_default\":\"ViewOrganisation\"}}",
     "tested_features":["load"]
+  },
+  {
+    "input": "_country=gb;\n{\n  country=us|gb|au?\n    support_number=441270123456\n  /?\n    support_number=International Clients:14161234567\n}",
+    "minimised_modl": "_country=gb;{country=us|gb|au?support_number=441270123456/?support_number=International Clients:14161234567}",
+    "expected_output": "{\"support_number\":441270123456}",
+    "tested_features": [
+      "conditional"
+    ]
   }
 ]

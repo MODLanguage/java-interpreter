@@ -29,13 +29,13 @@ import java.util.List;
 
 public class ParserTest extends TestCase {
     final public static List<Object[]> expected =  Arrays.asList(new Object[][] {
-            { "o=[test;test;t=Customer Service:44123]", "{\n" +
+        { "o=[test;test;t=Customer Service:44123]", "{\n" +
                     "  \"o\" : [ \"test\", \"test\", {\n" +
                     "    \"t\" : [ \"Customer Service\", 44123 ]\n" +
                     "  } ]\n" +
                     "}" ,
                     "o[test;test;t=Customer Service:44123]"},
-            { "test[number=1;number=2;number=3]", "{\n" +
+        { "test[number=1;number=2;number=3]", "{\n" +
                     "  \"test\": [\n" +
                     "    {\n" +
                     "      \"number\": 1\n" +
@@ -50,16 +50,16 @@ public class ParserTest extends TestCase {
                     "    }\n" +
                     "  ]\n" +
                     "}" },
-                { "test(one=1;two=2;three=3)", "{\n" +
+        { "test(one=1;two=2;three=3)", "{\n" +
                     " \"test\" : {" +
                     "  \"one\": 1,\n" +
                     "  \"two\": 2,\n" +
                     "  \"three\": 3\n" +
                     "}}" },
-            { "test=test", "{\n" +
+        { "test=test", "{\n" +
                     "  \"test\": \"test\"\n" +
                     "}" },
-            { "one=1;two=2;three=3", "[\n" +
+        { "one=1;two=2;three=3", "[\n" +
                     "  {\n" +
                     "    \"one\": 1\n" +
                     "  }\n" +
@@ -72,7 +72,7 @@ public class ParserTest extends TestCase {
                     "    \"three\": 3\n" +
                     "  }\n" +
                     "]" },
-            { "[o(n=test);o(n=test2)]", "[ {\n" +
+        { "[o(n=test);o(n=test2)]", "[ {\n" +
                     "  \"o\" : {\n" +
                     "    \"n\" : \"test\"\n" +
                     "  }\n" +
@@ -81,7 +81,8 @@ public class ParserTest extends TestCase {
                     "    \"n\" : \"test2\"\n" +
                     "  }\n" +
                     "} ]" },
-            { "R=0\nnumber=1;number=2;number=3",
+        {
+            "R=0;\nnumber=1;number=2;number=3",
                     " [ {\n" +
                     "  \"R\" : 0\n" +
                     "}, {\n" +
@@ -97,18 +98,18 @@ public class ParserTest extends TestCase {
                     "  }\n" +
                     "]",
             "R=0;number=1;number=2;number=3"},
-            { "test=(one=1)", "{\n" +
+        { "test=(one=1)", "{\n" +
                     "  \"test\": {\n" +
                     "    \"one\": 1\n" +
                     "  }\n" +
                     "}",
             "test(one=1)"},
-            { "test(one=1)", "{\n" +
+        { "test(one=1)", "{\n" +
                     "  \"test\": {\n" +
                     "    \"one\": 1\n" +
                     "  }\n" +
                     "}" },
-            { "test=[1;2;3]", "{\n" +
+        { "test=[1;2;3]", "{\n" +
                     "  \"test\": [\n" +
                     "    1,\n" +
                     "    2,\n" +
@@ -116,7 +117,7 @@ public class ParserTest extends TestCase {
                     "  ]\n" +
                     "}" ,
             "test=1:2:3"},
-            { "test[1;2;3]", "{\n" +
+        { "test[1;2;3]", "{\n" +
                     "  \"test\": [\n" +
                     "    1,\n" +
                     "    2,\n" +
@@ -124,25 +125,25 @@ public class ParserTest extends TestCase {
                     "  ]\n" +
                     "}" ,
             "test=1:2:3"},
-            { "o(n=Tesco;s=Every Little Helps)", "{\n" +
+        { "o(n=Tesco;s=Every Little Helps)", "{\n" +
                     "  \"o\" : {\n" +
                     "    \"n\" : \"Tesco\",\n" +
                     "    \"s\" : \"Every Little Helps\"\n" +
                     "  }\n" +
                     "}" },
-            { "o(n=test)", "{\n" +
+        { "o(n=test)", "{\n" +
                     "  \"o\" : {\n" +
                     "    \"n\" : \"test\"\n" +
                     "  }\n" +
                     "}",
             "o(n=test)"},
-            { "o(n=test);\n", "{\n" +
+        { "o(n=test);\n", "{\n" +
                     "  \"o\" : {\n" +
                     "    \"n\" : \"test\"\n" +
                     "  }\n" +
                     "}",
             "o(n=test)"},
-            { "o(\n" +
+        { "o(\n" +
                     "n=test\n" +
                     ")", "{\n" +
                     "  \"o\" : {\n" +
@@ -150,14 +151,16 @@ public class ParserTest extends TestCase {
                     "  }\n" +
                     "}",
             "o(n=test)"},
-            { "o(n=test);", "{\n" +
-                    "  \"o\" : {\n" +
-                    "    \"n\" : \"test\"\n" +
-                    "  }\n" +
-                    "}" ,
+        {
+            "o(n=test)", "{\n" +
+                         "  \"o\" : {\n" +
+                         "    \"n\" : \"test\"\n" +
+                         "  }\n" +
+                         "}" ,
             "o(n=test)"},
-            { "o(n=test)\n" +
-                    "o(n=test2)", "[ {\n" +
+        {
+            "o(n=test);\n" +
+            "o(n=test2)", "[ {\n" +
                     "  \"o\" : {\n" +
                     "    \"n\" : \"test\"\n" +
                     "  }\n" +
@@ -167,7 +170,7 @@ public class ParserTest extends TestCase {
                     "  }\n" +
                     "} ]",
             "o(n=test);o(n=test2)"},
-            { "o(n=test);o(n=test2)", "[ {\n" +
+        { "o(n=test);o(n=test2)", "[ {\n" +
                     "  \"o\" : {\n" +
                     "    \"n\" : \"test\"\n" +
                     "  }\n" +
@@ -176,28 +179,28 @@ public class ParserTest extends TestCase {
                     "    \"n\" : \"test2\"\n" +
                     "  }\n" +
                     "} ]" },
-            { "o=[test;test]", "{\n" +
+        { "o=[test;test]", "{\n" +
                     "  \"o\" : [ \"test\", \"test\" ]\n" +
                     "}" ,
             "o=test:test"},
-            { "o=test", "{\n" +
+        { "o=test", "{\n" +
                     "  \"o\" : \"test\"\n" +
                     "}" },
-            { "o=[1;2]", "{\n" +
+        { "o=[1;2]", "{\n" +
                     "  \"o\" : [ 1, 2 ]\n" +
                     "}",
             "o=1:2"},
-            { "o=[test1;test2]", "{\n" +
+        { "o=[test1;test2]", "{\n" +
                     "  \"o\" : [ \"test1\", \"test2\" ]\n" +
                     "}" ,
             "o=test1:test2"},
-            { "o(t=test1;t2=test2)", "{\n" +
+        { "o(t=test1;t2=test2)", "{\n" +
                     "  \"o\" : {\n" +
                     "    \"t\" : \"test1\",\n" +
                     "    \"t2\" : \"test2\"\n" +
                     "  }\n" +
                     "}" },
-            { "o(t(a=test;b=test2);t2(c=test;d=test2))", "{\n" +
+        { "o(t(a=test;b=test2);t2(c=test;d=test2))", "{\n" +
                     "  \"o\" : {\n" +
                     "    \"t\" : {\n" +
                     "      \"a\" : \"test\",\n" +

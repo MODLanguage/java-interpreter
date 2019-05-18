@@ -45,8 +45,8 @@ public class NewlinesBeforeSemicolonsTest {
             "a=1:2:3;;\n" +
                     "b=4:5:6", "ParseCancellationException"
     }, {
-            "a=1:2:3\n" +
-                    "b=4:5:6", "[ {\n" +
+                                                    "a=1:2:3;\n" +
+                                                    "b=4:5:6", "[ {\n" +
             "  \"a\" : [ 1, 2, 3 ]\n" +
             "}, {\n" +
             "  \"b\" : [ 4, 5, 6 ]\n" +
