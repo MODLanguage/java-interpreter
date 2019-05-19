@@ -1443,12 +1443,18 @@ public class Interpreter {
                 val = transformConditionalArgument(origKeyString);
             } else {
                 // Does it reference a pair?
-                if (pairNames.contains(val) || pairNames.contains("_" + val)) {
-                    final ModlValue pairValue = valuePairs.get(val);
+                String tmpVal = val;
+                if (val.startsWith("`")) {
+                    tmpVal = val.replaceAll("`", "");
+                }
+                if (pairNames.contains(tmpVal) || pairNames.contains("_" + tmpVal)) {
+                    final ModlValue pairValue = valuePairs.get(tmpVal);
                     if (pairValue.isString()) {
                         val = (String) pairValue.getValue();
                     } else if (pairValue.isNumber()) {
                         val = ((ModlObject.Number) pairValue).number;
+                    } else if (pairValue.isArray() || pairValue.isMap()) {
+                        val = pairValue.toString();
                     }
                 }
             }
@@ -1559,6 +1565,9 @@ public class Interpreter {
         }
         if (objectRef instanceof ModlObject.Number) {
             return ((ModlObject.Number) objectRef).number;
+        }
+        if (objectRef instanceof ModlObject.Array || objectRef instanceof ModlObject.Map) {
+            return objectRef.toString();
         }
         return origKeyString;
     }

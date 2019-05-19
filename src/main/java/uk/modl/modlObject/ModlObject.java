@@ -135,6 +135,11 @@ public class ModlObject extends ModlValue {
             return null;
         }
 
+        @Override public java.lang.String toString() {
+            return "Map{" +
+                   "pairs=" + pairs +
+                   '}';
+        }
     }
 
     //    public static class Array implements Structure, ModlValue {
@@ -176,6 +181,11 @@ public class ModlObject extends ModlValue {
             return values;
         }
 
+        @Override public java.lang.String toString() {
+            return "Array{" +
+                   "values=" + values +
+                   '}';
+        }
     }
 
     //    public static class Pair implements Structure, ModlValue {
@@ -249,6 +259,13 @@ public class ModlObject extends ModlValue {
             values.add(modlValue);
             return values;
         }
+
+        @Override public java.lang.String toString() {
+            return "Pair{" +
+                   "key=" + key +
+                   ", modlValue=" + modlValue +
+                   '}';
+        }
     }
 
     public static class String extends ModlValue {
@@ -305,6 +322,9 @@ public class ModlObject extends ModlValue {
             return true;
         }
 
+        @Override public java.lang.String toString() {
+            return number;
+        }
     }
 
     public static class True extends ModlValue {
@@ -324,6 +344,10 @@ public class ModlObject extends ModlValue {
             return true;
         }
 
+        @Override
+        public java.lang.String toString() {
+            return "true";
+        }
     }
 
     public static class False extends ModlValue {
@@ -342,6 +366,11 @@ public class ModlObject extends ModlValue {
         public Object getValue() {
             return false;
         }
+
+        @Override
+        public java.lang.String toString() {
+            return "false";
+        }
     }
 
     public static class Null extends ModlValue {
@@ -359,6 +388,11 @@ public class ModlObject extends ModlValue {
         @Override
         public Object getValue() {
             return null;
+        }
+
+        @Override
+        public java.lang.String toString() {
+            return "null";
         }
     }
 
