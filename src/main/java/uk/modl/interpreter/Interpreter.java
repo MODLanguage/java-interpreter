@@ -21,6 +21,7 @@ package uk.modl.interpreter;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import uk.modl.modlObject.ModlObject;
+import uk.modl.modlObject.ModlObjectTreeWalker;
 import uk.modl.modlObject.ModlValue;
 import uk.modl.parser.ModlObjectCreator;
 import uk.modl.parser.RawModlObject;
@@ -69,6 +70,16 @@ public class Interpreter {
                 // OK - let's try again with the updated rawModlObject}
             }
         }
+
+        final ModlObjectTreeWalker walker = new ModlObjectTreeWalker(modlObject);
+        walker.walk(new ModlObjectTreeWalker.Visitor() {
+            @Override public void visit(final Object v) {
+                if (v instanceof ModlObject.String) {
+                    final ModlObject.String str = (ModlObject.String) v;
+                    str.string = StringEscapeReplacer.replace(str.string);
+                }
+            }
+        });
         return modlObject;
     }
 

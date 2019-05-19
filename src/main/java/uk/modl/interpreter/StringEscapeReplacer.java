@@ -32,7 +32,7 @@ public class StringEscapeReplacer {
         }
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
             if (stringToTransform.contains(replacement.getKey())) {
-                stringToTransform = stringToTransform.replace(replacement.getKey(), replacement.getValue());
+                stringToTransform = stringToTransform.replaceAll(replacement.getKey(), replacement.getValue());
             }
         }
 

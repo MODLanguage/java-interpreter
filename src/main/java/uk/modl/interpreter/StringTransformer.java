@@ -57,7 +57,7 @@ class StringTransformer {
         }
 
         // 5: Replace the strings as per the txt document attached "string-replacement.txt"
-        stringToTransform = replaceEscapedStrings(stringToTransform);
+        // Defer until after all other processing is complete.
 
         // Replace any unicode encodings
         stringToTransform = StringEscapeUtils.unescapeJava(stringToTransform);
@@ -269,12 +269,6 @@ class StringTransformer {
             return startIndex;
         }
     }
-
-    private String replaceEscapedStrings(String stringToTransform) {
-        // String-replacement.text to replace escaped characters
-        return StringEscapeReplacer.replace(stringToTransform);
-    }
-
 
     ModlValue runObjectReferencing(String percentPart, String stringToTransform, boolean isGraved) {
     /*

@@ -20,7 +20,6 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 package uk.modl.modlObject;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import uk.modl.interpreter.StringEscapeReplacer;
 import uk.modl.parser.printers.ModlObjectJsonSerializer;
 
 import java.util.LinkedList;
@@ -270,11 +269,11 @@ public class ModlObject extends ModlValue {
 
     public static class String extends ModlValue {
 
-        public final java.lang.String string;
+        public java.lang.String string;
 
         public String(java.lang.String string) {
 
-            this.string = StringEscapeReplacer.replace(string);
+            this.string = string;
 
         }
 
