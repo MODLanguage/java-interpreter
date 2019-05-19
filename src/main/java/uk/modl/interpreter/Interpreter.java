@@ -370,7 +370,13 @@ public class Interpreter {
             if (parentPair == null && !(newKey.startsWith("%")) && addToValuePairs) {
                 pairNames.add(newKey);
             }
-            transformPairKey(modlObject, rawPair, newKey, parentPair);
+            ModlValue newValue = transformPairKey(modlObject, rawPair, newKey, parentPair);
+            if ((newValue instanceof ModlObject.String && !((ModlObject.String) newValue).string.contains("%")) ||
+                newValue instanceof ModlObject.Number) {
+                pair.setKey(new ModlObject.String(newKey));
+                pair.addModlValue(newValue);
+                return pair;
+            }
         }
         if (newKey != null && (newKey.startsWith("_") || (newKey.startsWith("*")) || newKey.equals("?"))) {
             return null;
@@ -667,10 +673,10 @@ public class Interpreter {
         return numParams;
     }
 
-    private void transformPairKey(ModlObject rawModlObject,
-                                  RawModlObject.Pair originalPair,
-                                  String newKey,
-                                  Object parentPair) {
+    private ModlValue transformPairKey(ModlObject rawModlObject,
+                                       RawModlObject.Pair originalPair,
+                                       String newKey,
+                                       Object parentPair) {
         String transformedKey = newKey;
         if (transformedKey.startsWith("_")) {
             transformedKey = transformedKey.replaceFirst("_", "");
@@ -694,8 +700,10 @@ public class Interpreter {
                     transformString(((ModlObject.String) (originalPair.getModlValue())).string);
                 valuePairs.put(transformedKey,
                                transformedValue);
+                return transformedValue;
             } else {
                 valuePairs.put(transformedKey, originalPair.getModlValue());
+                return originalPair.getModlValue();
             }
         } else {
             // We have a new definition which must live under an existing mapPair or arrayPair
@@ -711,6 +719,7 @@ public class Interpreter {
                 throw new RuntimeException("Expecting Map or Array as parentPair!");
             }
         }
+        return originalPair.getModlValue();
     }
 
     private String getStringFromValue(RawModlObject.Pair originalPair) {
