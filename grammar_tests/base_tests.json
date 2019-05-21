@@ -126,7 +126,18 @@
   { "input": "(\n  _name = John;\n  %name.u = \"Developer\";\n  foo = %JOHN\n)",
     "minimised_modl":  "(_name=John;%name.u=\"Developer\";foo = %JOHN)",
     "expected_output":   "{\n  \"JOHN\" : \"Developer\",     \n  \"foo\" : \"Developer\"\n}",
-    "tested_features":["string_method"]
+    "tested_features": [
+      "string_method",
+      "object_ref"
+    ]
+  },
+  {
+    "input": "(\n  _name = John;\n  %name = \"Developer\";\n  foo = %John\n)",
+    "minimised_modl": "(_name=John;%name=\"Developer\";foo = %John)",
+    "expected_output": "{\n  \"John\" : \"Developer\",     \n  \"foo\" : \"Developer\"\n}",
+    "tested_features": [
+      "object_ref"
+    ]
   },
   { "input": "_array[1;2];\n_array_item=%array.0;\ntest={\n  array_item=%array.0?\n     yes\n  /?\n     no\n}",
     "minimised_modl":  "_array[1;2];_array_item=%array.0;test={array_item=%array.0?yes/?no}",
@@ -366,22 +377,38 @@
   { "input": "*class(\n *id=g;\n *name=glossary;\n *superclass=map\n);\n*class(\n *id=t;\n *name=title;\n *superclass=str\n);\n*class(\n *id=d;\n *name=GlossDiv;\n *superclass=map\n);\n*class(\n *id=l;\n *name=GlossList;\n *superclass=map\n);\n*class(\n *id=e;\n *name=GlossEntry;\n *superclass=map;\n *assign[\n   [i;s;gt;a;ab;gd;gs]\n ]\n);\n*class(\n *id=i;\n *name=ID;\n *superclass=str\n);\n*class(\n *id=s;\n *name=SortAs;\n *superclass=str\n);\n*class(\n *id=gt;\n *name=GlossTerm;\n *superclass=str\n);\n*class(\n *id=a;\n *name=Acronym;\n *superclass=str\n);\n*class(\n *id=ab;\n *name=Abbrev;\n *superclass=str\n);\n*class(\n *id=gd;\n *name=GlossDef;\n *superclass=map;\n *assign=[\n   [p];\n   [p;sa]\n ]\n);\n*class(\n *id=p;\n *name=para;\n *superclass=str\n);\n*class(\n *id=sa;\n *name=SeeAlso;\n *superclass=arr\n);\n*class(\n *id=gs;\n *name=GlossSee;\n *superclass=str\n);\n\ng(\n ?=[SGML;markup;language];\n t=example glossary;\n d(\n   t=S;\n   l(\n     e(\n       i=%0;\n       s=%0;\n       gt=Standard Generalized %1.s %2.s;\n       a=%0;\n       ab=ISO 8879\\:1986;\n       gd=A meta-%1 %2, used to create %1 %2s such as DocBook.\n         :[GML;XML];\n       gs=%1\n     )\n   )\n )\n)",
     "minimised_modl": "*c(*i=g;*n=glossary;*s=map);*c(*i=t;*n=title;*s=str);*c(*i=d;*n=GlossDiv;*s=map);*c(*i=l;*n=GlossList;*s=map);*c(*i=e;*n=GlossEntry;*s=map;*a[[i;s;gt;a;ab;gd;gs]]);*c(*i=i;*n=ID;*s=str);*c(*i=s;*n=SortAs;*s=str);*c(*i=gt;*n=GlossTerm;*s=str);*c(*i=a;*n=Acronym;*s=str);*c(*i=ab;*n=Abbrev;*s=str);*c(*i=gd;*n=GlossDef;*s=map;*a=[p]:[p;sa]);*c(*i=p;*n=para;*s=str);*c(*i=sa;*n=SeeAlso;*s=arr);*c(*i=gs;*n=GlossSee;*s=str);g(?=SGML:markup:language;t=example glossary;d(t=S;l(e(i=%0;s=%0;gt=Standard Generalized %1.s %2.s;a=%0;ab=ISO 8879~:1986;gd=A meta-%1 %2, used to create %1 %2s such as DocBook.:[GML;XML];gs=%1))))",
     "expected_output": "{\n \"glossary\" : {\n   \"title\" : \"example glossary\",\n   \"GlossDiv\" : {\n     \"title\" : \"S\",\n     \"GlossList\" : {\n       \"GlossEntry\" : {\n         \"ID\" : \"SGML\",\n         \"SortAs\" : \"SGML\",\n         \"GlossTerm\" : \"Standard Generalized Markup Language\",\n         \"Acronym\" : \"SGML\",\n         \"Abbrev\" : \"ISO 8879:1986\",\n         \"GlossDef\" : {\n           \"para\" : \"A meta-markup language, used to create markup languages such as DocBook.\",\n           \"SeeAlso\" : [ \"GML\", \"XML\" ]\n         },\n         \"GlossSee\" : \"markup\"\n       }\n     }\n   }\n }\n}\n",
-    "tested_features":["class", "object_ref"]
+    "tested_features": [
+      "class",
+      "object_ref",
+      "string_method"
+    ]
   },
   { "input": "_test=1~:2;\n\nresult={\n test=1~:2?\n     yes\n /?\n    no\n}",
     "minimised_modl": "_test=1~:2;result={test=1~:2?yes/?no}",
     "expected_output": "{\n \"result\" : \"yes\"\n}\n",
-    "tested_features":["class", "object_ref"]
+    "tested_features": [
+      "class",
+      "object_ref",
+      "conditional"
+    ]
   },
   { "input": "_test=\"http://www.tesco.com\";\n\nresult={\n test=\"http://www.tesco.com\"?\n     yes\n /?\n    no\n}",
     "minimised_modl": "_test=http~://www.tesco.com;result={test=\"http://www.tesco.com\"?yes/?no}",
     "expected_output": "{\n \"result\" : \"yes\"\n}\n",
-    "tested_features":["class", "object_ref"]
+    "tested_features": [
+      "class",
+      "object_ref",
+      "conditional"
+    ]
   },
   { "input": "_test=\"http://www.tesco.com\";\n\nresult={\n test=\"http://www.tesco.com\"?\n     yes\n /?\n    no\n}",
     "minimised_modl": "_test=http~://www.tesco.com;result={test=\"http://www.tesco.com\"?yes/?no}",
     "expected_output": "{\n \"result\" : \"yes\"\n}\n",
-    "tested_features":["class", "object_ref"]
+    "tested_features": [
+      "class",
+      "object_ref",
+      "conditional"
+    ]
   },
   { "input": "_branch=\"alex.\";_root=d;namespace=`%branch`blah.`%root`",
     "minimised_modl": "_branch=alex.;_root=d;namespace=`%branch`blah.`%root`",
@@ -426,7 +453,11 @@
   { "input": "?=[one;two];\ntest=Blah `%0.s` %1.s",
     "minimised_modl": "?=one:two;test=Blah `%0.s` %1.s",
     "expected_output": "{\n \"test\" : \"Blah One Two\"\n}\n",
-    "tested_features":["object_ref", "graves"]
+    "tested_features": [
+      "object_ref",
+      "graves",
+      "string_method"
+    ]
   },
   { "input": "?=one:two;\ntest=Blah `%0.r(o,huzzah)` `%1.t(w)`",
     "minimised_modl": "?=one:two;test=Blah `%0.r(o,huzzah)` `%1.t(w)`",
@@ -1250,6 +1281,177 @@
     "expected_output": "{\n  \"test\" : \"This is a `test`\"\n}",
     "tested_features": [
       "strings"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha);a=b",
+    "minimised_modl": "*class(*id=a;*name=alpha);a=b",
+    "expected_output": "{\n    \"alpha\": \"b\"\n}",
+    "tested_features": [
+      "class",
+      "superclass_inference"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha);a=1",
+    "minimised_modl": "*class(*id=a;*name=alpha);a=1",
+    "expected_output": "{\n    \"alpha\": 1\n}",
+    "tested_features": [
+      "class",
+      "superclass_inference"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha);a=true",
+    "minimised_modl": "*class(*id=a;*name=alpha);a=true",
+    "expected_output": "{\n    \"alpha\": true\n}",
+    "tested_features": [
+      "class",
+      "superclass_inference"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha);a=null",
+    "minimised_modl": "*class(*id=a;*name=alpha);a=null",
+    "expected_output": "{\n    \"alpha\": null\n}",
+    "tested_features": [
+      "class",
+      "superclass_inference"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha);a=[1;2;3];b=4:5:6",
+    "minimised_modl": "*class(*id=a;*name=alpha);a=[1;2;3];b=4:5:6",
+    "expected_output": "[\n    {\n        \"alpha\": [\n            1,\n            2,\n            3\n        ]\n    },\n    {\n        \"b\": [\n            4,\n            5,\n            6\n        ]\n    }\n]",
+    "tested_features": [
+      "class",
+      "superclass_inference"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha);a=(b=c)",
+    "minimised_modl": "*class(*id=a;*name=alpha);a=(b=c)",
+    "expected_output": "{\n    \"alpha\": {\n        \"b\": \"c\"\n    }\n}",
+    "tested_features": [
+      "class",
+      "superclass_inference"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha;x=\"test\");a=1",
+    "minimised_modl": "*class(*id=a;*name=alpha;x=\"test\");a=1",
+    "expected_output": "{\n  \"alpha\": {\n    \"value\":1,\n    \"x\":\"test\"\n  }\n}",
+    "tested_features": [
+      "class",
+      "superclass_inference"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha;*assign[[x]]);a=1\n",
+    "minimised_modl": "*class(*id=a;*name=alpha;*assign[[x]]);a=1\n",
+    "expected_output": "{\n  \"alpha\": {\n    \"x\":1\n  }\n}",
+    "tested_features": [
+      "class",
+      "superclass_inference"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha;*superclass=str);a=1",
+    "minimised_modl": "*class(*id=a;*name=alpha;*superclass=str);a=1",
+    "expected_output": "{\n    \"alpha\": \"1\"\n}",
+    "tested_features": [
+      "class",
+      "superclass"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha;*superclass=str);a=true",
+    "minimised_modl": "*class(*id=a;*name=alpha;*superclass=str);a=true",
+    "expected_output": "{\n    \"alpha\": \"true\"\n}",
+    "tested_features": [
+      "class",
+      "superclass"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha;*superclass=num);a=1\n",
+    "minimised_modl": "*class(*id=a;*name=alpha;*superclass=num);a=1\n",
+    "expected_output": "{\n    \"alpha\": 1\n}",
+    "tested_features": [
+      "class",
+      "superclass"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha;*superclass=num);a=true",
+    "minimised_modl": "*class(*id=a;*name=alpha;*superclass=num);a=true",
+    "expected_output": "{\n    \"alpha\": 1\n}",
+    "tested_features": [
+      "class",
+      "superclass"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha;*superclass=num);a=false",
+    "minimised_modl": "*class(*id=a;*name=alpha;*superclass=num);a=false",
+    "expected_output": "{\n    \"alpha\": 0\n}",
+    "tested_features": [
+      "class",
+      "superclass"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha);a=false",
+    "minimised_modl": "*class(*id=a;*name=alpha);a=false",
+    "expected_output": "{\n    \"alpha\": false\n}",
+    "tested_features": [
+      "class",
+      "superclass"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha);a=null",
+    "minimised_modl": "*class(*id=a;*name=alpha);a=null",
+    "expected_output": "{\n    \"alpha\": null\n}",
+    "tested_features": [
+      "class",
+      "superclass"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha;*superclass=arr);a=b",
+    "minimised_modl": "*class(*id=a;*name=alpha;*superclass=arr);a=b",
+    "expected_output": "{\n    \"alpha\": [\n        \"b\"\n    ]\n}",
+    "tested_features": [
+      "class",
+      "superclass"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha;*superclass=map);a=b",
+    "minimised_modl": "*class(*id=a;*name=alpha;*superclass=map);a=b",
+    "expected_output": "{\n    \"alpha\": {\n        \"value\": \"b\"\n    }\n}",
+    "tested_features": [
+      "class",
+      "superclass"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha;*superclass=map);a=(c=d)",
+    "minimised_modl": "*class(*id=a;*name=alpha;*superclass=map);a=(c=d)",
+    "expected_output": "{\n    \"alpha\": {\n        \"c\": \"d\"\n    }\n}",
+    "tested_features": [
+      "class",
+      "superclass"
+    ]
+  },
+  {
+    "input": "*class(*id=a;*name=alpha;*superclass=arr);a=[1;2;3]",
+    "minimised_modl": "*class(*id=a;*name=alpha;*superclass=arr);a=[1;2;3]",
+    "expected_output": "{\n    \"alpha\": [\n        1,\n        2,\n        3\n    ]\n}",
+    "tested_features": [
+      "class",
+      "superclass"
     ]
   }
 ]

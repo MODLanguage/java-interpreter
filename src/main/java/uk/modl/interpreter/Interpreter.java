@@ -34,6 +34,7 @@ import static uk.modl.parser.ModlObjectCreator.MODL_VERSION;
 
 public class Interpreter {
 
+    public static final int MAX_CLASS_HIERARCHY_DEPTH = 50;
     public static VariableMethods variableMethods = null;
     private Map<String, Map<String, Object>> klasses = new LinkedHashMap<>();
     private Map<String, ModlValue> variables = new HashMap<>();
@@ -44,7 +45,7 @@ public class Interpreter {
     private List<VariableMethodLoader.MethodDescriptor> methodList = new ArrayList<>();
     private Set<String> pairNames; // TODO Get rid of this!
     private Map<String, ModlValue> valuePairs;
-    private List<String> PRIMITIVES = Arrays.asList("num", "str", "map", "arr");
+    private List<String> PRIMITIVES = Arrays.asList("num", "str", "map", "arr", "bool", "null");
 
     public static String parseToJson(String input) throws IOException {
         ModlObject modlObject = interpret(input);
@@ -101,6 +102,35 @@ public class Interpreter {
             }
         }
         return orderedConditionalTestList;
+    }
+
+    private static void validatePairKey(final String newKey) {
+        boolean keyIsAllDigits = true;
+        char invalidCharacter = '\0';
+        int i = 0;
+        for (char c : newKey.toCharArray()) {
+            if (!Character.isDigit(c)) {
+                if (i == 0 && c == '_') {
+                    continue;
+                }
+                keyIsAllDigits = false;
+            }
+            if ("!$@-+'#^*£&".contains("" + c)) {
+                if (i != 0 || c != '*') {
+                    invalidCharacter = c;
+                }
+            }
+            i++;
+        }
+        if (keyIsAllDigits) {
+            throw new RuntimeException("Entirely numeric keys are not allowed: " + newKey);
+        }
+        if (invalidCharacter != '\0') {
+            throw new RuntimeException("Interpreter Error: Invalid key - '" +
+                                       invalidCharacter +
+                                       "' character not allowed: " +
+                                       newKey);
+        }
     }
 
     private ModlObject interpretPrivate(RawModlObject rawModlObject) throws RequireRestart {
@@ -336,41 +366,21 @@ public class Interpreter {
         }
 
         String originalKey = rawPair.getKey().string;
+        if (originalKey == null) {
+            throw new RuntimeException("Interpreter Error: Invalid key - 'null'");
+        }
         String newKey = originalKey;
         if (haveModlClass(originalKey)) {
             newKey = transformKey(originalKey);
             rawPair = transformValue(rawPair);
         }
 
-        // We might now have a de-referenced key this is all numeric so catch it here.
-        boolean keyIsAllDigits = true;
-        char invalidCharacter = '\0';
-        int i = 0;
-        for (char c : newKey.toCharArray()) {
-            if (!Character.isDigit(c)) {
-                if (i == 0 && c == '_') {
-                    continue;
-                }
-                keyIsAllDigits = false;
-            }
-            if ("!$@-+'#^*£&".contains("" + c)) {
-                if (i != 0 || c != '*') {
-                    invalidCharacter = c;
-                }
-            }
-            i++;
-        }
-        if (keyIsAllDigits) {
-            throw new RuntimeException("Entirely numeric keys are not allowed: " + newKey);
-        }
-        if (invalidCharacter != '\0') {
-            throw new RuntimeException("Interpreter Error: Invalid key - '" +
-                                       invalidCharacter +
-                                       "' character not allowed: " +
-                                       newKey);
-        }
-        // IF WE ALREADY HAVE A PAIR WITH THIS NAME, AND THE NAME IS UPPER-CASE, THEN RAISE AN ERROR
+
         if (newKey != null) {
+            // We might now have a de-referenced key this is all numeric so catch it here.
+            validatePairKey(newKey);
+
+            // IF WE ALREADY HAVE A PAIR WITH THIS NAME, AND THE NAME IS UPPER-CASE, THEN RAISE AN ERROR
             if (newKey.toUpperCase().equals(newKey)) {
                 if (pairNames.contains(newKey) && addToValuePairs) {
                     throw new RuntimeException(newKey + " can't be defined again as upper-case keys are immutable");
@@ -476,7 +486,7 @@ public class Interpreter {
         numParams = getNumParams(rawPair, numParams);
         String paramsKeyString = "*params" + numParams;
         Object obj = findParamsObject(rawPair, paramsKeyString);
-        if (obj == null && rawPair.getModlValue() instanceof ModlObject.Array) {
+        if (obj == null && rawPair.getModlValue() instanceof ModlObject.Array && hasAssignStatement(1, originalKey)) {
             throw new RuntimeException(
                 "Interpreter Error: No key list of the correct length in class t - looking for one of length " +
                 numParams);
@@ -485,8 +495,7 @@ public class Interpreter {
         boolean hasParams = (obj != null);
 
         // If it's not already a map pair, and one of the parent classes in the class hierarchy includes pairs, then it is transformed to a map pair.
-        if (anyClassContainsPairs(originalKey) || mapPairAlready(rawPair) || (hasParams)) {
-            //        if (anyClassContainsPairs(newKey) || mapPairAlready(rawPair) || (hasParams)) {
+        if (anyClassContainsPairs(1, originalKey) || mapPairAlready(rawPair) || (hasParams)) {
             pair.setKey(new ModlObject.String(newKey)); // TODO Do we need to do this again here?!
 
             List<ModlObject.Pair> pairs = null;
@@ -663,11 +672,15 @@ public class Interpreter {
         ModlValue newValue = interpret(modlObject, valueItem, parentPair);
         ModlObject.Pair valuePair = new ModlObject.Pair();
         String fullClassName = currentClass;
-        try {
-            fullClassName = ((ModlObject.String) getModlClass(currentClass).get("*name")).string;
-        } catch (Exception e) {
-            // Ignore
+        final Map<String, Object> aClass = getModlClass(currentClass);
+
+        if (aClass != null) {
+            final Object nameObject = aClass.get("*name");
+            if (nameObject instanceof ModlObject.String) {
+                fullClassName = ((ModlObject.String) nameObject).string;
+            }
         }
+
         valuePair.setKey(new ModlObject.String(fullClassName));
         valuePair.addModlValue(newValue);
         pair.addModlValue(valuePair);
@@ -782,9 +795,33 @@ public class Interpreter {
         }
     }
 
-    private ModlObject.Number makeValueNumber(ModlValue value) {
+    private ModlObject.Array makeValueArray(ModlValue value) {
         if (value == null) {
             return null;
+        }
+        if (value instanceof ModlObject.Map) {
+            throw new RuntimeException("Illegal value for array transformation : " + value.toString());
+        }
+        ModlObject.Array result = new ModlObject.Array();
+        result.addValue(value);
+        return result;
+    }
+
+    private ModlObject.Map makeValueMap(ModlValue value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof ModlObject.Array) {
+            throw new RuntimeException("Illegal value for map transformation : " + value.toString());
+        }
+        ModlObject.Map result = new ModlObject.Map();
+        result.addPair(new ModlObject.Pair(new ModlObject.String("value"), value));
+        return result;
+    }
+
+    private ModlObject.Number makeValueNumber(ModlValue value) {
+        if (value == null) {
+            throw new RuntimeException("Interpreter Error: Cannot convert null to a num.");
         }
         String newNumber = null;
         if (value instanceof ModlObject.String) {
@@ -800,11 +837,10 @@ public class Interpreter {
             newNumber = "0";
         }
         if (value instanceof ModlObject.Null) {
-            // TODO - is this right?
-            newNumber = "";
+            newNumber = null;
         }
         if (newNumber == null) {
-            throw new RuntimeException("Illegal value for number transformation : " + value.toString());
+            throw new RuntimeException("Interpreter Error: Cannot convert null to a num.");
         }
 
         return new ModlObject.Number(newNumber);
@@ -812,7 +848,7 @@ public class Interpreter {
 
     private ModlObject.String makeValueString(ModlValue value) {
         if (value == null) {
-            return null;
+            throw new RuntimeException("Interpreter Error: Cannot convert null to a str.");
         }
         String newString = null;
         if (value instanceof ModlObject.String) {
@@ -828,7 +864,10 @@ public class Interpreter {
             newString = "false";
         }
         if (value instanceof ModlObject.Null) {
-            newString = "null";
+            newString = null;
+        }
+        if (newString == null) {
+            throw new RuntimeException("Interpreter Error: Cannot convert null to a str.");
         }
 
 
@@ -982,13 +1021,45 @@ public class Interpreter {
         return (originalPair.getModlValue() instanceof ModlObject.Map);
     }
 
-    private boolean anyClassContainsPairs(String originalKey) {
+    private boolean anyClassContainsPairs(final int depth, final String originalKey) {
+        if (depth > MAX_CLASS_HIERARCHY_DEPTH) {
+            throw new RuntimeException("Interpreter Error: Reached max class hierarchy depth: " +
+                                       MAX_CLASS_HIERARCHY_DEPTH);
+        }
         // If this class, or any of its parent classes, define any pairs, then return true
         // A pair is defined in a class if it has a pair whose key does not start in "_"
         Map<String, Object> klass = getModlClass(originalKey);
-        for (String key : klass.keySet()) {
-            if (!key.startsWith("_") && !key.startsWith("*") && !key.equals("?")) {
-                return true;
+        if (klass != null) {
+            for (String key : klass.keySet()) {
+                if (!key.startsWith("_") && !key.startsWith("*") && !key.equals("?")) {
+                    return true;
+                }
+            }
+            final String superclass = (String) klass.get("*superclass");
+            if (superclass != null) {
+                return anyClassContainsPairs(depth + 1, superclass);
+            }
+        }
+        return false;
+    }
+
+    private boolean hasAssignStatement(final int depth, String originalKey) {
+        if (depth > MAX_CLASS_HIERARCHY_DEPTH) {
+            throw new RuntimeException("Interpreter Error: Reached max class hierarchy depth: " +
+                                       MAX_CLASS_HIERARCHY_DEPTH);
+        }
+        // If this class, or any of its parent classes, has an assign statement return true;
+        Map<String, Object> klass = getModlClass(originalKey);
+        if (klass != null) {
+            for (String k : klass.keySet()) {
+                if (k.startsWith("*params")) {
+                    return true;
+                }
+            }
+
+            final String superclass = (String) klass.get("*superclass");
+            if (superclass != null) {
+                return hasAssignStatement(depth + 1, superclass);
             }
         }
         return false;
@@ -1020,41 +1091,95 @@ public class Interpreter {
                 VariableLoader.loadConfigNumberedVariables(originalPair.getModlValue(), numberedVariables);
             } else {
                 // Work up the superclass chain until we get to a basic class
-                if (classMap.get("*superclass") != null) {
-                    final String superclassString;
-                    if (classMap.get("*superclass") instanceof String) {
-                        superclassString = (String) classMap.get("*superclass");
-                    } else {
-                        superclassString = ((ModlObject.String) classMap.get("*superclass")).string;
-                    }
-                    String mostSuperClass = getSuperclassPrimitive(superclassString);
-                    if (originalPair.getModlValue() == null) {
+                final String superclassName = (String) classMap.get("*superclass");
+                boolean hasSuperclass = superclassName != null;
+                if (!hasSuperclass && anyClassContainsPairs(1, classMap.get("*name").toString())) {
+                    classMap.put("*superclass", "map");
+                } else if (!hasSuperclass && hasAssignStatement(0, (String) classMap.get("*id"))) {
+                    classMap.put("*superclass", "map");
+                    if (originalPair.getModlValue() instanceof ModlObject.Array) {
                         return originalPair;
                     }
                     RawModlObject.Pair pair = new ModlObject.Pair();
                     pair.setKey(originalPair.getKey());
-                    if ("str".equals(mostSuperClass)) {
-                        if (originalPair.getModlValue() instanceof ModlObject.String) {
-                            return originalPair;
-                        }
-                        ModlObject.String s = makeValueString(originalPair.getModlValue());
-                        pair.addModlValue(s);
-                        return pair;
-                    } else if ("num".equals(mostSuperClass)) {
-                        if (originalPair.getModlValue() instanceof ModlObject.Number) {
-                            return originalPair;
-                        }
-                        ModlObject.Number number = makeValueNumber(originalPair.getModlValue());
-                        pair.addModlValue(number);
-                        return pair;
+                    pair.addModlValue(makeValueArray(originalPair.getModlValue()));
+                    return pair;
+                } else if (!hasSuperclass) {
+                    if (originalPair.getModlValue() instanceof ModlObject.Number) {
+                        classMap.put("*superclass", "num");
+                    } else if (originalPair.getModlValue() instanceof ModlObject.String) {
+                        classMap.put("*superclass", "str");
+                    } else if (originalPair.getModlValue() instanceof ModlObject.Array) {
+                        classMap.put("*superclass", "arr");
+                    } else if (originalPair.getModlValue() instanceof ModlObject.True) {
+                        classMap.put("*superclass", "bool");
+                    } else if (originalPair.getModlValue() instanceof ModlObject.False) {
+                        classMap.put("*superclass", "bool");
+                    } else if (originalPair.getModlValue() instanceof ModlObject.Null) {
+                        classMap.put("*superclass", "null");
+                    } else if (originalPair.getModlValue() instanceof ModlObject.Map) {
+                        classMap.put("*superclass", "map");
                     } else {
-                        if (!("map".equals(mostSuperClass) || ("arr".equals(mostSuperClass)))) {
-                            throw new RuntimeException("Superclass " +
-                                                       superclassString +
-                                                       " is not available for " +
-                                                       originalPair.getModlValue().getClass());
-                        }
+                        throw new RuntimeException("Interpreter Error: Unhandled object type: " +
+                                                   originalPair.getModlValue().getClass().getName());
                     }
+                }
+
+                //
+                // Handle object type conversions here as described on the MODL Grammar GitHub Wiki.
+                //
+                final String superclassString;
+                if (classMap.get("*superclass") instanceof String) {
+                    superclassString = (String) classMap.get("*superclass");
+                } else {
+                    superclassString = ((ModlObject.String) classMap.get("*superclass")).string;
+                }
+                String mostSuperClass = getSuperclassPrimitive(superclassString);
+                if (originalPair.getModlValue() == null) {
+                    return originalPair;
+                }
+                RawModlObject.Pair pair = new ModlObject.Pair();
+                pair.setKey(originalPair.getKey());
+                if ("str".equals(mostSuperClass)) {
+                    if (originalPair.getModlValue() instanceof ModlObject.String) {
+                        return originalPair;
+                    }
+                    ModlObject.String s = makeValueString(originalPair.getModlValue());
+                    pair.addModlValue(s);
+                    return pair;
+                } else if ("num".equals(mostSuperClass)) {
+                    if (originalPair.getModlValue() instanceof ModlObject.Number) {
+                        return originalPair;
+                    }
+                    ModlObject.Number number = makeValueNumber(originalPair.getModlValue());
+                    pair.addModlValue(number);
+                    return pair;
+                } else if ("bool".equals(mostSuperClass)) {
+                    return originalPair;
+                } else if ("null".equals(mostSuperClass)) {
+                    return originalPair;
+                } else if ("arr".equals(mostSuperClass)) {
+                    if (originalPair.getModlValue() instanceof ModlObject.Array) {
+                        return originalPair;
+                    }
+                    ModlObject.Array array = makeValueArray(originalPair.getModlValue());
+                    pair.addModlValue(array);
+                    return pair;
+                } else if ("map".equals(mostSuperClass)) {
+                    if (originalPair.getModlValue() instanceof ModlObject.Map) {
+                        return originalPair;
+                    }
+                    if (hasAssignStatement(0, (String) classMap.get("*id"))) {
+                        return originalPair;
+                    }
+                    ModlObject.Map map = makeValueMap(originalPair.getModlValue());
+                    pair.addModlValue(map);
+                    return pair;
+                } else {
+                    throw new RuntimeException("Superclass " +
+                                               superclassString +
+                                               " is not available for " +
+                                               originalPair.getModlValue().getClass());
                 }
             }
         }
@@ -1067,6 +1192,9 @@ public class Interpreter {
         String currentSuperclass = originalSuperClass;
         while (!PRIMITIVES.contains(currentSuperclass)) {
             currentSuperclass = getNextSuperclassUp(currentSuperclass);
+            if (currentSuperclass == null) {
+                return null;
+            }
         }
         if (PRIMITIVES.contains(currentSuperclass)) {
             return currentSuperclass;
@@ -1076,11 +1204,14 @@ public class Interpreter {
 
     private String getNextSuperclassUp(String currentSuperclass) {
         Map<String, Object> classMap = getModlClass(currentSuperclass);
-        if (classMap.get("*superclass") instanceof String) {
-            return (String) classMap.get("*superclass");
-        } else {
-            return ((ModlObject.String) classMap.get("*superclass")).string;
+        if (classMap != null) {
+            if (classMap.get("*superclass") instanceof String) {
+                return (String) classMap.get("*superclass");
+            } else {
+                return ((ModlObject.String) classMap.get("*superclass")).string;
+            }
         }
+        return null;
     }
 
     private ModlValue interpretValue(ModlObject modlObject, ModlValue rawValue, Object parentPair) {

@@ -66,5 +66,11 @@
   "*V=test",
   "*VERSION=0",
   "*VERSION=0.1",
-  "a=b;*VERSION=1"
+  "a=b;*VERSION=1",
+  "*class(*id=a;*name=alpha;*superclass=str);a=null",
+  "*class(*id=a;*name=alpha;*superclass=num);a=null",
+  "*class(*id=a;*name=alpha;*superclass=num);a=x",
+  "*class(*id=a;*name=alpha;*superclass=num);a=null",
+  "*class(*id=a;*name=alpha;*superclass=map);a=[1;2;3]",
+  "*class(*id=a;*name=alpha;*superclass=arr);a=(c=d)"
 ]

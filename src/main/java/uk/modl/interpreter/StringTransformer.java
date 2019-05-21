@@ -49,12 +49,6 @@ class StringTransformer {
         if (stringToTransform == null) {
             return null;
         }
-        if (stringToTransform.toLowerCase().equals("true")) {
-            return new ModlObject.True();
-        }
-        if (stringToTransform.toLowerCase().equals("false")) {
-            return new ModlObject.False();
-        }
 
         // 5: Replace the strings as per the txt document attached "string-replacement.txt"
         // Defer until after all other processing is complete.
