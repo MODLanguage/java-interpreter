@@ -24,6 +24,7 @@ import uk.modl.parser.printers.ModlObjectJsonSerializer;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by alex on 13/09/2018.
@@ -237,9 +238,19 @@ public class ModlObject extends ModlValue {
             if (this.modlValue instanceof ModlObject.Map) {
                 ((Map) this.modlValue).addPair((Pair) value);
             } else if (this.modlValue instanceof ModlObject.Pair && value instanceof ModlObject.Pair) {
-                this.modlValue = new Map();
-                ((Map) this.modlValue).addPair((Pair) oldValue);
-                ((Map) this.modlValue).addPair((Pair) value);
+                final ModlObject.Pair oldPair = (Pair) oldValue;
+                final ModlObject.Pair newPair = (Pair) value;
+                if (oldPair.getKey().equals(newPair.getKey())) {
+                    this.modlValue = new Array();
+                    ((Array) this.modlValue).addValue(oldValue);
+                    ((Array) this.modlValue).addValue(value);
+                } else {
+                    this.modlValue = new Map();
+                    ((Map) this.modlValue).addPair((Pair) oldValue);
+                    ((Map) this.modlValue).addPair((Pair) value);
+                }
+            } else if (this.modlValue instanceof Array) {
+                ((Array) this.modlValue).addValue(value);
             } else {
                 this.modlValue = new Array();
                 ((Array) this.modlValue).addValue(oldValue);
@@ -296,6 +307,19 @@ public class ModlObject extends ModlValue {
             return true;
         }
 
+        @Override public boolean equals(final Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+            final String string1 = (String) o;
+            return Objects.equals(string, string1.string);
+        }
+
+        @Override
+        public int hashCode() {
+            return 0;
+        }
     }
 
     public static class Number extends ModlValue {
