@@ -72,5 +72,6 @@
   "*class(*id=a;*name=alpha;*superclass=num);a=x",
   "*class(*id=a;*name=alpha;*superclass=num);a=null",
   "*class(*id=a;*name=alpha;*superclass=map);a=[1;2;3]",
-  "*class(*id=a;*name=alpha;*superclass=arr);a=(c=d)"
+  "*class(*id=a;*name=alpha;*superclass=arr);a=(c=d)",
+  "*L=grammar_tests/test_import_dir/nested_import1.txt;files=%*load"
 ]

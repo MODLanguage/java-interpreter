@@ -1444,5 +1444,37 @@
       "class",
       "superclass"
     ]
+  },
+  {
+    "input": "*L=[grammar_tests/1;grammar_tests/1];a=1",
+    "minimised_modl": "*L=[grammar_tests/1;grammar_tests/1];a=1",
+    "expected_output": "{\"a\":1}",
+    "tested_features": [
+      "load"
+    ]
+  },
+  {
+    "input": "*L=grammar_tests/1:grammar_tests/1;a=1",
+    "minimised_modl": "*L=grammar_tests/1:grammar_tests/1;a=1",
+    "expected_output": "{\"a\":1}",
+    "tested_features": [
+      "load"
+    ]
+  },
+  {
+    "input": "ref=123;\nkey=%ref%",
+    "minimised_modl": "ref=123;key=%ref%",
+    "expected_output": "[ {\n  \"ref\" : 123\n}, {\n  \"key\" : \"123%\"\n} ]",
+    "tested_features": [
+      "object_ref"
+    ]
+  },
+  {
+    "input": "a = `example`.u.nonsense.s",
+    "minimised_modl": "a = `example`.u.nonsense.s",
+    "expected_output": "{\n    \"a\": \"EXAMPLE.nonsense.s\"\n}",
+    "tested_features": [
+      "object_ref"
+    ]
   }
 ]

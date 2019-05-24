@@ -391,13 +391,7 @@ public class Interpreter {
             if (parentPair == null && !(newKey.startsWith("%")) && addToValuePairs) {
                 pairNames.add(newKey);
             }
-            ModlValue newValue = transformPairKey(modlObject, rawPair, newKey, parentPair);
-            if ((newValue instanceof ModlObject.String && !((ModlObject.String) newValue).string.contains("%")) ||
-                newValue instanceof ModlObject.Number) {
-                pair.setKey(new ModlObject.String(newKey));
-                pair.addModlValue(newValue);
-                return pair;
-            }
+            transformPairKey(modlObject, rawPair, newKey, parentPair);
         }
         if (newKey != null && (newKey.startsWith("_") || (newKey.startsWith("*")) || newKey.equals("?"))) {
             return null;

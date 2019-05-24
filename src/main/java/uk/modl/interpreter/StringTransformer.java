@@ -45,6 +45,111 @@ class StringTransformer {
         this.numberedVariables = numberedVariables;
     }
 
+    public static List<String> getPercentPartsFromString(String stringToTransform) {
+        // Find all non-space parts of the string that are prefixed with % (percent sign) and don't end with %
+        List<String> percentParts = new LinkedList<>();
+        int currentIndex = 0;
+        boolean finished = false;
+        while (!finished) {
+            finished = true;
+            Integer startIndex = getNextPercent(stringToTransform, currentIndex);
+            if (startIndex != null) {
+                Integer endIndex;
+                // If the first character after the % is a number, then keep reading until we get to a non-number (taking account of method chains)
+                // If the first character after the % is a letter, then keep reading until we get to a space
+                if (startIndex < stringToTransform.length() - 1 &&
+                    !isNumber(stringToTransform.substring(startIndex + 1, startIndex + 2))) {
+                    // Just read to the next space
+                    int spaceEndIndex = stringToTransform.indexOf(" ", startIndex);
+                    int colonEndIndex = stringToTransform.indexOf(":", startIndex);
+                    if (spaceEndIndex == -1) {
+                        spaceEndIndex = 99999;
+                    }
+                    if (colonEndIndex == -1) {
+                        colonEndIndex = 99999;
+                    }
+                    endIndex = Math.min(spaceEndIndex, colonEndIndex);
+                    if (endIndex > stringToTransform.length()) {
+                        endIndex = stringToTransform.length();
+                    }
+                } else if (startIndex == stringToTransform.length() - 1) {
+                    return percentParts;
+                } else {
+                    endIndex = getEndOfNumber(stringToTransform, startIndex + 1);
+                }
+                if (endIndex != null && endIndex != -1) {
+                    if (endIndex > startIndex + 1) {
+                        String gravePart = stringToTransform.substring(startIndex, endIndex);
+                        if (gravePart.endsWith("%")) {
+                            gravePart = gravePart.substring(0, gravePart.length() - 1);
+                        }
+                        percentParts.add(gravePart);
+                        currentIndex = endIndex + 1;
+                    }
+                    finished = false;
+                }
+            }
+        }
+        return percentParts;
+    }
+
+    private static Integer getEndOfNumber(String stringToTransform, Integer startIndex) {
+        // We actually need to keep processing this string until we get to an end
+        // The end (for the number type) can be a space, or else any non-number character
+        // If the end is a ".", then check to see if we have a variable method
+
+        // First, find the end of the number
+        Integer currentIndex = startIndex;
+        if (currentIndex == stringToTransform.length()) {
+            return currentIndex;
+        }
+        while (isNumber(stringToTransform.substring(currentIndex, currentIndex + 1))) {
+            currentIndex++;
+            if (currentIndex == stringToTransform.length()) {
+                return currentIndex;
+            }
+        }
+
+        // Check the first character after the number
+        if (!(stringToTransform.substring(currentIndex, currentIndex + 1).equals("."))) {
+            // - if it is not a ".", then return the end of the number
+            return currentIndex;
+        }
+
+        // If there is a ".", then keep reading until either :
+        while (true) {
+
+            currentIndex++;
+            if (currentIndex > stringToTransform.length() - 1) {
+                return currentIndex;
+            }
+            char nextChar = stringToTransform.charAt(currentIndex);
+            if (nextChar != '.' && !Character.isLetterOrDigit(nextChar)) {
+                // or b) we come to another "." - in which case keep going and build up a new method name from the characters
+                return currentIndex;
+            }
+        }
+    }
+
+    private static boolean isNumber(String substring) {
+        return (substring.equals("0") ||
+                substring.equals("1") ||
+                substring.equals("2") ||
+                substring.equals("3") ||
+                substring.equals("4"))
+               || substring.equals("5") || substring.equals("6") || substring.equals("7") || substring.equals("8")
+               || substring.equals("9");
+    }
+
+    private static Integer getNextPercent(String stringToTransform, Integer startIndex) {
+        // From startIndex, find the next grave. If it is prefixed by either ~ or \ then ignore it and find the next one
+        int index = stringToTransform.indexOf("%", startIndex);
+        if (index == -1) {
+            return null;
+        }
+        return index;
+    }
+
     ModlValue transformString(String stringToTransform) {
         if (stringToTransform == null) {
             return null;
@@ -121,108 +226,6 @@ class StringTransformer {
         }
 
         return new ModlObject.String(stringToTransform);
-    }
-
-    private List<String> getPercentPartsFromString(String stringToTransform) {
-        // Find all non-space parts of the string that are prefixed with % (percent sign).
-        List<String> percentParts = new LinkedList<>();
-        int currentIndex = 0;
-        boolean finished = false;
-        while (!finished) {
-            finished = true;
-            Integer startIndex = getNextPercent(stringToTransform, currentIndex);
-            if (startIndex != null) {
-                Integer endIndex;
-                // If the first character after the % is a number, then keep reading until we get to a non-number (taking account of method chains)
-                // If the first character after the % is a letter, then keep reading until we get to a space
-                if (startIndex < stringToTransform.length() - 1 &&
-                    !isNumber(stringToTransform.substring(startIndex + 1, startIndex + 2))) {
-                    // Just read to the next space
-                    int spaceEndIndex = stringToTransform.indexOf(" ", startIndex);
-                    int colonEndIndex = stringToTransform.indexOf(":", startIndex);
-                    if (spaceEndIndex == -1) {
-                        spaceEndIndex = 99999;
-                    }
-                    if (colonEndIndex == -1) {
-                        colonEndIndex = 99999;
-                    }
-                    endIndex = Math.min(spaceEndIndex, colonEndIndex);
-                    if (endIndex > stringToTransform.length()) {
-                        endIndex = stringToTransform.length();
-                    }
-                } else if (startIndex == stringToTransform.length() - 1) {
-                    return percentParts;
-                } else {
-                    endIndex = getEndOfNumber(stringToTransform, startIndex + 1);
-                }
-                if (endIndex != null && endIndex != -1) {
-                    if (endIndex > startIndex + 1) {
-                        String gravePart = stringToTransform.substring(startIndex, endIndex);
-                        percentParts.add(gravePart);
-                        currentIndex = endIndex + 1;
-                    }
-                    finished = false;
-                }
-            }
-        }
-        return percentParts;
-    }
-
-    private Integer getEndOfNumber(String stringToTransform, Integer startIndex) {
-        // We actually need to keep processing this string until we get to an end
-        // The end (for the number type) can be a space, or else any non-number character
-        // If the end is a ".", then check to see if we have a variable method
-
-        // First, find the end of the number
-        Integer currentIndex = startIndex;
-        if (currentIndex == stringToTransform.length()) {
-            return currentIndex;
-        }
-        while (isNumber(stringToTransform.substring(currentIndex, currentIndex + 1))) {
-            currentIndex++;
-            if (currentIndex == stringToTransform.length()) {
-                return currentIndex;
-            }
-        }
-
-        // Check the first character after the number
-        if (!(stringToTransform.substring(currentIndex, currentIndex + 1).equals("."))) {
-            // - if it is not a ".", then return the end of the number
-            return currentIndex;
-        }
-
-        // If there is a ".", then keep reading until either :
-        while (true) {
-
-            currentIndex++;
-            if (currentIndex > stringToTransform.length() - 1) {
-                return currentIndex;
-            }
-            char nextChar = stringToTransform.charAt(currentIndex);
-            if (nextChar != '.' && !Character.isLetterOrDigit(nextChar)) {
-                // or b) we come to another "." - in which case keep going and build up a new method name from the characters
-                return currentIndex;
-            }
-        }
-    }
-
-    private boolean isNumber(String substring) {
-        return (substring.equals("0") ||
-                substring.equals("1") ||
-                substring.equals("2") ||
-                substring.equals("3") ||
-                substring.equals("4"))
-               || substring.equals("5") || substring.equals("6") || substring.equals("7") || substring.equals("8")
-               || substring.equals("9");
-    }
-
-    private Integer getNextPercent(String stringToTransform, Integer startIndex) {
-        // From startIndex, find the next grave. If it is prefixed by either ~ or \ then ignore it and find the next one
-        int index = stringToTransform.indexOf("%", startIndex);
-        if (index == -1) {
-            return null;
-        }
-        return index;
     }
 
     private List<String> getGravePartsFromString(String stringToTransform) {
