@@ -333,33 +333,39 @@ Replace the part originally found (including graves) with the transformed subjec
             methods = new String[1];
             methods[0] = remainder;
         }
+        boolean stalled = false;
         for (String method : methods) {
-            if (method.contains("(")) {
-                // HANDLE TRIM AND REPLACE HERE!!
-                // We need to strip the "(<params>)" and apply the method to the subject AND the params!
-                // TODO (we might need to check for escaped "."s one day...
-                int startParamsIndex = method.indexOf("(");
-                String paramsString = method.substring(startParamsIndex + 1, method.length() - 1); //  - 1);
-                String methodString = method.substring(0, startParamsIndex);
-                subject = Interpreter.variableMethods.transform(methodString, subject + "," + paramsString);
-                remainder = null;
-            } else {
-                if (!Interpreter.variableMethods.isVariableMethod(method)) {
-                    // Nothing to do - leave it alone!
-                    subject = subject + "." + method;
+            if (!stalled) {
+                if (method.contains("(")) {
+                    // HANDLE TRIM AND REPLACE HERE!!
+                    // We need to strip the "(<params>)" and apply the method to the subject AND the params!
+                    // TODO (we might need to check for escaped "."s one day...
+                    int startParamsIndex = method.indexOf("(");
+                    String paramsString = method.substring(startParamsIndex + 1, method.length() - 1); //  - 1);
+                    String methodString = method.substring(0, startParamsIndex);
+                    subject = Interpreter.variableMethods.transform(methodString, subject + "," + paramsString);
                     remainder = null;
                 } else {
-                    final Matcher matcher = VariableMethods.STRING.matcher(method);
+                    if (!Interpreter.variableMethods.isVariableMethod(method)) {
+                        // Nothing to do - leave it alone!
+                        subject = subject + "." + method;
+                        remainder = "";
+                        stalled = true;
+                    } else {
+                        final Matcher matcher = VariableMethods.STRING.matcher(method);
 
-                    if (matcher.find() && matcher.groupCount() > 0) {
-                        final String match = matcher.group(0);
-                        remainder = method.substring(match.length());
-                        if (!match.equals(method)) {
-                            method = match;
+                        if (matcher.find() && matcher.groupCount() > 0) {
+                            final String match = matcher.group(0);
+                            remainder = method.substring(match.length());
+                            if (!match.equals(method)) {
+                                method = match;
+                            }
+                            subject = Interpreter.variableMethods.transform(method, subject);
                         }
-                        subject = Interpreter.variableMethods.transform(method, subject);
                     }
                 }
+            } else {
+                remainder += "." + method;
             }
         }
         if (remainder != null) {
