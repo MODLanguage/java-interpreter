@@ -4,4 +4,5 @@
 *.jar
 build
 out
+**/.DS_Store
 !gradle/wrapper/gradle-wrapper.jar
