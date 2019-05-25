@@ -676,7 +676,22 @@ public class Interpreter {
         }
 
         valuePair.setKey(new ModlObject.String(fullClassName));
-        valuePair.addModlValue(newValue);
+
+        String classType = null;
+        if (aClass != null) {
+            classType = getSuperclassPrimitive((String) aClass.get("*superclass"));
+        }
+        if ("str".equals(classType)) {
+            valuePair.addModlValue(makeValueString(newValue));
+        } else if ("num".equals(classType)) {
+            valuePair.addModlValue(makeValueNumber(newValue));
+        } else if ("arr".equals(classType)) {
+            valuePair.addModlValue(makeValueArray(newValue));
+        } else if ("mao".equals(classType)) {
+            valuePair.addModlValue(makeValueMap(newValue));
+        } else {
+            valuePair.addModlValue(newValue);
+        }
         pair.addModlValue(valuePair);
     }
 
