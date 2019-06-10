@@ -1476,5 +1476,13 @@
     "tested_features": [
       "object_ref"
     ]
+  },
+  {
+    "input": "{\n  !one?\n     _one=c\n};\n{\n  !two?\n     _two=d\n};\n\n_file = `%one`-`%two`;\n{\n  file=a-b/c-d/e-f?\n    *LOAD=\"grammar_tests/files/`%file`.txt!\"\n  /?\n    *LOAD=\"grammar_tests/files/a-b.txt!\"\n};\n\no=%ref.o.name",
+    "minimised_modl": "{!one?_one=c};{!two?_two=d};_file = `%one`-`%two`;{file=a-b/c-d/e-f?*LOAD=\"grammar_tests/files/`%file`.txt!\"/?*LOAD=\"grammar_tests/files/a-b.txt!\"};o=%ref.o.name",
+    "expected_output": "{\"o\"=\"otter\"}",
+    "tested_features": [
+      "object_ref","conditional"
+    ]
   }
 ]
