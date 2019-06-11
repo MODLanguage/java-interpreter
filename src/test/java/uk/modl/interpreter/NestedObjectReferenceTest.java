@@ -6,6 +6,7 @@ import uk.modl.modlObject.ModlObject;
 import uk.modl.modlObject.ModlValue;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class NestedObjectReferenceTest {
@@ -79,7 +80,7 @@ public class NestedObjectReferenceTest {
     @Test
     public void test_01() {
         try {
-            final ModlObject modlObject = Interpreter.interpret(nestedTestString01);
+            final ModlObject modlObject = Interpreter.interpret(nestedTestString01, new ArrayList<String>());
             Assert.assertNotNull("ModlObject should not be null", modlObject);
 
             final List<ModlObject.Structure> structures = modlObject.getStructures();
@@ -117,7 +118,7 @@ public class NestedObjectReferenceTest {
     @Test
     public void test_02() {
         try {
-            final ModlObject modlObject = Interpreter.interpret(nestedTestString02);
+            final ModlObject modlObject = Interpreter.interpret(nestedTestString02, new ArrayList<String>());
             Assert.assertNotNull("ModlObject should not be null", modlObject);
 
             final List<ModlObject.Structure> structures = modlObject.getStructures();
@@ -155,7 +156,7 @@ public class NestedObjectReferenceTest {
     @Test
     public void test_03() {
         try {
-            final ModlObject modlObject = Interpreter.interpret(nestedTestString03);
+            final ModlObject modlObject = Interpreter.interpret(nestedTestString03, new ArrayList<String>());
             Assert.assertNotNull(modlObject);
             Assert.fail("Expected a RuntimeException since the variable name doesn't match anything from the input string.");
         } catch (IOException e) {
@@ -171,7 +172,7 @@ public class NestedObjectReferenceTest {
     @Test
     public void test_04() {
         try {
-            final ModlObject modlObject = Interpreter.interpret(nestedTestString04);
+            final ModlObject modlObject = Interpreter.interpret(nestedTestString04, new ArrayList<String>());
             Assert.assertNotNull("ModlObject should not be null", modlObject);
 
             final List<ModlObject.Structure> structures = modlObject.getStructures();
@@ -209,7 +210,7 @@ public class NestedObjectReferenceTest {
     @Test
     public void test_05() {
         try {
-            final ModlObject modlObject = Interpreter.interpret(nestedTestString05);
+            final ModlObject modlObject = Interpreter.interpret(nestedTestString05, new ArrayList<String>());
             Assert.assertNotNull("ModlObject should not be null", modlObject);
 
             final List<ModlObject.Structure> structures = modlObject.getStructures();
@@ -247,7 +248,7 @@ public class NestedObjectReferenceTest {
     @Test
     public void test_06() {
         try {
-            final ModlObject modlObject = Interpreter.interpret(nestedTestString06);
+            final ModlObject modlObject = Interpreter.interpret(nestedTestString06, new ArrayList<String>());
             Assert.assertNotNull("ModlObject should not be null", modlObject);
 
             final List<ModlObject.Structure> structures = modlObject.getStructures();
@@ -285,7 +286,7 @@ public class NestedObjectReferenceTest {
     @Test
     public void test_07() {
         try {
-            final ModlObject modlObject = Interpreter.interpret(nestedTestString07);
+            final ModlObject modlObject = Interpreter.interpret(nestedTestString07, new ArrayList<String>());
             Assert.assertNotNull("ModlObject should not be null", modlObject);
 
             final List<ModlObject.Structure> structures = modlObject.getStructures();
@@ -323,7 +324,7 @@ public class NestedObjectReferenceTest {
     @Test
     public void test_08() {
         try {
-            final ModlObject modlObject = Interpreter.interpret(nestedTestString08);
+            final ModlObject modlObject = Interpreter.interpret(nestedTestString08, new ArrayList<String>());
             Assert.assertNotNull(modlObject);
             Assert.fail("Expected a RuntimeException due to numerical indexing of maps");
         } catch (IOException e) {
@@ -340,7 +341,7 @@ public class NestedObjectReferenceTest {
     @Test
     public void test_09() {
         try {
-            final ModlObject modlObject = Interpreter.interpret(nestedTestString09);
+            final ModlObject modlObject = Interpreter.interpret(nestedTestString09, new ArrayList<String>());
             Assert.assertNotNull("ModlObject should not be null", modlObject);
 
             final List<ModlObject.Structure> structures = modlObject.getStructures();
@@ -377,7 +378,7 @@ public class NestedObjectReferenceTest {
     @Test
     public void test_10() {
         try {
-            final ModlObject modlObject = Interpreter.interpret(nestedTestString10);
+            final ModlObject modlObject = Interpreter.interpret(nestedTestString10, new ArrayList<String>());
 
             final List<ModlObject.Structure> structures = modlObject.getStructures();
 
@@ -398,7 +399,7 @@ public class NestedObjectReferenceTest {
     @Test
     public void test_11() {
         try {
-            final ModlObject modlObject = Interpreter.interpret(nestedTestString11);
+            final ModlObject modlObject = Interpreter.interpret(nestedTestString11, new ArrayList<String>());
 
             final List<ModlObject.Structure> structures = modlObject.getStructures();
 
@@ -419,7 +420,7 @@ public class NestedObjectReferenceTest {
     @Test
     public void test_12() {
         try {
-            final ModlObject modlObject = Interpreter.interpret(nestedTestString12);
+            final ModlObject modlObject = Interpreter.interpret(nestedTestString12, new ArrayList<String>());
 
             final List<ModlObject.Structure> structures = modlObject.getStructures();
 

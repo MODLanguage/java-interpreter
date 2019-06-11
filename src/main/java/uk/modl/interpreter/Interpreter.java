@@ -41,27 +41,31 @@ public class Interpreter {
     private Map<Integer, ModlValue> numberedVariables = new HashMap<>();
     // Store any uppercase instructions we've seen, so we know not to allow them again
     private Set<String> uppercaseInstructions = new HashSet<>();
-    private List<String> loadedFiles = new ArrayList<>();
+    private List<String> loadedFiles;
     private List<VariableMethodLoader.MethodDescriptor> methodList = new ArrayList<>();
     private Set<String> pairNames; // TODO Get rid of this!
     private Map<String, ModlValue> valuePairs;
     private List<String> PRIMITIVES = Arrays.asList("num", "str", "map", "arr", "bool", "null");
 
-    public static String parseToJson(String input) throws IOException {
-        ModlObject modlObject = interpret(input);
+    public Interpreter(final List<String> loadedFiles) {
+        this.loadedFiles = loadedFiles;
+    }
+
+    public static String parseToJson(final String input, final List<String> loadedFiles) throws IOException {
+        ModlObject modlObject = interpret(input, loadedFiles);
 
         return JsonPrinter.printModl(modlObject);
 
     }
 
-    public static ModlObject interpret(String input) throws IOException {
+    public static ModlObject interpret(final String input, final List<String> loadedFiles) throws IOException {
         RawModlObject rawModlObject = ModlObjectCreator.processModlParsed(input);
 
-        return interpret(rawModlObject);
+        return interpret(rawModlObject, loadedFiles);
     }
 
-    public static ModlObject interpret(RawModlObject rawModlObject) {
-        Interpreter interpreter = new Interpreter();
+    public static ModlObject interpret(final RawModlObject rawModlObject, final List<String> loadedFiles) {
+        Interpreter interpreter = new Interpreter(loadedFiles);
         variableMethods = new VariableMethods();
         ModlObject modlObject = null;
         while (modlObject == null) {
@@ -143,6 +147,9 @@ public class Interpreter {
         boolean versionNumberIsWrong = false;
 
         // Interpret rawModlObject based on specified config files
+        boolean needRestart = false;
+        RawModlObject loadedRawModlObject = null;
+        String importFileValue = null;
         try {
             int i = 0;
             for (RawModlObject.Structure rawStructure : rawModlObject.getStructures()) {
@@ -181,11 +188,20 @@ public class Interpreter {
                                         (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase()
                                                 .equals(
                                                         "*load")))))) {
-                    List<ModlObject.Structure> structures = interpret(modlObject, rawStructure);
-                    if (structures != null) {
-                        for (ModlObject.Structure structure : structures) {
-                            modlObject.addStructure(structure);
-                        }
+                    addToUpperCaseInstructions(((ModlObject.Pair) rawStructure).getKey().string);
+
+                    // Load in the config file specified by the "l" object
+                    if (((ModlObject.Pair) rawStructure).getModlValue() instanceof ModlObject.String) {
+                        importFileValue = ((ModlObject.String) ((ModlObject.Pair) rawStructure).getModlValue()).string;
+                        loadedRawModlObject = loadConfigFile(importFileValue);
+                        needRestart = true;
+                        break;
+                    } else if (((ModlObject.Pair) rawStructure).getModlValue() instanceof ModlObject.Number) {
+                        importFileValue =
+                            ((ModlObject.Number) ((ModlObject.Pair) rawStructure).getModlValue()).number;
+                        loadedRawModlObject = loadConfigFile(importFileValue);
+                        needRestart = true;
+                        break;
                     }
                     continue;
                 }
@@ -207,6 +223,7 @@ public class Interpreter {
                             pair.getKey().string.toLowerCase().equals("*m")) {
                         addToUpperCaseInstructions(pair.getKey().string);
                         VariableMethodLoader.loadVariableMethod(methodList, pair, this);
+                        continue;
                     } else if (pair.getKey().string.equals("?")) {
                         VariableLoader.loadConfigNumberedVariables(pair.getModlValue(), numberedVariables);
                     } else {
@@ -243,7 +260,12 @@ public class Interpreter {
                 i++;
             }
 
+            if (needRestart) {
+                rawModlObject.replaceFirstImport(importFileValue, loadedRawModlObject);
+                throw new RequireRestart();
+            } else {
             return modlObject;
+            }
         } catch (final Exception e) {
             if (versionNumberIsWrong) {
                 throw new UnsupportedOperationException("Can't handle MODL version " + versionString);
@@ -402,13 +424,11 @@ public class Interpreter {
                 if (pair.getModlValue() instanceof ModlObject.String) {
                     importFileValue = ((ModlObject.String) (pair).getModlValue()).string;
                     loadedRawModlObject = loadConfigFile(importFileValue);
-                    interpret(loadedRawModlObject);
                     return makePairFromLoadedFile(loadedRawModlObject);
                 } else if ((pair).getModlValue() instanceof ModlObject.Number) {
                     importFileValue =
                             ((ModlObject.Number) (pair).getModlValue()).number;
                     loadedRawModlObject = loadConfigFile(importFileValue);
-                    interpret(loadedRawModlObject);
                     return makePairFromLoadedFile(loadedRawModlObject);
                 }
             }

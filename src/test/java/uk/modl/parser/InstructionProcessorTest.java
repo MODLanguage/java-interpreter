@@ -26,6 +26,7 @@ import uk.modl.modlObject.ModlObject;
 import uk.modl.parser.printers.JsonPrinter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * @author twalmsley
@@ -68,7 +69,7 @@ public class InstructionProcessorTest {
         System.out.println("Input : " + input);
         System.out.println("Expected : " + expected);
 
-        ModlObject interpreted = Interpreter.interpret(input);
+        ModlObject interpreted = Interpreter.interpret(input, new ArrayList<String>());
         String output = JsonPrinter.printModl(interpreted);
         System.out.println("Output : " + output);
         Assert.assertEquals(expected

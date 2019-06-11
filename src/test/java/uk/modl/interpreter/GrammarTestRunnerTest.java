@@ -10,6 +10,7 @@ import uk.modl.parser.printers.JsonPrinter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -46,7 +47,7 @@ public class GrammarTestRunnerTest extends TestCase {
         System.out.println("Minimised : " + testInput.minimised_modl);
         System.out.println("Expected : " + testInput.expected_output);
 
-        ModlObject modlObject = Interpreter.interpret(testInput.input);
+        ModlObject modlObject = Interpreter.interpret(testInput.input, new ArrayList<String>());
         String output = JsonPrinter.printModl(modlObject);
         System.out.println("Output : " + output);
         assertEquals(testInput.expected_output.replace(" ", "").replace("\n", "").replace("\r", ""),
@@ -78,7 +79,7 @@ public class GrammarTestRunnerTest extends TestCase {
     private void checkInValidTestInput(String testInput) {
         System.out.println("Failing Input : " + testInput);
         try {
-            ModlObject modlObject = Interpreter.interpret(testInput);
+            ModlObject modlObject = Interpreter.interpret(testInput, new ArrayList<String>());
             fail("Expected error");
         } catch (Exception e) {
             // OK

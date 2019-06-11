@@ -29,6 +29,7 @@ import uk.modl.parser.printers.JsonPrinter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class ModlServer extends AbstractHandler {
     public static void main(String[] args) throws Exception {
@@ -52,7 +53,7 @@ public class ModlServer extends AbstractHandler {
         ModlObject modlObject = null;
         try {
             if (modlInput != null) {
-                modlObject = Interpreter.interpret(modlInput);
+                modlObject = Interpreter.interpret(modlInput, new ArrayList<String>());
             }
 
             String jsonOutput = JsonPrinter.printModl(modlObject);

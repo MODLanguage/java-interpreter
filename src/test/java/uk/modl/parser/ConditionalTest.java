@@ -26,6 +26,7 @@ import uk.modl.modlObject.ModlObject;
 import uk.modl.parser.printers.JsonPrinter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -154,7 +155,7 @@ public class ConditionalTest extends TestCase {
             System.out.println("Input : " + input);
             System.out.println("Expected : " + expected);
 
-            ModlObject modlObject = Interpreter.interpret(input);
+            ModlObject modlObject = Interpreter.interpret(input, new ArrayList<String>());
             String output = JsonPrinter.printModl(modlObject);
             System.out.println("Output : " + output);
             assertEquals(expected.replace(" ", "").replace("\n", "").replace("\r", ""),

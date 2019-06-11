@@ -26,6 +26,7 @@ import uk.modl.modlObject.ModlObject;
 import uk.modl.parser.printers.JsonPrinter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -1318,7 +1319,7 @@ public class ParserTest2 extends TestCase {
             System.out.println("Input : " + input);
             System.out.println("Expected : " + expected);
 
-            ModlObject modlObject = Interpreter.interpret(input);
+            ModlObject modlObject = Interpreter.interpret(input, new ArrayList<String>());
             String output = JsonPrinter.printModl(modlObject);
             System.out.println("Output : " + output);
             assertEquals(expected.replace(" ", "").replace("\n", "").replace("\r", ""),
@@ -1329,7 +1330,7 @@ public class ParserTest2 extends TestCase {
 
     @Test
     public void testPrintingModlValue() throws Exception {
-        ModlObject object = Interpreter.interpret("n=(a=1;\nb=2)");
+        ModlObject object = Interpreter.interpret("n=(a=1;\nb=2)", new ArrayList<String>());
         String output = JsonPrinter.printModl(object.get("n"));
         System.out.println(output);
         assertEquals("{\n" +

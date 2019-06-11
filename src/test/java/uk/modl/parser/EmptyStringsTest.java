@@ -26,6 +26,7 @@ import uk.modl.modlObject.ModlObject;
 import uk.modl.parser.printers.JsonPrinter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * @author twalmsley
@@ -90,7 +91,7 @@ public class EmptyStringsTest {
         System.out.println("Expected : " + expected);
 
 //        RawModlObject rawModlObject = ModlObjectCreator.processModlParsed(input);
-        ModlObject rawModlObject = Interpreter.interpret(input);
+        ModlObject rawModlObject = Interpreter.interpret(input, new ArrayList<String>());
         String output = JsonPrinter.printModl(rawModlObject);
         System.out.println("Output : " + output);
         Assert.assertEquals(expected

@@ -7,6 +7,7 @@ import uk.modl.modlObject.ModlObject;
 import uk.modl.modlObject.ModlValue;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -143,6 +144,6 @@ public class ApiTest extends TestCase {
 
     private ModlObject getModlObject() throws IOException {
         // Make a new ModlObject from the parser
-        return Interpreter.interpret(inputString);
+        return Interpreter.interpret(inputString, new ArrayList<String>());
     }
 }
