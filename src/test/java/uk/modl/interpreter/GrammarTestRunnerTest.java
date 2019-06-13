@@ -47,7 +47,7 @@ public class GrammarTestRunnerTest extends TestCase {
         System.out.println("Minimised : " + testInput.minimised_modl);
         System.out.println("Expected : " + testInput.expected_output);
 
-        ModlObject modlObject = Interpreter.interpret(testInput.input, new ArrayList<String>());
+        ModlObject modlObject = Interpreter.interpret(testInput.input);
         String output = JsonPrinter.printModl(modlObject);
         System.out.println("Output : " + output);
         assertEquals(testInput.expected_output.replace(" ", "").replace("\n", "").replace("\r", ""),
@@ -79,7 +79,7 @@ public class GrammarTestRunnerTest extends TestCase {
     private void checkInValidTestInput(String testInput) {
         System.out.println("Failing Input : " + testInput);
         try {
-            ModlObject modlObject = Interpreter.interpret(testInput, new ArrayList<String>());
+            ModlObject modlObject = Interpreter.interpret(testInput);
             fail("Expected error");
         } catch (Exception e) {
             // OK

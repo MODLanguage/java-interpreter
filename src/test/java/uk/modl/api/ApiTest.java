@@ -144,6 +144,6 @@ public class ApiTest extends TestCase {
 
     private ModlObject getModlObject() throws IOException {
         // Make a new ModlObject from the parser
-        return Interpreter.interpret(inputString, new ArrayList<String>());
+        return Interpreter.interpret(inputString);
     }
 }

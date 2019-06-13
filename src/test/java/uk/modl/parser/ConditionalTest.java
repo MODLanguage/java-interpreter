@@ -155,7 +155,7 @@ public class ConditionalTest extends TestCase {
             System.out.println("Input : " + input);
             System.out.println("Expected : " + expected);
 
-            ModlObject modlObject = Interpreter.interpret(input, new ArrayList<String>());
+            ModlObject modlObject = Interpreter.interpret(input);
             String output = JsonPrinter.printModl(modlObject);
             System.out.println("Output : " + output);
             assertEquals(expected.replace(" ", "").replace("\n", "").replace("\r", ""),

@@ -58,6 +58,12 @@ public class Interpreter {
 
     }
 
+    public static ModlObject interpret(final String input) throws IOException {
+        RawModlObject rawModlObject = ModlObjectCreator.processModlParsed(input);
+
+        return interpret(rawModlObject, new ArrayList<String>());
+    }
+
     public static ModlObject interpret(final String input, final List<String> loadedFiles) throws IOException {
         RawModlObject rawModlObject = ModlObjectCreator.processModlParsed(input);
 
@@ -198,7 +204,7 @@ public class Interpreter {
                         break;
                     } else if (((ModlObject.Pair) rawStructure).getModlValue() instanceof ModlObject.Number) {
                         importFileValue =
-                            ((ModlObject.Number) ((ModlObject.Pair) rawStructure).getModlValue()).number;
+                                ((ModlObject.Number) ((ModlObject.Pair) rawStructure).getModlValue()).number;
                         loadedRawModlObject = loadConfigFile(importFileValue);
                         needRestart = true;
                         break;
@@ -264,7 +270,7 @@ public class Interpreter {
                 rawModlObject.replaceFirstImport(importFileValue, loadedRawModlObject);
                 throw new RequireRestart();
             } else {
-            return modlObject;
+                return modlObject;
             }
         } catch (final Exception e) {
             if (versionNumberIsWrong) {

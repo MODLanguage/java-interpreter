@@ -53,7 +53,7 @@ public class ModlServer extends AbstractHandler {
         ModlObject modlObject = null;
         try {
             if (modlInput != null) {
-                modlObject = Interpreter.interpret(modlInput, new ArrayList<String>());
+                modlObject = Interpreter.interpret(modlInput);
             }
 
             String jsonOutput = JsonPrinter.printModl(modlObject);
