@@ -788,12 +788,10 @@ public class Interpreter {
         if (parentPair == null) {
             if (newKey.startsWith("_")) {
                 if (originalPair.getModlValue() instanceof ModlObject.Map) {
-                    originalPair.setKey(new ModlObject.String(transformedKey));
                     Map newMap = new HashMap();
                     interpret(rawModlObject, (ModlObject.Map) (originalPair.getModlValue()), newMap);
                 }
                 if (originalPair.getModlValue() instanceof ModlObject.Array) {
-                    originalPair.setKey(new ModlObject.String(transformedKey));
                     List newList = new LinkedList();
                     interpret(rawModlObject, (ModlObject.Array) (originalPair.getModlValue()), newList);
                 }
