@@ -11,6 +11,6 @@ public class StringTransformerTest {
         final List<String> result = StringTransformer.getPercentPartsFromString("%ref%");
         Assert.assertNotNull(result);
         Assert.assertEquals(1, result.size());
-        Assert.assertEquals("%ref", result.get(0));
+        Assert.assertEquals("%ref%", result.get(0));
     }
 }

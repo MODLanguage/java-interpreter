@@ -101,10 +101,10 @@ class VariableMethodLoader {
         // Then continue from the end of the params for the first transform, and find the second transform and its params, and add that to the lambda
         // Keep going until we reach the end of the methodString
         List<Map<String, String>> methodsAndParams = new LinkedList<>();
-        while (methodString.indexOf("(") > 0 || methodString.length() > 0) {
+        while (methodString.indexOf("<") > 0 || methodString.length() > 0) {
             // Find the next transform
             // This can either be by the first bracket, or the first "." - whichever comes first
-            int bracketIndex = methodString.indexOf("(");
+            int bracketIndex = methodString.indexOf("<");
             int dotIndex = methodString.indexOf(".");
             int endOfStringIndex = methodString.length();
             int actualIndex = bracketIndex;
@@ -123,12 +123,12 @@ class VariableMethodLoader {
             String intermediateMethodName = methodString.substring(0, actualIndex);
 
             // Get the parameters
-            // If we split on a "(", then we need to find the closing ")" - the stuff inbetween these are the params
+            // If we split on a "<", then we need to find the closing ">" - the stuff inbetween these are the params
             // If we split on ".", then there are no params
             String params = null;
             int endIndex = endOfStringIndex;
             if (actualIndex == bracketIndex) {
-                int closeBracketIndex = methodString.indexOf(")");
+                int closeBracketIndex = methodString.indexOf(">");
                 params = methodString.substring(bracketIndex + 1, closeBracketIndex);
                 endIndex = closeBracketIndex + 1;
                 if (endIndex < methodString.length()) {

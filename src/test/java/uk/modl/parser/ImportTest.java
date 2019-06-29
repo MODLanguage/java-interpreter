@@ -35,13 +35,13 @@ public class ImportTest extends TestCase {
         {
             "*L=\"https://www.modl.uk/tests/message-thread.txt\";\n" +
             "\n" +
-            "m=out:2018-03-22 15\\:25:Hi;\n" +
+            "[m=out:2018-03-22 15\\:25:Hi;\n" +
             "m=in:2018-03-22 15\\:26:Hello, how are you?;\n" +
             "m=out:2018-03-22 15\\:25:Hi, good thanks;\n" +
             "m=out:2018-03-22 15\\:26:How about you?;\n" +
             "m=in:2018-03-22 15\\:26:Yes, fine thanks. What are you up to?;\n" +
             "m=out:2018-03-22 15\\:25:Just testing out MODL;\n" +
-            "m=in:2018-03-22 15\\:26:Cool!",
+            "m=in:2018-03-22 15\\:26:Cool!]",
             "[ {\n" +
             "  \"message\" : {\n" +
             "    \"direction\" : \"out\",\n" +
@@ -136,13 +136,13 @@ public class ImportTest extends TestCase {
         {
             "*L=grammar_tests/demo_config;\n" +
             "\n" +
-            "m=out:2018-03-22 15\\:25:Hi;\n" +
+            "[m=out:2018-03-22 15\\:25:Hi;\n" +
             "m=in:2018-03-22 15\\:26:Hello, how are you?;\n" +
             "m=out:2018-03-22 15\\:25:Hi, good thanks;\n" +
             "m=out:2018-03-22 15\\:26:How about you?;\n" +
             "m=in:2018-03-22 15\\:26:Yes, fine thanks. What are you up to?;\n" +
             "m=out:2018-03-22 15\\:25:Just testing out MODL;\n" +
-            "m=in:2018-03-22 15\\:26:Cool!",
+            "m=in:2018-03-22 15\\:26:Cool!]",
             "[ {\n" +
             "  \"message\" : {\n" +
             "    \"direction\" : \"out\",\n" +
@@ -206,22 +206,22 @@ public class ImportTest extends TestCase {
             "country = %c;\n" +
             "language = %l;\n" +
             "time_zone = %tz",
-                    "[\n" +
-                            "  {\"country\": \"us\"},\n" +
-                            "  {\"language\": \"en\"},\n" +
-                            "  {\"time_zone\": \"EST\"}\n" +
-                            "]",
+                    "{\n" +
+                            "  \"country\" : \"us\",\n" +
+                            "  \"language\" : \"en\",\n" +
+                            "  \"time_zone\" : \"EST\"\n" +
+                            "}",
             "_c=us;_l=en;*L=grammar_tests/import_config.modl;country=%c;language=%l;time_zone=%tz"},
         {
             "*L=grammar_tests/test_import_dir/test_import.txt;\n" +
             "\n" +
-            "m=out:2018-03-22 15\\:25:Hi;\n" +
+            "[m=out:2018-03-22 15\\:25:Hi;\n" +
             "m=in:2018-03-22 15\\:26:Hello, how are you?;\n" +
             "m=out:2018-03-22 15\\:25:Hi, good thanks;\n" +
             "m=out:2018-03-22 15\\:26:How about you?;\n" +
             "m=in:2018-03-22 15\\:26:Yes, fine thanks. What are you up to?;\n" +
             "m=out:2018-03-22 15\\:25:Just testing out MODL;\n" +
-            "m=in:2018-03-22 15\\:26:Cool!",
+            "m=in:2018-03-22 15\\:26:Cool!]",
             "[ {\n" +
             "  \"message\" : {\n" +
             "    \"direction\" : \"out\",\n" +

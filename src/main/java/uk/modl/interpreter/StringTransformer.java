@@ -30,7 +30,7 @@ import java.util.regex.Matcher;
 
 //import java.util.function.Function;
 
-class StringTransformer {
+public class StringTransformer {
 
     private Map<String, ModlValue> valuePairs;
     private Map<String, ModlValue> variables;
@@ -58,17 +58,31 @@ class StringTransformer {
                 // If the first character after the % is a number, then keep reading until we get to a non-number (taking account of method chains)
                 // If the first character after the % is a letter, then keep reading until we get to a space
                 if (startIndex < stringToTransform.length() - 1 &&
-                    !isNumber(stringToTransform.substring(startIndex + 1, startIndex + 2))) {
-                    // Just read to the next space
+                        !isNumber(stringToTransform.substring(startIndex + 1, startIndex + 2))) {
+                    // Just read to the next character that terminates a reference.
                     int spaceEndIndex = stringToTransform.indexOf(" ", startIndex);
                     int colonEndIndex = stringToTransform.indexOf(":", startIndex);
+                    int percentEndIndex = stringToTransform.indexOf("%", startIndex + 1);
+                    int bangEndIndex = stringToTransform.indexOf("!", startIndex);
+
                     if (spaceEndIndex == -1) {
                         spaceEndIndex = 99999;
                     }
                     if (colonEndIndex == -1) {
                         colonEndIndex = 99999;
                     }
+                    if (percentEndIndex == -1) {
+                        percentEndIndex = 99999;
+                    } else {
+                        percentEndIndex++;
+                    }
+                    if (bangEndIndex == -1) {
+                        bangEndIndex = 99999;
+                    }
                     endIndex = Math.min(spaceEndIndex, colonEndIndex);
+                    endIndex = Math.min(endIndex, percentEndIndex);
+                    endIndex = Math.min(endIndex, bangEndIndex);
+
                     if (endIndex > stringToTransform.length()) {
                         endIndex = stringToTransform.length();
                     }
@@ -80,9 +94,6 @@ class StringTransformer {
                 if (endIndex != null && endIndex != -1) {
                     if (endIndex > startIndex + 1) {
                         String gravePart = stringToTransform.substring(startIndex, endIndex);
-                        if (gravePart.endsWith("%")) {
-                            gravePart = gravePart.substring(0, gravePart.length() - 1);
-                        }
                         percentParts.add(gravePart);
                         currentIndex = endIndex + 1;
                     }
@@ -111,7 +122,11 @@ class StringTransformer {
         }
 
         // Check the first character after the number
-        if (!(stringToTransform.substring(currentIndex, currentIndex + 1).equals("."))) {
+        final String cAfterNumber = stringToTransform.substring(currentIndex, currentIndex + 1);
+        if (!(cAfterNumber.equals("."))) {
+            if (cAfterNumber.equals("%")) {
+                return currentIndex + 1;
+            }
             // - if it is not a ".", then return the end of the number
             return currentIndex;
         }
@@ -137,8 +152,8 @@ class StringTransformer {
                 substring.equals("2") ||
                 substring.equals("3") ||
                 substring.equals("4"))
-               || substring.equals("5") || substring.equals("6") || substring.equals("7") || substring.equals("8")
-               || substring.equals("9");
+                || substring.equals("5") || substring.equals("6") || substring.equals("7") || substring.equals("8")
+                || substring.equals("9");
     }
 
     private static Integer getNextPercent(String stringToTransform, Integer startIndex) {
@@ -205,13 +220,13 @@ class StringTransformer {
             if (ret instanceof ModlObject.String) {
                 final ModlObject.String theString = (ModlObject.String) ret;
                 if (stringToTransform.equals(theString.string) &&
-                    !stringToTransform.startsWith("%*") &&
-                    stringToTransform.contains(".") &&
-                    stringToTransform.contains("%") &&
-                    stringToTransform.indexOf("%") == stringToTransform.lastIndexOf("%")) {
+                        !stringToTransform.startsWith("%*") &&
+                        stringToTransform.contains(".") &&
+                        stringToTransform.contains("%") &&
+                        stringToTransform.indexOf("%") == stringToTransform.lastIndexOf("%")) {
                     throw new RuntimeException("Interpreter Error: Cannot resolve reference in: \"" +
-                                               stringToTransform +
-                                               "\"");
+                            stringToTransform +
+                            "\"");
                 }
                 stringToTransform = theString.string;
             } else if (ret instanceof ModlObject.Number) {
@@ -267,7 +282,7 @@ class StringTransformer {
         }
     }
 
-    ModlValue runObjectReferencing(String percentPart, String stringToTransform, boolean isGraved) {
+    ModlValue runObjectReferencing(String originalPercentPart, String stringToTransform, boolean isGraved) {
     /*
     Object Referencing
 If the reference includes a . (dot / full stop / period) then the reference key should be considered everything to the left of the . (dot / full stop / period).
@@ -282,11 +297,15 @@ Loop through the array and pass the subject to the named method, transforming th
 
 Replace the part originally found (including graves) with the transformed subject.
      */
+        String percentPart = originalPercentPart;
         int startOffset = 1;
         int endOffset = 0;
         if (isGraved) {
             startOffset += 1;
             endOffset += 1;
+        }
+        if (percentPart.endsWith("%")) {
+            percentPart = percentPart.substring(0, percentPart.length() - 1);
         }
         String subject = percentPart.substring(startOffset, percentPart.length() - endOffset);
 
@@ -322,7 +341,7 @@ Replace the part originally found (including graves) with the transformed subjec
             subject = runMethods(subject, remainder);
         }
 
-        stringToTransform = stringToTransform.replace(percentPart, subject);
+        stringToTransform = stringToTransform.replaceFirst(originalPercentPart, subject);
 
         return new ModlObject.String(stringToTransform);
     }
@@ -336,11 +355,11 @@ Replace the part originally found (including graves) with the transformed subjec
         boolean stalled = false;
         for (String method : methods) {
             if (!stalled) {
-                if (method.contains("(")) {
+                if (method.contains("<")) {
                     // HANDLE TRIM AND REPLACE HERE!!
                     // We need to strip the "(<params>)" and apply the method to the subject AND the params!
                     // TODO (we might need to check for escaped "."s one day...
-                    int startParamsIndex = method.indexOf("(");
+                    int startParamsIndex = method.indexOf("<");
                     String paramsString = method.substring(startParamsIndex + 1, method.length() - 1); //  - 1);
                     String methodString = method.substring(0, startParamsIndex);
                     subject = Interpreter.variableMethods.transform(methodString, subject + "," + paramsString);

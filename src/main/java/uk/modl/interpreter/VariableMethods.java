@@ -230,6 +230,9 @@ class VariableMethods {
         if (stringToTransform == null) {
             return null;
         }
+        if (stringToTransform.startsWith("%") ) {
+            stringToTransform = stringToTransform.substring(1);
+        }
         if (stringToTransform.startsWith("`") && stringToTransform.endsWith("`")) {
             stringToTransform = stringToTransform.substring(1, stringToTransform.length() - 1);
         }

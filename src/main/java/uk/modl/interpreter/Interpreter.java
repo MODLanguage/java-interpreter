@@ -171,7 +171,11 @@ public class Interpreter {
                                                         "*version")))))) {
                     addToUpperCaseInstructions(((ModlObject.Pair) rawStructure).getKey().string);
                     // This is the version number - check it and then ignore it
-                    versionString = ((ModlObject.Number) ((ModlObject.Pair) rawStructure).getModlValue()).number;
+                    if (((ModlObject.Pair) rawStructure).getModlValue() instanceof ModlObject.Number) {
+                        versionString = ((ModlObject.Number) ((ModlObject.Pair) rawStructure).getModlValue()).number;
+                    } else if (((ModlObject.Pair) rawStructure).getModlValue() instanceof ModlObject.String) {
+                        versionString = ((ModlObject.String) ((ModlObject.Pair) rawStructure).getModlValue()).string;
+                    }
                     float versionNumber = Float.valueOf(versionString);
                     if (versionNumber < 1.0 || versionNumber != Math.abs(versionNumber)) {
                         throw new RuntimeException("Interpreter Error: Invalid MODL version: " + versionString);
@@ -270,6 +274,43 @@ public class Interpreter {
                 rawModlObject.replaceFirstImport(importFileValue, loadedRawModlObject);
                 throw new RequireRestart();
             } else {
+                // Adopt orphan pairs
+                final Set<String> keys = new HashSet<>();
+
+                // Replace the existing structures with the new ones.
+                final Collection<ModlObject.Structure> newStructures = new HashSet<>();
+                final ModlObject.Map adopter = new ModlObject.Map();
+
+                for (final ModlObject.Structure structure : modlObject.getStructures()) {
+                    if (structure.isPair()) {
+                        final ModlObject.Pair pair = (ModlObject.Pair) structure;
+                        adopter.addPair(pair);
+
+                        final String keyStr = pair.getKey().string;
+                        if (keys.contains(keyStr)) {
+                            throw new RuntimeException("Duplicate top-level keys are not allowed.");
+                        } else {
+                            keys.add(keyStr);
+                        }
+                    } else {
+                        newStructures.add(structure);
+                    }
+                }
+
+                if (adopter.getPairs().size() > 1 && newStructures.isEmpty()) {
+                    modlObject.getStructures().clear();
+                    modlObject.getStructures().add(adopter);
+                } else if (adopter.getPairs().isEmpty() && !newStructures.isEmpty()) {
+                    modlObject.getStructures().clear();
+                    modlObject.getStructures().addAll(newStructures);
+                } else if (adopter.getPairs().size() == 1) {
+                    // Nothing to do for a single top-level pair.
+                } else if (adopter.getPairs().size() == 0 && newStructures.size() == 0) {
+                    // Nothing to do for an empty result.
+                } else {
+                    throw new RuntimeException("Mixed top-level types are not allowed.");
+                }
+
                 return modlObject;
             }
         } catch (final Exception e) {

@@ -10,7 +10,6 @@ import uk.modl.parser.printers.JsonPrinter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -29,11 +28,14 @@ public class GrammarTestRunnerTest extends TestCase {
             });
             int testNumber = 1;
             int
-                startFromTestNumber =
-                0;// Use this to skip tests manually to make it easier for debugging a specific test.
+                    startFromTestNumber =
+                    0;// Use this to skip tests manually to make it easier for debugging a specific test.
             for (TestInput testInput : list) {
                 if (testNumber >= startFromTestNumber) {
                     System.out.println("Running test number: " + testNumber);
+                    if (testInput.input.equals("DELETED")) {
+                        continue;
+                    }
                     checkValidTestInput(testInput);
                 }
                 testNumber++;
@@ -51,7 +53,7 @@ public class GrammarTestRunnerTest extends TestCase {
         String output = JsonPrinter.printModl(modlObject);
         System.out.println("Output : " + output);
         assertEquals(testInput.expected_output.replace(" ", "").replace("\n", "").replace("\r", ""),
-                     output.replace(" ", "").replace("\n", "").replace("\r", ""));
+                output.replace(" ", "").replace("\n", "").replace("\r", ""));
 
     }
 
@@ -63,8 +65,8 @@ public class GrammarTestRunnerTest extends TestCase {
             });
             int testNumber = 1;
             int
-                startFromTestNumber =
-                0;// Use this to skip tests manually to make it easier for debugging a specific test.
+                    startFromTestNumber =
+                    0;// Use this to skip tests manually to make it easier for debugging a specific test.
             for (String testInput : list) {
                 if (testNumber >= startFromTestNumber) {
                     System.out.println("Running test number: " + testNumber);
@@ -91,6 +93,7 @@ public class GrammarTestRunnerTest extends TestCase {
         String minimised_modl;
         String expected_output;
         String[] tested_features;
+        int id;
 
         public TestInput() {
         }
@@ -125,6 +128,14 @@ public class GrammarTestRunnerTest extends TestCase {
 
         public void setExpected_output(String expected_output) {
             this.expected_output = expected_output;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
         }
     }
 

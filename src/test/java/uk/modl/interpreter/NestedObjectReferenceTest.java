@@ -382,7 +382,7 @@ public class NestedObjectReferenceTest {
 
             final List<ModlObject.Structure> structures = modlObject.getStructures();
 
-            ModlObject.Structure structure = structures.get(1);
+            ModlObject.Structure structure = (ModlObject.Structure) structures.get(0).getModlValues().get(1);
 
             final List<? extends ModlValue> modlValues = structure.getModlValues();
 
@@ -403,7 +403,7 @@ public class NestedObjectReferenceTest {
 
             final List<ModlObject.Structure> structures = modlObject.getStructures();
 
-            ModlObject.Structure structure = structures.get(1);
+            ModlObject.Structure structure = (ModlObject.Structure) structures.get(0).getModlValues().get(1);
 
             final List<? extends ModlValue> modlValues = structure.getModlValues();
 
@@ -424,7 +424,7 @@ public class NestedObjectReferenceTest {
 
             final List<ModlObject.Structure> structures = modlObject.getStructures();
 
-            ModlObject.Structure structure = structures.get(1);
+            ModlObject.Structure structure = (ModlObject.Structure) structures.get(0).getModlValues().get(1);
 
             final List<? extends ModlValue> modlValues = structure.getModlValues();
 
