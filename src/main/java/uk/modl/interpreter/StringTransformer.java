@@ -52,36 +52,14 @@ public class StringTransformer {
         boolean finished = false;
         while (!finished) {
             finished = true;
-            Integer startIndex = getNextPercent(stringToTransform, currentIndex);
-            if (startIndex != null) {
-                Integer endIndex;
+            int startIndex = getNextPercent(stringToTransform, currentIndex);
+            if (startIndex > -1) {
+                int endIndex;
                 // If the first character after the % is a number, then keep reading until we get to a non-number (taking account of method chains)
                 // If the first character after the % is a letter, then keep reading until we get to a space
-                if (startIndex < stringToTransform.length() - 1 &&
-                        !isNumber(stringToTransform.substring(startIndex + 1, startIndex + 2))) {
+                if (startIndex < stringToTransform.length() - 1) {
                     // Just read to the next character that terminates a reference.
-                    int spaceEndIndex = stringToTransform.indexOf(" ", startIndex);
-                    int colonEndIndex = stringToTransform.indexOf(":", startIndex);
-                    int percentEndIndex = stringToTransform.indexOf("%", startIndex + 1);
-                    int bangEndIndex = stringToTransform.indexOf("!", startIndex);
-
-                    if (spaceEndIndex == -1) {
-                        spaceEndIndex = 99999;
-                    }
-                    if (colonEndIndex == -1) {
-                        colonEndIndex = 99999;
-                    }
-                    if (percentEndIndex == -1) {
-                        percentEndIndex = 99999;
-                    } else {
-                        percentEndIndex++;
-                    }
-                    if (bangEndIndex == -1) {
-                        bangEndIndex = 99999;
-                    }
-                    endIndex = Math.min(spaceEndIndex, colonEndIndex);
-                    endIndex = Math.min(endIndex, percentEndIndex);
-                    endIndex = Math.min(endIndex, bangEndIndex);
+                    endIndex = getReferenceEndIndex(stringToTransform, startIndex);
 
                     if (endIndex > stringToTransform.length()) {
                         endIndex = stringToTransform.length();
@@ -91,17 +69,56 @@ public class StringTransformer {
                 } else {
                     endIndex = getEndOfNumber(stringToTransform, startIndex + 1);
                 }
-                if (endIndex != null && endIndex != -1) {
+                if (endIndex != -1) {
                     if (endIndex > startIndex + 1) {
                         String gravePart = stringToTransform.substring(startIndex, endIndex);
                         percentParts.add(gravePart);
-                        currentIndex = endIndex + 1;
+                        currentIndex = endIndex;
+                    } else if (endIndex == (startIndex + 1)) {
+                        finished = true;
+                        continue;
                     }
                     finished = false;
                 }
             }
         }
         return percentParts;
+    }
+
+    private static int getReferenceEndIndex(final String stringToTransform, final int startIndex) {
+        int endIndex = 99999;
+        boolean inMethodParams = false;
+        boolean inGraves = false;
+        final String endChars = " :%!<,>";
+
+        char prev = '\0';
+        for (int i = startIndex + 1; i < stringToTransform.length(); i++) {
+            final char c = stringToTransform.charAt(i);
+            if (c == '<') {
+                inMethodParams = true;
+            } else if (c == '>') {
+                inMethodParams = false;
+            } else if (c == '`') {
+                if (!inGraves && !inMethodParams && i > startIndex + 1) {
+                    endIndex = i;
+                    break;
+                }
+                inGraves = !inGraves;
+            } else {
+                if (endChars.indexOf(c) > -1 && !inGraves && !inMethodParams && prev != '.') {
+                    endIndex = i;
+                    if (c == '%') {
+                        endIndex++;
+                    }
+                    break;
+                }
+            }
+            prev = c;
+        }
+        if (endIndex > stringToTransform.length()) {
+            endIndex = stringToTransform.length();
+        }
+        return endIndex;
     }
 
     private static Integer getEndOfNumber(String stringToTransform, Integer startIndex) {
@@ -156,13 +173,9 @@ public class StringTransformer {
                 || substring.equals("9");
     }
 
-    private static Integer getNextPercent(String stringToTransform, Integer startIndex) {
+    private static int getNextPercent(String stringToTransform, Integer startIndex) {
         // From startIndex, find the next grave. If it is prefixed by either ~ or \ then ignore it and find the next one
-        int index = stringToTransform.indexOf("%", startIndex);
-        if (index == -1) {
-            return null;
-        }
-        return index;
+        return stringToTransform.indexOf("%", startIndex);
     }
 
     ModlValue transformString(String stringToTransform) {
@@ -183,14 +196,19 @@ public class StringTransformer {
         // 3 : If parts are found loop through them in turn:
         for (String gravePart : graveParts) {
             //     If a part begins with a % then run “Object Referencing”, else run “Punycode encoded parts”
-            String newGravePart;
             if (gravePart.startsWith("`%")) {
                 //                stringToTransform = runObjectReferencing(gravePart, stringToTransform, true);
                 ModlValue ret = runObjectReferencing(gravePart, stringToTransform, true);
                 if (ret instanceof ModlObject.String) {
-                    stringToTransform = ((ModlObject.String) ret).string;
-                    String nonGravePart = gravePart.substring(1, gravePart.length() - 1);
-                    stringToTransform = stringToTransform.replace(gravePart, nonGravePart);
+                    final String retStr = ((ModlObject.String) ret).string;
+                    if (retStr.equals(stringToTransform)) {
+                        stringToTransform = retStr;
+                    } else {
+                        stringToTransform = retStr;
+                        String nonGravePart = gravePart.substring(1, gravePart.length() - 1);
+                        stringToTransform = stringToTransform.replace(gravePart, nonGravePart);
+                    }
+                    stringToTransform = Util.degrave(stringToTransform);
                 } else if (ret instanceof ModlObject.Number) {
                     if (gravePart.equals(stringToTransform)) {
                         return ret;
@@ -201,16 +219,7 @@ public class StringTransformer {
                     return ret;
                 }
             } else {
-                newGravePart = gravePart.substring(1, gravePart.length() - 1);
-                stringToTransform = stringToTransform.replace(gravePart, newGravePart);
-
-                final int dotIndex = stringToTransform.indexOf('.');
-                if (dotIndex > -1) {
-                    String firstPart = stringToTransform.substring(0, dotIndex);
-                    String methods = stringToTransform.substring(dotIndex + 1);
-                    stringToTransform = runMethods(firstPart, methods);
-
-                }
+                stringToTransform = Util.degrave(stringToTransform);
             }
         }
         // 4: Find all non-space parts of the string that are prefixed with % (percent sign). These are object references – run “Object Referencing”
@@ -316,32 +325,42 @@ Replace the part originally found (including graves) with the transformed subjec
             remainder = percentPart.substring(indexOfDot + 1, percentPart.length() - endOffset);
         }
 
-        ModlValue value = getValueForReference(subject);
-        if (remainder != null) {
-            final String[] remainderHolder = {remainder};
-            value = getValueForReferenceRecursive(value, remainderHolder);
-            remainder = remainderHolder[0];
-        }
+        if (subject.startsWith("`") && subject.endsWith("`") && subject.length() > 1) {
+            subject = subject.substring(1, subject.length() - 1);
+        } else {
 
-        if (value == null) {
-            return new ModlObject.String(stringToTransform);
-            //            value = new ModlObject.String(subject);
-        } else if (value instanceof ModlObject.String) {
-            subject = ((ModlObject.String) value).string;
-        } else if (value instanceof ModlObject.Number) {
-            if (remainder == null) {
+            ModlValue value = getValueForReference(subject);
+            if (remainder != null) {
+                final String[] remainderHolder = {remainder};
+                value = getValueForReferenceRecursive(value, remainderHolder);
+                remainder = remainderHolder[0];
+            }
+
+            if (value == null) {
+                return new ModlObject.String(stringToTransform);
+                //            value = new ModlObject.String(subject);
+            } else if (value instanceof ModlObject.String) {
+                subject = ((ModlObject.String) value).string;
+            } else if (value instanceof ModlObject.Number) {
+                if (remainder == null) {
+                    return value;
+                }
+                subject = ((ModlObject.Number) value).number;
+            } else {
                 return value;
             }
-            subject = ((ModlObject.Number) value).number;
-        } else {
-            return value;
         }
 
         if (remainder != null) {
             subject = runMethods(subject, remainder);
         }
 
-        stringToTransform = stringToTransform.replaceFirst(originalPercentPart, subject);
+        if (isGraved) {
+            originalPercentPart = originalPercentPart.substring(1, originalPercentPart.length() - 1);
+            stringToTransform = stringToTransform.replaceFirst(originalPercentPart, subject);
+        } else {
+            stringToTransform = stringToTransform.replaceFirst(originalPercentPart, subject);
+        }
 
         return new ModlObject.String(stringToTransform);
     }

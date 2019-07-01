@@ -33,14 +33,14 @@ public class NestedObjectReferenceTest {
                                               "  numbers=(\"v\"=TEST)\n" +
                                               ");\n" +
                                               " \n" +
-                                              "testing = this is a string that includes extra transforms for the value `%test.numbers.v.d`_value";
+                                              "testing = this is a string that includes extra transforms for the value %test.numbers.v.d%_value";
 
     private final String nestedTestString05 = "_test=(\n" +
                                               "  first=(\"v\"=TEST);\n" +
                                               "  second=(\"v\"=TEST2)\n" +
                                               ");\n" +
                                               " \n" +
-                                              "testing = this is a string that includes extra transforms for the value `%test.second.v.d`_value";
+                                              "testing = this is a string that includes extra transforms for the value %test.second.v.d%_value";
 
     private final String nestedTestString06 = "_test=(\n" +
                                               "  first=(\"v1\"=one);\n" +
@@ -54,7 +54,7 @@ public class NestedObjectReferenceTest {
                                               "  second=(\"v2\"=two:three)\n" +
                                               ");\n" +
                                               " \n" +
-                                              "testing = \"`%test.first.v1.0``%test.second.v2.0``%test.second.v2.1`\"";
+                                              "testing = \"%test.first.v1.0%%test.second.v2.0%%test.second.v2.1\"";
 
     private final String nestedTestString08 = "_test=(\n" +
                                               "  first=(\"v1\"=(one=(two=three)))\n" +

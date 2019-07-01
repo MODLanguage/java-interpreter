@@ -1,1 +1,1 @@
-_var=`%var`b
+_var=%var%b

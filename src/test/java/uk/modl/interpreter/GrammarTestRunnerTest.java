@@ -3,6 +3,7 @@ package uk.modl.interpreter;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import junit.framework.TestCase;
+import org.junit.Assert;
 import org.junit.Test;
 import uk.modl.modlObject.ModlObject;
 import uk.modl.parser.printers.JsonPrinter;
@@ -10,6 +11,7 @@ import uk.modl.parser.printers.JsonPrinter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,7 +20,9 @@ import java.util.List;
  */
 public class GrammarTestRunnerTest extends TestCase {
 
-    ObjectMapper mapper = new ObjectMapper();
+    private List<String> errors = new ArrayList<>();
+
+    private ObjectMapper mapper = new ObjectMapper();
 
     @Test
     public void testBaseTest() throws Exception {
@@ -34,17 +38,33 @@ public class GrammarTestRunnerTest extends TestCase {
                 if (testNumber >= startFromTestNumber) {
                     System.out.println("Running test number: " + testNumber);
                     if (testInput.input.equals("DELETED")) {
+                        testNumber++;
                         continue;
                     }
-                    checkValidTestInput(testInput);
+                    try {
+                        checkValidTestInput(testInput);
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                    }
                 }
                 testNumber++;
+            }
+
+        } finally {
+            if (errors.size() > 0) {
+
+                System.out.println("--------------- Errors ----------------");
+                for (final String error : errors) {
+                    System.out.println(error);
+                }
+
+                Assert.fail("Errors found.");
             }
         }
 
     }
 
-    private void checkValidTestInput(TestInput testInput) throws IOException {
+    private void checkValidTestInput(final TestInput testInput) throws IOException {
         System.out.println("Input : " + testInput.input);
         System.out.println("Minimised : " + testInput.minimised_modl);
         System.out.println("Expected : " + testInput.expected_output);
@@ -52,9 +72,12 @@ public class GrammarTestRunnerTest extends TestCase {
         ModlObject modlObject = Interpreter.interpret(testInput.input);
         String output = JsonPrinter.printModl(modlObject);
         System.out.println("Output : " + output);
-        assertEquals(testInput.expected_output.replace(" ", "").replace("\n", "").replace("\r", ""),
-                output.replace(" ", "").replace("\n", "").replace("\r", ""));
+        final String expected = testInput.expected_output.replace(" ", "").replace("\n", "").replace("\r", "");
+        final String actual = output.replace(" ", "").replace("\n", "").replace("\r", "");
 
+        if (!expected.equals(actual)) {
+            errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : " + output + "\n");
+        }
     }
 
     @Test
@@ -78,7 +101,7 @@ public class GrammarTestRunnerTest extends TestCase {
 
     }
 
-    private void checkInValidTestInput(String testInput) {
+    private void checkInValidTestInput(final String testInput) {
         System.out.println("Failing Input : " + testInput);
         try {
             ModlObject modlObject = Interpreter.interpret(testInput);

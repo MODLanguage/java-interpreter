@@ -103,7 +103,7 @@ public class ImportTest extends TestCase {
                             "}",
             "_var=2;*L=http~://s3-eu-west-1.amazonaws.com/modltestfiles/testing.txt!;print=%update_date"},
 
-        {"_T=grammar_tests/demo;\n*L=`%T`_config", "null", "_T=grammar_tests/demo;*L=`%T`_config"},
+        {"_T=grammar_tests/demo;\n*L=%T%_config", "null", "_T=grammar_tests/demo;*L=%T%_config"},
         {
             "*L=grammar_tests/1:grammar_tests/2:grammar_tests/3;\n" +
                     "the_number=%number",

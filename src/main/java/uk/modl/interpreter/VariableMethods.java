@@ -142,7 +142,10 @@ class VariableMethods {
                     if (split.length > 2) {
                         replace = split[2];
                     }
-                    result = subject.replace(search, replace);
+                    replace = Util.degrave(replace);
+                    search = Util.degrave(search);
+
+                    result = subject.replaceAll(search, replace);
                 }
             }
         };
@@ -230,13 +233,12 @@ class VariableMethods {
         if (stringToTransform == null) {
             return null;
         }
-        if (stringToTransform.startsWith("%") ) {
+        if (stringToTransform.startsWith("%")) {
             stringToTransform = stringToTransform.substring(1);
         }
-        if (stringToTransform.startsWith("`") && stringToTransform.endsWith("`")) {
-            stringToTransform = stringToTransform.substring(1, stringToTransform.length() - 1);
-        }
-        String originalString = stringToTransform;
+        stringToTransform = Util.degrave(stringToTransform);
+
+        final String originalString = stringToTransform;
         stringToTransform = "xn--" + stringToTransform;
         String newStringToTransform = IDN.toUnicode(stringToTransform);
         if (newStringToTransform.equals(stringToTransform)) {
