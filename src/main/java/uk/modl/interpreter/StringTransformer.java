@@ -19,6 +19,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 package uk.modl.interpreter;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import uk.modl.modlObject.ModlObject;
 import uk.modl.modlObject.ModlValue;
@@ -121,17 +122,17 @@ public class StringTransformer {
         return endIndex;
     }
 
-    private static Integer getEndOfNumber(String stringToTransform, Integer startIndex) {
+    private static int getEndOfNumber(String stringToTransform, int startIndex) {
         // We actually need to keep processing this string until we get to an end
         // The end (for the number type) can be a space, or else any non-number character
         // If the end is a ".", then check to see if we have a variable method
 
         // First, find the end of the number
-        Integer currentIndex = startIndex;
+        int currentIndex = startIndex;
         if (currentIndex == stringToTransform.length()) {
             return currentIndex;
         }
-        while (isNumber(stringToTransform.substring(currentIndex, currentIndex + 1))) {
+        while (Character.isDigit(stringToTransform.charAt(currentIndex))) {
             currentIndex++;
             if (currentIndex == stringToTransform.length()) {
                 return currentIndex;
@@ -163,17 +164,7 @@ public class StringTransformer {
         }
     }
 
-    private static boolean isNumber(String substring) {
-        return (substring.equals("0") ||
-                substring.equals("1") ||
-                substring.equals("2") ||
-                substring.equals("3") ||
-                substring.equals("4"))
-                || substring.equals("5") || substring.equals("6") || substring.equals("7") || substring.equals("8")
-                || substring.equals("9");
-    }
-
-    private static int getNextPercent(String stringToTransform, Integer startIndex) {
+    private static int getNextPercent(String stringToTransform, int startIndex) {
         // From startIndex, find the next grave. If it is prefixed by either ~ or \ then ignore it and find the next one
         return stringToTransform.indexOf("%", startIndex);
     }
@@ -259,10 +250,10 @@ public class StringTransformer {
         boolean finished = false;
         while (!finished) {
             finished = true;
-            Integer startIndex = getNextNonPrefixedGrave(stringToTransform, currentIndex);
-            if (startIndex != null) {
-                Integer endIndex = getNextNonPrefixedGrave(stringToTransform, startIndex + 1);
-                if (endIndex != null) {
+            int startIndex = getNextNonPrefixedGrave(stringToTransform, currentIndex);
+            if (startIndex > -1) {
+                int endIndex = getNextNonPrefixedGrave(stringToTransform, startIndex + 1);
+                if (endIndex > -1) {
                     String gravePart = stringToTransform.substring(startIndex, endIndex + 1);
                     graveParts.add(gravePart);
                     currentIndex = endIndex + 1;
@@ -273,11 +264,11 @@ public class StringTransformer {
         return graveParts;
     }
 
-    private Integer getNextNonPrefixedGrave(String stringToTransform, Integer startIndex) {
+    private int getNextNonPrefixedGrave(String stringToTransform, int startIndex) {
         // From startIndex, find the next grave. If it is prefixed by either ~ or \ then ignore it and find the next one
         int index = stringToTransform.indexOf("`", startIndex);
         if (index == -1) {
-            return null;
+            return -1;
         }
         if (index > startIndex) {
             String prefix = stringToTransform.substring(index - 1, index);
@@ -430,8 +421,8 @@ Replace the part originally found (including graves) with the transformed subjec
         boolean found = false;
 
         // Make any variable replacements, etc.
-        for (Integer i = 0; i < numberedVariables.size(); i++) {
-            if (subject.equals(i.toString())) {
+        for (int i = 0; i < numberedVariables.size(); i++) {
+            if (subject.equals(Integer.toString(i))) {
                 //                if (numberedVariables.get(i) instanceof ModlObject.String) {
                 //                    value = numberedVariables.get(i);
                 //                } else {
@@ -503,7 +494,7 @@ Replace the part originally found (including graves) with the transformed subjec
 
         // Get the nested value via its name or number
         ModlValue newCtx;
-        if (isNumber(currentKey)) {
+        if (StringUtils.isNumeric(currentKey)) {
             if (!(ctx instanceof ModlObject.Array)) {
                 throw new RuntimeException("Object reference is numerical for non-Array value");
             }

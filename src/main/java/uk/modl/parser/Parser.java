@@ -32,20 +32,22 @@ import java.nio.charset.StandardCharsets;
 
 class Parser {
 
-    static ModlParsed parse(String input) throws IOException {
-        InputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
-        MODLLexer lexer = new MODLLexer(CharStreams.fromStream(stream, StandardCharsets.UTF_8));
+    static ModlParsed parse(final String input) throws IOException {
+        final InputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
+        final MODLLexer lexer = new MODLLexer(CharStreams.fromStream(stream, StandardCharsets.UTF_8));
+
         lexer.removeErrorListeners();
         lexer.addErrorListener(ThrowingErrorListener.INSTANCE);
 
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        final CommonTokenStream tokens = new CommonTokenStream(lexer);
         //        tokens.fill();
-        MODLParser parser = new MODLParser(tokens);
+        final MODLParser parser = new MODLParser(tokens);
         parser.removeErrorListeners();
         parser.addErrorListener(ThrowingErrorListener.INSTANCE);
 
-        ModlParsed modlParsed = new ModlParsed();
-        parser.modl().enterRule(modlParsed);
+        final ModlParsed modlParsed = new ModlParsed();
+        parser.modl()
+                .enterRule(modlParsed);
         return modlParsed;
     }
 }

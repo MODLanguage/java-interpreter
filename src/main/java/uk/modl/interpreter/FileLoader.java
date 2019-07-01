@@ -36,7 +36,7 @@ import java.util.Scanner;
  * Created by alex on 20/09/2018.
  */
 class FileLoader {
-    private static Map<String, ModlAndTtl> cache = new HashMap<>();
+    private static Map<String, ModlCacheEntry> cache = new HashMap<>();
 
     static RawModlObject loadFile(final List<String> filesLoaded, String location) {
         String contents;
@@ -51,7 +51,7 @@ class FileLoader {
         }
         if (!forceReload) {
             if (cache.get(location) != null) {
-                if (cache.get(location).endTime >= (System.currentTimeMillis() / 1000)) {
+                if (cache.get(location).expired()) {
                     filesLoaded.add(location);
                     return cache.get(location).rawModlObject;
                 } else {
@@ -84,8 +84,8 @@ class FileLoader {
             throw new RuntimeException("Could not interpret " + location + ", error : " + e);
         }
         long endTime = (System.currentTimeMillis() / 1000) + 3600;
-        ModlAndTtl modlAndTtl = new ModlAndTtl(endTime, rawModlObject);
-        cache.put(location, modlAndTtl);
+        ModlCacheEntry modlCacheEntry = new ModlCacheEntry(endTime, rawModlObject);
+        cache.put(location, modlCacheEntry);
         filesLoaded.add(location);
         return rawModlObject;
     }
