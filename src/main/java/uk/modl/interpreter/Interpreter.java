@@ -217,20 +217,29 @@ public class Interpreter {
                 }
                 if (rawStructure instanceof ModlObject.Pair && ((ModlObject.Pair) rawStructure).getKey() != null &&
                         ((ModlObject.Pair) rawStructure).getKey().string != null &&
-                        ((((((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*class")) ||
-                                (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*c"))) || (
-                                (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*m"))) ||
-                                ((((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*method"))) ||
-                                (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("?"))
+                        ((((((ModlObject.Pair) rawStructure).getKey().string.toLowerCase()
+                                .equals("*class")) ||
+                                (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase()
+                                        .equals("*c"))) || (
+                                (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase()
+                                        .equals("*m"))) ||
+                                ((((ModlObject.Pair) rawStructure).getKey().string.toLowerCase()
+                                        .equals("*method"))) ||
+                                (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase()
+                                        .equals("?"))
                         ))) {
                     ModlObject.Pair pair = (ModlObject.Pair) rawStructure;
-                    if (pair.getKey().string.toLowerCase().equals("*class") ||
-                            pair.getKey().string.toLowerCase().equals("*c")) {
+                    if (pair.getKey().string.toLowerCase()
+                            .equals("*class") ||
+                            pair.getKey().string.toLowerCase()
+                                    .equals("*c")) {
                         addToUpperCaseInstructions(pair.getKey().string);
                         ModlClassLoader.loadClass(rawStructure, klasses, this);
                         continue;
-                    } else if (pair.getKey().string.toLowerCase().equals("*method") ||
-                            pair.getKey().string.toLowerCase().equals("*m")) {
+                    } else if (pair.getKey().string.toLowerCase()
+                            .equals("*method") ||
+                            pair.getKey().string.toLowerCase()
+                                    .equals("*m")) {
                         addToUpperCaseInstructions(pair.getKey().string);
                         VariableMethodLoader.loadVariableMethod(methodList, pair, this);
                         continue;
@@ -246,8 +255,10 @@ public class Interpreter {
                 } else if (!(rawStructure instanceof ModlObject.Pair &&
                         ((ModlObject.Pair) rawStructure).getKey() != null &&
                         ((ModlObject.Pair) rawStructure).getKey().string != null &&
-                        (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*v") ||
-                                (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase().equals("*version"))))) {
+                        (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase()
+                                .equals("*v") ||
+                                (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase()
+                                        .equals("*version"))))) {
                     if (rawStructure instanceof ModlObject.Pair && ((ModlObject.Pair) rawStructure).getKey() != null &&
                             ((ModlObject.Pair) rawStructure).getKey().string != null &&
                             (((ModlObject.Pair) rawStructure).getKey().string.startsWith("*"))) {
@@ -297,15 +308,23 @@ public class Interpreter {
                     }
                 }
 
-                if (adopter.getPairs().size() > 1 && newStructures.isEmpty()) {
-                    modlObject.getStructures().clear();
-                    modlObject.getStructures().add(adopter);
-                } else if (adopter.getPairs().isEmpty() && !newStructures.isEmpty()) {
-                    modlObject.getStructures().clear();
-                    modlObject.getStructures().addAll(newStructures);
-                } else if (adopter.getPairs().size() == 1) {
+                if (adopter.getPairs()
+                        .size() > 1 && newStructures.isEmpty()) {
+                    modlObject.getStructures()
+                            .clear();
+                    modlObject.getStructures()
+                            .add(adopter);
+                } else if (adopter.getPairs()
+                        .isEmpty() && !newStructures.isEmpty()) {
+                    modlObject.getStructures()
+                            .clear();
+                    modlObject.getStructures()
+                            .addAll(newStructures);
+                } else if (adopter.getPairs()
+                        .size() == 1) {
                     // Nothing to do for a single top-level pair.
-                } else if (adopter.getPairs().size() == 0 && newStructures.size() == 0) {
+                } else if (adopter.getPairs()
+                        .size() == 0 && newStructures.size() == 0) {
                     // Nothing to do for an empty result.
                 } else {
                     throw new RuntimeException("Mixed top-level types are not allowed.");
@@ -315,7 +334,9 @@ public class Interpreter {
             }
         } catch (final Exception e) {
             if (versionNumberIsWrong) {
-                throw new UnsupportedOperationException("Can't handle MODL version " + versionString);
+                final RuntimeException exception = new RuntimeException(e.getMessage() + " - MODL version too high for this interpreter: " + versionString);
+                exception.initCause(e);
+                throw exception;
             } else
                 throw e;
         }
@@ -325,7 +346,8 @@ public class Interpreter {
         if (uppercaseInstructions.contains(string.toUpperCase())) {
             throw new RuntimeException("Already defined " + string + " as final!");
         }
-        if (string.toUpperCase().equals(string)) {
+        if (string.toUpperCase()
+                .equals(string)) {
             uppercaseInstructions.add(string);
         }
     }
@@ -432,7 +454,8 @@ public class Interpreter {
             validatePairKey(newKey);
 
             // IF WE ALREADY HAVE A PAIR WITH THIS NAME, AND THE NAME IS UPPER-CASE, THEN RAISE AN ERROR
-            if (newKey.toUpperCase().equals(newKey)) {
+            if (newKey.toUpperCase()
+                    .equals(newKey)) {
                 if (pairNames.contains(newKey) && addToValuePairs) {
                     throw new RuntimeException(newKey + " can't be defined again as upper-case keys are immutable");
                 }
@@ -583,7 +606,8 @@ public class Interpreter {
                     rawPair.getModlValue() == null ||
                     !(rawPair.getModlValue() instanceof ModlObject.Map)) {
                 if (rawPair.getModlValue() instanceof ModlObject.Array) {
-                    numParams = ((ModlObject.Array) (rawPair.getModlValue())).getValues().size();
+                    numParams = ((ModlObject.Array) (rawPair.getModlValue())).getValues()
+                            .size();
                 } else {
                     numParams = 1;
                 }
@@ -809,9 +833,11 @@ public class Interpreter {
 
     private int getNumParams(RawModlObject.Pair originalPair, int numParams) {
         if (originalPair.getModlValue() instanceof ModlObject.Map) {
-            numParams = ((ModlObject.Map) originalPair.getModlValue()).getPairs().size();
+            numParams = ((ModlObject.Map) originalPair.getModlValue()).getPairs()
+                    .size();
         } else if (originalPair.getModlValue() instanceof ModlObject.Array) {
-            numParams = ((ModlObject.Array) originalPair.getModlValue()).getValues().size();
+            numParams = ((ModlObject.Array) originalPair.getModlValue()).getValues()
+                    .size();
         } else if (originalPair.getModlValue() != null) {
             numParams = 1;
         }
@@ -1044,11 +1070,17 @@ public class Interpreter {
 
     private Map<String, Object> getModlClass(String key) {
         for (Map.Entry<String, Map<String, Object>> entry : klasses.entrySet()) {
-            for (Map.Entry<String, Object> valueEntry : entry.getValue().entrySet()) {
-                if (valueEntry.getKey().equals("*name") || valueEntry.getKey().equals("*n") ||
-                        valueEntry.getKey().equals("*id") || valueEntry.getKey().equals("*i")) {
+            for (Map.Entry<String, Object> valueEntry : entry.getValue()
+                    .entrySet()) {
+                if (valueEntry.getKey()
+                        .equals("*name") || valueEntry.getKey()
+                        .equals("*n") ||
+                        valueEntry.getKey()
+                                .equals("*id") || valueEntry.getKey()
+                        .equals("*i")) {
                     if (valueEntry.getValue() instanceof String) {
-                        if (valueEntry.getValue().equals(key)) {
+                        if (valueEntry.getValue()
+                                .equals(key)) {
                             return entry.getValue();
                         }
                     } else {
@@ -1102,8 +1134,11 @@ public class Interpreter {
         Map<String, Object> klass = getModlClass(originalKey);
         if (klass != null) {
             for (Map.Entry<String, Object> entry : klass.entrySet()) {
-                if (!entry.getKey().startsWith("_") &&
-                        !(entry.getKey().startsWith("*") && !(entry.getKey().equals("?")))) {
+                if (!entry.getKey()
+                        .startsWith("_") &&
+                        !(entry.getKey()
+                                .startsWith("*") && !(entry.getKey()
+                                .equals("?")))) {
                     if (pairHasKey(pair, entry.getKey())) {
                         // Only add the new key if it does not already exist in the pair!
                         continue;
@@ -1202,17 +1237,22 @@ public class Interpreter {
     private RawModlObject.Pair transformValue(RawModlObject.Pair originalPair) {
         Map<String, Object> classMap = getModlClass(originalPair.getKey().string);
         if (classMap != null) {
-            if ((classMap.get("*name") != null && ((classMap.get("*name").equals("_v")) ||
-                    (classMap.get("*name").equals("var")))) ||
+            if ((classMap.get("*name") != null && ((classMap.get("*name")
+                    .equals("_v")) ||
+                    (classMap.get("*name")
+                            .equals("var")))) ||
                     (classMap.get("*n") != null &&
-                            ((classMap.get("*n").equals("_v")) ||
-                                    (classMap.get("*n").equals("var"))))) {
+                            ((classMap.get("*n")
+                                    .equals("_v")) ||
+                                    (classMap.get("*n")
+                                            .equals("var"))))) {
                 VariableLoader.loadConfigNumberedVariables(originalPair.getModlValue(), numberedVariables);
             } else {
                 // Work up the superclass chain until we get to a basic class
                 final String superclassName = (String) classMap.get("*superclass");
                 boolean hasSuperclass = superclassName != null;
-                if (!hasSuperclass && anyClassContainsPairs(1, classMap.get("*name").toString())) {
+                if (!hasSuperclass && anyClassContainsPairs(1, classMap.get("*name")
+                        .toString())) {
                     classMap.put("*superclass", "map");
                 } else if (!hasSuperclass && hasAssignStatement(0, (String) classMap.get("*id"))) {
                     classMap.put("*superclass", "map");
@@ -1240,7 +1280,9 @@ public class Interpreter {
                         classMap.put("*superclass", "map");
                     } else {
                         throw new RuntimeException("Interpreter Error: Unhandled object type: " +
-                                originalPair.getModlValue().getClass().getName());
+                                originalPair.getModlValue()
+                                        .getClass()
+                                        .getName());
                     }
                 }
 
@@ -1298,7 +1340,8 @@ public class Interpreter {
                     throw new RuntimeException("Superclass " +
                             superclassString +
                             " is not available for " +
-                            originalPair.getModlValue().getClass());
+                            originalPair.getModlValue()
+                                    .getClass());
                 }
             }
         }
@@ -1466,11 +1509,16 @@ public class Interpreter {
                 if (originalConditionalEntry.getValue() == null) {
                     return new ModlObject.True();
                 }
-                if (originalConditionalEntry.getValue().getValues().size() == 1) {
-                    return interpret(modlObject, originalConditionalEntry.getValue().getValues().get(0), parentPair);
+                if (originalConditionalEntry.getValue()
+                        .getValues()
+                        .size() == 1) {
+                    return interpret(modlObject, originalConditionalEntry.getValue()
+                            .getValues()
+                            .get(0), parentPair);
                 }
                 ModlObject.Array returnValue = new ModlObject.Array();
-                for (ModlValue valueItem : originalConditionalEntry.getValue().getValues()) {
+                for (ModlValue valueItem : originalConditionalEntry.getValue()
+                        .getValues()) {
                     ModlValue v = interpret(modlObject, valueItem, parentPair);
                     returnValue.addValue(v);
                 }
@@ -1499,7 +1547,8 @@ public class Interpreter {
                 if (evaluates(conditionalTest)) {
                     // NEED TO INTERPRET THE VALUES!!!
                     List<ModlValue> returnValues = new LinkedList<>();
-                    for (ModlValue arrayItem : originalConditionalEntry.getValue().getValues()) {
+                    for (ModlValue arrayItem : originalConditionalEntry.getValue()
+                            .getValues()) {
                         List<ModlValue> values = interpretArrayItem(modlObject, arrayItem, parentPair);
                         if (values != null) {
                             returnValues.addAll(values);
@@ -1525,7 +1574,8 @@ public class Interpreter {
             if (evaluates(conditionalTest)) {
                 // NEED TO INTERPRET THE VALUES!!!
                 List<ModlObject.Pair> returnPairs = new LinkedList<>();
-                for (RawModlObject.Pair mapItem : originalConditionalEntry.getValue().getPairs()) {
+                for (RawModlObject.Pair mapItem : originalConditionalEntry.getValue()
+                        .getPairs()) {
                     List<ModlObject.Pair> mapItems = interpretMapPair(modlObject, mapItem, parentPair);
                     if (mapItems != null) {
                         returnPairs.addAll(mapItems);
@@ -1550,7 +1600,8 @@ public class Interpreter {
             if (evaluates(conditionalTest)) {
                 // NEED TO INTERPRET THE VALUES!!!
                 List<ModlObject.Structure> returnStructures = new LinkedList<>();
-                for (RawModlObject.Structure rawStructure : originalConditionalEntry.getValue().getStructures()) {
+                for (RawModlObject.Structure rawStructure : originalConditionalEntry.getValue()
+                        .getStructures()) {
                     List<ModlObject.Structure> structures = interpret(modlObject, rawStructure);
                     if (structures != null) {
                         returnStructures.addAll(structures);
@@ -1572,7 +1623,8 @@ public class Interpreter {
                 .entrySet()) {
             // There are only & and | and null here!
             // Work out where this should be in the list
-            String operator = conditionalTestEntry.getValue().getLeft();
+            String operator = conditionalTestEntry.getValue()
+                    .getLeft();
             if (operator == null) {
                 conditionalTestOrderedList.add(nullCount++, conditionalTestEntry);
             } else {
@@ -1756,7 +1808,8 @@ public class Interpreter {
     }
 
     private boolean conditionalEquals(String key, Object val) {
-        if (val != null && val.toString().contains("*")) {
+        if (val != null && val.toString()
+                .contains("*")) {
             return conditionalWildcardEquals(key, val.toString());
         }
         if (val == null) {
@@ -1768,13 +1821,15 @@ public class Interpreter {
     private boolean conditionalWildcardEquals(String key, Object val) {
         // Build a pattern matching string, using HEAD and TAIL operators, and adding wildcards inbetween the phrases, wherever we see a *
         StringBuilder regex;
-        if (!(val.toString().startsWith("*"))) {
+        if (!(val.toString()
+                .startsWith("*"))) {
             regex = new StringBuilder("^");
         } else {
             regex = new StringBuilder(".*");
         }
 
-        String[] splits = val.toString().split("\\*");
+        String[] splits = val.toString()
+                .split("\\*");
         int i = 0;
         for (String split : splits) {
             if (split.equals("")) {
@@ -1785,7 +1840,8 @@ public class Interpreter {
             }
             regex.append(split);
         }
-        if (!(val.toString().endsWith("*"))) {
+        if (!(val.toString()
+                .endsWith("*"))) {
             regex.append("$");
         } else {
             regex.append(".*");
