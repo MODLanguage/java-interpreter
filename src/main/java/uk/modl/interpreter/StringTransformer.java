@@ -166,7 +166,18 @@ public class StringTransformer {
 
     private static int getNextPercent(String stringToTransform, int startIndex) {
         // From startIndex, find the next grave. If it is prefixed by either ~ or \ then ignore it and find the next one
-        return stringToTransform.indexOf("%", startIndex);
+        int searchFrom = startIndex;
+        do {
+            final int i = stringToTransform.indexOf("%", searchFrom);
+            if (i <= 0) {
+                return i;
+            }
+            final char c = stringToTransform.charAt(i - 1);
+            if (c != '\\' && c != '~') {
+                return i;
+            }
+            searchFrom = i + 1;
+        } while (true);
     }
 
     ModlValue transformString(String stringToTransform) {
@@ -178,7 +189,7 @@ public class StringTransformer {
         // Defer until after all other processing is complete.
 
         // Replace any unicode encodings
-        stringToTransform = StringEscapeUtils.unescapeJava(stringToTransform);
+        //stringToTransform = StringEscapeUtils.unescapeJava(stringToTransform);
 
         // Implement Elliott's algorithm for string transformation :
         // 1 : Find all parts of the sting that are enclosed in graves, e.g `test` where neither of the graves is prefixed with an escape character ~ (tilde) or \ (backslash).

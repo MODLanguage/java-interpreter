@@ -33,8 +33,8 @@ import java.io.IOException;
 public class ScratchTest {
     private final static String[][] expected = {
             {
-                    "_vat=20;key=\"vat rate is %vat`%`\"",
-                    "{\"key\": \"vat rate is 20`%`\"}"
+                    "_letters=abc;key=\"\\%letters\"",
+                    "{\"key\":\"%letters\"}"
             }
     };
 

@@ -32,7 +32,7 @@ public class StringEscapeReplacer {
         }
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
             if (stringToTransform.contains(replacement.getKey())) {
-                stringToTransform = stringToTransform.replaceAll(replacement.getKey(), replacement.getValue());
+                stringToTransform = stringToTransform.replace(replacement.getKey(), replacement.getValue());
             }
         }
 
@@ -40,6 +40,8 @@ public class StringEscapeReplacer {
     }
 
     private static void loadReplacements() {
+        replacements.put("\\%", "%");
+        replacements.put("~%", "%");
         replacements.put("~\\", "\\");
         replacements.put("\\\\", "\\");
         replacements.put("~~", "~");
