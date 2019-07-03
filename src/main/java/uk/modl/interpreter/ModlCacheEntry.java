@@ -26,7 +26,7 @@ import uk.modl.parser.RawModlObject;
  */
 public class ModlCacheEntry {
     public final RawModlObject rawModlObject;
-    private final long endTime;
+    private long endTime;
 
     ModlCacheEntry(long endTime, RawModlObject rawModlObject) {
         this.endTime = endTime;

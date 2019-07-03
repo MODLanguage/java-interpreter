@@ -51,29 +51,41 @@ class FileLoader {
         }
         if (!forceReload) {
             if (cache.get(location) != null) {
-                if (cache.get(location).expired()) {
+                if (!cache.get(location)
+                        .expired()) {
                     filesLoaded.add(location);
                     return cache.get(location).rawModlObject;
                 } else {
-                    cache.remove(location);
+                    // Keep it because we might need to use it if our network connection is down.
                 }
             }
-        } else {
-            cache.remove(location);
         }
+
         if (location.startsWith("http")) {
             // Load from URI
             try {
                 contents =
-                    new Scanner(new URL(location).openStream(), StandardCharsets.UTF_8.name()).useDelimiter("\\A")
-                                                                                              .next();
+                        new Scanner(new URL(location).openStream(), StandardCharsets.UTF_8.name()).useDelimiter("\\A")
+                                .next();
             } catch (IOException e) {
+                // Maybe its still in the cache...
+                if (cache.get(location) != null) {
+                    return cache.get(location).rawModlObject;
+                }
+
+                // No, so throw an exception
                 throw new RuntimeException(("Could not make URI : " + location + ", error : " + e));
             }
         } else {
             try {
                 contents = new String(Files.readAllBytes(Paths.get(location)));
             } catch (IOException e) {
+                // Maybe its still in the cache...
+                if (cache.get(location) != null) {
+                    return cache.get(location).rawModlObject;
+                }
+
+                // No, so throw an exception
                 throw new RuntimeException(("Could not open file : " + location + ", error : " + e));
             }
         }
