@@ -726,7 +726,12 @@ public class Interpreter {
                                     String superclass = ((String) (modlClassMap.get("*superclass")));
                                     if (superclass.equals("arr")) {
                                         ModlValue v = interpret(modlObject, vi, parentPair);
-                                        valuePair.addModlValue(v);
+                                        ModlObject.Array array = (ModlObject.Array) valuePair.getModlValue();
+                                        if (array == null) {
+                                            array = new ModlObject.Array();
+                                            valuePair.addModlValue(array);
+                                        }
+                                        array.addValue(v);
                                     } else if (superclass.equals("map")) {
                                         @SuppressWarnings("unchecked")
                                         ModlObject.String

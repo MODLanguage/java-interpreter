@@ -33,8 +33,60 @@ import java.io.IOException;
 public class ScratchTest {
     private final static String[][] expected = {
             {
-                    "_letters=abc;key=\"\\%letters\"",
-                    "{\"key\":\"%letters\"}"
+                    "_C=us; _L=en; _Q=numexample.com; _D=numexample.com; _DV=iPhone 7; _TZ=GMT; _GPS=53.473997,-2.237334; *load=\"https://s3.eu-west-2.amazonaws.com/modules.num.uk/1/rcf.txt!\"; o=NUM Example Co:Example Strapline:[t=Call us:441270123456;fb=examplefacebook;tw=exampletwitter;in=exampleinstagram]",
+                    "{\n" +
+                            "    \"organisation\": {\n" +
+                            "        \"name\": \"NUM Example Co\",\n" +
+                            "        \"slogan\": \"Example Strapline\",\n" +
+                            "        \"contacts\": [\n" +
+                            "            {\n" +
+                            "                \"telephone\": {\n" +
+                            "                    \"description\": \"Call us\",\n" +
+                            "                    \"value\": \"441270123456\",\n" +
+                            "                    \"object_type\": \"media\",\n" +
+                            "                    \"object_display_name\": \"Telephone\",\n" +
+                            "                    \"description_default\": \"Call\",\n" +
+                            "                    \"prefix\": \"tel://\",\n" +
+                            "                    \"media_type\": \"core\"\n" +
+                            "                }\n" +
+                            "            },\n" +
+                            "            {\n" +
+                            "                \"facebook\": {\n" +
+                            "                    \"value\": \"examplefacebook\",\n" +
+                            "                    \"object_type\": \"media\",\n" +
+                            "                    \"object_display_name\": \"Facebook\",\n" +
+                            "                    \"description_default\": \"View Facebook profile\",\n" +
+                            "                    \"prefix\": \"https://www.facebook.com/\",\n" +
+                            "                    \"media_type\": \"3p\"\n" +
+                            "                }\n" +
+                            "            },\n" +
+                            "            {\n" +
+                            "                \"twitter\": {\n" +
+                            "                    \"value\": \"exampletwitter\",\n" +
+                            "                    \"object_type\": \"media\",\n" +
+                            "                    \"object_display_name\": \"Twitter\",\n" +
+                            "                    \"description_default\": \"View Twitter profile\",\n" +
+                            "                    \"prefix\": \"https://www.twitter.com/\",\n" +
+                            "                    \"media_type\": \"3p\",\n" +
+                            "                    \"value_prefix\": \"@\"\n" +
+                            "                }\n" +
+                            "            },\n" +
+                            "            {\n" +
+                            "                \"instagram\": {\n" +
+                            "                    \"value\": \"exampleinstagram\",\n" +
+                            "                    \"object_type\": \"media\",\n" +
+                            "                    \"object_display_name\": \"Instagram\",\n" +
+                            "                    \"description_default\": \"View Instagram profile\",\n" +
+                            "                    \"prefix\": \"https://www.instagram.com/\",\n" +
+                            "                    \"media_type\": \"3p\"\n" +
+                            "                }\n" +
+                            "            }\n" +
+                            "        ],\n" +
+                            "        \"object_type\": \"entity\",\n" +
+                            "        \"object_display_name\": \"Organization\",\n" +
+                            "        \"description_default\": \"View Organization\"\n" +
+                            "    }\n" +
+                            "}"
             }
     };
 
