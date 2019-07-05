@@ -28,16 +28,18 @@ import java.util.*;
 class ModlClassLoader {
 
     private static final Set<String>
-        NAMES =
-        Collections.unmodifiableSet(new HashSet<>(Arrays.asList("map", "str", "num", "arr")));
+            NAMES =
+            Collections.unmodifiableSet(new HashSet<>(Arrays.asList("map", "str", "num", "arr")));
 
     static void loadClass(RawModlObject.Structure structure,
                           Map<String, Map<String, Object>> klasses,
                           Interpreter interpreter) {
         if (structure instanceof ModlObject.Pair) {
             ModlObject.Pair pair = (ModlObject.Pair) structure;
-            if (!(((pair.getKey().string.toLowerCase().equals("*class")) ||
-                   (pair.getKey().string.toLowerCase().equals("*c"))))) {
+            if (!(((pair.getKey().string.toLowerCase()
+                    .equals("*class")) ||
+                    (pair.getKey().string.toLowerCase()
+                            .equals("*c"))))) {
                 throw new RuntimeException("Expecting '*class' in ModlClassLoader");
             }
             loadClassStructure(structure, klasses, interpreter);
@@ -50,14 +52,27 @@ class ModlClassLoader {
         // Load in the new klass
         HashMap<String, Object> values = new LinkedHashMap<>();
         String id = getPairValueFor(structure, "*id", interpreter);
+        String name = getPairValueFor(structure, "*name", interpreter);
+
+        if (name == null) {
+            name = getPairValueFor(structure, "*n", interpreter);
+        }
+        if (name == null) {
+            name = id;
+        }
+        checkClassIdForBuiltInNames(id);
+        checkClassNameForBuiltInNames(name);
+
+        values.put("*name", name); // TODO ???
         if (id == null) {
             id = getPairValueFor(structure, "*i", interpreter);
         }
+
         if (id == null) {
             throw new RuntimeException("Can't find *id in *class");
         }
         if (klasses.containsKey(id)) {
-            throw new RuntimeException("Interpreter Error: Class name or id already defined - cannot redefine: " + id);
+            throw new RuntimeException("Interpreter Error: Class name or id already defined - cannot redefine: " + id + ", " + name);
         }
 
         values.put("*id", id);
@@ -66,14 +81,6 @@ class ModlClassLoader {
             superclass = getPairValueFor(structure, "*s", interpreter);
         }
         values.put("*superclass", superclass);
-        String name = getPairValueFor(structure, "*name", interpreter);
-        if (name == null) {
-            name = getPairValueFor(structure, "*n", interpreter);
-        }
-        if (name == null) {
-            name = id;
-        }
-        values.put("*name", name); // TODO ???
 
         // Is the name or id a built-in type ?
         if (NAMES.contains(name)) {
@@ -85,14 +92,15 @@ class ModlClassLoader {
         // Is the name already defined as an id or name?
         if (klasses.containsKey(name)) {
             throw new RuntimeException("Interpreter Error: Class name or id already defined - cannot redefine: " +
-                                       name);
+                    id + ", " + name);
         } else {
             for (Map<String, Object> kl : klasses.values()) {
-                final String existingName = kl.get("*name").toString();
+                final String existingName = kl.get("*name")
+                        .toString();
                 if (existingName.equals(name) || existingName.equals(id)) {
                     throw new RuntimeException(
-                        "Interpreter Error: Class name or id already defined - cannot redefine: " +
-                        name);
+                            "Interpreter Error: Class name or id already defined - cannot redefine: " +
+                                    id + ", " + name);
                 }
             }
         }
@@ -102,27 +110,51 @@ class ModlClassLoader {
         // Go through the structure and find all the new values and add them (replacing any already there from superklass)
         for (RawModlObject.Pair mapItem : ((ModlObject.Map) ((ModlObject.Pair) structure).getModlValue()).getPairs()) {
             // Remember to avoid "_id" and "_sc" !
-            if (mapItem.getKey().string.toLowerCase().equals("*id") ||
-                mapItem.getKey().string.toLowerCase().equals("*i") ||
-                mapItem.getKey().string.toLowerCase().equals("*superclass") ||
-                mapItem.getKey().string.toLowerCase().equals("*s")) {
+            if (mapItem.getKey().string.toLowerCase()
+                    .equals("*id") ||
+                    mapItem.getKey().string.toLowerCase()
+                            .equals("*i") ||
+                    mapItem.getKey().string.toLowerCase()
+                            .equals("*superclass") ||
+                    mapItem.getKey().string.toLowerCase()
+                            .equals("*s")) {
                 continue;
             }
-            if (mapItem.getKey().string.toLowerCase().equals("*assign") ||
-                mapItem.getKey().string.toLowerCase().equals("*a")) {
-                interpreter.addToUpperCaseInstructions(mapItem.getKey().string);
+            if (mapItem.getKey().string.toLowerCase()
+                    .equals("*assign") ||
+                    mapItem.getKey().string.toLowerCase()
+                            .equals("*a")) {
+                interpreter.addToUpperCaseInstructions(mapItem.getKey().string, "ERROR MESSAGE: %s");
                 if (mapItem.getModlValue() instanceof ModlObject.Array) {
                     loadParams(values, (ModlObject.Array) (mapItem.getModlValue()));
                 }
                 continue;
             }
             // Now add the new value
-            if (mapItem.getKey().string.toLowerCase().equals("*n") ||
-                mapItem.getKey().string.toLowerCase().equals("*name")) {
+            if (mapItem.getKey().string.toLowerCase()
+                    .equals("*n") ||
+                    mapItem.getKey().string.toLowerCase()
+                            .equals("*name")) {
                 values.put("*name", mapItem.getModlValue());
             } else {
                 values.put(mapItem.getKey().string, mapItem.getModlValue());
             }
+        }
+    }
+
+    private static void checkClassNameForBuiltInNames(final String s) {
+        if (s != null && (s.equals("arr") || s.equals("map") || s.equals("num") || s.equals("str"))) {
+            throw new RuntimeException(
+                    "Interpreter Error: Reserved class name - cannot redefine: " +
+                            s);
+        }
+    }
+
+    private static void checkClassIdForBuiltInNames(final String s) {
+        if (s != null && (s.equals("arr") || s.equals("map") || s.equals("num") || s.equals("str"))) {
+            throw new RuntimeException(
+                    "Interpreter Error: Reserved class id - cannot redefine: " +
+                            s);
         }
     }
 
@@ -131,13 +163,14 @@ class ModlClassLoader {
         int previousParamSize = -1;
         for (ModlValue v : array.getValues()) {
             RawModlObject.Array a = (ModlObject.Array) v;
-            final int numberOfParams = a.getValues().size();
+            final int numberOfParams = a.getValues()
+                    .size();
             if (numberOfParams > previousParamSize) {
                 previousParamSize = numberOfParams;
             } else {
                 throw new RuntimeException(
-                    "Interpreter Error: Error: Key lists in *assign are not in ascending order of list length: " +
-                    a.toString());
+                        "Interpreter Error: Error: Key lists in *assign are not in ascending order of list length: " +
+                                a.toString());
             }
             String key = "*params" + numberOfParams;
             List<ModlValue> vs = new LinkedList<>(a.getValues());
@@ -147,8 +180,9 @@ class ModlClassLoader {
 
     static String getPairValueFor(RawModlObject.Structure structure, String pairValue, Interpreter interpreter) {
         for (RawModlObject.Pair mapItem : ((ModlObject.Map) ((ModlObject.Pair) structure).getModlValue()).getPairs()) {
-            if (mapItem.getKey().string.toLowerCase().equals(pairValue.toLowerCase())) {
-                interpreter.addToUpperCaseInstructions(mapItem.getKey().string);
+            if (mapItem.getKey().string.toLowerCase()
+                    .equals(pairValue.toLowerCase())) {
+                interpreter.addToUpperCaseInstructions(mapItem.getKey().string, "ERROR MESSAGE: %s");
                 // TODO This does not need to be a String!
                 return ((ModlObject.String) mapItem.getModlValue()).string;
             }

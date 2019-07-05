@@ -162,7 +162,7 @@ public class NestedObjectReferenceTest {
         } catch (IOException e) {
             Assert.fail(e.getLocalizedMessage());
         } catch (RuntimeException r) {
-            if (!r.getLocalizedMessage().startsWith("Interpreter Error: Cannot resolve reference in")) {
+            if (!r.getLocalizedMessage().startsWith("Interpreter Error: Invalid object reference")) {
                 Assert.fail("Wrong error message received, expected 'Invalid Object Reference'.");
             }
             // Ok, the exception is valid.
@@ -330,9 +330,9 @@ public class NestedObjectReferenceTest {
         } catch (IOException e) {
             Assert.fail(e.getLocalizedMessage());
         } catch (RuntimeException r) {
-            if (!r.getLocalizedMessage().startsWith("Object reference is numerical for non-Array value")) {
+            if (!r.getLocalizedMessage().startsWith("Interpreter Error: Found a map when expecting an array")) {
                 System.out.println(r.getLocalizedMessage());
-                Assert.fail("Wrong error message received, expected 'Object reference is numerical for non-Array value'.");
+                Assert.fail("Wrong error message received, expected 'Interpreter Error: Found a map when expecting an array'.");
             }
             // Ok, the exception is valid.
         }

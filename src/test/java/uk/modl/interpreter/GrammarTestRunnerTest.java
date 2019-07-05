@@ -72,8 +72,12 @@ public class GrammarTestRunnerTest extends TestCase {
         ModlObject modlObject = Interpreter.interpret(testInput.input);
         String output = JsonPrinter.printModl(modlObject);
         System.out.println("Output : " + output);
-        final String expected = testInput.expected_output.replace(" ", "").replace("\n", "").replace("\r", "");
-        final String actual = output.replace(" ", "").replace("\n", "").replace("\r", "");
+        final String expected = testInput.expected_output.replace(" ", "")
+                .replace("\n", "")
+                .replace("\r", "");
+        final String actual = output.replace(" ", "")
+                .replace("\n", "")
+                .replace("\r", "");
 
         if (!expected.equals(actual)) {
             errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : " + output + "\n");
@@ -84,30 +88,42 @@ public class GrammarTestRunnerTest extends TestCase {
     public void testErrorTest() throws Exception {
         // Go through grammar_test/error_tests.json making sure all tests raise an error of some kind
         try (InputStream fileStream = new FileInputStream("grammar_tests/error_tests.json")) {
-            List<String> list = mapper.readValue(fileStream, new TypeReference<LinkedList<String>>() {
+            List<TestInput> list = mapper.readValue(fileStream, new TypeReference<LinkedList<TestInput>>() {
             });
             int testNumber = 1;
             int
                     startFromTestNumber =
                     0;// Use this to skip tests manually to make it easier for debugging a specific test.
-            for (String testInput : list) {
+            for (TestInput testInput : list) {
                 if (testNumber >= startFromTestNumber) {
                     System.out.println("Running test number: " + testNumber);
                     checkInValidTestInput(testInput);
                 }
                 testNumber++;
             }
+        } finally {
+            if (errors.size() > 0) {
+
+                System.out.println("--------------- Errors ----------------");
+                for (final String error : errors) {
+                    System.out.println(error);
+                }
+
+                Assert.fail("Errors found.");
+            }
         }
 
     }
 
-    private void checkInValidTestInput(final String testInput) {
-        System.out.println("Failing Input : " + testInput);
+    private void checkInValidTestInput(final TestInput testInput) {
+        System.out.println("Failing Input : " + testInput.input);
         try {
-            ModlObject modlObject = Interpreter.interpret(testInput);
+            ModlObject modlObject = Interpreter.interpret(testInput.input);
             fail("Expected error");
         } catch (Exception e) {
-            // OK
+            if (!testInput.expected_output.equals(e.getMessage())) {
+                errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : " + e.getMessage() + "\n");
+            }
         }
     }
 

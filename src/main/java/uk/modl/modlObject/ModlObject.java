@@ -25,6 +25,7 @@ import uk.modl.parser.printers.ModlObjectJsonSerializer;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Created by alex on 13/09/2018.
@@ -135,10 +136,14 @@ public class ModlObject extends ModlValue {
             return null;
         }
 
-        @Override public java.lang.String toString() {
-            return "Map{" +
-                   "pairs=" + pairs +
-                   '}';
+        @Override
+        public java.lang.String toString() {
+            final java.lang.String s = pairs.stream()
+                    .map(p -> "\"" + p.getKey() + "\"=>\"" + p.getValue()
+                            .toString() + "\"")
+                    .collect(Collectors.joining(", "));
+            return "{" + s +
+                    '}';
         }
     }
 
@@ -181,10 +186,18 @@ public class ModlObject extends ModlValue {
             return values;
         }
 
-        @Override public java.lang.String toString() {
-            return "Array{" +
-                   "values=" + values +
-                   '}';
+        @Override
+        public java.lang.String toString() {
+            final java.lang.String valuesStr = this.values.stream()
+                    .map(v -> {
+                        if (v.isNumber()) {
+                            return v.toString();
+                        } else {
+                            return "\"" + v.toString() + "\"";
+                        }
+                    })
+                    .collect(Collectors.joining(", "));
+            return "[" + valuesStr + "]";
         }
     }
 
@@ -240,7 +253,8 @@ public class ModlObject extends ModlValue {
             } else if (this.modlValue instanceof ModlObject.Pair && value instanceof ModlObject.Pair) {
                 final ModlObject.Pair oldPair = (Pair) oldValue;
                 final ModlObject.Pair newPair = (Pair) value;
-                if (oldPair.getKey().equals(newPair.getKey())) {
+                if (oldPair.getKey()
+                        .equals(newPair.getKey())) {
                     this.modlValue = new Array();
                     ((Array) this.modlValue).addValue(oldValue);
                     ((Array) this.modlValue).addValue(value);
@@ -270,11 +284,12 @@ public class ModlObject extends ModlValue {
             return values;
         }
 
-        @Override public java.lang.String toString() {
+        @Override
+        public java.lang.String toString() {
             return "Pair{" +
-                   "key=" + key +
-                   ", modlValue=" + modlValue +
-                   '}';
+                    "key=" + key +
+                    ", modlValue=" + modlValue +
+                    '}';
         }
     }
 
@@ -307,7 +322,8 @@ public class ModlObject extends ModlValue {
             return true;
         }
 
-        @Override public boolean equals(final Object o) {
+        @Override
+        public boolean equals(final Object o) {
             if (this == o)
                 return true;
             if (o == null || getClass() != o.getClass())
@@ -345,7 +361,8 @@ public class ModlObject extends ModlValue {
             return true;
         }
 
-        @Override public java.lang.String toString() {
+        @Override
+        public java.lang.String toString() {
             return number;
         }
     }

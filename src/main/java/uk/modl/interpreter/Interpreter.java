@@ -134,12 +134,16 @@ public class Interpreter {
             i++;
         }
         if (keyIsAllDigits) {
-            throw new RuntimeException("Entirely numeric keys are not allowed: " + newKey);
+            String k = newKey;
+            if (k.startsWith("_")) {
+                k = k.substring(1);
+            }
+            throw new RuntimeException("Interpreter Error: Invalid key - \"" + k + "\" - entirely numeric keys are not allowed: " + newKey);
         }
         if (invalidCharacter != '\0') {
-            throw new RuntimeException("Interpreter Error: Invalid key - '" +
+            throw new RuntimeException("Interpreter Error: Invalid key - \"" +
                     invalidCharacter +
-                    "' character not allowed: " +
+                    "\" character not allowed: " +
                     newKey);
         }
     }
@@ -169,14 +173,19 @@ public class Interpreter {
                                         (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase()
                                                 .equals(
                                                         "*version")))))) {
-                    addToUpperCaseInstructions(((ModlObject.Pair) rawStructure).getKey().string);
+                    addToUpperCaseInstructions(((ModlObject.Pair) rawStructure).getKey().string, "ERROR MESSAGE: %s");
                     // This is the version number - check it and then ignore it
                     if (((ModlObject.Pair) rawStructure).getModlValue() instanceof ModlObject.Number) {
                         versionString = ((ModlObject.Number) ((ModlObject.Pair) rawStructure).getModlValue()).number;
                     } else if (((ModlObject.Pair) rawStructure).getModlValue() instanceof ModlObject.String) {
                         versionString = ((ModlObject.String) ((ModlObject.Pair) rawStructure).getModlValue()).string;
                     }
-                    float versionNumber = Float.valueOf(versionString);
+                    float versionNumber = 0.0F;
+                    try {
+                        versionNumber = Float.valueOf(versionString);
+                    } catch (Exception e) {
+                        throw new RuntimeException("Interpreter Error: Invalid MODL version: " + versionString);
+                    }
                     if (versionNumber < 1.0 || versionNumber != Math.abs(versionNumber)) {
                         throw new RuntimeException("Interpreter Error: Invalid MODL version: " + versionString);
                     }
@@ -198,7 +207,7 @@ public class Interpreter {
                                         (((ModlObject.Pair) rawStructure).getKey().string.toLowerCase()
                                                 .equals(
                                                         "*load")))))) {
-                    addToUpperCaseInstructions(((ModlObject.Pair) rawStructure).getKey().string);
+                    addToUpperCaseInstructions(((ModlObject.Pair) rawStructure).getKey().string, "Interpreter Error: Cannot load multiple files after *LOAD instruction");
 
                     // Load in the config file specified by the "l" object
                     if (((ModlObject.Pair) rawStructure).getModlValue() instanceof ModlObject.String) {
@@ -233,14 +242,14 @@ public class Interpreter {
                             .equals("*class") ||
                             pair.getKey().string.toLowerCase()
                                     .equals("*c")) {
-                        addToUpperCaseInstructions(pair.getKey().string);
+                        addToUpperCaseInstructions(pair.getKey().string, "Interpreter Error: Already defined %s as final.");
                         ModlClassLoader.loadClass(rawStructure, klasses, this);
                         continue;
                     } else if (pair.getKey().string.toLowerCase()
                             .equals("*method") ||
                             pair.getKey().string.toLowerCase()
                                     .equals("*m")) {
-                        addToUpperCaseInstructions(pair.getKey().string);
+                        addToUpperCaseInstructions(pair.getKey().string, "Interpreter Error: Already defined %s as final.");
                         VariableMethodLoader.loadVariableMethod(methodList, pair, this);
                         continue;
                     } else if (pair.getKey().string.equals("?")) {
@@ -249,7 +258,7 @@ public class Interpreter {
                         if (pair.getKey().string.startsWith("_")) {
                             VariableLoader.loadConfigVar(pair.getKey().string.replaceFirst("_", ""), pair, variables);
                         } else if (pair.getKey().string.startsWith("*")) {
-                            throw new RuntimeException("Unrecognised configuration instruction : " + pair.getKey());
+                            throw new RuntimeException("Interpreter Error: Invalid keyword: " + pair.getKey());
                         }
                     }
                 } else if (!(rawStructure instanceof ModlObject.Pair &&
@@ -262,14 +271,14 @@ public class Interpreter {
                     if (rawStructure instanceof ModlObject.Pair && ((ModlObject.Pair) rawStructure).getKey() != null &&
                             ((ModlObject.Pair) rawStructure).getKey().string != null &&
                             (((ModlObject.Pair) rawStructure).getKey().string.startsWith("*"))) {
-                        throw new RuntimeException("Unrecognised configuration instruction : " +
+                        throw new RuntimeException("Interpreter Error: Invalid keyword: " +
                                 ((ModlObject.Pair) rawStructure).getKey().string);
                     }
                 } else if (rawStructure instanceof ModlObject.Pair &&
                         ((ModlObject.Pair) rawStructure).getKey() != null &&
                         ((ModlObject.Pair) rawStructure).getKey().string != null &&
                         (((ModlObject.Pair) rawStructure).getKey().string.startsWith("*"))) {
-                    throw new RuntimeException("Unrecognised configuration instruction : " +
+                    throw new RuntimeException("Interpreter Error: Invalid keyword: " +
                             ((ModlObject.Pair) rawStructure).getKey().string);
                 }
                 List<ModlObject.Structure> structures = interpret(modlObject, rawStructure);
@@ -334,7 +343,7 @@ public class Interpreter {
             }
         } catch (final Exception e) {
             if (versionNumberIsWrong) {
-                final RuntimeException exception = new RuntimeException(e.getMessage() + " - MODL version too high for this interpreter: " + versionString);
+                final RuntimeException exception = new RuntimeException(e.getMessage() + " - MODL Version 1 interpreter cannot process this MODL Version " + versionString + " file.");
                 exception.initCause(e);
                 throw exception;
             } else
@@ -342,13 +351,13 @@ public class Interpreter {
         }
     }
 
-    void addToUpperCaseInstructions(String string) {
-        if (uppercaseInstructions.contains(string.toUpperCase())) {
-            throw new RuntimeException("Already defined " + string + " as final!");
+    void addToUpperCaseInstructions(final String instruction, final String errorFormat) {
+        if (uppercaseInstructions.contains(instruction.toUpperCase())) {
+            throw new RuntimeException(String.format(errorFormat, instruction));
         }
-        if (string.toUpperCase()
-                .equals(string)) {
-            uppercaseInstructions.add(string);
+        if (instruction.toUpperCase()
+                .equals(instruction)) {
+            uppercaseInstructions.add(instruction);
         }
     }
 
@@ -457,7 +466,7 @@ public class Interpreter {
             if (newKey.toUpperCase()
                     .equals(newKey)) {
                 if (pairNames.contains(newKey) && addToValuePairs) {
-                    throw new RuntimeException(newKey + " can't be defined again as upper-case keys are immutable");
+                    throw new RuntimeException("Interpreter Error: Already defined " + newKey + " as final.");
                 }
             }
         }
@@ -486,7 +495,7 @@ public class Interpreter {
                     newKey.toLowerCase()
                             .equals(
                                     "*load")) {
-                addToUpperCaseInstructions(newKey);
+                addToUpperCaseInstructions(newKey, "Cannot load multiple files after *LOAD instruction");
 
                 // Load in the config file specified by the "l" object
                 String importFileValue = null;
@@ -950,7 +959,7 @@ public class Interpreter {
             return null;
         }
         if (value instanceof ModlObject.Map) {
-            throw new RuntimeException("Illegal value for array transformation : " + value.toString());
+            throw new RuntimeException("Interpreter Error: Cannot convert map to array: " + value.toString());
         }
         ModlObject.Array result = new ModlObject.Array();
         result.addValue(value);
@@ -962,7 +971,7 @@ public class Interpreter {
             return null;
         }
         if (value instanceof ModlObject.Array) {
-            throw new RuntimeException("Illegal value for map transformation : " + value.toString());
+            throw new RuntimeException("Interpreter Error: Cannot convert array to map: " + value.toString());
         }
         ModlObject.Map result = new ModlObject.Map();
         result.addPair(new ModlObject.Pair(new ModlObject.String("value"), value));
@@ -998,7 +1007,7 @@ public class Interpreter {
 
     private ModlObject.String makeValueString(ModlValue value) {
         if (value == null) {
-            throw new RuntimeException("Interpreter Error: Cannot convert null to a str.");
+            throw new RuntimeException("Interpreter Error: Cannot convert null value to string.");
         }
         String newString = null;
         if (value instanceof ModlObject.String) {
@@ -1017,7 +1026,7 @@ public class Interpreter {
             newString = null;
         }
         if (newString == null) {
-            throw new RuntimeException("Interpreter Error: Cannot convert null to a str.");
+            throw new RuntimeException("Interpreter Error: Cannot convert null value to string.");
         }
 
 
@@ -1317,8 +1326,18 @@ public class Interpreter {
                     if (originalPair.getModlValue() instanceof ModlObject.Number) {
                         return originalPair;
                     }
-                    ModlObject.Number number = makeValueNumber(originalPair.getModlValue());
-                    pair.addModlValue(number);
+                    try {
+                        ModlObject.Number number = makeValueNumber(originalPair.getModlValue());
+                        pair.addModlValue(number);
+                    } catch (Exception e) {
+
+                        Object v = originalPair.getModlValue()
+                                .getValue();
+                        if (v == null) {
+                            v = "";
+                        }
+                        throw new RuntimeException(String.format("Superclass of \"%s\" is num - cannot assign value \"%s\"", classMap.get("*id"), v));
+                    }
                     return pair;
                 } else if ("bool".equals(mostSuperClass)) {
                     return originalPair;
@@ -1342,11 +1361,8 @@ public class Interpreter {
                     pair.addModlValue(map);
                     return pair;
                 } else {
-                    throw new RuntimeException("Superclass " +
-                            superclassString +
-                            " is not available for " +
-                            originalPair.getModlValue()
-                                    .getClass());
+                    throw new RuntimeException("Interpreter Error: Invalid superclass: " +
+                            superclassString);
                 }
             }
         }

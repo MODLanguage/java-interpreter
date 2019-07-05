@@ -1,77 +1,527 @@
 [
-  "*VERSION=100;\"123\"=1",
-  "b=(c=(d=(e=(f=(g=(h=(i=(j=1))))))));a=%b.c.e.f.g.h.i.j",
-  "*method(*id=hy;*name=hyp1;*transform=`replace( ,-)`);*method(*id=hy;*name=hyp2;*transform=`replace( ,-)`)",
-  "*method(*id=hy;*name=hyp1;*transform=`replace( ,-)`);*method(*id=hy1;*name=hyp1;*transform=`replace( ,-)`)",
-  "*method(*id=hy;*name=hyp;*transform=`replace( ,-)`);*method(*id=hyp1;*name=hy;*transform=`replace( ,-)`)",
-  "*method(*id=hy;*name=hyp;*transform=`replace( ,-)`);*method(*id=hyp;*name=hyp1;*transform=`replace( ,-)`)",
-  "*class(*id=t;*name=test;*assign=[[a;b];[a]])",
-  "*class(*id=t;*name=test;*assign=[[a;b]]);test=1:2:3",
-  "*class(*id=t;*name=test);*class(*id=tt;*name=test)",
-  "*class(*id=test;*name=t);*class(*id=tt;*name=test)",
-  "*class(*id=test;*name=t);*class(*id=test;*name=tt)",
-  "*class(*name=test;*id=t);*class(*id=test;*name=tt)",
-  "*L=grammar_tests/1;*l=grammar_tests/1;a=1",
-  "*L=grammar_tests/1;*L=grammar_tests/1",
-  "*class(\n *id=g;\n *name=glossary;\n *superclass=map\n);\n*class(\n *id=t;\n *name=title;\n *superclass=str\n);\n*class(\n *id=d;\n *name=GlossDiv;\n *superclass=map\n);\n*class(\n *id=l;\n *name=GlossList;\n *superclass=map\n);\n*class(\n *id=e;\n *name=GlossEntry;\n *superclass=map;\n *assign[\n   [i;s;gt;a;ab;gd;gs]\n ]\n);\n*class(\n *id=i;\n *name=ID;\n *superclass=str\n);\n*class(\n *id=s;\n *name=SortAs;\n *superclass=str\n);\n*class(\n *id=gt;\n *name=GlossTerm;\n *superclass=str\n);\n*class(\n *id=a;\n *name=Acronym;\n *superclass=str\n);\n*class(\n *id=ab;\n *name=Abbrev;\n *superclass=str\n);\n*class(\n *id=gd;\n *name=GlossDef;\n *superclass=map;\n *assign=[\n   [p];\n   [p;sa]\n ]\n);\n*CLASS(\n *id=p;\n *name=para;\n *superclass=str\n);\n*class(\n *id=sa;\n *name=SeeAlso;\n *superclass=arr\n);\n*class(\n *id=gs;\n *name=GlossSee;\n *superclass=str\n);\n\ng(\n ?=[SGML;markup;language];\n t=example glossary;\n d(\n   t=S;\n   l(\n     e(\n       i=%0;\n       s=%0;\n       gt=Standard Generalized %1.s %2.s;\n       a=%0;\n       ab=ISO 8879\\:1986;\n       gd=A meta-%1 %2, used to create %1 %2s such as DocBook.\n         :[GML;XML];\n       gs=%1\n     )\n   )\n )\n)",
-  "*class(*id=n;*name=name;*superclass=num);n=Elliott",
-  "*class(*id=newstr;*superclass=str);*class(*id=a;*name=age;*superclass=anotherstr);a=10",
-  "!a=1",
-  "a!=1",
-  "!a!=1",
-  "!~a~!=1",
-  "£x=y",
-  "$x=y",
-  "@x=y",
-  "-x=y",
-  "+x=y",
-  "'x'=y",
-  "'x?=y",
-  "a=1:2:3;;\nb=4:5:6",
-  "a=1:2:3;\n;\nb=4:5:6",
-  "a=1:2:3\n;\n;\nb=4:5:6",
-  "a=1:2:3\n;;\nb=4:5:6",
-  "a=1:2:3\n;\nb=4:5:6\n;\n;\n",
-  "a=1:2:3\n;\nb=4:5:6\n;;\n",
-  "*nonsense=1",
-  "?=1:2:3:4;_12%3=1",
-  "_123=1",
-  "_12*3=1",
-  "_12!3=1",
-  "_12@3=1",
-  "_12#3=1",
-  "_12$3=1",
-  "_12^3=1",
-  "_12&3=1",
-  "_12(3=1",
-  "_12)3=1",
-  "123=456",
-  "_test=(\n  first=(\"v1\"=(one=(two=three)))\n);\n \ntesting = \"`%test.first.v1.one.0`\"",
-  "_test=(\n  first=(\"v1\"=(one=(two=three)))\n);\n \ntesting = \"`%test.first.v1.0.two`\"",
-  "_test=(\n  first=(\"v1\"=(one=(two=three)))\n);\n \ntesting = \"`%test.first.v1.0.0`\"",
-  "_test=(\n  numbers=(\"one\"=1)\n);\n\ntesting = this is a string that includes a reference with a letter s after it %test.numbers.ones",
-  "true=test",
-  "false=test",
-  "null=test",
-  "*class(*id=arr)",
-  "*class(*id=num)",
-  "*class(*id=map)",
-  "*class(*id=str)",
-  "*class(*name=arr)",
-  "*class(*name=num)",
-  "*class(*name=map)",
-  "*class(*name=str)",
-  "IMMUTABLE=true;IMMUTABLE=false",
-  "*VERSION=test",
-  "*V=test",
-  "*VERSION=0",
-  "*VERSION=0.1",
-  "a=b;*VERSION=1",
-  "*class(*id=a;*name=alpha;*superclass=str);a=null",
-  "*class(*id=a;*name=alpha;*superclass=num);a=null",
-  "*class(*id=a;*name=alpha;*superclass=num);a=x",
-  "*class(*id=a;*name=alpha;*superclass=num);a=null",
-  "*class(*id=a;*name=alpha;*superclass=map);a=[1;2;3]",
-  "*class(*id=a;*name=alpha;*superclass=arr);a=(c=d)",
-  "*L=grammar_tests/test_import_dir/nested_import1.txt;files=%*load"
+  {
+    "id": 1,
+    "input": "*VERSION=100;\"123\"=1",
+    "expected_output": "Interpreter Error: Invalid key - \"123\" - entirely numeric keys are not allowed: 123 - MODL Version 1 interpreter cannot process this MODL Version 100 file.",
+    "tested_features": ["errors"],
+    "minimised_modl": "*VERSION=100;\"123\"=1"
+  },
+  {
+    "id": 2,
+    "input": "b=(c=(d=(e=(f=(g=(h=(i=(j=1))))))));a=%b.c.e.f.g.h.i.j",
+    "expected_output": "Interpreter Error: Invalid object reference: \"%b.c.e.f.g.h.i.j\"",
+    "tested_features": ["errors"],
+    "minimised_modl": "b=(c=(d=(e=(f=(g=(h=(i=(j=1))))))));a=%b.c.e.f.g.h.i.j"
+  },
+  {
+    "id": 3,
+    "input": "*method(*id=hy;*name=hyp1;*transform=replace< ,->);*method(*id=hy;*name=hyp2;*transform=replace< ,->)",
+    "expected_output": "Interpreter Error: Duplicate method name or id: hy",
+    "tested_features": ["errors"],
+    "minimised_modl": "*method(*id=hy;*name=hyp1;*transform=replace< ,->);*method(*id=hy;*name=hyp2;*transform=replace< ,->)"
+  },
+  {
+    "id": 4,
+    "input": "*method(*id=hy;*name=hyp1;*transform=replace< ,->);*method(*id=hy1;*name=hyp1;*transform=replace< ,->)",
+    "expected_output": "Interpreter Error: Duplicate method name or id: hyp1",
+    "tested_features": ["errors"],
+    "minimised_modl": "*method(*id=hy;*name=hyp1;*transform=replace< ,->);*method(*id=hy1;*name=hyp1;*transform=replace< ,->)"
+  },
+  {
+    "id": 5,
+    "input": "*method(*id=hy;*name=hyp;*transform=replace< ,->);*method(*id=hyp1;*name=hy;*transform=replace< ,->)",
+    "expected_output": "Interpreter Error: Duplicate method name or id: hy",
+    "tested_features": ["errors"],
+    "minimised_modl": "*method(*id=hy;*name=hyp;*transform=replace< ,->);*method(*id=hyp1;*name=hy;*transform=replace< ,->)"
+  },
+  {
+    "id": 6,
+    "input": "*method(*id=hy;*name=hyp;*transform=replace< ,->);*method(*id=hyp;*name=hyp1;*transform=replace< ,->)",
+    "expected_output": "Interpreter Error: Duplicate method name or id: hyp",
+    "tested_features": ["errors"],
+    "minimised_modl": "*method(*id=hy;*name=hyp;*transform=replace< ,->);*method(*id=hyp;*name=hyp1;*transform=replace< ,->)"
+  },
+  {
+    "id": 7,
+    "input": "*class(*id=t;*name=test;*assign=[[a;b];[a]])",
+    "expected_output": "Interpreter Error: Error: Key lists in *assign are not in ascending order of list length: [\"a\"]",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*id=t;*name=test;*assign=[[a;b];[a]])"
+  },
+  {
+    "id": 8,
+    "input": "*class(*id=t;*name=test;*assign=[[a;b]]);test=1:2:3",
+    "expected_output": "Interpreter Error: No key list of the correct length in class t - looking for one of length 3",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*id=t;*name=test;*assign=[[a;b]]);test=1:2:3"
+  },
+  {
+    "id": 9,
+    "input": "*class(*id=t;*name=test);*class(*id=tt;*name=test)",
+    "expected_output": "Interpreter Error: Class name or id already defined - cannot redefine: tt, test",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*id=t;*name=test);*class(*id=tt;*name=test)"
+  },
+  {
+    "id": 10,
+    "input": "*class(*id=test;*name=t);*class(*id=tt;*name=test)",
+    "expected_output": "Interpreter Error: Class name or id already defined - cannot redefine: tt, test",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*id=test;*name=t);*class(*id=tt;*name=test)"
+  },
+  {
+    "id": 11,
+    "input": "*class(*id=test;*name=t);*class(*id=test;*name=tt)",
+    "expected_output": "Interpreter Error: Class name or id already defined - cannot redefine: test, tt",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*id=test;*name=t);*class(*id=test;*name=tt)"
+  },
+  {
+    "id": 12,
+    "input": "*class(*name=test;*id=t);*class(*id=test;*name=tt)",
+    "expected_output": "Interpreter Error: Class name or id already defined - cannot redefine: test, tt",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*name=test;*id=t);*class(*id=test;*name=tt)"
+  },
+  {
+    "id": 13,
+    "input": "*L=grammar_tests/1;*l=grammar_tests/1;a=1",
+    "expected_output": "Interpreter Error: Cannot load multiple files after *LOAD instruction",
+    "tested_features": ["errors"],
+    "minimised_modl": "*L=grammar_tests/1;*l=grammar_tests/1;a=1"
+  },
+  {
+    "id": 14,
+    "input": "*L=grammar_tests/1;*L=grammar_tests/1",
+    "expected_output": "Interpreter Error: Cannot load multiple files after *LOAD instruction",
+    "tested_features": ["errors"],
+    "minimised_modl": "*L=grammar_tests/1;*L=grammar_tests/1"
+  },
+  {
+    "id": 15,
+    "input": "*class(\n *id=g;\n *name=glossary;\n *superclass=map\n);\n*class(\n *id=t;\n *name=title;\n *superclass=str\n);\n*class(\n *id=d;\n *name=GlossDiv;\n *superclass=map\n);\n*class(\n *id=l;\n *name=GlossList;\n *superclass=map\n);\n*class(\n *id=e;\n *name=GlossEntry;\n *superclass=map;\n *assign[\n   [i;s;gt;a;ab;gd;gs]\n ]\n);\n*class(\n *id=i;\n *name=ID;\n *superclass=str\n);\n*class(\n *id=s;\n *name=SortAs;\n *superclass=str\n);\n*class(\n *id=gt;\n *name=GlossTerm;\n *superclass=str\n);\n*class(\n *id=a;\n *name=Acronym;\n *superclass=str\n);\n*class(\n *id=ab;\n *name=Abbrev;\n *superclass=str\n);\n*class(\n *id=gd;\n *name=GlossDef;\n *superclass=map;\n *assign=[\n   [p];\n   [p;sa]\n ]\n);\n*CLASS(\n *id=p;\n *name=para;\n *superclass=str\n);\n*class(\n *id=sa;\n *name=SeeAlso;\n *superclass=arr\n);\n*class(\n *id=gs;\n *name=GlossSee;\n *superclass=str\n);\n\ng(\n ?=[SGML;markup;language];\n t=example glossary;\n d(\n   t=S;\n   l(\n     e(\n       i=%0;\n       s=%0;\n       gt=Standard Generalized %1.s %2.s;\n       a=%0;\n       ab=ISO 8879\\:1986;\n       gd=A meta-%1 %2, used to create %1 %2s such as DocBook.\n         :[GML;XML];\n       gs=%1\n     )\n   )\n )\n)",
+    "expected_output": "Interpreter Error: Already defined *class as final.",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(\n *id=g;\n *name=glossary;\n *superclass=map\n);\n*class(\n *id=t;\n *name=title;\n *superclass=str\n);\n*class(\n *id=d;\n *name=GlossDiv;\n *superclass=map\n);\n*class(\n *id=l;\n *name=GlossList;\n *superclass=map\n);\n*class(\n *id=e;\n *name=GlossEntry;\n *superclass=map;\n *assign[\n   [i;s;gt;a;ab;gd;gs]\n ]\n);\n*class(\n *id=i;\n *name=ID;\n *superclass=str\n);\n*class(\n *id=s;\n *name=SortAs;\n *superclass=str\n);\n*class(\n *id=gt;\n *name=GlossTerm;\n *superclass=str\n);\n*class(\n *id=a;\n *name=Acronym;\n *superclass=str\n);\n*class(\n *id=ab;\n *name=Abbrev;\n *superclass=str\n);\n*class(\n *id=gd;\n *name=GlossDef;\n *superclass=map;\n *assign=[\n   [p];\n   [p;sa]\n ]\n);\n*CLASS(\n *id=p;\n *name=para;\n *superclass=str\n);\n*class(\n *id=sa;\n *name=SeeAlso;\n *superclass=arr\n);\n*class(\n *id=gs;\n *name=GlossSee;\n *superclass=str\n);\n\ng(\n ?=[SGML;markup;language];\n t=example glossary;\n d(\n   t=S;\n   l(\n     e(\n       i=%0;\n       s=%0;\n       gt=Standard Generalized %1.s %2.s;\n       a=%0;\n       ab=ISO 8879\\:1986;\n       gd=A meta-%1 %2, used to create %1 %2s such as DocBook.\n         :[GML;XML];\n       gs=%1\n     )\n   )\n )\n)"
+  },
+  {
+    "id": 16,
+    "input": "*class(*id=n;*name=name;*superclass=num);n=Elliott",
+    "expected_output": "Superclass of \"n\" is num - cannot assign value \"Elliott\"",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*id=n;*name=name;*superclass=num);n=Elliott"
+  },
+  {
+    "id": 17,
+    "input": "*class(*id=newstr;*superclass=str);*class(*id=a;*name=age;*superclass=anotherstr);a=10",
+    "expected_output": "Interpreter Error: Invalid superclass: anotherstr",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*id=newstr;*superclass=str);*class(*id=a;*name=age;*superclass=anotherstr);a=10"
+  },
+  {
+    "id": 18,
+    "input": "!a=1",
+    "expected_output": "Interpreter Error: Invalid key - \"!\" character not allowed: !a",
+    "tested_features": ["errors"],
+    "minimised_modl": "!a=1"
+  },
+  {
+    "id": 19,
+    "input": "a!=1",
+    "expected_output": "Interpreter Error: Invalid key - \"!\" character not allowed: a!",
+    "tested_features": ["errors"],
+    "minimised_modl": "a!=1"
+  },
+  {
+    "id": 20,
+    "input": "!a!=1",
+    "expected_output": "Interpreter Error: Invalid key - \"!\" character not allowed: !a!",
+    "tested_features": ["errors"],
+    "minimised_modl": "!a!=1"
+  },
+  {
+    "id": 21,
+    "input": "!~a~!=1",
+    "expected_output": "Parser Error: line 1:1 token recognition error at: '~a'",
+    "tested_features": ["errors"],
+    "minimised_modl": "!~a~!=1"
+  },
+  {
+    "id": 22,
+    "input": "£x=y",
+    "expected_output": "Interpreter Error: Invalid key - \"£\" character not allowed: £x",
+    "tested_features": ["errors"],
+    "minimised_modl": "£x=y"
+  },
+  {
+    "id": 23,
+    "input": "$x=y",
+    "expected_output": "Interpreter Error: Invalid key - \"$\" character not allowed: $x",
+    "tested_features": ["errors"],
+    "minimised_modl": "$x=y"
+  },
+  {
+    "id": 24,
+    "input": "@x=y",
+    "expected_output": "Interpreter Error: Invalid key - \"@\" character not allowed: @x",
+    "tested_features": ["errors"],
+    "minimised_modl": "@x=y"
+  },
+  {
+    "id": 25,
+    "input": "-x=y",
+    "expected_output": "Interpreter Error: Invalid key - \"-\" character not allowed: -x",
+    "tested_features": ["errors"],
+    "minimised_modl": "-x=y"
+  },
+  {
+    "id": 26,
+    "input": "+x=y",
+    "expected_output": "Interpreter Error: Invalid key - \"+\" character not allowed: +x",
+    "tested_features": ["errors"],
+    "minimised_modl": "+x=y"
+  },
+  {
+    "id": 27,
+    "input": "'x'=y",
+    "expected_output": "Interpreter Error: Invalid key - \"'\" character not allowed: 'x'",
+    "tested_features": ["errors"],
+    "minimised_modl": "'x'=y"
+  },
+  {
+    "id": 28,
+    "input": "'x?=y",
+    "expected_output": "Interpreter Error: Invalid key - \"'\" character not allowed: 'x?",
+    "tested_features": ["errors"],
+    "minimised_modl": "'x?=y"
+  },
+  {
+    "id": 29,
+    "input": "a=1:2:3;;\nb=4:5:6",
+    "expected_output": "Parser Error: line 1:8 no viable alternative at input ';;'",
+    "tested_features": ["errors"],
+    "minimised_modl": "a=1:2:3;;\nb=4:5:6"
+  },
+  {
+    "id": 30,
+    "input": "a=1:2:3;\n;\nb=4:5:6",
+    "expected_output": "Parser Error: line 2:0 no viable alternative at input ';;'",
+    "tested_features": ["errors"],
+    "minimised_modl": "a=1:2:3;\n;\nb=4:5:6"
+  },
+  {
+    "id": 31,
+    "input": "a=1:2:3\n;\n;\nb=4:5:6",
+    "expected_output": "Parser Error: line 3:0 no viable alternative at input ';;'",
+    "tested_features": ["errors"],
+    "minimised_modl": "a=1:2:3\n;\n;\nb=4:5:6"
+  },
+  {
+    "id": 32,
+    "input": "a=1:2:3\n;;\nb=4:5:6",
+    "expected_output": "Parser Error: line 2:1 no viable alternative at input ';;'",
+    "tested_features": ["errors"],
+    "minimised_modl": "a=1:2:3\n;;\nb=4:5:6"
+  },
+  {
+    "id": 33,
+    "input": "a=1:2:3\n;\nb=4:5:6\n;\n;\n",
+    "expected_output": "Parser Error: line 5:0 no viable alternative at input ';;'",
+    "tested_features": ["errors"],
+    "minimised_modl": "a=1:2:3\n;\nb=4:5:6\n;\n;\n"
+  },
+  {
+    "id": 34,
+    "input": "a=1:2:3\n;\nb=4:5:6\n;;\n",
+    "expected_output": "Parser Error: line 4:1 no viable alternative at input ';;'",
+    "tested_features": ["errors"],
+    "minimised_modl": "a=1:2:3\n;\nb=4:5:6\n;;\n"
+  },
+  {
+    "id": 35,
+    "input": "*nonsense=1",
+    "expected_output": "Interpreter Error: Invalid keyword: *nonsense",
+    "tested_features": ["errors"],
+    "minimised_modl": "*nonsense=1"
+  },
+  {
+    "id": 36,
+    "input": "?=1:2:3:4;_12%3=1",
+    "expected_output": "Interpreter Error: Invalid key - \"124\" - entirely numeric keys are not allowed: _124",
+    "tested_features": ["errors"],
+    "minimised_modl": "?=1:2:3:4;_12%3=1"
+  },
+  {
+    "id": 37,
+    "input": "_123=1",
+    "expected_output": "Interpreter Error: Invalid key - \"123\" - entirely numeric keys are not allowed: _123",
+    "tested_features": ["errors"],
+    "minimised_modl": "_123=1"
+  },
+  {
+    "id": 38,
+    "input": "_12*3=1",
+    "expected_output": "Interpreter Error: Invalid key - \"*\" character not allowed: _12*3",
+    "tested_features": ["errors"],
+    "minimised_modl": "_12*3=1"
+  },
+  {
+    "id": 39,
+    "input": "_12!3=1",
+    "expected_output": "Interpreter Error: Invalid key - \"!\" character not allowed: _12!3",
+    "tested_features": ["errors"],
+    "minimised_modl": "_12!3=1"
+  },
+  {
+    "id": 40,
+    "input": "_12@3=1",
+    "expected_output": "Interpreter Error: Invalid key - \"@\" character not allowed: _12@3",
+    "tested_features": ["errors"],
+    "minimised_modl": "_12@3=1"
+  },
+  {
+    "id": 41,
+    "input": "_12#3=1",
+    "expected_output": "Interpreter Error: Invalid key - \"#\" character not allowed: _12#3",
+    "tested_features": ["errors"],
+    "minimised_modl": "_12#3=1"
+  },
+  {
+    "id": 42,
+    "input": "_12$3=1",
+    "expected_output": "Interpreter Error: Invalid key - \"$\" character not allowed: _12$3",
+    "tested_features": ["errors"],
+    "minimised_modl": "_12$3=1"
+  },
+  {
+    "id": 43,
+    "input": "_12^3=1",
+    "expected_output": "Interpreter Error: Invalid key - \"^\" character not allowed: _12^3",
+    "tested_features": ["errors"],
+    "minimised_modl": "_12^3=1"
+  },
+  {
+    "id": 44,
+    "input": "_12&3=1",
+    "expected_output": "Interpreter Error: Invalid key - \"&\" character not allowed: _12&3",
+    "tested_features": ["errors"],
+    "minimised_modl": "_12&3=1"
+  },
+  {
+    "id": 45,
+    "input": "_12(3=1",
+    "expected_output": "Parser Error: line 1:4 no viable alternative at input '_12(3'",
+    "tested_features": ["errors"],
+    "minimised_modl": "_12(3=1"
+  },
+  {
+    "id": 46,
+    "input": "_12)3=1",
+    "expected_output": "Parser Error: line 1:3 no viable alternative at input '_12)'",
+    "tested_features": ["errors"],
+    "minimised_modl": "_12)3=1"
+  },
+  {
+    "id": 47,
+    "input": "123=456",
+    "expected_output": "Parser Error: line 1:0 mismatched input '123' expecting {<EOF>, LBRAC, LSBRAC, QUOTED, STRING, '{'}",
+    "tested_features": ["errors"],
+    "minimised_modl": "123=456"
+  },
+  {
+    "id": 48,
+    "input": "_test=(\n  first=(\"v1\"=(one=(two=three)))\n);\n \ntesting = %test.first.v1.one.0",
+    "expected_output": "Interpreter Error: Found a map when expecting an array",
+    "tested_features": ["errors"],
+    "minimised_modl": "_test=(\n  first=(\"v1\"=(one=(two=three)))\n);\n \ntesting = %test.first.v1.one.0"
+  },
+  {
+    "id": 49,
+    "input": "_test=(\n  first=(\"v1\"=(one=(two=three)))\n);\n \ntesting = %test.first.v1.0.two",
+    "expected_output": "Interpreter Error: Invalid object reference: \"%test.first.v1.0.two\"",
+    "tested_features": ["errors"],
+    "minimised_modl": "_test=(\n  first=(\"v1\"=(one=(two=three)))\n);\n \ntesting = %test.first.v1.0.two"
+  },
+  {
+    "id": 50,
+    "input": "_test=(\n  first=(\"v1\"=(one=(two=three)))\n);\n \ntesting = %test.first.v1.0.0",
+    "expected_output": "Interpreter Error: Found a map when expecting an array",
+    "tested_features": ["errors"],
+    "minimised_modl": "_test=(\n  first=(\"v1\"=(one=(two=three)))\n);\n \ntesting = %test.first.v1.0.0"
+  },
+  {
+    "id": 51,
+    "input": "_test=(\n  numbers=(\"one\"=1)\n);\n\ntesting = this is a string that includes a reference with a letter s after it %test.numbers.ones",
+    "expected_output": "Interpreter Error: Invalid object reference: \"this is a string that includes a reference with a letter s after it %test.numbers.ones\"",
+    "tested_features": ["errors"],
+    "minimised_modl": "_test=(\n  numbers=(\"one\"=1)\n);\n\ntesting = this is a string that includes a reference with a letter s after it %test.numbers.ones"
+  },
+  {
+    "id": 52,
+    "input": "true=test",
+    "expected_output": "Parser Error: line 1:0 mismatched input 'true' expecting {<EOF>, LBRAC, LSBRAC, QUOTED, STRING, '{'}",
+    "tested_features": ["errors"],
+    "minimised_modl": "true=test"
+  },
+  {
+    "id": 53,
+    "input": "false=test",
+    "expected_output": "Parser Error: line 1:0 mismatched input 'false' expecting {<EOF>, LBRAC, LSBRAC, QUOTED, STRING, '{'}",
+    "tested_features": ["errors"],
+    "minimised_modl": "false=test"
+  },
+  {
+    "id": 54,
+    "input": "null=test",
+    "expected_output": "Parser Error: line 1:0 mismatched input 'null' expecting {<EOF>, LBRAC, LSBRAC, QUOTED, STRING, '{'}",
+    "tested_features": ["errors"],
+    "minimised_modl": "null=test"
+  },
+  {
+    "id": 55,
+    "input": "*class(*id=arr)",
+    "expected_output": "Interpreter Error: Reserved class id - cannot redefine: arr",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*id=arr)"
+  },
+  {
+    "id": 56,
+    "input": "*class(*id=num)",
+    "expected_output": "Interpreter Error: Reserved class id - cannot redefine: num",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*id=num)"
+  },
+  {
+    "id": 57,
+    "input": "*class(*id=map)",
+    "expected_output": "Interpreter Error: Reserved class id - cannot redefine: map",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*id=map)"
+  },
+  {
+    "id": 58,
+    "input": "*class(*id=str)",
+    "expected_output": "Interpreter Error: Reserved class id - cannot redefine: str",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*id=str)"
+  },
+  {
+    "id": 59,
+    "input": "*class(*name=arr)",
+    "expected_output": "Interpreter Error: Reserved class name - cannot redefine: arr",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*name=arr)"
+  },
+  {
+    "id": 60,
+    "input": "*class(*name=num)",
+    "expected_output": "Interpreter Error: Reserved class name - cannot redefine: num",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*name=num)"
+  },
+  {
+    "id": 61,
+    "input": "*class(*name=map)",
+    "expected_output": "Interpreter Error: Reserved class name - cannot redefine: map",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*name=map)"
+  },
+  {
+    "id": 62,
+    "input": "*class(*name=str)",
+    "expected_output": "Interpreter Error: Reserved class name - cannot redefine: str",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*name=str)"
+  },
+  {
+    "id": 63,
+    "input": "IMMUTABLE=true;IMMUTABLE=false",
+    "expected_output": "Interpreter Error: Already defined IMMUTABLE as final.",
+    "tested_features": ["errors"],
+    "minimised_modl": "IMMUTABLE=true;IMMUTABLE=false"
+  },
+  {
+    "id": 64,
+    "input": "*VERSION=test",
+    "expected_output": "Interpreter Error: Invalid MODL version: test",
+    "tested_features": ["errors"],
+    "minimised_modl": "*VERSION=test"
+  },
+  {
+    "id": 65,
+    "input": "*V=test",
+    "expected_output": "Interpreter Error: Invalid MODL version: test",
+    "tested_features": ["errors"],
+    "minimised_modl": "*V=test"
+  },
+  {
+    "id": 66,
+    "input": "*VERSION=0",
+    "expected_output": "Interpreter Error: Invalid MODL version: 0",
+    "tested_features": ["errors"],
+    "minimised_modl": "*VERSION=0"
+  },
+  {
+    "id": 67,
+    "input": "*VERSION=0.1",
+    "expected_output": "Interpreter Error: Invalid MODL version: 0.1",
+    "tested_features": ["errors"],
+    "minimised_modl": "*VERSION=0.1"
+  },
+  {
+    "id": 68,
+    "input": "a=b;*VERSION=1",
+    "expected_output": "Interpreter Error: MODL version should be on the first line if specified.",
+    "tested_features": ["errors"],
+    "minimised_modl": "a=b;*VERSION=1"
+  },
+  {
+    "id": 69,
+    "input": "*class(*id=a;*name=alpha;*superclass=str);a=null",
+    "expected_output": "Interpreter Error: Cannot convert null value to string.",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*id=a;*name=alpha;*superclass=str);a=null"
+  },
+  {
+    "id": 70,
+    "input": "*class(*id=a;*name=alpha;*superclass=num);a=null",
+    "expected_output": "Superclass of \"a\" is num - cannot assign value \"\"",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*id=a;*name=alpha;*superclass=num);a=null"
+  },
+  {
+    "id": 71,
+    "input": "*class(*id=a;*name=alpha;*superclass=num);a=x",
+    "expected_output": "Superclass of \"a\" is num - cannot assign value \"x\"",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*id=a;*name=alpha;*superclass=num);a=x"
+  },
+  {
+    "id": 72,
+    "input": "*class(*id=a;*name=alpha;*superclass=num);a=null",
+    "expected_output": "Superclass of \"a\" is num - cannot assign value \"\"",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*id=a;*name=alpha;*superclass=num);a=null"
+  },
+  {
+    "id": 73,
+    "input": "*class(*id=a;*name=alpha;*superclass=map);a=[1;2;3]",
+    "expected_output": "Interpreter Error: Cannot convert array to map: [1, 2, 3]",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*id=a;*name=alpha;*superclass=map);a=[1;2;3]"
+  },
+  {
+    "id": 74,
+    "input": "*class(*id=a;*name=alpha;*superclass=arr);a=(c=d)",
+    "expected_output": "Interpreter Error: Cannot convert map to array: {\"c\"=>\"d\"}",
+    "tested_features": ["errors"],
+    "minimised_modl": "*class(*id=a;*name=alpha;*superclass=arr);a=(c=d)"
+  },
+  {
+    "id": 75,
+    "input": "*L=grammar_tests/test_import_dir/nested_import1.txt;files=%*load",
+    "expected_output": "Interpreter Error: Cannot load multiple files after *LOAD instruction",
+    "tested_features": ["errors"],
+    "minimised_modl": "*L=grammar_tests/test_import_dir/nested_import1.txt;files=%*load"
+  }
 ]

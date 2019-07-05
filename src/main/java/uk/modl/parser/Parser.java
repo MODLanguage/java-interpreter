@@ -21,6 +21,7 @@ package uk.modl.parser;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RecognitionException;
 import uk.modl.parser.antlr.MODLLexer;
 import uk.modl.parser.antlr.MODLParser;
 import uk.modl.parser.errors.ThrowingErrorListener;
@@ -46,8 +47,12 @@ class Parser {
         parser.addErrorListener(ThrowingErrorListener.INSTANCE);
 
         final ModlParsed modlParsed = new ModlParsed();
-        parser.modl()
-                .enterRule(modlParsed);
+        try {
+            parser.modl()
+                    .enterRule(modlParsed);
+        } catch (Exception e) {
+            throw new RuntimeException("Parser Error: " + e.getMessage());
+        }
         return modlParsed;
     }
 }

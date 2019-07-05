@@ -20,9 +20,10 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 package uk.modl.interpreter;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 import uk.modl.modlObject.ModlObject;
 import uk.modl.modlObject.ModlValue;
+import uk.modl.parser.errors.InterpreterError;
+import uk.modl.parser.errors.InvalidObjectReferenceException;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -235,7 +236,7 @@ public class StringTransformer {
                         stringToTransform.contains(".") &&
                         stringToTransform.contains("%") &&
                         stringToTransform.indexOf("%") == stringToTransform.lastIndexOf("%")) {
-                    throw new RuntimeException("Interpreter Error: Cannot resolve reference in: \"" +
+                    throw new RuntimeException("Interpreter Error: Invalid object reference: \"" +
                             stringToTransform +
                             "\"");
                 }
@@ -334,7 +335,11 @@ Replace the part originally found (including graves) with the transformed subjec
             ModlValue value = getValueForReference(subject);
             if (remainder != null) {
                 final String[] remainderHolder = {remainder};
-                value = getValueForReferenceRecursive(value, remainderHolder);
+                try {
+                    value = getValueForReferenceRecursive(value, remainderHolder);
+                } catch (final InvalidObjectReferenceException e) {
+                    throw new RuntimeException("Interpreter Error: Invalid object reference: " + originalPercentPart);
+                }
                 remainder = remainderHolder[0];
             }
 
@@ -506,16 +511,36 @@ Replace the part originally found (including graves) with the transformed subjec
         // Get the nested value via its name or number
         ModlValue newCtx;
         if (StringUtils.isNumeric(currentKey)) {
-            if (!(ctx instanceof ModlObject.Array)) {
-                throw new RuntimeException("Object reference is numerical for non-Array value");
+            String t = "unknown";
+            if (ctx instanceof ModlObject.Map) {
+                t = "map";
+            } else if (ctx instanceof ModlObject.String) {
+                t = "str";
+            } else if (ctx instanceof ModlObject.Number) {
+                t = "str";
+            } else if (ctx instanceof ModlObject.Null) {
+                t = "str";
+            } else if (ctx instanceof ModlObject.Pair) {
+                t = "str";
+            } else if (ctx instanceof ModlObject.False) {
+                t = "str";
+            } else if (ctx instanceof ModlObject.True) {
+                t = "str";
             }
-            int index = Integer.parseInt(currentKey);
-            newCtx = ctx.get(index);
+
+            if (!(ctx instanceof ModlObject.Array) && StringUtils.isEmpty(remainder)) {
+                throw new InterpreterError(String.format("Interpreter Error: Found a %s when expecting an array", t));
+            } else if (!(ctx instanceof ModlObject.Array)) {
+                newCtx = ctx;
+            } else {
+                int index = Integer.parseInt(currentKey);
+                newCtx = ctx.get(index);
+            }
         } else {
             currentKey = ((ModlObject.String) (transformString(currentKey))).string;
             if (ctx instanceof ModlObject.Pair) {
                 if (!currentKey.equals(((ModlObject.Pair) ctx).getKey().string)) {
-                    throw new RuntimeException("Object reference should match the key name for a Pair");
+                    throw new InvalidObjectReferenceException("Interpreter Error: Invalid object reference: " + currentKey);
                 }
                 newCtx = ((ModlObject.Pair) ctx).getModlValue();
             } else {

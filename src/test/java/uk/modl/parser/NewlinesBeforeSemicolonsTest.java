@@ -45,8 +45,8 @@ public class NewlinesBeforeSemicolonsTest {
             "a=1:2:3;;\n" +
                     "b=4:5:6", "ParseCancellationException"
     }, {
-                                                    "a=1:2:3;\n" +
-                                                    "b=4:5:6", "[ {\n" +
+            "a=1:2:3;\n" +
+                    "b=4:5:6", "[ {\n" +
             "  \"a\" : [ 1, 2, 3 ]\n" +
             "}, {\n" +
             "  \"b\" : [ 4, 5, 6 ]\n" +
@@ -94,11 +94,12 @@ public class NewlinesBeforeSemicolonsTest {
     public void test_01() throws IOException {
         try {
             singleCase(expected[1]);
-            Assert.fail("Expected a ParseCancellationException");
-        } catch (IOException e) {
-            Assert.fail("Expected a ParseCancellationException");
-        } catch (ParseCancellationException pce) {
-            // expected
+            Assert.fail("Expected a Parser Error");
+        } catch (Exception e) {
+            if (!e.getMessage()
+                    .startsWith("Parser Error:")) {
+                Assert.fail("Expected a Parser Error");
+            }
         }
     }
 
@@ -110,10 +111,11 @@ public class NewlinesBeforeSemicolonsTest {
         try {
             singleCase(expected[2]);
             Assert.fail("Expected a ParseCancellationException");
-        } catch (IOException e) {
-            Assert.fail("Expected a ParseCancellationException");
-        } catch (ParseCancellationException pce) {
-            // expected
+        } catch (Exception e) {
+            if (!e.getMessage()
+                    .startsWith("Parser Error:")) {
+                Assert.fail("Expected a Parser Error");
+            }
         }
     }
 
@@ -125,10 +127,11 @@ public class NewlinesBeforeSemicolonsTest {
         try {
             singleCase(expected[3]);
             Assert.fail("Expected a ParseCancellationException");
-        } catch (IOException e) {
-            Assert.fail("Expected a ParseCancellationException");
-        } catch (ParseCancellationException pce) {
-            // expected
+        } catch (Exception e) {
+            if (!e.getMessage()
+                    .startsWith("Parser Error:")) {
+                Assert.fail("Expected a Parser Error");
+            }
         }
     }
 
@@ -140,10 +143,11 @@ public class NewlinesBeforeSemicolonsTest {
         try {
             singleCase(expected[4]);
             Assert.fail("Expected a ParseCancellationException");
-        } catch (IOException e) {
-            Assert.fail("Expected a ParseCancellationException");
-        } catch (ParseCancellationException pce) {
-            // expected
+        } catch (Exception e) {
+            if (!e.getMessage()
+                    .startsWith("Parser Error:")) {
+                Assert.fail("Expected a Parser Error");
+            }
         }
     }
 
@@ -155,10 +159,11 @@ public class NewlinesBeforeSemicolonsTest {
         try {
             singleCase(expected[5]);
             Assert.fail("Expected a ParseCancellationException");
-        } catch (IOException e) {
-            Assert.fail("Expected a ParseCancellationException");
-        } catch (ParseCancellationException pce) {
-            // expected
+        } catch (Exception e) {
+            if (!e.getMessage()
+                    .startsWith("Parser Error:")) {
+                Assert.fail("Expected a Parser Error");
+            }
         }
     }
 
@@ -170,10 +175,11 @@ public class NewlinesBeforeSemicolonsTest {
         try {
             singleCase(expected[6]);
             Assert.fail("Expected a ParseCancellationException");
-        } catch (IOException e) {
-            Assert.fail("Expected a ParseCancellationException");
-        } catch (ParseCancellationException pce) {
-            // expected
+        } catch (Exception e) {
+            if (!e.getMessage()
+                    .startsWith("Parser Error:")) {
+                Assert.fail("Expected a Parser Error");
+            }
         }
     }
 

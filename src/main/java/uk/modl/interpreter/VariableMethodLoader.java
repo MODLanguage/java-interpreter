@@ -57,11 +57,13 @@ class VariableMethodLoader {
         createVariableMethod(methodName, methodString);
 
         for (MethodDescriptor d : methodList) {
+            if (Objects.equals(d.name, desc.name) ||
+                    Objects.equals(d.name, desc.id)) {
+                throw new RuntimeException("Interpreter Error: Duplicate method name or id: " + d.name);
+            }
             if (Objects.equals(d.id, desc.id) ||
-                Objects.equals(d.id, desc.name) ||
-                Objects.equals(d.name, desc.name) ||
-                Objects.equals(d.name, desc.id)) {
-                throw new RuntimeException("Interpreter Error: Duplicate method id or name: " + desc.name);
+                Objects.equals(d.id, desc.name) ) {
+                throw new RuntimeException("Interpreter Error: Duplicate method name or id: " + d.id);
             }
         }
 
