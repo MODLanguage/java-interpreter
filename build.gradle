@@ -42,9 +42,6 @@ dependencies {
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.2'
 
-    // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server
-    compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.8.v20171121'
-
     // https://mvnrepository.com/artifact/org.apache.commons/commons-text
     compile group: 'org.apache.commons', name: 'commons-text', version: '1.2'
 
