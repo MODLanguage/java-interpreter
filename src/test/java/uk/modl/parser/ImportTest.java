@@ -96,12 +96,12 @@ public class ImportTest extends TestCase {
         },
         {
             "_var=2;\n" +
-            "*L=\"http://s3-eu-west-1.amazonaws.com/modltestfiles/testing.txt!\";\n" +
+            "*L=\"http://modl.uk/tests/testing.txt!\";\n" +
                     "print=%update_date\n",
                     "{\n" +
                             "    \"print\": \"20180921 08:20 2\"\n" +
                             "}",
-            "_var=2;*L=http~://s3-eu-west-1.amazonaws.com/modltestfiles/testing.txt!;print=%update_date"},
+            "_var=2;*L=http~://http://modl.uk/tests/testing.txt!;print=%update_date"},
 
         {"_T=grammar_tests/demo;\n*L=%T%_config", "null", "_T=grammar_tests/demo;*L=%T%_config"},
         {

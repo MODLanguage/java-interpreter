@@ -36,7 +36,38 @@ public class StringEscapeReplacer {
             }
         }
 
-        return stringToTransform;
+        return convertUnicodeSequences(stringToTransform);
+    }
+
+    /**
+     * Convert explicit unicode escape sequences to unicode characters.
+     * (recursive implementation)
+     *
+     * @param string a String possible containing escape sequences.
+     * @return the string with escape sequences converted to unicode characters.
+     */
+    private static String convertUnicodeSequences(final String string) {
+        // Filter out cases with no escape sequences.
+        if (string == null) {
+            return null;
+        }
+
+        final int begin = string.indexOf("\\u");
+        if (begin < 0) {
+            return string;
+        }
+
+        // Extract the base-16 codepoint
+        final int codepoint = Integer.parseInt(string.substring(begin + 2, begin + 6), 16);
+
+        // Get the full unicode escape sequence to be replaced.
+        final String toReplace = string.substring(begin, begin + 6);
+
+        // Create a string to replace it with.
+        final String replacement = "" + (char) codepoint;
+
+        // Replace and recurse to handle any other escape sequences
+        return convertUnicodeSequences(string.replace(toReplace, replacement));
     }
 
     private static void loadReplacements() {

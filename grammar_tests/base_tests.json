@@ -1667,7 +1667,7 @@
   },
   {
     "id": "176",
-    "input": "_var=2;\n*L=\"http://s3-eu-west-1.amazonaws.com/modltestfiles/testing.txt!\";\nprint=%update_date\n",
+    "input": "_var=2;\n*L=\"http://modl.uk/tests/testing.txt!\";\nprint=%update_date\n",
     "expected_output": "{\n    \"print\": \"20180921 08:20 2\"\n}",
     "tested_features": [
       "object_ref",
@@ -3011,5 +3011,14 @@
       "escape"
     ],
     "minimised_modl": "_letters=abc;key=\"\\%letters\""
+  },
+  {
+    "id": "316",
+    "input": "We\\\\u2019re=We\\\\u2019re",
+    "expected_output": "{\n  \"We’re\": \"We’re\"\n}",
+    "tested_features": [
+      "unicode"
+    ],
+    "minimised_modl": "We\\\\u2019re=We\\\\u2019re"
   }
 ]
