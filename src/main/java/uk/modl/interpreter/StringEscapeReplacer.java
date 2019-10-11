@@ -52,9 +52,12 @@ public class StringEscapeReplacer {
             return null;
         }
 
-        final int begin = string.indexOf("\\u");
+        int begin = string.indexOf("\\u");
         if (begin < 0) {
-            return string;
+            begin = string.indexOf("~u");
+            if (begin < 0) {
+                return string;
+            }
         }
 
         // Extract the base-16 codepoint

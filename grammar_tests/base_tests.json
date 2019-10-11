@@ -3014,11 +3014,11 @@
   },
   {
     "id": "316",
-    "input": "We\\\\u2019re=We\\\\u2019re",
-    "expected_output": "{\n  \"We’re\": \"We’re\"\n}",
+    "input": "We\\\\u2019re=We\\\\u2019re;You~u2019re=We~u2019re",
+    "expected_output": "{\n  \"We’re\": \"We’re\",\n  \"You’re\": \"We’re\"\n}",
     "tested_features": [
       "unicode"
     ],
-    "minimised_modl": "We\\\\u2019re=We\\\\u2019re"
+    "minimised_modl": "We\\\\u2019re=We\\\\u2019re;You~u2019re=We~u2019re"
   }
 ]
