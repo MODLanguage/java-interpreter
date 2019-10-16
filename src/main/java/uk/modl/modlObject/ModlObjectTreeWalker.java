@@ -28,7 +28,6 @@ public class ModlObjectTreeWalker {
         if (structure instanceof ModlObject.Pair) {
             final ModlObject.Pair pair = (ModlObject.Pair) structure;
             visitor.visit(pair.getKey());
-            visitor.visit(pair.getValue());
             walk(pair.getModlValue(), visitor);
         }
 

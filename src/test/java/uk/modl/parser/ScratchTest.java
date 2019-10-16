@@ -33,11 +33,8 @@ import java.io.IOException;
 public class ScratchTest {
     private final static String[][] expected = {
             {
-                    "We\\u2019re=We\\u2019re;You~u2019re=We~u2019re",
-                    "{\n" +
-                            "  \"We’re\" : \"We’re\",\n" +
-                            "  \"You’re\" : \"We’re\"\n" +
-                            "}"
+                    "test=\\~u2019",
+                    "{\n    \"test\": \"~u2019\"\n}"
             }
     };
 

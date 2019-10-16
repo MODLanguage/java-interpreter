@@ -684,14 +684,14 @@
   },
   {
     "id": "74",
-    "input": "*class(\n *id=g;\n *name=glossary;\n *superclass=map\n);\n*class(\n *id=t;\n *name=title;\n *superclass=str\n);\n*class(\n *id=d;\n *name=GlossDiv;\n *superclass=map\n);\n*class(\n *id=l;\n *name=GlossList;\n *superclass=map\n);\n*class(\n *id=e;\n *name=GlossEntry;\n *superclass=map;\n *assign[\n   [i;s;gt;a;ab;gd;gs]\n ]\n);\n*class(\n *id=i;\n *name=ID;\n *superclass=str\n);\n*class(\n *id=s;\n *name=SortAs;\n *superclass=str\n);\n*class(\n *id=gt;\n *name=GlossTerm;\n *superclass=str\n);\n*class(\n *id=a;\n *name=Acronym;\n *superclass=str\n);\n*class(\n *id=ab;\n *name=Abbrev;\n *superclass=str\n);\n*class(\n *id=gd;\n *name=GlossDef;\n *superclass=map;\n *assign=[\n   [p];\n   [p;sa]\n ]\n);\n*class(\n *id=p;\n *name=para;\n *superclass=str\n);\n*class(\n *id=sa;\n *name=SeeAlso;\n *superclass=arr\n);\n*class(\n *id=gs;\n *name=GlossSee;\n *superclass=str\n);\n\ng(\n ?=[SGML;markup;language];\n t=example glossary;\n d(\n   t=S;\n   l(\n     e(\n       i=%0;\n       s=%0;\n       gt=Standard Generalized %1.s %2.s;\n       a=%0;\n       ab=ISO 8879\\:1986;\n       gd=A meta-%1 %2, used to create %1 %2%s such as DocBook.\n         :[GML;XML];\n       gs=%1\n     )\n   )\n )\n)",
+    "input": "*class(\n *id=g;\n *name=glossary;\n *superclass=map\n);\n*class(\n *id=t;\n *name=title;\n *superclass=str\n);\n*class(\n *id=d;\n *name=GlossDiv;\n *superclass=map\n);\n*class(\n *id=l;\n *name=GlossList;\n *superclass=map\n);\n*class(\n *id=e;\n *name=GlossEntry;\n *superclass=map;\n *assign[\n   [i;s;gt;a;ab;gd;gs]\n ]\n);\n*class(\n *id=i;\n *name=ID;\n *superclass=str\n);\n*class(\n *id=s;\n *name=SortAs;\n *superclass=str\n);\n*class(\n *id=gt;\n *name=GlossTerm;\n *superclass=str\n);\n*class(\n *id=a;\n *name=Acronym;\n *superclass=str\n);\n*class(\n *id=ab;\n *name=Abbrev;\n *superclass=str\n);\n*class(\n *id=gd;\n *name=GlossDef;\n *assign=[\n   [p];\n   [p;sa]\n ]\n);\n*class(\n *id=p;\n *name=para;\n *superclass=str\n);\n*class(\n *id=sa;\n *name=SeeAlso;\n *superclass=arr\n);\n*class(\n *id=gs;\n *name=GlossSee;\n *superclass=str\n);\n\ng(\n ?=[SGML;markup;language];\n t=example glossary;\n d(\n   t=S;\n   l(\n     e(\n       i=%0;\n       s=%0;\n       gt=Standard Generalized %1.s %2.s;\n       a=%0;\n       ab=ISO 8879\\:1986;\n       gd=A meta-%1 %2, used to create %1 %2%s such as DocBook.\n         :[GML;XML];\n       gs=%1\n     )\n   )\n )\n)",
     "expected_output": "{\n    \"glossary\": {\n        \"title\": \"example glossary\",\n        \"GlossDiv\": {\n            \"title\": \"S\",\n            \"GlossList\": {\n                \"GlossEntry\": {\n                    \"ID\": \"SGML\",\n                    \"SortAs\": \"SGML\",\n                    \"GlossTerm\": \"Standard Generalized Markup Language\",\n                    \"Acronym\": \"SGML\",\n                    \"Abbrev\": \"ISO 8879:1986\",\n                    \"GlossDef\": {\n                        \"para\": \"A meta-markup language, used to create markup languages such as DocBook.\",\n                        \"SeeAlso\": [\n                            \"GML\",\n                            \"XML\"\n                        ]\n                    },\n                    \"GlossSee\": \"markup\"\n                }\n            }\n        }\n    }\n}",
     "tested_features": [
       "class",
       "object_ref",
       "string_method"
     ],
-    "minimised_modl": "*c(*i=g;*n=glossary;*s=map);*c(*i=t;*n=title;*s=str);*c(*i=d;*n=GlossDiv;*s=map);*c(*i=l;*n=GlossList;*s=map);*c(*i=e;*n=GlossEntry;*s=map;*a[[i;s;gt;a;ab;gd;gs]]);*c(*i=i;*n=ID;*s=str);*c(*i=s;*n=SortAs;*s=str);*c(*i=gt;*n=GlossTerm;*s=str);*c(*i=a;*n=Acronym;*s=str);*c(*i=ab;*n=Abbrev;*s=str);*c(*i=gd;*n=GlossDef;*s=map;*a=[p]:[p;sa]);*c(*i=p;*n=para;*s=str);*c(*i=sa;*n=SeeAlso;*s=arr);*c(*i=gs;*n=GlossSee;*s=str);g(?=SGML:markup:language;t=example glossary;d(t=S;l(e(i=%0;s=%0;gt=Standard Generalized %1.s %2.s;a=%0;ab=ISO 8879~:1986;gd=A meta-%1 %2, used to create %1 %2%s such as DocBook.:[GML;XML];gs=%1))))"
+    "minimised_modl": "*c(*i=g;*n=glossary;*s=map);*c(*i=t;*n=title;*s=str);*c(*i=d;*n=GlossDiv;*s=map);*c(*i=l;*n=GlossList;*s=map);*c(*i=e;*n=GlossEntry;*s=map;*a[[i;s;gt;a;ab;gd;gs]]);*c(*i=i;*n=ID;*s=str);*c(*i=s;*n=SortAs;*s=str);*c(*i=gt;*n=GlossTerm;*s=str);*c(*i=a;*n=Acronym;*s=str);*c(*i=ab;*n=Abbrev;*s=str);*c(*i=gd;*n=GlossDef;*a=[p]:[p;sa]);*c(*i=p;*n=para;*s=str);*c(*i=sa;*n=SeeAlso;*s=arr);*c(*i=gs;*n=GlossSee;*s=str);g(?=SGML:markup:language;t=example glossary;d(t=S;l(e(i=%0;s=%0;gt=Standard Generalized %1.s %2.s;a=%0;ab=ISO 8879~:1986;gd=A meta-%1 %2, used to create %1 %2%s such as DocBook.:[GML;XML];gs=%1))))"
   },
   {
     "id": "75",
@@ -765,13 +765,13 @@
   },
   {
     "id": "82",
-    "input": "*class(\n *id=desc;\n *name=description;\n *superclass=str\n);\n\n*class(\n *id=val;\n *name=value;\n *superclass=str\n);\n\n*class(\n *id=media1;\n *name=media1;\n *superclass=map;\n *assign=[\n   [desc;val]\n ]\n);\n\n*class(\n *id=media2;\n *name=media2;\n *superclass=map;\n *assign=[\n   [desc;val]\n ]\n);\n*class(\n *id=list;\n *name=list;\n *superclass=map;\n *assign[\n   [media1;media2]\n ]\n);\n\n\nlist=[tel;fb]:[yt;tw]",
-    "expected_output": "{\n    \"list\": {\n        \"media1\": {\n            \"description\": \"tel\",\n            \"value\": \"fb\"\n        },\n        \"media2\": {\n            \"description\": \"yt\",\n            \"value\": \"tw\"\n        }\n    }\n}",
+    "input": "*class(\n *id=desc;\n *name=description;\n *superclass=str\n);\n\n*class(\n *id=val;\n *name=value;\n *superclass=str\n);\n\n*class(\n *id=media1;\n *name=media1;\n *assign=[\n   [desc;val]\n ]\n);\n\n*class(\n *id=media2;\n *name=media2;\n *assign=[\n   [desc;val]\n ]\n);\n*class(\n *id=list;\n *name=list;\n *assign[\n   [media1;media2]\n ]\n);\n\n\nlist=[tel;fb]:[yt;tw]",
+    "expected_output": "{\n  \"list\": [\n    {\n      \"description\": \"tel\",\n      \"value\": \"fb\"\n    },\n    {\n      \"description\": \"yt\",\n      \"value\": \"tw\"\n    }\n  ]\n}",
     "tested_features": [
       "class",
       "assign"
     ],
-    "minimised_modl": "*c(*i=desc;*n=description;*s=str);*c(*i=val;*n=value;*s=str);*c(*i=media1;*n=media1;*s=map;*a[[desc;val]]);*c(*i=media2;*n=media2;*s=map;*a[[desc;val]]);*c(*i=list;*n=list;*s=map;*a[[media1;media2]]);list=[tel;fb]:[yt;tw]"
+    "minimised_modl": "*class(*id=desc;*name=description;*superclass=str);*class(*id=val;*name=value;*superclass=str);*class(*id=media1;*name=media1;*assign=[[desc;val]]);*class(*id=media2;*name=media2;*assign=[[desc;val]]);*class(*id=list;*name=list;*assign[[media1;media2]]);list=[tel;fb]:[yt;tw]"
   },
   {
     "id": "83",
@@ -3014,11 +3014,97 @@
   },
   {
     "id": "316",
-    "input": "We\\\\u2019re=We\\\\u2019re;You~u2019re=We~u2019re",
+    "input": "We\\u2019re=We\\u2019re;You~u2019re=We~u2019re",
     "expected_output": "{\n  \"We’re\": \"We’re\",\n  \"You’re\": \"We’re\"\n}",
     "tested_features": [
       "unicode"
     ],
-    "minimised_modl": "We\\\\u2019re=We\\\\u2019re;You~u2019re=We~u2019re"
+    "minimised_modl": "We\\u2019re=We\\u2019re;You~u2019re=We~u2019re"
+  },
+  {
+    "id": "317",
+    "input": "*class(\n  *id=numbers;\n  *assign=[[one;two;three]]\n);\n*class(\n  *id=letters;\n  *assign=[[a;b;c]]\n);\n*class(\n  *id=myArray;\n  *assign=[[letters;numbers]]\n);\nmyArray=[[a;b;c];[1;2;3]]",
+    "expected_output": "{\n  \"myArray\": [\n    {\n      \"a\": \"a\",\n      \"b\": \"b\",\n      \"c\": \"c\"\n    },\n    {\n      \"one\": 1,\n      \"two\": 2,\n      \"three\": 3\n    }\n  ]\n}",
+    "tested_features": [
+      "class"
+    ],
+    "minimised_modl": "*class(*id=numbers;*assign=[[one;two;three]]);*class(*id=letters;*assign=[[a;b;c]]);*class(*id=myArray;*assign=[[letters;numbers]]);myArray=[[a;b;c];[1;2;3]]"
+  },
+  {
+    "id": "318",
+    "input": "*class(\n  *id=root; ## (or something along these lines)\n  *assign=[[myArray]]\n);\n*class(\n  *id=numbers;\n  *assign=[[one;two;three]]\n);\n*class(\n  *id=letters;\n  *assign=[[alpha;bravo;charlie]]\n);\n*class(\n  *id=myArray;\n  *assign=[[letters;numbers]]\n);\n\n[[a;b;c];[1;2;3]]",
+    "expected_output": "[\n    {\n        \"alpha\": \"a\",\n        \"bravo\": \"b\",\n        \"charlie\": \"c\"\n    },\n    {\n        \"one\": 1,\n        \"two\": 2,\n        \"three\": 3\n    }\n]",
+    "tested_features": [
+      "class"
+    ],
+    "minimised_modl": "*class(*id=root;*assign=[[myArray]]);*class(*id=numbers;*assign=[[one;two;three]]);*class(*id=letters;*assign=[[a;b;c]]);*class(*id=myArray;*assign=[[letters;numbers]]);[[a;b;c];[1;2;3]]"
+  },
+  {
+    "id": "319",
+    "input": "*class(\n  *id=root;\n  *assign=[[people]]\n);\n*class(\n  *id=people;\n  *assign=[[person*]]\n);\n*class(\n  *id=person;\n  *assign=[[first;last;age]]\n);\n\n[[John;Smith;20];[Jane;Jones;21]]",
+    "expected_output": "[\n  {\n      \"first\": \"John\",\n      \"last\": \"Smith\",\n      \"age\": 20\n  },\n  {\n      \"first\": \"Jane\",\n      \"last\": \"Jones\",\n      \"age\": 21\n  }\n]",
+    "tested_features": [
+      "class"
+    ],
+    "minimised_modl": "*class(*id=root;*assign=[[people]]);*class(*id=people;*assign=[[person*]]);*class(*id=person;*assign=[[first;last;age]]);[[John;Smith;20];[Jane;Jones;21]]"
+  },
+  {
+    "id": "320",
+    "input": "*class(\n  *id=m;\n  *name=message;\n  *superclass=map;\n  *assign=[\n    [direction;date_time;message]\n  ];\n  method=sms\n);\n\n[\n  m=out:2018-03-22 15\\:25:Hi;\n  m=in:2018-03-22 15\\:26:Hello, how are you?;\n  m=out:2018-03-22 15\\:25:Hi, good thanks;\n  m=out:2018-03-22 15\\:26:How about you?;\n  m=in:2018-03-22 15\\:26:Yes, fine thanks. What are you up to?;\n  m=out:2018-03-22 15\\:25:Just testing out MODL;\n  m=in:2018-03-22 15\\:26:Cool!\n]",
+    "expected_output": "[\n    {\n        \"message\": {\n            \"direction\": \"out\",\n            \"date_time\": \"2018-03-22 15:25\",\n            \"message\": \"Hi\",\n            \"method\": \"sms\"\n        }\n    },\n    {\n        \"message\": {\n            \"direction\": \"in\",\n            \"date_time\": \"2018-03-22 15:26\",\n            \"message\": \"Hello, how are you?\",\n            \"method\": \"sms\"\n        }\n    },\n    {\n        \"message\": {\n            \"direction\": \"out\",\n            \"date_time\": \"2018-03-22 15:25\",\n            \"message\": \"Hi, good thanks\",\n            \"method\": \"sms\"\n        }\n    },\n    {\n        \"message\": {\n            \"direction\": \"out\",\n            \"date_time\": \"2018-03-22 15:26\",\n            \"message\": \"How about you?\",\n            \"method\": \"sms\"\n        }\n    },\n    {\n        \"message\": {\n            \"direction\": \"in\",\n            \"date_time\": \"2018-03-22 15:26\",\n            \"message\": \"Yes, fine thanks. What are you up to?\",\n            \"method\": \"sms\"\n        }\n    },\n    {\n        \"message\": {\n            \"direction\": \"out\",\n            \"date_time\": \"2018-03-22 15:25\",\n            \"message\": \"Just testing out MODL\",\n            \"method\": \"sms\"\n        }\n    },\n    {\n        \"message\": {\n            \"direction\": \"in\",\n            \"date_time\": \"2018-03-22 15:26\",\n            \"message\": \"Cool!\",\n            \"method\": \"sms\"\n        }\n    }\n]",
+    "tested_features": [
+      "class"
+    ],
+    "minimised_modl": "*class(*id=m;*name=message;*superclass=map;*assign=[[direction;date_time;message]];method=sms);[m=out:2018-03-22 15\\:25:Hi;m=in:2018-03-22 15\\:26:Hello, how are you?;m=out:2018-03-22 15\\:25:Hi, good thanks;m=out:2018-03-22 15\\:26:How about you?;m=in:2018-03-22 1\\:26:Yes, fine thanks. What are you up to?;m=out:2018-03-22 15\\:25:Just testing out MODL;m=in:2018-03-22 15\\:26:Cool!]"
+  },
+  {
+    "id": "321",
+    "input": "test=\\~u2019",
+    "expected_output": "{\n    \"test\": \"~u2019\"\n}",
+    "tested_features": [
+      "unicode",
+      "escapes"
+    ],
+    "minimised_modl": "test=\\~u2019"
+  },
+  {
+    "id": "322",
+    "input": "test=\\\\u2019",
+    "expected_output": "{\n    \"test\": \"\\\\u2019\"\n}",
+    "tested_features": [
+      "unicode",
+      "escapes"
+    ],
+    "minimised_modl": "test=\\\\u2019"
+  },
+  {
+    "id": "323",
+    "input": "test=\\\\~u2019\\\\u2019~u2019\\\\u2019",
+    "expected_output": "{\n    \"test\": \"~u2019\\\\u2019\u2019\\\\u2019\"\n}",
+    "tested_features": [
+      "unicode",
+      "escapes"
+    ],
+    "minimised_modl": "test=\\\\~u2019\\\\u2019~u2019\\\\u2019"
+  },
+  {
+    "id": "324",
+    "input": "test=~~u2019",
+    "expected_output": "{\n    \"test\": \"~u2019\"\n}",
+    "tested_features": [
+      "unicode",
+      "escapes"
+    ],
+    "minimised_modl": "test=~~u2019"
+  },
+  {
+    "id": "325",
+    "input": "test=\\~u2019",
+    "expected_output": "{\n    \"test\": \"~u2019\"\n}",
+    "tested_features": [
+      "unicode",
+      "escapes"
+    ],
+    "minimised_modl": "test=\\~u2019"
   }
 ]
