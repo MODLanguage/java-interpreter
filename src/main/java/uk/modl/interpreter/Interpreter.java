@@ -528,62 +528,52 @@ public class Interpreter {
                     pair.setKey(new ModlObject.String(newKey));
                     final ModlObject.Array array = new ModlObject.Array();
                     pair.addModlValue(array);
-                    // Top level array needs its elements converting as defined by the root class
-                    final Object params1 = rootClass.get("*params1");
-                    if (params1 instanceof List) {
-                        final ModlObject.String classNameForRootArray = (ModlObject.String) ((List<Object>) params1).get(0);
 
-                        // The root class names another class that defines the class[es] to use for the array elements.
-                        final Map<String, Object> classForRootArray = rootClass;
+                    // The *params should match either the number of items in the rawArray or it should be a single entry of the form xxxx*
+                    // where xxxx is the class to be repeated for all the elements in the rawArray
+                    final int size = rawArray.getValues()
+                            .size();
+                    final String key = "*params" + size;
+                    Object classNamesForArrayObject = rootClass.get(key);
+                    if (classNamesForArrayObject == null) {
+                        classNamesForArrayObject = rootClass.get("*params1");
+                    }
+                    if (classNamesForArrayObject instanceof List) {
+                        final List<ModlObject.String> classNamesForArray = (List<ModlObject.String>) classNamesForArrayObject;
 
-                        // The *params should match either the number of items in the rawArray or it should be a single entry of the form xxxx*
-                        // where xxxx is the class to be repeated for all the elements in the rawArray
-                        final int size = rawArray.getValues()
-                                .size();
-                        final String key = "*params" + size;
-                        Object classNamesForArrayObject = classForRootArray.get(key);
-                        if (classNamesForArrayObject == null) {
-                            classNamesForArrayObject = classForRootArray.get("*params1");
-                        }
-                        if (classNamesForArrayObject instanceof List) {
-                            final List<ModlObject.String> classNamesForArray = (List<ModlObject.String>) classNamesForArrayObject;
-
-                            // If the list of names is of length 1, it might end with a * so we need to repeat it `size` times.
-                            if (classNamesForArray.size() == 1) {
-                                String repeatedClassName = classNamesForArray.get(0).string;
-                                if (repeatedClassName.endsWith("*")) {
-                                    classNamesForArray.clear();
-                                    for (int i = 0; i < size; i++) {
-                                        classNamesForArray.add(new ModlObject.String(repeatedClassName.substring(0, repeatedClassName.length() - 1)));
-                                    }
+                        // If the list of names is of length 1, it might end with a * so we need to repeat it `size` times.
+                        if (classNamesForArray.size() == 1) {
+                            String repeatedClassName = classNamesForArray.get(0).string;
+                            if (repeatedClassName.endsWith("*")) {
+                                classNamesForArray.clear();
+                                for (int i = 0; i < size; i++) {
+                                    classNamesForArray.add(new ModlObject.String(repeatedClassName.substring(0, repeatedClassName.length() - 1)));
                                 }
                             }
+                        }
 
-                            // Now we should have a classNamesForArray that is the same size as the rawArray
-                            if (classNamesForArray.size() != size) {
-                                throw new InterpreterError("Length of '" + classNamesForArray + "' does not match length of '" + rawArray.getValues() + "'");
-                            }
+                        // Now we should have a classNamesForArray that is the same size as the rawArray
+                        if (classNamesForArray.size() != size) {
+                            throw new InterpreterError("Length of '" + classNamesForArray + "' does not match length of '" + rawArray.getValues() + "'");
+                        }
 
-                            // Convert each object of rawArray to the corresponding class in the classNamesForArray List
-                            for (int i = 0; i < size; i++) {
-                                final ModlValue originalArrayItem = rawArray.getValues()
-                                        .get(i);
-                                final ModlObject.String targetClassName = classNamesForArray.get(i);
+                        // Convert each object of rawArray to the corresponding class in the classNamesForArray List
+                        for (int i = 0; i < size; i++) {
+                            final ModlValue originalArrayItem = rawArray.getValues()
+                                    .get(i);
+                            final ModlObject.String targetClassName = classNamesForArray.get(i);
 
-                                final ModlObject.Pair tmpPair = new ModlObject.Pair(targetClassName, originalArrayItem);
-                                final ModlValue value = interpret(modlObject, tmpPair, null);
-                                if (value != null) {
-                                    for (final ModlValue v : value.getModlValues()) {
-                                        array.addValue(v);
-                                    }
+                            final ModlObject.Pair tmpPair = new ModlObject.Pair(targetClassName, originalArrayItem);
+                            final ModlValue value = interpret(modlObject, tmpPair, null);
+                            if (value != null) {
+                                for (final ModlValue v : value.getModlValues()) {
+                                    array.addValue(v);
                                 }
                             }
-                            return pair;
-                        } else {
-                            throw new InterpreterError("Invalid *assign for *class '" + classNameForRootArray.string + "'");
                         }
+                        return pair;
                     } else {
-                        throw new InterpreterError("Invalid *assign for *class 'root'");
+                        throw new InterpreterError("Invalid *assign for *class '" + classNamesForArrayObject + "'");
                     }
                 }
             } else {
