@@ -69,18 +69,23 @@ public class GrammarTestRunnerTest extends TestCase {
         System.out.println("Minimised : " + testInput.minimised_modl);
         System.out.println("Expected : " + testInput.expected_output);
 
-        ModlObject modlObject = Interpreter.interpret(testInput.input);
-        String output = JsonPrinter.printModl(modlObject);
-        System.out.println("Output : " + output);
-        final String expected = testInput.expected_output.replace(" ", "")
-                .replace("\n", "")
-                .replace("\r", "");
-        final String actual = output.replace(" ", "")
-                .replace("\n", "")
-                .replace("\r", "");
+        try {
+            ModlObject modlObject = Interpreter.interpret(testInput.input);
+            String output = JsonPrinter.printModl(modlObject);
+            System.out.println("Output : " + output);
+            final String expected = testInput.expected_output.replace(" ", "")
+                    .replace("\n", "")
+                    .replace("\r", "");
+            final String actual = output.replace(" ", "")
+                    .replace("\n", "")
+                    .replace("\r", "");
 
-        if (!expected.equals(actual)) {
-            errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : " + output + "\n");
+            if (!expected.equals(actual)) {
+                errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : " + output + "\n");
+            }
+        } catch (final Exception e) {
+            e.printStackTrace();
+            errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : " + e.getMessage() + "\n");
         }
     }
 

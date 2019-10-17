@@ -3106,5 +3106,23 @@
       "escapes"
     ],
     "minimised_modl": "test=\\~u2019"
+  },
+  {
+    "id": "326",
+    "input": "*class(\n  *id=v;\n  *name=variants;\n  *assign=[[variant*]]\n);\n\n*class(\n  *id=variant;\n  *assign=[[key1;key2;key3]]\n);\n\nv[[one;two;three];[four;five;six]]",
+    "expected_output": "{\n  \"variants\": [\n    {\n      \"key1\": \"one\",\n      \"key2\": \"two\",\n      \"key3\": \"three\"\n    },\n    {\n      \"key1\": \"four\",\n      \"key2\": \"five\",\n      \"key3\": \"six\"\n    }\n  ]\n}",
+    "tested_features": [
+      "class"
+    ],
+    "minimised_modl": "*class(*id=v;*name=variants;*assign=[[variant*]]);*class(*id=variant;*assign=[[key1;key2;key3]]);v[[one;two;three];[four;five;six]]"
+  },
+  {
+    "id": "327",
+    "input": "*class(\n  *id=v;\n  *name=variants;\n  *assign=[[variant*]]\n);\n\n*class(\n  *id=variant;\n  *assign=[[key1;key2;key3]]\n);\n\nv[one:two:three]",
+    "expected_output": "{\n    \"variants\": [\n        {\n            \"key1\": \"one\",\n            \"key2\": \"two\",\n            \"key3\": \"three\"\n        }\n    ]\n}",
+    "tested_features": [
+      "class"
+    ],
+    "minimised_modl": "*class(*id=v;*name=variants;*assign=[[variant*]]);*class(*id=variant;*assign=[[key1;key2;key3]]);v[one:two:three]"
   }
 ]
