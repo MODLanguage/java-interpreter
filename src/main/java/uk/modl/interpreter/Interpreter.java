@@ -1154,12 +1154,12 @@ public class Interpreter {
         for (Map.Entry<String, Map<String, Object>> entry : klasses.entrySet()) {
             for (Map.Entry<String, Object> valueEntry : entry.getValue()
                     .entrySet()) {
-                if (valueEntry.getKey()
+                if (valueEntry.getValue() != null && (valueEntry.getKey()
                         .equals("*name") || valueEntry.getKey()
                         .equals("*n") ||
                         valueEntry.getKey()
                                 .equals("*id") || valueEntry.getKey()
-                        .equals("*i")) {
+                        .equals("*i"))) {
                     if (valueEntry.getValue() instanceof String) {
                         if (valueEntry.getValue()
                                 .equals(key)) {
@@ -1333,7 +1333,8 @@ public class Interpreter {
                 // Work up the superclass chain until we get to a basic class
                 final String superclassName = (String) classMap.get("*superclass");
                 boolean hasSuperclass = superclassName != null;
-                if (!hasSuperclass && anyClassContainsPairs(1, classMap.get("*name")
+                final Object nameOrId = classMap.get("*name") != null ? classMap.get("*name") : classMap.get("*id");
+                if (!hasSuperclass && anyClassContainsPairs(1, nameOrId
                         .toString())) {
                     classMap.put("*superclass", "map");
                 } else if (!hasSuperclass && hasAssignStatement(0, (String) classMap.get("*id"))) {

@@ -33,8 +33,8 @@ import java.io.IOException;
 public class ScratchTest {
     private final static String[][] expected = {
             {
-                    "test=\\~u2019",
-                    "{\n    \"test\": \"~u2019\"\n}"
+                    "*class(\n  *i=test;\n  *a=[\n    [one;two;three]\n  ]\n);\ntest=1:2:3",
+                    "{\n    \"test\": {\n        \"one\": 1,\n        \"two\": 2,\n        \"three\": 3\n    }\n}"
             }
     };
 
