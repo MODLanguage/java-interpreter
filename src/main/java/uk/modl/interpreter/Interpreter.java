@@ -581,9 +581,19 @@ public class Interpreter {
 
                                     array.addValue(targetObjectMap);
                                 } else {
-                                    if (targetClassMap.get("*superclass")
+                                    if (originalArrayItem instanceof ModlObject.Array || targetClassMap.get("*superclass")
                                             .equals("arr")) {
-                                        final ModlObject.String name = targetClassMap.get("*name") != null ? (ModlObject.String) targetClassMap.get("*name") : targetClassName;
+                                        ModlObject.String name = null;
+                                        final Object possibleName = targetClassMap.get("*name");
+                                        if (possibleName != null) {
+                                            if (possibleName instanceof String) {
+                                                name = new ModlObject.String((String) possibleName);
+                                            } else if (possibleName instanceof ModlObject.String) {
+                                                name = (ModlObject.String) possibleName;
+                                            }
+                                        } else {
+                                            name = targetClassName;
+                                        }
                                         array.addValue(new ModlObject.Pair(name, originalArrayItem));
                                     } else {
                                         throw new InterpreterError("No *assign value of length " + paramsSize + " for class " + targetClassName);
