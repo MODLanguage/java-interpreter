@@ -33,54 +33,19 @@ import java.io.IOException;
 public class ScratchTest {
     private final static String[][] expected = {
             {
-                    "*class(\n" +
-                            " *id=desc;\n" +
-                            " *name=description;\n" +
-                            " *superclass=str\n" +
-                            ");\n" +
-                            "\n" +
-                            "*class(\n" +
-                            " *id=val;\n" +
-                            " *name=value;\n" +
-                            " *superclass=str\n" +
-                            ");\n" +
-                            "\n" +
-                            "*class(\n" +
-                            " *id=media1;\n" +
-                            " *name=media1;\n" +
-                            " *assign=[\n" +
-                            "   [desc;val]\n" +
-                            " ]\n" +
-                            ");\n" +
-                            "\n" +
-                            "*class(\n" +
-                            " *id=media2;\n" +
-                            " *name=media2;\n" +
-                            " *assign=[\n" +
-                            "   [desc;val]\n" +
-                            " ]\n" +
-                            ");\n" +
-                            "*class(\n" +
-                            " *id=list;\n" +
-                            " *name=list;\n" +
-                            " *assign[\n" +
-                            "   [media1;media2]\n" +
-                            " ]\n" +
-                            ");\n" +
-                            "\n" +
-                            "\n" +
-                            "list=[tel;fb]:[yt;tw]",
+                    "*load=\"http://modules.num.uk/3/rcf.txt!\";_n=1;?=tesco.com;i(t=icon;v[%U.l%%0%.png:%M.p%:300:300])",
                     "{\n" +
-                            "  \"list\": [\n" +
-                            "    {\n" +
-                            "      \"description\": \"tel\",\n" +
-                            "      \"value\": \"fb\"\n" +
-                            "    },\n" +
-                            "    {\n" +
-                            "      \"description\": \"yt\",\n" +
-                            "      \"value\": \"tw\"\n" +
+                            "    \"images\": {\n" +
+                            "        \"type\": \"icon\",\n" +
+                            "        \"variants\": [\n" +
+                            "            {\n" +
+                            "                \"url\": \"https://www.logos.uk/num/tesco.com.png\",\n" +
+                            "                \"mime\": \"image/png\",\n" +
+                            "                \"width\": 300,\n" +
+                            "                \"height\": 300\n" +
+                            "            }\n" +
+                            "        ]\n" +
                             "    }\n" +
-                            "  ]\n" +
                             "}"
             }
     };

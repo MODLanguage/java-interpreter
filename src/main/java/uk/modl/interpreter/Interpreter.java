@@ -574,8 +574,12 @@ public class Interpreter {
                                     final ModlObject.Map targetObjectMap = new ModlObject.Map();
                                     int j = 0;
                                     for (final ModlObject.String param : params) {
-                                        ModlObject.Pair newPair = new ModlObject.Pair(param, originalArrayItemValues
-                                                .get(j));
+                                        ModlValue itemValue = originalArrayItemValues
+                                                .get(j);
+                                        if (itemValue instanceof ModlObject.String) {
+                                            itemValue = transformString(((ModlObject.String) itemValue).string);
+                                        }
+                                        ModlObject.Pair newPair = new ModlObject.Pair(param, itemValue);
                                         newKey = transformKey(param.string);
                                         newPair = transformValue(newPair);
                                         newPair.setKey(new ModlObject.String(newKey));
