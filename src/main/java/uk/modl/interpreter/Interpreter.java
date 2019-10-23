@@ -520,7 +520,7 @@ public class Interpreter {
         //  A pair with a key that matches a class ID or class name is transformed according to the class definition:
         // TODO Should be able to look up by transformed name too?
         if (haveModlClass(originalKey)) {
-            if (rawPair.getModlValue() instanceof ModlObject.Array && hasAssignStatementWhereAllEntriesAreClasses(0, originalKey)) {
+            if (rawPair.getModlValue() instanceof ModlObject.Array && hasAssignStatementWhereAllEntriesAreClassesWithAssigns(0, originalKey)) {
                 final ModlObject.Array rawArray = (ModlObject.Array) rawPair.getModlValue();
                 // Transform the array to an array of maps as defined by the *class called `newKey`
                 final Map<String, Object> rootClass = klasses.get(originalKey);
@@ -574,8 +574,12 @@ public class Interpreter {
                                     final ModlObject.Map targetObjectMap = new ModlObject.Map();
                                     int j = 0;
                                     for (final ModlObject.String param : params) {
-                                        targetObjectMap.addPair(new ModlObject.Pair(param, originalArrayItemValues
-                                                .get(j)));
+                                        ModlObject.Pair newPair = new ModlObject.Pair(param, originalArrayItemValues
+                                                .get(j));
+                                        newKey = transformKey(param.string);
+                                        newPair = transformValue(newPair);
+                                        newPair.setKey(new ModlObject.String(newKey));
+                                        targetObjectMap.addPair(newPair);
                                         j++;
                                     }
 
@@ -1329,7 +1333,7 @@ public class Interpreter {
         return false;
     }
 
-    private boolean hasAssignStatementWhereAllEntriesAreClasses(final int depth, String originalKey) {
+    private boolean hasAssignStatementWhereAllEntriesAreClassesWithAssigns(final int depth, String originalKey) {
         if (depth > MAX_CLASS_HIERARCHY_DEPTH) {
             throw new RuntimeException("Interpreter Error: Reached max class hierarchy depth: " +
                     MAX_CLASS_HIERARCHY_DEPTH);
@@ -1351,6 +1355,12 @@ public class Interpreter {
                 }
             }
         }
+        for (final String param : allParams) {
+            if (!hasAssignStatement(0, param)) {
+                return false;
+            }
+        }
+
         return !allParams.isEmpty() && klasses.keySet()
                 .containsAll(allParams);
     }
