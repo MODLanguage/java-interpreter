@@ -3124,5 +3124,14 @@
       "class"
     ],
     "minimised_modl": "*class(*id=v;*name=variants;*assign=[[variant*]]);*class(*id=variant;*assign=[[key1;key2;key3]]);v[one:two:three]"
+  },
+  {
+    "id": "328",
+    "input": "*class(\n  *id=i;\n  *name=images\n);\n\n*class(\n  *id=n;\n  *name=name\n);\n\n*class(\n  *id=t;\n  *name=type\n);\n\n*class(\n  *id=u;\n  *name=url\n);\n\n*class(\n  *id=m;\n  *name=mime\n);\n\n*class(\n  *id=w;\n  *name=width\n);\n\n*class(\n  *id=h;\n  *name=height\n);\n\n*class(\n  *id=v;\n  *name=variants;\n  *assign=[[variant*]]\n);\n\n*class(\n  *id=variant;\n  *assign=[[u;m;w;h]]\n);\n\n_U(\n  ## Logo hosting URLs\n  l=\"https://www.logos.uk/num/\"\n);\n\n_M(\n  ## MIME types\n  p=\"image/png\"\n);i[(t=logo;v[(u=`http://www.bupa.com/~/media/images/site-specific-images/corporate-images/content%20block%20images/dad-kissing-daughter.jpg`;m=image/jpeg;w=541;h=281)]);(t=logo;v[(u=`https://www.bupa.com/favicon.ico`;m=image/jpeg;w=16;h=16)])]",
+    "expected_output": "{\n    \"images\": [\n        {\n            \"type\": \"logo\",\n            \"variants\": [\n                {\n                    \"url\": \"http://www.bupa.com//media/images/site-specific-images/corporate-images/content%20block%20images/dad-kissing-daughter.jpg\",\n                    \"mime\": \"image/jpeg\",\n                    \"width\": 541,\n                    \"height\": 281\n                }\n            ]\n        },\n        {\n            \"type\": \"logo\",\n            \"variants\": [\n                {\n                    \"url\": \"https://www.bupa.com/favicon.ico\",\n                    \"mime\": \"image/jpeg\",\n                    \"width\": 16,\n                    \"height\": 16\n                }\n            ]\n        }\n    ]\n}",
+    "tested_features": [
+      "class"
+    ],
+    "minimised_modl": "*class(*id=i;*name=images);*class(*id=n;*name=name);*class(*id=t;*name=type);*class(*id=u;*name=url);*class(*id=m;*name=mime);*class(*id=w;*name=width);*class(*id=h;*name=height);*class(*id=v;*name=variants;*assign=[[variant*]]);*class(*id=variant;*assign=[[u;m;w;h]]\n);\n\n_U(\n  ## Logo hosting URLs\n  l=\"https://www.logos.uk/num/\"\n);\n\n_M(\n  ## MIME types\n  p=\"image/png\"\n);i[(t=logo;v[(u=`http://www.bupa.com/~/media/images/site-specific-images/corporate-images/content%20block%20images/dad-kissing-daughter.jpg`;m=image/jpeg;w=541;h=281)]);(t=logo;v[(u=`https://www.bupa.com/favicon.ico`;m=image/jpeg;w=16;h=16)])]"
   }
 ]

@@ -520,7 +520,7 @@ public class Interpreter {
         //  A pair with a key that matches a class ID or class name is transformed according to the class definition:
         // TODO Should be able to look up by transformed name too?
         if (haveModlClass(originalKey)) {
-            if (rawPair.getModlValue() instanceof ModlObject.Array && allContentsAreArrays((ModlObject.Array) rawPair.getModlValue())) {
+            if (rawPair.getModlValue() instanceof ModlObject.Array && hasAssignStatementWhereAllEntriesAreClassesWithAssigns(0, originalKey)) {
                 final ModlObject.Array rawArray = (ModlObject.Array) rawPair.getModlValue();
                 // Transform the array to an array of maps as defined by the *class called `newKey`
                 final Map<String, Object> rootClass = klasses.get(originalKey);
@@ -563,17 +563,59 @@ public class Interpreter {
                                     .get(i);
                             final ModlObject.String targetClassName = classNamesForArray.get(i);
 
-                            final ModlObject.Pair tmpPair = new ModlObject.Pair(targetClassName, originalArrayItem);
-                            final ModlValue value = interpret(modlObject, tmpPair, null);
-                            if (value != null) {
-                                for (final ModlValue v : value.getModlValues()) {
-                                    array.addValue(v);
+                            if (originalArrayItem instanceof ModlObject.Array) {
+                                final List<ModlValue> originalArrayItemValues = ((ModlObject.Array) originalArrayItem).getValues();
+                                final int paramsSize = originalArrayItemValues
+                                        .size();
+                                final Map<String, Object> targetClassMap = klasses.get(targetClassName.string);
+                                final List<ModlObject.String> params = (List<ModlObject.String>) targetClassMap
+                                        .get("*params" + paramsSize);
+                                if (params != null) {
+                                    final ModlObject.Map targetObjectMap = new ModlObject.Map();
+                                    int j = 0;
+                                    for (final ModlObject.String param : params) {
+                                        ModlObject.Pair newPair = new ModlObject.Pair(param, originalArrayItemValues
+                                                .get(j));
+                                        newKey = transformKey(param.string);
+                                        newPair = transformValue(newPair);
+                                        newPair.setKey(new ModlObject.String(newKey));
+                                        targetObjectMap.addPair(newPair);
+                                        j++;
+                                    }
+
+                                    array.addValue(targetObjectMap);
+                                } else {
+                                    if (originalArrayItem instanceof ModlObject.Array || targetClassMap.get("*superclass")
+                                            .equals("arr")) {
+                                        ModlObject.String name = null;
+                                        final Object possibleName = targetClassMap.get("*name");
+                                        if (possibleName != null) {
+                                            if (possibleName instanceof String) {
+                                                name = new ModlObject.String((String) possibleName);
+                                            } else if (possibleName instanceof ModlObject.String) {
+                                                name = (ModlObject.String) possibleName;
+                                            }
+                                        } else {
+                                            name = targetClassName;
+                                        }
+                                        array.addValue(new ModlObject.Pair(name, originalArrayItem));
+                                    } else {
+                                        throw new InterpreterError("No *assign value of length " + paramsSize + " for class " + targetClassName);
+                                    }
+                                }
+                            } else {
+                                final ModlObject.Pair tmpPair = new ModlObject.Pair(targetClassName, originalArrayItem);
+                                final ModlValue value = interpret(modlObject, tmpPair, null);
+                                if (value != null) {
+                                    for (final ModlValue v : value.getModlValues()) {
+                                        array.addValue(v);
+                                    }
                                 }
                             }
                         }
                         return pair;
                     } else {
-                        throw new InterpreterError("Invalid *assign for *class '" + classNamesForArrayObject + "'");
+                        throw new InterpreterError("Invalid *assign for *class '" + originalKey + "'");
                     }
                 }
             } else {
@@ -595,16 +637,6 @@ public class Interpreter {
         }
 
         return pair;
-    }
-
-    private boolean allContentsAreArrays(final ModlObject.Array array) {
-        for (final ModlValue entry : array.getModlValues()) {
-            if (!(entry instanceof ModlObject.Array)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private ModlObject.Pair makePairFromLoadedFile(final ModlObject rawModlObject) {
@@ -1301,6 +1333,38 @@ public class Interpreter {
         return false;
     }
 
+    private boolean hasAssignStatementWhereAllEntriesAreClassesWithAssigns(final int depth, String originalKey) {
+        if (depth > MAX_CLASS_HIERARCHY_DEPTH) {
+            throw new RuntimeException("Interpreter Error: Reached max class hierarchy depth: " +
+                    MAX_CLASS_HIERARCHY_DEPTH);
+        }
+        final List<String> allParams = new ArrayList<>();
+        // If this class, or any of its parent classes, has an assign statement return true;
+        Map<String, Object> klass = getModlClass(originalKey);
+        if (klass != null) {
+            for (String k : klass.keySet()) {
+                if (k.startsWith("*params")) {
+                    final List<ModlObject.String> params = (List<ModlObject.String>) klass.get(k);
+                    for (final ModlObject.String param : params) {
+                        if (param.string.endsWith("*")) {
+                            allParams.add(param.string.substring(0, param.string.length() - 1));
+                        } else {
+                            allParams.add(param.string);
+                        }
+                    }
+                }
+            }
+        }
+        for (final String param : allParams) {
+            if (!hasAssignStatement(0, param)) {
+                return false;
+            }
+        }
+
+        return !allParams.isEmpty() && klasses.keySet()
+                .containsAll(allParams);
+    }
+
     private String transformKey(String originalKey) {
         Map<String, Object> map = getModlClass(originalKey);
         if (map != null) {
@@ -1345,7 +1409,7 @@ public class Interpreter {
                     classMap.put("*superclass", "map");
                     RawModlObject.Pair pair = new ModlObject.Pair();
                     pair.setKey(originalPair.getKey());
-                    pair.addModlValue(makeValueArray(originalPair.getModlValue()));
+                    pair.addModlValue(originalPair.getModlValue());
                     return pair;
                 } else if (!hasSuperclass) {
                     if (originalPair.getModlValue() instanceof ModlObject.Number) {

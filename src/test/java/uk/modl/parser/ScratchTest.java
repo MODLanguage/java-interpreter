@@ -33,8 +33,55 @@ import java.io.IOException;
 public class ScratchTest {
     private final static String[][] expected = {
             {
-                    "*class(\n  *i=test;\n  *a=[\n    [one;two;three]\n  ]\n);\ntest=1:2:3",
-                    "{\n    \"test\": {\n        \"one\": 1,\n        \"two\": 2,\n        \"three\": 3\n    }\n}"
+                    "*class(\n" +
+                            " *id=desc;\n" +
+                            " *name=description;\n" +
+                            " *superclass=str\n" +
+                            ");\n" +
+                            "\n" +
+                            "*class(\n" +
+                            " *id=val;\n" +
+                            " *name=value;\n" +
+                            " *superclass=str\n" +
+                            ");\n" +
+                            "\n" +
+                            "*class(\n" +
+                            " *id=media1;\n" +
+                            " *name=media1;\n" +
+                            " *assign=[\n" +
+                            "   [desc;val]\n" +
+                            " ]\n" +
+                            ");\n" +
+                            "\n" +
+                            "*class(\n" +
+                            " *id=media2;\n" +
+                            " *name=media2;\n" +
+                            " *assign=[\n" +
+                            "   [desc;val]\n" +
+                            " ]\n" +
+                            ");\n" +
+                            "*class(\n" +
+                            " *id=list;\n" +
+                            " *name=list;\n" +
+                            " *assign[\n" +
+                            "   [media1;media2]\n" +
+                            " ]\n" +
+                            ");\n" +
+                            "\n" +
+                            "\n" +
+                            "list=[tel;fb]:[yt;tw]",
+                    "{\n" +
+                            "  \"list\": [\n" +
+                            "    {\n" +
+                            "      \"description\": \"tel\",\n" +
+                            "      \"value\": \"fb\"\n" +
+                            "    },\n" +
+                            "    {\n" +
+                            "      \"description\": \"yt\",\n" +
+                            "      \"value\": \"tw\"\n" +
+                            "    }\n" +
+                            "  ]\n" +
+                            "}"
             }
     };
 
