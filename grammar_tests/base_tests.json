@@ -3142,5 +3142,23 @@
       "object_ref"
     ],
     "minimised_modl": "*load=\"http://modules.num.uk/3/rcf.txt!\";_n=1;?=tesco.com;i(t=icon;v[%U.l%%0%.png:%M.p%:300:300])"
+  },
+  {
+    "id": "330",
+    "input": "_u=[\"https://www.logos.uk/\"];\nl=%u.0%logo.png",
+    "expected_output": "{\"l\": \"https://www.logos.uk/logo.png\"}",
+    "tested_features": [
+      "object_ref"
+    ],
+    "minimised_modl": "_u=[\"https://www.logos.uk/\"];l=%u.0%logo.png"
+  },
+  {
+    "id": "331",
+    "input": "_C=gb;_L=en;*load=\"http://modules.num.uk/1/rcf.txt!\";o(c[fb=abc;tw=abc])",
+    "expected_output": "{\n    \"organisation\": {\n        \"contacts\": [\n            {\n                \"facebook\": {\n                    \"value\": \"abc\",\n                    \"object_type\": \"media\",\n                    \"object_display_name\": \"Facebook\",\n                    \"description_default\": \"View Facebook profile\",\n                    \"prefix\": \"https://www.facebook.com/\",\n                    \"media_type\": \"3p\",\n                    \"controller\": \"facebook.com\"\n                }\n            },\n            {\n                \"twitter\": {\n                    \"value\": \"abc\",\n                    \"object_type\": \"media\",\n                    \"object_display_name\": \"Twitter\",\n                    \"description_default\": \"View Twitter profile\",\n                    \"prefix\": \"https://www.twitter.com/\",\n                    \"media_type\": \"3p\",\n                    \"value_prefix\": \"@\",\n                    \"controller\": \"twitter.com\"\n                }\n            }\n        ],\n        \"object_type\": \"entity\",\n        \"object_display_name\": \"Organisation\",\n        \"description_default\": \"View Organisation\"\n    }\n}",
+    "tested_features": [
+      "object_ref"
+    ],
+    "minimised_modl": "_C=gb;_L=en;*load=\"http://modules.num.uk/1/rcf.txt!\";o(c[fb=abc;tw=abc])"
   }
 ]
