@@ -80,6 +80,7 @@ class UnicodeEscapeReplacer {
      * @param s             the String with the unicode value to be replaced.
      * @param value         the replacement character
      * @param unicodeStrIdx the index of the unicode escape sequence
+     * @param length        the number of characters to be replaced.
      * @return a String with the unicode escape sequence replaced by the replacement character
      */
     private static String replace(final String s, final char[] value, final int unicodeStrIdx, final int length) {
@@ -89,10 +90,24 @@ class UnicodeEscapeReplacer {
         return left + String.valueOf(value) + right;
     }
 
+    /**
+     * Check whether the value is a valid unicode codepoint
+     *
+     * @param value the int to check
+     * @return true if the value is a valid unicode codepoint
+     */
     private static boolean isValidRange(final int value) {
         return (value >= 0x100000 && value <= 0x10ffff) || (value >= 0x10000 && value <= 0xfffff) || (value >= 0 && value <= 0xd7ff) || (value >= 0xe000 && value <= 0xffff);
     }
 
+    /**
+     * Can we get `n` hex digits from the string at the `idx` location?
+     *
+     * @param s   the String to check
+     * @param idx the index to start searching in the string
+     * @param n   the number of digits needed
+     * @return true if enough digits are available
+     */
     private static boolean hasEnoughDigits(final String s, final int idx, final int n) {
         int i = 0;
         char[] chars = s.toCharArray();
@@ -106,7 +121,16 @@ class UnicodeEscapeReplacer {
         return i == n;
     }
 
+    /**
+     * Attempt to parse a unicode character starting at `idx` in `str`
+     *
+     * @param str the String to parse
+     * @param idx the starting index
+     * @return a TryParseResult with codepoint set to 0 on failure.
+     */
     private static TryParseResult tryParse(final String str, final int idx) {
+
+        // Check for a 6-digit unicode value
         if (hasEnoughDigits(str, idx, 6)) {
             final int value = Integer.parseInt(str.substring(idx, idx + 6), HEX);
             if (isValidRange(value)) {
@@ -114,6 +138,7 @@ class UnicodeEscapeReplacer {
             }
         }
 
+        // Check for a 5-digit unicode value
         if (hasEnoughDigits(str, idx, 5)) {
             final int value = Integer.parseInt(str.substring(idx, idx + 5), HEX);
             if (isValidRange(value)) {
@@ -121,6 +146,7 @@ class UnicodeEscapeReplacer {
             }
         }
 
+        // Check for a 4-digit unicode value
         if (hasEnoughDigits(str, idx, 4)) {
             final int value = Integer.parseInt(str.substring(idx, idx + 4), HEX);
             if (isValidRange(value)) {
@@ -128,13 +154,23 @@ class UnicodeEscapeReplacer {
             }
         }
 
+        // Failed
         return new TryParseResult(0, 4);
     }
 
+    /**
+     * Class to hold the result of the tryParse method
+     */
     private static class TryParseResult {
         final int codePoint;
         final int length;
 
+        /**
+         * Constructor
+         *
+         * @param codePoint the codepoint that was found, or zero
+         * @param length    the number of characters used by the codepoint.
+         */
         private TryParseResult(final int codePoint, final int length) {
             this.codePoint = codePoint;
             this.length = length;
