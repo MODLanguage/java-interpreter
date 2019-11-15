@@ -25,7 +25,6 @@ class UnicodeEscapeReplacer {
     private static final String TILDE_U = "~u";
     private static final char TILDE = '~';
     private static final char BACKSLASH = '\\';
-    private static final int ESCAPE_SEQUENCE_LENGHT = 6;
     private static final int HEX = 16;
 
     /**
@@ -56,10 +55,7 @@ class UnicodeEscapeReplacer {
                 unicodeStrIdx = Math.min(backslashUIndex, tildeUIndex);
             }
 
-            // Do we have a long enough value? Break out if not.
-            if (unicodeStrIdx + ESCAPE_SEQUENCE_LENGHT > result.length()) {
-                break;
-            }
+            final TryParseResult tryParse = tryParse(result, unicodeStrIdx + 2);
 
             // Next time round the loop we start searching after the current escape sequence.
             start = unicodeStrIdx + 1;
@@ -70,8 +66,10 @@ class UnicodeEscapeReplacer {
             }
 
             // Get the codepoint value and replace the escape sequence
-            final int codePoint = Integer.parseInt(result.substring(unicodeStrIdx + 2, unicodeStrIdx + ESCAPE_SEQUENCE_LENGHT), HEX);
-            result = replace(result, (char) codePoint, unicodeStrIdx);
+            if (tryParse.codePoint > 0) {
+                final char[] chars = Character.toChars(tryParse.codePoint);
+                result = replace(result, chars, unicodeStrIdx, tryParse.length + 2);
+            }
         }
         return result;
     }
@@ -84,9 +82,62 @@ class UnicodeEscapeReplacer {
      * @param unicodeStrIdx the index of the unicode escape sequence
      * @return a String with the unicode escape sequence replaced by the replacement character
      */
-    private static String replace(final String s, final char value, final int unicodeStrIdx) {
+    private static String replace(final String s, final char[] value, final int unicodeStrIdx, final int length) {
         final String left = s.substring(0, unicodeStrIdx);
-        final String right = s.substring(unicodeStrIdx + ESCAPE_SEQUENCE_LENGHT);
-        return left + value + right;
+        final int end = Math.min(s.length(), unicodeStrIdx + length);
+        final String right = s.substring(end);
+        return left + String.valueOf(value) + right;
+    }
+
+    private static boolean isValidRange(final int value) {
+        return (value >= 0x100000 && value <= 0x10ffff) || (value >= 0x10000 && value <= 0xfffff) || (value >= 0 && value <= 0xd7ff) || (value >= 0xe000 && value <= 0xffff);
+    }
+
+    private static boolean hasEnoughDigits(final String s, final int idx, final int n) {
+        int i = 0;
+        char[] chars = s.toCharArray();
+        while (i < n && (idx + i) < s.length()) {
+            char c = chars[idx + i];
+            if (!Character.isDigit(c) && !("abcdefABCDEF".indexOf(c) > -1)) {
+                return false;
+            }
+            i++;
+        }
+        return i == n;
+    }
+
+    private static TryParseResult tryParse(final String str, final int idx) {
+        if (hasEnoughDigits(str, idx, 6)) {
+            final int value = Integer.parseInt(str.substring(idx, idx + 6), HEX);
+            if (isValidRange(value)) {
+                return new TryParseResult(value, 6);
+            }
+        }
+
+        if (hasEnoughDigits(str, idx, 5)) {
+            final int value = Integer.parseInt(str.substring(idx, idx + 5), HEX);
+            if (isValidRange(value)) {
+                return new TryParseResult(value, 5);
+            }
+        }
+
+        if (hasEnoughDigits(str, idx, 4)) {
+            final int value = Integer.parseInt(str.substring(idx, idx + 4), HEX);
+            if (isValidRange(value)) {
+                return new TryParseResult(value, 4);
+            }
+        }
+
+        return new TryParseResult(0, 4);
+    }
+
+    private static class TryParseResult {
+        final int codePoint;
+        final int length;
+
+        private TryParseResult(final int codePoint, final int length) {
+            this.codePoint = codePoint;
+            this.length = length;
+        }
     }
 }

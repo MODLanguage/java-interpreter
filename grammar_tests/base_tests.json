@@ -3160,5 +3160,15 @@
       "object_ref"
     ],
     "minimised_modl": "_C=gb;_L=en;*load=\"http://modules.num.uk/1/rcf.txt!\";o(c[fb=abc;tw=abc])"
+  },
+  {
+    "id": "332",
+    "input": "test=~u1f60000",
+    "expected_output": "{\n    \"test\": \"\uD83D\uDE0000\"\n}",
+    "tested_features": [
+      "unicode",
+      "escapes"
+    ],
+    "minimised_modl": "test=\\~u1f60000"
   }
 ]

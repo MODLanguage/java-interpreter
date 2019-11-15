@@ -71,4 +71,41 @@ public class UnicodeEscapeReplacerTest {
         final String result = StringEscapeReplacer.replace("test=\\~u2019");
         assertEquals("test=~u2019", result);
     }
+
+    @Test
+    public void can_handle_up_to_6_characters_in_unicode_escape_sequence_1() {
+        final String result = UnicodeEscapeReplacer.convertUnicodeSequences("~u1f476~u1f476");
+        assertEquals("👶👶", result);
+    }
+
+    @Test
+    public void can_handle_up_to_6_characters_in_unicode_escape_sequence_2() {
+        final String result = UnicodeEscapeReplacer.convertUnicodeSequences("~u1f476");
+        assertEquals("👶", result);
+    }
+
+    @Test
+    public void can_handle_up_to_6_characters_in_unicode_escape_sequence_3() {
+        final String result = UnicodeEscapeReplacer.convertUnicodeSequences("~u1f476x");
+        assertEquals("👶x", result);
+    }
+
+    @Test
+    public void can_handle_up_to_6_characters_in_unicode_escape_sequence_4() {
+        final String result = UnicodeEscapeReplacer.convertUnicodeSequences("~u1f4760x");
+        assertEquals("👶0x", result);
+    }
+
+    @Test
+    public void can_handle_up_to_6_characters_in_unicode_escape_sequence_5() {
+        final String result = UnicodeEscapeReplacer.convertUnicodeSequences("~u0020ac");
+        assertEquals("€", result);
+    }
+
+    @Test
+    public void can_handle_up_to_6_characters_in_unicode_escape_sequence_6() {
+        final String result = UnicodeEscapeReplacer.convertUnicodeSequences("~u0020xy");
+        assertEquals(" xy", result);
+
+    }
 }
