@@ -57,6 +57,9 @@ class ModlClassLoader {
         if (name == null) {
             name = getPairValueFor(structure, "*n", interpreter);
         }
+        if (id == null) {
+            id = getPairValueFor(structure, "*i", interpreter);
+        }
         if (name == null) {
             name = id;
         }
@@ -64,9 +67,6 @@ class ModlClassLoader {
         checkClassNameForBuiltInNames(name);
 
         values.put("*name", name); // TODO ???
-        if (id == null) {
-            id = getPairValueFor(structure, "*i", interpreter);
-        }
 
         if (id == null) {
             throw new RuntimeException("Can't find *id in *class");

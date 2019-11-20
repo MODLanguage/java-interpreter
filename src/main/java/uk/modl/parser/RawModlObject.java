@@ -20,7 +20,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 package uk.modl.parser;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.MutablePair;
 import uk.modl.modlObject.ModlObject;
 import uk.modl.modlObject.ModlValue;
 import uk.modl.parser.printers.ModlObjectJsonSerializer;
@@ -42,8 +42,10 @@ public class RawModlObject extends ModlObject {
         for (Structure structure : structures) {
             if (structure instanceof Pair) {
                 Pair pair = ((Pair) structure);
-                if ((pair.getKey().string.toLowerCase().equals("*l")) ||
-                    (pair.getKey().string.toLowerCase().equals("*load"))) {
+                if ((pair.getKey().string.toLowerCase()
+                        .equals("*l")) ||
+                        (pair.getKey().string.toLowerCase()
+                                .equals("*load"))) {
                     java.lang.String importLocation;
                     if (pair.getModlValue() instanceof ModlObject.String) {
                         importLocation = ((String) pair.getModlValue()).string;
@@ -109,15 +111,15 @@ public class RawModlObject extends ModlObject {
     }
 
     public static class ConditionTest {
-        java.util.Map<RawModlObject.SubCondition, ImmutablePair<java.lang.String, Boolean>>
-            subConditionMap =
-            new HashMap<>();
+        java.util.Map<RawModlObject.SubCondition, MutablePair<java.lang.String, Boolean>>
+                subConditionMap =
+                new HashMap<>();
 
         void addSubCondition(java.lang.String operator, boolean shouldNegate, SubCondition subCondition) {
-            subConditionMap.put(subCondition, new ImmutablePair<>(operator, shouldNegate));
+            subConditionMap.put(subCondition, MutablePair.of(operator, shouldNegate));
         }
 
-        public java.util.Map<SubCondition, ImmutablePair<java.lang.String, Boolean>> getSubConditionMap() {
+        public java.util.Map<SubCondition, MutablePair<java.lang.String, Boolean>> getSubConditionMap() {
             return subConditionMap;
         }
     }
@@ -137,6 +139,10 @@ public class RawModlObject extends ModlObject {
             return key;
         }
 
+        public void setKey(final java.lang.String newKey) {
+            key = newKey;
+        }
+
         public java.lang.String getOperator() {
             return operator;
         }
@@ -147,13 +153,13 @@ public class RawModlObject extends ModlObject {
     }
 
     public static class ConditionGroup implements SubCondition {
-        java.util.List<ImmutablePair<ConditionTest, java.lang.String>> conditionsTestList = new LinkedList<>();
+        java.util.List<MutablePair<ConditionTest, java.lang.String>> conditionsTestList = new LinkedList<>();
 
         void addConditionTest(ConditionTest conditionTest, java.lang.String operator) {
-            conditionsTestList.add(new ImmutablePair<>(conditionTest, operator));
+            conditionsTestList.add(MutablePair.of(conditionTest, operator));
         }
 
-        public List<ImmutablePair<ConditionTest, java.lang.String>> getConditionsTestList() {
+        public List<MutablePair<ConditionTest, java.lang.String>> getConditionsTestList() {
             return conditionsTestList;
         }
     }

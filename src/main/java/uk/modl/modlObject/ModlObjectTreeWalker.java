@@ -1,5 +1,7 @@
 package uk.modl.modlObject;
 
+import uk.modl.parser.RawModlObject;
+
 public class ModlObjectTreeWalker {
 
     private ModlObject modlObject;
@@ -12,6 +14,36 @@ public class ModlObjectTreeWalker {
         for (final ModlObject.Structure structure : modlObject.getStructures()) {
             visitor.visit(structure);
             walk(structure, visitor);
+        }
+    }
+
+    public void walk(final RawModlObject.ConditionTest conditionTest, final Visitor visitor) {
+        conditionTest.getSubConditionMap()
+                .forEach((k, v) -> {
+                    walk(k, visitor);
+                    visitor.visit(v);
+                });
+    }
+
+    public void walk(final RawModlObject.Condition condition, final Visitor visitor) {
+        visitor.visit(condition);
+        condition.getValues()
+                .forEach(modlValue -> {
+                    walk(modlValue, visitor);
+                });
+    }
+
+    public void walk(final RawModlObject.ConditionGroup conditionGroup, final Visitor visitor) {
+        conditionGroup.getConditionsTestList()
+                .forEach(visitor::visit);
+    }
+
+    public void walk(final RawModlObject.SubCondition subCondition, final Visitor visitor) {
+        if (subCondition instanceof RawModlObject.Condition) {
+            walk((RawModlObject.Condition) subCondition, visitor);
+        }
+        if (subCondition instanceof RawModlObject.ConditionGroup) {
+            walk((RawModlObject.ConditionGroup) subCondition, visitor);
         }
     }
 
@@ -62,6 +94,66 @@ public class ModlObjectTreeWalker {
         if (structure instanceof ModlObject.Null) {
             final ModlObject.Null n = (ModlObject.Null) structure;
             visitor.visit(n);
+        }
+
+        if (structure instanceof RawModlObject.ValueConditional) {
+            final RawModlObject.ValueConditional n = (RawModlObject.ValueConditional) structure;
+            n.getConditionals()
+                    .forEach((key, value) -> {
+                        walk(key, visitor);
+                        walk(value, visitor);
+                    });
+        }
+
+        if (structure instanceof RawModlObject.ArrayConditional) {
+            final RawModlObject.ArrayConditional n = (RawModlObject.ArrayConditional) structure;
+            n.getConditionals()
+                    .forEach((k, v) -> {
+                        walk(k, visitor);
+                        walk(v, visitor);
+                    });
+        }
+
+        if (structure instanceof RawModlObject.ArrayConditionalReturn) {
+            final RawModlObject.ArrayConditionalReturn n = (RawModlObject.ArrayConditionalReturn) structure;
+            n.getValues()
+                    .forEach(v -> walk(v, visitor));
+        }
+
+        if (structure instanceof RawModlObject.SubCondition) {
+            final RawModlObject.SubCondition n = (RawModlObject.SubCondition) structure;
+            walk(n, visitor);
+        }
+
+        if (structure instanceof RawModlObject.MapConditional) {
+            final RawModlObject.MapConditional n = (RawModlObject.MapConditional) structure;
+            n.getConditionals()
+                    .forEach((k, v) -> {
+                        walk(k, visitor);
+                        v.getPairs()
+                                .forEach(p -> walk(p, visitor));
+                    });
+        }
+
+        if (structure instanceof RawModlObject.TopLevelConditional) {
+            final RawModlObject.TopLevelConditional n = (RawModlObject.TopLevelConditional) structure;
+            n.getConditionals()
+                    .forEach((k, v) -> {
+                        walk(k, visitor);
+                        walk(v, visitor);
+                    });
+        }
+
+        if (structure instanceof RawModlObject.TopLevelConditionalReturn) {
+            final RawModlObject.TopLevelConditionalReturn n = (RawModlObject.TopLevelConditionalReturn) structure;
+            n.getModlValues()
+                    .forEach(v -> walk(v, visitor));
+        }
+
+        if (structure instanceof RawModlObject.ValueConditionalReturn) {
+            final RawModlObject.ValueConditionalReturn n = (RawModlObject.ValueConditionalReturn) structure;
+            n.getValues()
+                    .forEach(v -> walk(v, visitor));
         }
     }
 

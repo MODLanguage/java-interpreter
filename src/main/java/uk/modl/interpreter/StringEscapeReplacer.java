@@ -19,24 +19,53 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 package uk.modl.interpreter;
 
+import org.apache.commons.lang3.tuple.MutablePair;
+import uk.modl.modlObject.ModlObject;
+import uk.modl.modlObject.ModlObjectTreeWalker;
+import uk.modl.parser.RawModlObject;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class StringEscapeReplacer {
     private static Map<String, String> replacements = new LinkedHashMap<>();
 
+    public static void replaceAll(final ModlObject rawModlObject) {
+        final ModlObjectTreeWalker walker = new ModlObjectTreeWalker(rawModlObject);
+        walker.walk(v -> {
+            if (v instanceof ModlObject.String) {
+                final ModlObject.String str = (ModlObject.String) v;
+                str.string = StringEscapeReplacer.replace(str.string);
+            }
+            if (v instanceof MutablePair) {
+                final MutablePair p = (MutablePair) v;
+                if (p.left instanceof String) {
+                    p.left = StringEscapeReplacer.replace((String) p.left);
+                }
+                if (p.right instanceof String) {
+                    p.right = StringEscapeReplacer.replace((String) p.right);
+                }
+            }
+            if (v instanceof RawModlObject.Condition) {
+                final RawModlObject.Condition c = (RawModlObject.Condition) v;
+                c.setKey(StringEscapeReplacer.replace(c.getKey()));
+            }
+        });
+    }
+
     public static String replace(String stringToTransform) {
-        stringToTransform = UnicodeEscapeReplacer.convertUnicodeSequences(stringToTransform);
-        // String-replacement.text to replace escaped characters
-        if (replacements.isEmpty()) {
-            loadReplacements();
-        }
-        for (Map.Entry<String, String> replacement : replacements.entrySet()) {
-            if (stringToTransform.contains(replacement.getKey())) {
-                stringToTransform = stringToTransform.replace(replacement.getKey(), replacement.getValue());
+        if (stringToTransform != null) {
+            stringToTransform = UnicodeEscapeReplacer.convertUnicodeSequences(stringToTransform);
+            // String-replacement.text to replace escaped characters
+            if (replacements.isEmpty()) {
+                loadReplacements();
+            }
+            for (Map.Entry<String, String> replacement : replacements.entrySet()) {
+                if (stringToTransform.contains(replacement.getKey())) {
+                    stringToTransform = stringToTransform.replace(replacement.getKey(), replacement.getValue());
+                }
             }
         }
-
         return stringToTransform;
     }
 

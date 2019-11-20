@@ -19,9 +19,8 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 package uk.modl.interpreter;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.MutablePair;
 import uk.modl.modlObject.ModlObject;
-import uk.modl.modlObject.ModlObjectTreeWalker;
 import uk.modl.modlObject.ModlValue;
 import uk.modl.parser.ModlObjectCreator;
 import uk.modl.parser.RawModlObject;
@@ -83,23 +82,15 @@ public class Interpreter {
             }
         }
 
-        final ModlObjectTreeWalker walker = new ModlObjectTreeWalker(modlObject);
-        walker.walk(new ModlObjectTreeWalker.Visitor() {
-            @Override
-            public void visit(final Object v) {
-                if (v instanceof ModlObject.String) {
-                    final ModlObject.String str = (ModlObject.String) v;
-                    str.string = StringEscapeReplacer.replace(str.string);
-                }
-            }
-        });
+        StringEscapeReplacer.replaceAll(modlObject);
+
         return modlObject;
     }
 
-    private static List<ImmutablePair<RawModlObject.ConditionTest, String>> getOrderedConditionalTestList(RawModlObject.ConditionGroup conditionGroup) {
-        List<ImmutablePair<RawModlObject.ConditionTest, String>> orderedConditionalTestList = new LinkedList<>();
+    private static List<MutablePair<RawModlObject.ConditionTest, String>> getOrderedConditionalTestList(RawModlObject.ConditionGroup conditionGroup) {
+        List<MutablePair<RawModlObject.ConditionTest, String>> orderedConditionalTestList = new LinkedList<>();
         int nullCount = 0;
-        for (ImmutablePair<RawModlObject.ConditionTest, String> conditionalTestEntry : conditionGroup.getConditionsTestList()) {
+        for (MutablePair<RawModlObject.ConditionTest, String> conditionalTestEntry : conditionGroup.getConditionsTestList()) {
             // Work out where this should be in the list
             // There are only & and | and null here!
             String operator = conditionalTestEntry.getValue();
@@ -1835,10 +1826,10 @@ public class Interpreter {
 
     private boolean evaluates(RawModlObject.ConditionTest conditionalTest) {
         int nullCount = 0;
-        List<Map.Entry<RawModlObject.SubCondition, ImmutablePair<java.lang.String, Boolean>>>
+        List<Map.Entry<RawModlObject.SubCondition, MutablePair<java.lang.String, Boolean>>>
                 conditionalTestOrderedList =
                 new LinkedList<>();
-        for (Map.Entry<RawModlObject.SubCondition, ImmutablePair<java.lang.String, Boolean>> conditionalTestEntry : conditionalTest
+        for (Map.Entry<RawModlObject.SubCondition, MutablePair<java.lang.String, Boolean>> conditionalTestEntry : conditionalTest
                 .getSubConditionMap()
                 .entrySet()) {
             // There are only & and | and null here!
@@ -1857,9 +1848,9 @@ public class Interpreter {
         }
 
         boolean result = true;
-        for (Map.Entry<RawModlObject.SubCondition, ImmutablePair<java.lang.String, Boolean>> conditionalTestEntry : conditionalTestOrderedList) {
+        for (Map.Entry<RawModlObject.SubCondition, MutablePair<java.lang.String, Boolean>> conditionalTestEntry : conditionalTestOrderedList) {
             RawModlObject.SubCondition subCondition = conditionalTestEntry.getKey();
-            ImmutablePair<String, Boolean> conditionTestOperatorPair = conditionalTestEntry.getValue();
+            MutablePair<String, Boolean> conditionTestOperatorPair = conditionalTestEntry.getValue();
             String conditionTestOperator = conditionTestOperatorPair.getLeft();
             Boolean shouldNegate = conditionTestOperatorPair.getRight();
             boolean subConditionReturn = true;
@@ -1889,11 +1880,11 @@ public class Interpreter {
     }
 
     private boolean evaluates(RawModlObject.ConditionGroup conditionGroup) {
-        List<ImmutablePair<RawModlObject.ConditionTest, String>>
+        List<MutablePair<RawModlObject.ConditionTest, String>>
                 orderedConditionalTestList =
                 getOrderedConditionalTestList(conditionGroup);
         boolean result = true;
-        for (ImmutablePair<RawModlObject.ConditionTest, java.lang.String> conditionTestPair : orderedConditionalTestList) {
+        for (MutablePair<RawModlObject.ConditionTest, java.lang.String> conditionTestPair : orderedConditionalTestList) {
             RawModlObject.ConditionTest ct = conditionTestPair.getLeft();
             java.lang.String conditionGroupOperator = conditionTestPair.getRight();
             boolean ctReturn = evaluates(ct);
