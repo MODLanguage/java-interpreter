@@ -33,20 +33,8 @@ import java.io.IOException;
 public class ScratchTest {
     private final static String[][] expected = {
             {
-                    "*load=\"http://modules.num.uk/3/rcf.txt!\";_n=1;?=tesco.com;i(t=icon;v[%U.l%%0%.png:%M.p%:300:300])",
-                    "{\n" +
-                            "    \"images\": {\n" +
-                            "        \"type\": \"icon\",\n" +
-                            "        \"variants\": [\n" +
-                            "            {\n" +
-                            "                \"url\": \"https://www.logos.uk/num/tesco.com.png\",\n" +
-                            "                \"mime\": \"image/png\",\n" +
-                            "                \"width\": 300,\n" +
-                            "                \"height\": 300\n" +
-                            "            }\n" +
-                            "        ]\n" +
-                            "    }\n" +
-                            "}"
+                    "*L=https~://www.modl.uk/tests/message-thread.txt;\n\nclasses=*class",
+                    "{\"classes\": \"*class\"}"
             }
     };
 

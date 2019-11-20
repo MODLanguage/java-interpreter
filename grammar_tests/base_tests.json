@@ -24,7 +24,7 @@
     "tested_features": [
       "load"
     ],
-    "minimised_modl": "*L=\"https://www.modl.uk/demo/message-thread.txt\";classes=*class"
+    "minimised_modl": "*L=https~://www.modl.uk/tests/message-thread.txt;classes=*class"
   },
   {
     "id": "4",
@@ -43,7 +43,7 @@
       "load",
       "class"
     ],
-    "minimised_modl": "*L=\"https://www.modl.uk/tests/message-thread.txt\";*class(*id=a;*name=alpha;*superclass=map;v=victor)*class(*id=b;*name=bravo;*superclass=alpha;w=whisky);*class(*id=c;*name=charlie;*superclass=bravo;x=xray)*class(*id=d;*name=delta;*superclass=charlie;y=yankee)classes=%*class"
+    "minimised_modl": "*L=https~://www.modl.uk/tests/message-thread.txt;*c(*i=a;*n=alpha;*s=map;v=victor);*c(*i=b;*n=bravo;*s=alpha;w=whisky);*c(*i=c;*n=charlie;*s=bravo;x=xray);*c(*i=d;*n=delta;*s=charlie;y=yankee);classes=%*class"
   },
   {
     "id": "6",
@@ -52,7 +52,7 @@
     "tested_features": [
       "conditional"
     ],
-    "minimised_modl": "_test1=one;_one=two{test1=`one`?result=match/?result=nomatch}"
+    "minimised_modl": "_test1=one;_one=two;{test1=`one`?result=match/?result=nomatch}"
   },
   {
     "id": "7",
@@ -61,7 +61,7 @@
     "tested_features": [
       "conditional"
     ],
-    "minimised_modl": "_test1=one;_one=two{test1=`two`?result=match/?result=nomatch}"
+    "minimised_modl": "_test1=one;_one=two;{test1=`two`?result=match/?result=nomatch}"
   },
   {
     "id": "8",
@@ -70,7 +70,7 @@
     "tested_features": [
       "conditional"
     ],
-    "minimised_modl": "_test1=one;_one=two{test1=\"one\"?result=match/?result=nomatch}"
+    "minimised_modl": "_test1=one;_one=two;{test1=one?result=match/?result=nomatch}"
   },
   {
     "id": "9",
@@ -79,7 +79,7 @@
     "tested_features": [
       "conditional"
     ],
-    "minimised_modl": "_test1=one;_one=two{test1=\"two\"?result=match/?result=nomatch}"
+    "minimised_modl": "_test1=one;_one=two;{test1=two?result=match/?result=nomatch}"
   },
   {
     "id": "10",
@@ -98,7 +98,7 @@
       "conditional",
       "object_ref"
     ],
-    "minimised_modl": "_x=a:b:c:d;_y=[1;2;3;4];z={%x.1=b | %y.2=1?}"
+    "minimised_modl": "_x=a:b:c:d;_y=1:2:3:4;z={%x.1=b|%y.2=1?}"
   },
   {
     "id": "12",
@@ -108,7 +108,7 @@
       "conditional",
       "object_ref"
     ],
-    "minimised_modl": "_x=a:b:c:d;_y=[1;2;3;4];z={%x.1=b & %y.2=1?}"
+    "minimised_modl": "_x=a:b:c:d;_y=1:2:3:4;z={%x.1=b&%y.2=1?}"
   },
   {
     "id": "13",
@@ -118,7 +118,7 @@
       "conditional",
       "object_ref"
     ],
-    "minimised_modl": "_x=a:b:c:d;_y=[1;2;3;4];z={%x.1=b&%y.2=3?}"
+    "minimised_modl": "_x=a:b:c:d;_y=1:2:3:4;z={%x.1=b&%y.2=3?}"
   },
   {
     "id": "14",
@@ -128,7 +128,7 @@
       "conditional",
       "object_ref"
     ],
-    "minimised_modl": "_x=a:b:c:d;_y=[1;2;3;4];z={%x.1=b|%y.2=3?}"
+    "minimised_modl": "_x=a:b:c:d;_y=1:2:3:4;z={%x.1=b|%y.2=3?}"
   },
   {
     "id": "15",
@@ -138,7 +138,7 @@
       "conditional",
       "object_ref"
     ],
-    "minimised_modl": "_x=a:b:c:d;_y=[1;2;3;4];z={%x.1=b|%y.2=x?}"
+    "minimised_modl": "_x=a:b:c:d;_y=1:2:3:4;z={%y.2=x|%x.1=b?}"
   },
   {
     "id": "16",
@@ -148,7 +148,7 @@
       "conditional",
       "object_ref"
     ],
-    "minimised_modl": "_x=a:b:c:d;_y=[1;2;3;4];z={%x.1=a|%y.2=3?}"
+    "minimised_modl": "_x=a:b:c:d;_y=1:2:3:4;z={%x.1=a|%y.2=3?}"
   },
   {
     "id": "17",
@@ -158,7 +158,7 @@
       "conditional",
       "object_ref"
     ],
-    "minimised_modl": "_x=a:b:c:d;_y=[1;2;3;4];x={%x.1=%y.2?}"
+    "minimised_modl": "_x=a:b:c:d;_y=1:2:3:4;x={%x.1=%y.2?}"
   },
   {
     "id": "18",
@@ -168,7 +168,7 @@
       "conditional",
       "object_ref"
     ],
-    "minimised_modl": "_x=[1;2;3;4];_y=[1;2;3;4];x={%x.2=%y.2?}"
+    "minimised_modl": "_x=1:2:3:4;_y=1:2:3:4;x={%x.2=%y.2?}"
   },
   {
     "id": "19",
@@ -178,7 +178,7 @@
       "conditional",
       "object_ref"
     ],
-    "minimised_modl": "_country=gb{country = gb | country = us?support_number=+441270123456/?support_number=+14161234567}"
+    "minimised_modl": "_country=gb;{country=us|country=gb?support_number=+441270123456/?support_number=+14161234567}"
   },
   {
     "id": "20",
@@ -188,7 +188,7 @@
       "conditional",
       "object_ref"
     ],
-    "minimised_modl": "_country=gb{country = us | country = gb?support_number=+441270123456/?support_number=+14161234567}"
+    "minimised_modl": "_country=gb;{country=gb|country=us?support_number=+441270123456/?support_number=+14161234567}"
   },
   {
     "id": "21",
@@ -216,7 +216,7 @@
       "puny",
       "string_method"
     ],
-    "minimised_modl": "%`80aafnhi4ae`.p=%`lsa12dvaxki`.p"
+    "minimised_modl": "%`80aafnhi4ae`.p.u=%`lsa12dvaxki`.p.u"
   },
   {
     "id": "24",
@@ -225,7 +225,7 @@
     "tested_features": [
       "string_method"
     ],
-    "minimised_modl": "(_name = John;%name.u = \"Developer\";foo = %name.u)"
+    "minimised_modl": "(_name=John;%name.u=Developer;foo=%name.u)"
   },
   {
     "id": "25",
@@ -235,7 +235,7 @@
       "string_method",
       "object_ref"
     ],
-    "minimised_modl": "(_name=John;%name.u=\"Developer\";foo = %JOHN)"
+    "minimised_modl": "(_name=John;%name.u=Developer;foo=%JOHN)"
   },
   {
     "id": "26",
@@ -244,7 +244,7 @@
     "tested_features": [
       "object_ref"
     ],
-    "minimised_modl": "(_name=John;%name=\"Developer\";foo = %John)"
+    "minimised_modl": "(_name=John;%name=Developer;foo=%John)"
   },
   {
     "id": "27",
@@ -254,7 +254,7 @@
       "conditional",
       "object_ref"
     ],
-    "minimised_modl": "_array[1;2];_array_item=%array.0;test={array_item=%array.0?yes/?no}"
+    "minimised_modl": "_array=1:2;_array_item=%array.0;test={array_item=%array.0?yes/?no}"
   },
   {
     "id": "28",
@@ -264,7 +264,7 @@
       "conditional",
       "object_ref"
     ],
-    "minimised_modl": "_array[1;2];test={%array.0=1?yes/?no}"
+    "minimised_modl": "_array=1:2;test={%array.0=1?yes/?no}"
   },
   {
     "id": "29",
@@ -3170,5 +3170,14 @@
       "escapes"
     ],
     "minimised_modl": "test=\\~u1f60000"
+  },
+  {
+    "id": "333",
+    "input": "*L=https~://www.modl.uk/tests/message-thread.txt;\n\nclasses=*class",
+    "expected_output": "{\n    \"classes\": \"*class\"\n}",
+    "tested_features": [
+      "load"
+    ],
+    "minimised_modl": "*L=https~://www.modl.uk/tests/message-thread.txt;classes=*class"
   }
 ]

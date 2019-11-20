@@ -370,7 +370,7 @@ public class Interpreter {
         } else {
             throw new RuntimeException("Was expecting String for location, but got " + value.getClass());
         }
-        return FileLoader.loadFile(loadedFiles, location);
+        return FileLoader.loadFile(loadedFiles, StringEscapeReplacer.replace(location));
     }
 
     private List<ModlObject.Structure> interpret(ModlObject modlObject, RawModlObject.Structure rawStructure) {
