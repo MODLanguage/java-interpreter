@@ -27,7 +27,7 @@ public class GrammarTestRunnerTest extends TestCase {
     @Test
     public void testBaseTest() throws Exception {
         // TODO Go through grammar_tests/base_tests.json making sure all expected stuff is correct
-        try (InputStream fileStream = new FileInputStream("grammar_tests/base_tests.json")) {
+        try (InputStream fileStream = new FileInputStream("../grammar/tests/base_tests.json")) {
             List<TestInput> list = mapper.readValue(fileStream, new TypeReference<LinkedList<TestInput>>() {
             });
             int testNumber = 1;
@@ -92,7 +92,7 @@ public class GrammarTestRunnerTest extends TestCase {
     @Test
     public void testErrorTest() throws Exception {
         // Go through grammar_test/error_tests.json making sure all tests raise an error of some kind
-        try (InputStream fileStream = new FileInputStream("grammar_tests/error_tests.json")) {
+        try (InputStream fileStream = new FileInputStream("../grammar/tests/error_tests.json")) {
             List<TestInput> list = mapper.readValue(fileStream, new TypeReference<LinkedList<TestInput>>() {
             });
             int testNumber = 1;

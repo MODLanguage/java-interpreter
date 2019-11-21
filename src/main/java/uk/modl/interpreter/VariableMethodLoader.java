@@ -146,7 +146,7 @@ class VariableMethodLoader {
             //  - and then we can build up the whole new function in ONE lambda, with a series of function calls
             //  - each one operating on the last
             //
-            Map<String, String> methodAndParam = new HashMap<>();
+            Map<String, String> methodAndParam = new LinkedHashMap<>();
             methodAndParam.put(intermediateMethodName, params);
             methodsAndParams.add(methodAndParam);
 

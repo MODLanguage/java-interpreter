@@ -26,7 +26,6 @@ import uk.modl.modlObject.ModlObject;
 import uk.modl.parser.printers.JsonPrinter;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -103,38 +102,38 @@ public class ImportTest extends TestCase {
                             "}",
             "_var=2;*L=http~://http://modl.uk/tests/testing.txt!;print=%update_date"},
 
-        {"_T=grammar_tests/demo;\n*L=%T%_config", "null", "_T=grammar_tests/demo;*L=%T%_config"},
+            {"_T=../grammar/tests/demo;\n*L=%T%_config", "null", "_T=../grammar/tests/demo;*L=%T%_config"},
         {
-            "*L=grammar_tests/1:grammar_tests/2:grammar_tests/3;\n" +
+                "*L=../grammar/tests/1:../grammar/tests/2:../grammar/tests/3;\n" +
                     "the_number=%number",
                     "{\n" +
                             " \"the_number\": 3\n" +
                             "}",
-                    "*L=grammar_tests/1:grammar_tests/2:grammar_tests/3;the_number=%number"},
+                "*L=../grammar/tests/1:../grammar/tests/2:../grammar/tests/3;the_number=%number"},
         {
-            "*L=grammar_tests/1:grammar_tests/2:grammar_tests/3:grammar_tests/1;\n" +
+                "*L=../grammar/tests/1:../grammar/tests/2:../grammar/tests/3:../grammar/tests/1;\n" +
             "the_number=%number",
                     "{\n" +
                             " \"the_number\": 1\n" +
                             "}",
-            "*L=grammar_tests/1:grammar_tests/2:grammar_tests/3:grammar_tests/1;the_number=%number"},
+                "*L=../grammar/tests/1:../grammar/tests/2:../grammar/tests/3:../grammar/tests/1;the_number=%number"},
         {
-            "*L[grammar_tests/1;grammar_tests/2;grammar_tests/3;grammar_tests/1];\n" +
+                "*L[../grammar/tests/1;../grammar/tests/2;../grammar/tests/3;../grammar/tests/1];\n" +
             "the_number=%number",
                     "{\n" +
                             " \"the_number\": 1\n" +
                             "}",
-            "*L=grammar_tests/1:grammar_tests/2:grammar_tests/3:grammar_tests/1;the_number=%number"},
+                "*L=../grammar/tests/1:../grammar/tests/2:../grammar/tests/3:../grammar/tests/1;the_number=%number"},
         {
-            "*L=grammar_tests/a:grammar_tests/b:grammar_tests/c;\n" +
+                "*L=../grammar/tests/a:../grammar/tests/b:../grammar/tests/c;\n" +
             "var=%var",
                     "{\n" +
                             " \"var\": \"abc\"\n" +
                             "}",
-            "*L=grammar_tests/a:grammar_tests/b:grammar_tests/c;var=%var"},
+                "*L=../grammar/tests/a:../grammar/tests/b:../grammar/tests/c;var=%var"},
 
         {
-            "*L=grammar_tests/demo_config;\n" +
+                "*L=../grammar/tests/demo_config;\n" +
             "\n" +
             "[m=out:2018-03-22 15\\:25:Hi;\n" +
             "m=in:2018-03-22 15\\:26:Hello, how are you?;\n" +
@@ -193,7 +192,7 @@ public class ImportTest extends TestCase {
             "    \"method\" : \"sms\"\n" +
             "  }\n" +
             "} ]\n",
-            "*L=grammar_tests/demo_config;*c(*i=m;*n=message;*s=map;*a[[direction;date_time;message]];method=sms);m=out:2018-03-22 15~:25:Hi;m=in:2018-03-22 15~:26:Hello, how are you?;m=out:2018-03-22 15~:25:Hi, good thanks;m=out:2018-03-22 15~:26:How about you?;m=in:2018-03-22 15~:26:Yes, fine thanks. What are you up to?;m=out:2018-03-22 15~:25:Just testing out MODL;m=in:2018-03-22 15~:26:Cool!"
+                "*L=../grammar/tests/demo_config;*c(*i=m;*n=message;*s=map;*a[[direction;date_time;message]];method=sms);m=out:2018-03-22 15~:25:Hi;m=in:2018-03-22 15~:26:Hello, how are you?;m=out:2018-03-22 15~:25:Hi, good thanks;m=out:2018-03-22 15~:26:How about you?;m=in:2018-03-22 15~:26:Yes, fine thanks. What are you up to?;m=out:2018-03-22 15~:25:Just testing out MODL;m=in:2018-03-22 15~:26:Cool!"
         },
         {
             "## country;\n" +
@@ -201,7 +200,7 @@ public class ImportTest extends TestCase {
             "## language\n" +
             "_l = en;\n" +
             "\n" +
-            "*L=grammar_tests/import_config.modl;\n" +
+                    "*L=../grammar/tests/import_config.modl;\n" +
             "\n" +
             "country = %c;\n" +
             "language = %l;\n" +
@@ -211,9 +210,9 @@ public class ImportTest extends TestCase {
                             "  \"language\" : \"en\",\n" +
                             "  \"time_zone\" : \"EST\"\n" +
                             "}",
-            "_c=us;_l=en;*L=grammar_tests/import_config.modl;country=%c;language=%l;time_zone=%tz"},
+                "_c=us;_l=en;*L=../grammar/tests/import_config.modl;country=%c;language=%l;time_zone=%tz"},
         {
-            "*L=grammar_tests/test_import_dir/test_import.txt;\n" +
+                "*L=../grammar/tests/test_import_dir/test_import.txt;\n" +
             "\n" +
             "[m=out:2018-03-22 15\\:25:Hi;\n" +
             "m=in:2018-03-22 15\\:26:Hello, how are you?;\n" +
@@ -272,7 +271,7 @@ public class ImportTest extends TestCase {
             "    \"method\" : \"sms\"\n" +
             "  }\n" +
             "} ]\n",
-            "*L=grammar_tests/test_import_dir/test_import.txt;*c(*i=m;*n=message;*s=map;*a[[direction;date_time;message]];method=sms);m=out:2018-03-22 15~:25:Hi;m=in:2018-03-22 15~:26:Hello, how are you?;m=out:2018-03-22 15~:25:Hi, good thanks;m=out:2018-03-22 15~:26:How about you?;m=in:2018-03-22 15~:26:Yes, fine thanks. What are you up to?;m=out:2018-03-22 15~:25:Just testing out MODL;m=in:2018-03-22 15~:26:Cool!"
+                "*L=../grammar/tests/test_import_dir/test_import.txt;*c(*i=m;*n=message;*s=map;*a[[direction;date_time;message]];method=sms);m=out:2018-03-22 15~:25:Hi;m=in:2018-03-22 15~:26:Hello, how are you?;m=out:2018-03-22 15~:25:Hi, good thanks;m=out:2018-03-22 15~:26:How about you?;m=in:2018-03-22 15~:26:Yes, fine thanks. What are you up to?;m=out:2018-03-22 15~:25:Just testing out MODL;m=in:2018-03-22 15~:26:Cool!"
         }
     });
 

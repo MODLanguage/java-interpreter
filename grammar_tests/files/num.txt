@@ -1,4 +1,0 @@
-_C=gb;
-_L=en;
-*load="grammar_tests/files/c-d.txt";
-o=%ref.o.name

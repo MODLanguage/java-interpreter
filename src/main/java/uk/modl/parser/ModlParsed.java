@@ -476,7 +476,7 @@ public class ModlParsed extends MODLParserBaseListener {
         public java.lang.String string;
 
         Quoted(java.lang.String string) {
-            this.string = string;
+            this.string = string.substring(1, string.length() - 1);
         }
     }
 
@@ -494,14 +494,14 @@ public class ModlParsed extends MODLParserBaseListener {
                     if (child instanceof MODLParser.Modl_condition_groupContext) {
                         ConditionGroup conditionGroup = new ConditionGroup();
                         ((MODLParser.Modl_condition_groupContext) child).enterRule(conditionGroup);
-                        subConditionList.add(new ImmutablePair<>((SubCondition) conditionGroup,
+                        subConditionList.add(new ImmutablePair<>(conditionGroup,
                                                                  new ImmutablePair<>(lastOperator, shouldNegate)));
                         lastOperator = null;
                         shouldNegate = false;
                     } else if (child instanceof MODLParser.Modl_conditionContext) {
                         Condition condition = new Condition();
                         ((MODLParser.Modl_conditionContext) child).enterRule(condition);
-                        subConditionList.add(new ImmutablePair<>((SubCondition) condition,
+                        subConditionList.add(new ImmutablePair<>(condition,
                                                                  new ImmutablePair<>(lastOperator, shouldNegate)));
                         lastOperator = null;
                         shouldNegate = false;

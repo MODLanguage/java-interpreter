@@ -25,7 +25,6 @@ import uk.modl.modlObject.ModlObject;
 import uk.modl.modlObject.ModlValue;
 import uk.modl.parser.printers.ModlObjectJsonSerializer;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -113,7 +112,7 @@ public class RawModlObject extends ModlObject {
     public static class ConditionTest {
         java.util.Map<RawModlObject.SubCondition, MutablePair<java.lang.String, Boolean>>
                 subConditionMap =
-                new HashMap<>();
+                new LinkedHashMap<>();
 
         void addSubCondition(java.lang.String operator, boolean shouldNegate, SubCondition subCondition) {
             subConditionMap.put(subCondition, MutablePair.of(operator, shouldNegate));

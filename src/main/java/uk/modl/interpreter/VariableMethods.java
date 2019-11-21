@@ -25,7 +25,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.IDN;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,7 +39,7 @@ class VariableMethods {
     }
 
     private void initialiseMethods() {
-        methods = new HashMap<>();
+        methods = new LinkedHashMap<>();
         addTrimTask();
         addUpperCaseTask();
         addDownCaseTask();

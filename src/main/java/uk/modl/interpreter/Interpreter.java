@@ -37,8 +37,8 @@ public class Interpreter {
     public static final int MAX_CLASS_HIERARCHY_DEPTH = 50;
     public static VariableMethods variableMethods = null;
     private Map<String, Map<String, Object>> klasses = new LinkedHashMap<>();
-    private Map<String, ModlValue> variables = new HashMap<>();
-    private Map<Integer, ModlValue> numberedVariables = new HashMap<>();
+    private Map<String, ModlValue> variables = new LinkedHashMap<>();
+    private Map<Integer, ModlValue> numberedVariables = new LinkedHashMap<>();
     // Store any uppercase instructions we've seen, so we know not to allow them again
     private Set<String> uppercaseInstructions = new HashSet<>();
     private List<String> loadedFiles;
@@ -144,7 +144,7 @@ public class Interpreter {
         ModlObject modlObject = new ModlObject();
         //ModlClassLoader.loadModlKlassO(rawModlObject, klasses);
         pairNames = new HashSet<>();
-        valuePairs = new HashMap<>();
+        valuePairs = new LinkedHashMap<>();
         String versionString = null;
         boolean versionNumberIsWrong = false;
 
@@ -417,7 +417,7 @@ public class Interpreter {
         }
         if (rawPair.getKey() != null && rawPair.getKey().string != null) {
             if (rawPair.getKey().string.equals("?")) {
-                numberedVariables = new HashMap<>();
+                numberedVariables = new LinkedHashMap<>();
                 VariableLoader.loadConfigNumberedVariables(rawPair.getModlValue(), numberedVariables);
                 return null;
             }
@@ -964,7 +964,7 @@ public class Interpreter {
         if (parentPair == null) {
             if (newKey.startsWith("_")) {
                 if (originalPair.getModlValue() instanceof ModlObject.Map) {
-                    Map newMap = new HashMap();
+                    Map newMap = new LinkedHashMap();
                     interpret(rawModlObject, (ModlObject.Map) (originalPair.getModlValue()), newMap);
                 }
                 if (originalPair.getModlValue() instanceof ModlObject.Array) {
@@ -2026,7 +2026,7 @@ public class Interpreter {
         if (val == null) {
             return key == null;
         }
-        return key.equals(val.toString());
+        return key.equals(StringEscapeReplacer.replace(val.toString()));
     }
 
     private boolean conditionalWildcardEquals(String key, Object val) {
@@ -2089,7 +2089,7 @@ public class Interpreter {
                     return keyString;
                 }
             }
-            return keyString;
+            return StringEscapeReplacer.replace(keyString);
         }
         if (objectRef instanceof ModlObject.Number) {
             return ((ModlObject.Number) objectRef).number;
