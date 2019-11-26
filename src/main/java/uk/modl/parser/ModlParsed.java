@@ -476,7 +476,7 @@ public class ModlParsed extends MODLParserBaseListener {
         public java.lang.String string;
 
         Quoted(java.lang.String string) {
-            this.string = string.substring(1, string.length() - 1);
+            this.string = string;
         }
     }
 

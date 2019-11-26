@@ -1905,30 +1905,37 @@ public class Interpreter {
         String keyString = condition.getKey();
         List<ModlValue> values = condition.getValues();
         // Try to do object referencing and string transformation on the key
+        final ModlValue valueAtIndex0 = values.get(0);
         if (keyString == null) {
-            if (values.get(0) instanceof ModlObject.True) {
+            if (valueAtIndex0 instanceof ModlObject.True) {
                 return true;
             }
-            if (values.get(0) instanceof ModlObject.False) {
+            if (valueAtIndex0 instanceof ModlObject.False) {
                 return false;
             }
-            ModlValue transformedName = transformString(((ModlObject.String) (values.get(0))).string);
-            if (transformedName instanceof ModlObject.True) {
-                return true;
-            }
-            if (transformedName instanceof ModlObject.False) {
-                return false;
-            }
-            if (values.get(0) instanceof ModlObject.String) {
-                if (valuePairs.get(((ModlObject.String) values.get(0)).string) == null) {
+            if (valueAtIndex0 instanceof ModlObject.String) {
+                final ModlObject.String lhsValue = (ModlObject.String) valueAtIndex0;
+                ModlValue transformedName = transformString(lhsValue.string);
+                if (transformedName instanceof ModlObject.True) {
+                    return true;
+                }
+                if (transformedName instanceof ModlObject.False) {
                     return false;
                 }
-                ModlValue valueEntry = (valuePairs.get(((ModlObject.String) values.get(0)).string));
+                if (valuePairs.get(lhsValue.string) == null) {
+                    return false;
+                }
+                ModlValue valueEntry = (valuePairs.get(lhsValue.string));
                 if (valueEntry instanceof ModlObject.True) {
                     return true;
                 }
                 return !(valueEntry instanceof ModlObject.False);
                 // DO WE NEED TO TRY TO INTERPRET THE VALUEE?!
+            } else if (valueAtIndex0 instanceof ModlObject.Pair) {
+                final ModlObject.Pair p = (ModlObject.Pair) valueAtIndex0;
+                keyString = p.getKey().string;
+            } else {
+                keyString = "__undefined__";
             }
         }
         while (keyString != null && (keyString.startsWith("_") || keyString.startsWith("%"))) {
@@ -1959,7 +1966,7 @@ public class Interpreter {
             // Get the basic Java primitive out of the value
             // Then cast it to Object
             // Then do whatever the conditionOperator says!
-            String valObj = getObjectFromValueForCondition(values.get(0));
+            String valObj = getObjectFromValueForCondition(valueAtIndex0);
             String origKeyString = valObj;
             String val = origKeyString;
             if (origKeyString != null && origKeyString.startsWith("%")) {
@@ -1968,34 +1975,36 @@ public class Interpreter {
             } else {
                 // Does it reference a pair?
                 String tmpVal = val;
-                if (val.startsWith("`")) {
+                if (val != null && val.startsWith("`")) {
                     tmpVal = val.replaceAll("`", "");
+                    val = tmpVal;
                 }
-                if (pairNames.contains(tmpVal) || pairNames.contains("_" + tmpVal)) {
-                    final ModlValue pairValue = valuePairs.get(tmpVal);
-                    if (pairValue.isString()) {
-                        val = (String) pairValue.getValue();
-                    } else if (pairValue.isNumber()) {
-                        val = ((ModlObject.Number) pairValue).number;
-                    } else if (pairValue.isArray() || pairValue.isMap()) {
-                        val = pairValue.toString();
-                    }
-                }
+//                if (pairNames.contains(tmpVal) || pairNames.contains("_" + tmpVal)) {
+//                    final ModlValue pairValue = valuePairs.get(tmpVal);
+//                    if (pairValue.isString()) {
+//                        val = (String) pairValue.getValue();
+//                    } else if (pairValue.isNumber()) {
+//                        val = ((ModlObject.Number) pairValue).number;
+//                    } else if (pairValue.isArray() || pairValue.isMap()) {
+//                        val = pairValue.toString();
+//                    }
+//                }
             }
 
-            if (conditionOperator.equals("=")) {
-                if (conditionalEquals(key, val)) {
-                    return true;
-                }
-                if (conditionalEquals(key, valObj)) {
-                    return true;
-                }
-                if (conditionalEquals(key, transformString(val))) {
-                    return true;
-                }
-                return conditionalEquals(key, transformString(valObj));
+            if (conditionOperator != null && conditionOperator.equals("=")) {
+//                if (conditionalEquals(key, val)) {
+//                    return true;
+//                }
+//                if (conditionalEquals(key, valObj)) {
+//                    return true;
+//                }
+//                if (conditionalEquals(key, transformString(val))) {
+//                    return true;
+//                }
+//                return conditionalEquals(key, transformString(valObj));
+                return conditionalEquals(key, val);
             }
-            if (conditionOperator.equals("!=")) {
+            if (conditionOperator != null && conditionOperator.equals("!=")) {
                 return !conditionalEquals(key, val);
             }
             if (val != null) {
