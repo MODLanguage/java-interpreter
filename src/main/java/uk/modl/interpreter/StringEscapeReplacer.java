@@ -69,7 +69,10 @@ public class StringEscapeReplacer {
         return stringToTransform;
     }
 
-    private static void loadReplacements() {
+    /**
+     * Synchronized since two quick successive requests in the java-interpreter-server can clash.
+     */
+    private static synchronized void loadReplacements() {
         replacements.put("\\%", "%");
         replacements.put("~%", "%");
         replacements.put("~\\", "\\");
