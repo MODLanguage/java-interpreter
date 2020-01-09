@@ -30,7 +30,6 @@ import uk.modl.parser.antlr.MODLParser;
 import uk.modl.parser.errors.ThrowingErrorListener;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
@@ -45,7 +44,6 @@ class Parser implements Function1<String, Option<Modl>> {
      *
      * @param input the MODL String
      * @return a Modl object
-     * @throws IOException on error
      */
     public Option<Modl> apply(final String input) {
         try {

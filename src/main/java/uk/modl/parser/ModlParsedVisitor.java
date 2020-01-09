@@ -47,19 +47,15 @@ public class ModlParsedVisitor {
     private static Structure visitStructure(final MODLParser.Modl_structureContext ctx) {
         log.trace("visitStructure()");
 
-        if (ctx.modl_array() != null) {
-            return visitArray(ctx.modl_array());
-        }
-        if (ctx.modl_map() != null) {
-            return visitMap(ctx.modl_map());
-        }
-        if (ctx.modl_pair() != null) {
-            return visitPair(ctx.modl_pair());
-        }
-        if (ctx.modl_top_level_conditional() != null) {
-            return visitTopLevelConditional(ctx.modl_top_level_conditional());
-        }
-        return null;
+        return (ctx.modl_array() != null) ?
+                visitArray(ctx.modl_array()) :
+                (ctx.modl_map() != null) ?
+                        visitMap(ctx.modl_map()) :
+                        (ctx.modl_pair() != null) ?
+                                visitPair(ctx.modl_pair()) :
+                                (ctx.modl_top_level_conditional() != null) ?
+                                        visitTopLevelConditional(ctx.modl_top_level_conditional()) :
+                                        null;
     }
 
     /**
@@ -82,7 +78,7 @@ public class ModlParsedVisitor {
         if (ctx.modl_top_level_conditional_return() != null) {
             returns.addAll(ctx.modl_top_level_conditional_return()
                     .stream()
-                    .map(ModlParsedVisitor::visitTopLevelConditionReturn)
+                    .map(ModlParsedVisitor::visitTopLevelConditionalReturn)
                     .collect(Collectors.toList()));
         }
         assert tests.size() >= 1;
@@ -140,8 +136,8 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a TopLevelConditionalReturn
      */
-    private static TopLevelConditionalReturn visitTopLevelConditionReturn(final MODLParser.Modl_top_level_conditional_returnContext ctx) {
-        log.trace("visitTopLevelConditionReturn()");
+    private static TopLevelConditionalReturn visitTopLevelConditionalReturn(final MODLParser.Modl_top_level_conditional_returnContext ctx) {
+        log.trace("visitTopLevelConditionalReturn()");
 
         final List<Structure> structures = new ArrayList<>();
         if (ctx.modl_structure() != null) {
@@ -224,6 +220,7 @@ public class ModlParsedVisitor {
      * @return a list of subconditions
      */
     private static List<ImmutablePair<ConditionTest, String>> handleConditionGroup(final MODLParser.Modl_condition_groupContext ctx) {
+        log.trace("handleConditionGroup()");
         final List<ImmutablePair<ConditionTest, String>> subConditionList = new ArrayList<>();
 
         String lastOperator = null;
@@ -370,13 +367,12 @@ public class ModlParsedVisitor {
      */
     private static ArrayItem visitArrayItem(final MODLParser.Modl_array_itemContext ctx) {
         log.trace("visitArrayItem()");
-        if (ctx.modl_array_conditional() != null) {
-            return visitArrayConditional(ctx.modl_array_conditional());
-        }
-        if (ctx.modl_array_value_item() != null) {
-            return visitArrayValueItem(ctx.modl_array_value_item());
-        }
-        return null;
+
+        return (ctx.modl_array_conditional() != null) ?
+                visitArrayConditional(ctx.modl_array_conditional()) :
+                (ctx.modl_array_value_item() != null) ?
+                        visitArrayValueItem(ctx.modl_array_value_item()) :
+                        null;
     }
 
     /**
@@ -387,19 +383,15 @@ public class ModlParsedVisitor {
      */
     private static ArrayItem visitArrayValueItem(final MODLParser.Modl_array_value_itemContext ctx) {
         log.trace("visitArrayValueItem()");
-        if (ctx.modl_array() != null) {
-            return visitArray(ctx.modl_array());
-        }
-        if (ctx.modl_map() != null) {
-            return visitMap(ctx.modl_map());
-        }
-        if (ctx.modl_pair() != null) {
-            return visitPair(ctx.modl_pair());
-        }
-        if (ctx.modl_primitive() != null) {
-            return (ArrayItem) visitPrimitive(ctx.modl_primitive());
-        }
-        return null;
+
+        return (ctx.modl_array() != null) ?
+                visitArray(ctx.modl_array()) :
+                (ctx.modl_map() != null) ?
+                        visitMap(ctx.modl_map()) :
+                        (ctx.modl_pair() != null) ?
+                                visitPair(ctx.modl_pair()) :
+                                (ctx.modl_primitive() != null) ?
+                                        (ArrayItem) visitPrimitive(ctx.modl_primitive()) : null;
     }
 
     /**
@@ -470,13 +462,12 @@ public class ModlParsedVisitor {
      */
     private static MapItem visitMapItem(MODLParser.Modl_map_itemContext ctx) {
         log.trace("visitMapItem()");
-        if (ctx.modl_pair() != null) {
-            return visitPair(ctx.modl_pair());
-        }
-        if (ctx.modl_map_conditional() != null) {
-            return visitMapConditional(ctx.modl_map_conditional());
-        }
-        return null;
+
+        return (ctx.modl_pair() != null) ?
+                visitPair(ctx.modl_pair()) :
+                (ctx.modl_map_conditional() != null) ?
+                        visitMapConditional(ctx.modl_map_conditional()) :
+                        null;
     }
 
     /**
@@ -574,22 +565,17 @@ public class ModlParsedVisitor {
      */
     private static ValueItem visitValue(final MODLParser.Modl_valueContext ctx) {
         log.trace("visitValue()");
-        if (ctx.modl_array() != null) {
-            return visitArray(ctx.modl_array());
-        }
-        if (ctx.modl_map() != null) {
-            return visitMap(ctx.modl_map());
-        }
-        if (ctx.modl_pair() != null) {
-            return visitPair(ctx.modl_pair());
-        }
-        if (ctx.modl_nb_array() != null) {
-            return visitNbArray(ctx.modl_nb_array());
-        }
-        if (ctx.modl_primitive() != null) {
-            return visitPrimitive(ctx.modl_primitive());
-        }
-        return null;
+        return (ctx.modl_array() != null) ?
+                visitArray(ctx.modl_array()) :
+                (ctx.modl_map() != null) ?
+                        visitMap(ctx.modl_map()) :
+                        (ctx.modl_pair() != null) ?
+                                visitPair(ctx.modl_pair()) :
+                                (ctx.modl_nb_array() != null) ?
+                                        visitNbArray(ctx.modl_nb_array()) :
+                                        (ctx.modl_primitive() != null) ?
+                                                visitPrimitive(ctx.modl_primitive()) :
+                                                null;
     }
 
     /**
@@ -601,27 +587,20 @@ public class ModlParsedVisitor {
     private static ValueItem visitPrimitive(final MODLParser.Modl_primitiveContext ctx) {
         log.trace("visitPrimitive()");
 
-        if (ctx.FALSE() != null) {
-            return FalsePrimitive.instance;
-        }
-        if (ctx.TRUE() != null) {
-            return TruePrimitive.instance;
-        }
-        if (ctx.STRING() != null) {
-            return new StringPrimitive(ctx.STRING()
-                    .getText());
-        }
-        if (ctx.NULL() != null) {
-            return NullPrimitive.instance;
-        }
-        if (ctx.NUMBER() != null) {
-            return new NumberPrimitive(ctx.NUMBER()
-                    .getText());
-        }
-        if (ctx.QUOTED() != null) {
-            return new StringPrimitive(ctx.QUOTED()
-                    .getText());
-        }
-        return null;
+        return (ctx.FALSE() != null) ?
+                FalsePrimitive.instance :
+                (ctx.TRUE() != null) ?
+                        TruePrimitive.instance :
+                        (ctx.STRING() != null) ?
+                                new StringPrimitive(ctx.STRING()
+                                        .getText()) :
+                                (ctx.NULL() != null) ?
+                                        NullPrimitive.instance :
+                                        (ctx.NUMBER() != null) ?
+                                                new NumberPrimitive(ctx.NUMBER()
+                                                        .getText()) :
+                                                (ctx.QUOTED() != null) ? new StringPrimitive(ctx.QUOTED()
+                                                        .getText()) :
+                                                        null;
     }
 }
