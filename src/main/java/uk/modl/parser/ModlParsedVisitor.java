@@ -81,8 +81,6 @@ public class ModlParsedVisitor {
                     .map(ModlParsedVisitor::visitTopLevelConditionalReturn)
                     .collect(Collectors.toList()));
         }
-        assert tests.size() >= 1;
-        assert returns.size() == tests.size();
 
         return new TopLevelConditional(tests, returns);
     }
@@ -109,8 +107,6 @@ public class ModlParsedVisitor {
                     .map(ModlParsedVisitor::visitMapConditionalReturn)
                     .collect(Collectors.toList()));
         }
-        assert tests.size() >= 1;
-        assert returns.size() == tests.size();
 
         return new MapConditional(tests, returns);
     }
@@ -264,7 +260,10 @@ public class ModlParsedVisitor {
                 .map(ModlParsedVisitor::visitValue)
                 .collect(Collectors.toList()) : Collections.emptyList();
 
-        return new Condition(op, values);
+        final String lhs = (ctx.STRING() != null) ? ctx.STRING()
+                .getText() : null;
+
+        return new Condition(lhs, op, values);
     }
 
     /**
@@ -416,8 +415,6 @@ public class ModlParsedVisitor {
                     .map(ModlParsedVisitor::visitArrayConditionalReturn)
                     .collect(Collectors.toList()));
         }
-        assert tests.size() >= 1;
-        assert returns.size() == tests.size();
 
         return new ArrayConditional(tests, returns);
     }
@@ -534,8 +531,6 @@ public class ModlParsedVisitor {
                     .map(ModlParsedVisitor::visitValueConditionReturn)
                     .collect(Collectors.toList()));
         }
-        assert tests.size() >= 1;
-        assert returns.size() == (1 + tests.size());
 
         return new ValueConditional(tests, returns);
     }
