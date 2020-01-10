@@ -37,7 +37,7 @@ import java.nio.charset.StandardCharsets;
  * Class to parse MODL Strings to Modl trees.
  */
 @Log4j2
-class Parser implements Function1<String, Either<Throwable, Modl>> {
+public class Parser implements Function1<String, Either<Throwable, Modl>> {
 
     /**
      * Parse a MODL String to a Modl object

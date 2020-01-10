@@ -19,7 +19,46 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 package uk.modl.interpreter;
 
-public class Interpreter {
+import io.vavr.Function1;
+import io.vavr.control.Either;
+import io.vavr.control.Option;
+import uk.modl.model.Modl;
+import uk.modl.parser.Parser;
+import uk.modl.transforms.StarLoadTransform;
 
+/**
+ * Interpret a MODL String
+ *
+ * @author tonywalmsley
+ */
+public class Interpreter implements Function1<String, Either<Throwable, Modl>> {
+
+    private final Function1<String, Either<Throwable, Modl>> interpretFunction;
+
+    /**
+     * Constructor
+     */
+    public Interpreter() {
+        final Parser parser = new Parser();
+        final StarLoadTransform starLoadTransform = new StarLoadTransform();
+
+        // Build the function to do the interpreting
+        interpretFunction = parser.andThen(starLoadTransform);
+    }
+
+    /**
+     * Interpreter entry point
+     *
+     * @param input a String, which should be a MODL String, but could be any value.
+     * @return Either a Throwable or a Modl object.
+     */
+    public Either<Throwable, Modl> apply(final String input) {
+        return Option.of(input)
+                .map(s -> {
+                    // Apply the function and return the result.
+                    return interpretFunction.apply(input);
+                })
+                .getOrElse(Either.left(new NullPointerException()));
+    }
 
 }

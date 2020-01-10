@@ -1,4 +1,4 @@
-package uk.modl.parser;
+package uk.modl.interpreter;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,9 +19,9 @@ import java.util.function.Function;
 import static org.junit.Assert.fail;
 
 @Log4j2
-public class ParserBaseTests {
+public class InterpreterBaseTests {
 
-    private static Parser parser = new Parser();
+    private static Interpreter interpreter = new Interpreter();
     private List<String> errors = new ArrayList<>();
     private ObjectMapper mapper = new ObjectMapper();
 
@@ -70,7 +70,7 @@ public class ParserBaseTests {
         log.info("Expected : " + testInput.expected_output);
 
         try {
-            final Either<Throwable, Modl> maybeModlObject = parser.apply(testInput.input);
+            final Either<Throwable, Modl> maybeModlObject = interpreter.apply(testInput.input);
             if (maybeModlObject.isRight()) {
                 log.info("Test: " + testInput.id + " - no errors\n");
             } else {
@@ -108,7 +108,7 @@ public class ParserBaseTests {
     private void checkInValidTestInput(final TestInput testInput) {
         log.info("Failing Input : " + testInput.input);
         try {
-            parser.apply(testInput.input);
+            interpreter.apply(testInput.input);
             fail("Expected error");
         } catch (Exception e) {
             if (!testInput.expected_output.equals(e.getMessage())) {
