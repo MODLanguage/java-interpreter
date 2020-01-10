@@ -2,7 +2,7 @@ package uk.modl.parser;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vavr.control.Option;
+import io.vavr.control.Either;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Test;
 import uk.modl.model.Modl;
@@ -70,8 +70,8 @@ public class ParserBaseTests {
         log.info("Expected : " + testInput.expected_output);
 
         try {
-            final Option<Modl> maybeModlObject = parser.apply(testInput.input);
-            if (maybeModlObject.isDefined()) {
+            final Either<Throwable, Modl> maybeModlObject = parser.apply(testInput.input);
+            if (maybeModlObject.isRight()) {
                 log.info("Test: " + testInput.id + " - no errors\n");
             } else {
                 log.error("Test: " + testInput.id + " - no result\n");

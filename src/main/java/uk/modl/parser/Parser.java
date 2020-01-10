@@ -20,7 +20,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 package uk.modl.parser;
 
 import io.vavr.Function1;
-import io.vavr.control.Option;
+import io.vavr.control.Either;
 import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -37,15 +37,15 @@ import java.nio.charset.StandardCharsets;
  * Class to parse MODL Strings to Modl trees.
  */
 @Log4j2
-class Parser implements Function1<String, Option<Modl>> {
+class Parser implements Function1<String, Either<Throwable, Modl>> {
 
     /**
      * Parse a MODL String to a Modl object
      *
      * @param input the MODL String
-     * @return a Modl object
+     * @return Either a Throwable or a Modl object
      */
-    public Option<Modl> apply(final String input) {
+    public Either<Throwable, Modl> apply(final String input) {
         try {
             // Antlr boilerplate
             final InputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
@@ -61,10 +61,10 @@ class Parser implements Function1<String, Option<Modl>> {
 
             // The String has been parsed by Antlr, now its our turn
             final ModlParsedVisitor visitor = new ModlParsedVisitor(modlCtx);
-            return Option.of(visitor.modl);
+            return Either.right(visitor.modl);
         } catch (final Throwable e) {
             log.error(e);
+            return Either.left(e);
         }
-        return Option.none();
     }
 }
