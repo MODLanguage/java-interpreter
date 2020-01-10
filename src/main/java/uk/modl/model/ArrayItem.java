@@ -1,4 +1,6 @@
 package uk.modl.model;
 
-public interface ArrayItem {
+import uk.modl.visitor.ModlVisitable;
+
+public interface ArrayItem extends ModlVisitable {
 }

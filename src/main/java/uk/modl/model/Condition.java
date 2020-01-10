@@ -3,6 +3,7 @@ package uk.modl.model;
 import io.vavr.collection.List;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import uk.modl.visitor.ModlVisitor;
 
 @ToString
 @EqualsAndHashCode
@@ -16,4 +17,11 @@ public class Condition implements ConditionOrConditionGroupInterface {
         this.op = op;
         this.values = values;
     }
+
+    @Override
+    public void visit(final ModlVisitor visitor) {
+        visitor.accept(this);
+        values.forEach(s -> s.visit(visitor));
+    }
+
 }

@@ -1,4 +1,6 @@
 package uk.modl.model;
 
-public interface MapItem {
+import uk.modl.visitor.ModlVisitable;
+
+public interface MapItem extends ModlVisitable {
 }

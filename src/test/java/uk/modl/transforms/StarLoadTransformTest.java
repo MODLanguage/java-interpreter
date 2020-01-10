@@ -15,13 +15,13 @@ public class StarLoadTransformTest {
 
     @Test
     public void test_load_file_successfully() {
-        final Either<Error, Modl> modl = parser.apply("*l=`./src/test/resources/modl/load_test_1.modl`");
+        final Either<Error, Modl> modl = parser.apply("*l=`./src/test/resources/modl/load_test_1.modl`;c=d");
         assertTrue(modl.isRight());
 
         final Either<Error, Modl> result = starLoadTransform.apply(modl);
         assertTrue(result.isRight());
 
-        final Either<Error, Modl> expected = parser.apply("a=b");
+        final Either<Error, Modl> expected = parser.apply("a=b;c=d");
         assertEquals(expected.get(), modl.get());
     }
 }

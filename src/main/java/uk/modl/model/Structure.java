@@ -1,4 +1,6 @@
 package uk.modl.model;
 
-public interface Structure {
+import uk.modl.visitor.ModlVisitable;
+
+public interface Structure extends ModlVisitable {
 }

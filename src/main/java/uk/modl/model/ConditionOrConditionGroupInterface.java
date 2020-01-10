@@ -1,4 +1,6 @@
 package uk.modl.model;
 
-public interface ConditionOrConditionGroupInterface {
+import uk.modl.visitor.ModlVisitable;
+
+public interface ConditionOrConditionGroupInterface extends ModlVisitable {
 }

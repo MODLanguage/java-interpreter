@@ -1,4 +1,7 @@
 package uk.modl.model;
 
-public interface PairValue {
+import uk.modl.visitor.ModlVisitable;
+
+public interface PairValue extends ModlVisitable {
+    String text();
 }
