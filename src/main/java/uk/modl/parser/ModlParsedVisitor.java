@@ -1,9 +1,10 @@
 package uk.modl.parser;
 
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import io.vavr.collection.List;
 import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import uk.modl.model.*;
 import uk.modl.parser.antlr.MODLParser;
 
@@ -141,7 +142,7 @@ public class ModlParsedVisitor {
     private static ConditionTest visitConditionTest(final MODLParser.Modl_condition_testContext ctx) {
         log.trace("visitConditionTest()");
 
-        List<ImmutablePair<ConditionOrConditionGroupInterface, String>> subConditionList = List.empty();
+        List<Tuple2<ConditionOrConditionGroupInterface, String>> subConditionList = List.empty();
 
         String lastOperator = null;
         boolean shouldNegate = false;
@@ -149,10 +150,10 @@ public class ModlParsedVisitor {
             if (child instanceof MODLParser.Modl_condition_groupContext) {
                 if (shouldNegate) {
                     final NegatedConditionGroup conditionGroup = visitNegatedConditionGroup((MODLParser.Modl_condition_groupContext) child);
-                    subConditionList = subConditionList.append(new ImmutablePair<>(conditionGroup, lastOperator));
+                    subConditionList = subConditionList.append(Tuple.of(conditionGroup, lastOperator));
                 } else {
                     final ConditionGroup conditionGroup = visitConditionGroup((MODLParser.Modl_condition_groupContext) child);
-                    subConditionList = subConditionList.append(new ImmutablePair<>(conditionGroup, lastOperator));
+                    subConditionList = subConditionList.append(Tuple.of(conditionGroup, lastOperator));
                 }
 
                 lastOperator = null;
@@ -160,10 +161,10 @@ public class ModlParsedVisitor {
             } else if (child instanceof MODLParser.Modl_conditionContext) {
                 if (shouldNegate) {
                     final NegatedCondition condition = visitNegatedCondition(((MODLParser.Modl_conditionContext) child));
-                    subConditionList = subConditionList.append(new ImmutablePair<>(condition, lastOperator));
+                    subConditionList = subConditionList.append(Tuple.of(condition, lastOperator));
                 } else {
                     final Condition condition = visitCondition((MODLParser.Modl_conditionContext) child);
-                    subConditionList = subConditionList.append(new ImmutablePair<>(condition, lastOperator));
+                    subConditionList = subConditionList.append(Tuple.of(condition, lastOperator));
                 }
 
                 lastOperator = null;
@@ -191,7 +192,7 @@ public class ModlParsedVisitor {
      */
     private static ConditionGroup visitConditionGroup(final MODLParser.Modl_condition_groupContext ctx) {
         log.trace("visitConditionGroup()");
-        final List<ImmutablePair<ConditionTest, String>> subConditionList = handleConditionGroup(ctx);
+        final List<Tuple2<ConditionTest, String>> subConditionList = handleConditionGroup(ctx);
         return new ConditionGroup(subConditionList);
     }
 
@@ -201,15 +202,15 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a list of subconditions
      */
-    private static List<ImmutablePair<ConditionTest, String>> handleConditionGroup(final MODLParser.Modl_condition_groupContext ctx) {
+    private static List<Tuple2<ConditionTest, String>> handleConditionGroup(final MODLParser.Modl_condition_groupContext ctx) {
         log.trace("handleConditionGroup()");
-        List<ImmutablePair<ConditionTest, String>> subConditionList = List.empty();
+        List<Tuple2<ConditionTest, String>> subConditionList = List.empty();
 
         String lastOperator = null;
         for (final ParseTree child : ctx.children) {
             if (child instanceof MODLParser.Modl_condition_testContext) {
                 final ConditionTest conditionGroup = visitConditionTest((MODLParser.Modl_condition_testContext) child);
-                subConditionList = subConditionList.append(new ImmutablePair<>(conditionGroup, lastOperator));
+                subConditionList = subConditionList.append(Tuple.of(conditionGroup, lastOperator));
 
                 lastOperator = null;
             } else {
@@ -227,7 +228,7 @@ public class ModlParsedVisitor {
      */
     private static NegatedConditionGroup visitNegatedConditionGroup(final MODLParser.Modl_condition_groupContext ctx) {
         log.trace("visitNegatedConditionGroup()");
-        final List<ImmutablePair<ConditionTest, String>> subConditionList = handleConditionGroup(ctx);
+        final List<Tuple2<ConditionTest, String>> subConditionList = handleConditionGroup(ctx);
         return new NegatedConditionGroup(subConditionList);
     }
 
@@ -497,7 +498,7 @@ public class ModlParsedVisitor {
                         .stream()
                         .map(ModlParsedVisitor::visitConditionTest)) :
                 null;
-        
+
         final List<ValueConditionalReturn> returns = (ctx.modl_value_conditional_return() != null) ?
                 List.ofAll(ctx.modl_value_conditional_return()
                         .stream()
