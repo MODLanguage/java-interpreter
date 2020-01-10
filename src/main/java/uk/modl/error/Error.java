@@ -1,23 +1,17 @@
 package uk.modl.error;
 
+import io.vavr.collection.Array;
 import lombok.ToString;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Accumulate error messages.
  */
 @ToString
 public class Error {
-    private List<String> errors;
-
-    public Error() {
-        errors = new ArrayList<>();
-    }
+    private Array<String> errors;
 
     public Error(final String message) {
-        this();
-        errors.add(message);
+        errors = Array.of(message);
     }
 }
