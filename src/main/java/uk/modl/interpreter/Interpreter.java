@@ -22,6 +22,7 @@ package uk.modl.interpreter;
 import io.vavr.Function1;
 import io.vavr.control.Either;
 import io.vavr.control.Option;
+import uk.modl.error.Error;
 import uk.modl.model.Modl;
 import uk.modl.parser.Parser;
 import uk.modl.transforms.ReferencesTransform;
@@ -33,9 +34,9 @@ import uk.modl.transforms.StarLoadTransform;
  *
  * @author tonywalmsley
  */
-public class Interpreter implements Function1<String, Either<Throwable, Modl>> {
+public class Interpreter implements Function1<String, Either<Error, Modl>> {
 
-    private final Function1<String, Either<Throwable, Modl>> interpretFunction;
+    private final Function1<String, Either<Error, Modl>> interpretFunction;
 
     /**
      * Constructor
@@ -56,15 +57,15 @@ public class Interpreter implements Function1<String, Either<Throwable, Modl>> {
      * Interpreter entry point
      *
      * @param input a String, which should be a MODL String, but could be any value.
-     * @return Either a Throwable or a Modl object.
+     * @return Either an Error or a Modl object.
      */
-    public Either<Throwable, Modl> apply(final String input) {
+    public Either<Error, Modl> apply(final String input) {
         return Option.of(input)
                 .map(s -> {
                     // Apply the function and return the result.
                     return interpretFunction.apply(input);
                 })
-                .getOrElse(Either.left(new NullPointerException()));
+                .getOrElse(Either.left(new Error("Cannot parse null input")));
     }
 
 }

@@ -24,6 +24,7 @@ import io.vavr.control.Either;
 import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import uk.modl.error.Error;
 import uk.modl.model.Modl;
 import uk.modl.parser.antlr.MODLLexer;
 import uk.modl.parser.antlr.MODLParser;
@@ -37,7 +38,7 @@ import java.nio.charset.StandardCharsets;
  * Class to parse MODL Strings to Modl trees.
  */
 @Log4j2
-public class Parser implements Function1<String, Either<Throwable, Modl>> {
+public class Parser implements Function1<String, Either<Error, Modl>> {
 
     /**
      * Parse a MODL String to a Modl object
@@ -45,7 +46,7 @@ public class Parser implements Function1<String, Either<Throwable, Modl>> {
      * @param input the MODL String
      * @return Either a Throwable or a Modl object
      */
-    public Either<Throwable, Modl> apply(final String input) {
+    public Either<Error, Modl> apply(final String input) {
         try {
             // Antlr boilerplate
             final InputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
@@ -64,7 +65,7 @@ public class Parser implements Function1<String, Either<Throwable, Modl>> {
             return Either.right(visitor.modl);
         } catch (final Throwable e) {
             log.error(e);
-            return Either.left(e);
+            return Either.left(new Error(e.getMessage()));
         }
     }
 }

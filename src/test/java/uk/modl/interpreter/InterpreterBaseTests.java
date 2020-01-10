@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vavr.control.Either;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Test;
+import uk.modl.error.Error;
 import uk.modl.model.Modl;
 
 import java.io.FileInputStream;
@@ -70,7 +71,7 @@ public class InterpreterBaseTests {
         log.info("Expected : " + testInput.expected_output);
 
         try {
-            final Either<Throwable, Modl> maybeModlObject = interpreter.apply(testInput.input);
+            final Either<Error, Modl> maybeModlObject = interpreter.apply(testInput.input);
             if (maybeModlObject.isRight()) {
                 log.info("Test: " + testInput.id + " - no errors\n");
             } else {
