@@ -24,6 +24,8 @@ import io.vavr.control.Either;
 import io.vavr.control.Option;
 import uk.modl.model.Modl;
 import uk.modl.parser.Parser;
+import uk.modl.transforms.ReferencesTransform;
+import uk.modl.transforms.StarClassTransform;
 import uk.modl.transforms.StarLoadTransform;
 
 /**
@@ -41,9 +43,13 @@ public class Interpreter implements Function1<String, Either<Throwable, Modl>> {
     public Interpreter() {
         final Parser parser = new Parser();
         final StarLoadTransform starLoadTransform = new StarLoadTransform();
+        final StarClassTransform starClassTransform = new StarClassTransform();
+        final ReferencesTransform referencesTransform = new ReferencesTransform();
 
         // Build the function to do the interpreting
-        interpretFunction = parser.andThen(starLoadTransform);
+        interpretFunction = parser.andThen(starLoadTransform)
+                .andThen(starClassTransform)
+                .andThen(referencesTransform);
     }
 
     /**
