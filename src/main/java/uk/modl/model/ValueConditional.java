@@ -22,9 +22,4 @@ public class ValueConditional implements ValueItem {
         tests.forEach(s -> s.visit(visitor));
         returns.forEach(s -> s.visit(visitor));
     }
-
-    @Override
-    public String text() {
-        return toString();//TODO: Not the best idea
-    }
 }

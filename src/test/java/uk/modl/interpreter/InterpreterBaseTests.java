@@ -28,9 +28,6 @@ public class InterpreterBaseTests {
 
     /**
      * Read a set of tests from a file
-     *
-     * @param filename
-     * @return
      */
     private Function<String, List<TestInput>> load = (filename) -> {
         try (final InputStream fileStream = new FileInputStream(filename)) {

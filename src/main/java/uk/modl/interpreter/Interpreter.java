@@ -60,11 +60,9 @@ public class Interpreter implements Function1<String, Either<Error, Modl>> {
      * @return Either an Error or a Modl object.
      */
     public Either<Error, Modl> apply(final String input) {
+        // Apply the function and return the result.
         return Option.of(input)
-                .map(s -> {
-                    // Apply the function and return the result.
-                    return interpretFunction.apply(s);
-                })
+                .map(interpretFunction::apply)
                 .getOrElse(Either.left(new Error("Cannot parse null input")));
     }
 

@@ -1,10 +1,8 @@
 package uk.modl.model;
 
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 import uk.modl.visitor.ModlVisitor;
 
-@ToString
 @EqualsAndHashCode
 public class FalsePrimitive implements Primitive {
     public static final FalsePrimitive instance = new FalsePrimitive();
@@ -19,7 +17,7 @@ public class FalsePrimitive implements Primitive {
     }
 
     @Override
-    public String text() {
+    public String toString() {
         return "00";
     }
 }

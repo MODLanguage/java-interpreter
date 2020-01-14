@@ -1,10 +1,8 @@
 package uk.modl.model;
 
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 import uk.modl.visitor.ModlVisitor;
 
-@ToString
 @EqualsAndHashCode
 public class NullPrimitive implements Primitive {
     public static final NullPrimitive instance = new NullPrimitive();
@@ -19,7 +17,7 @@ public class NullPrimitive implements Primitive {
     }
 
     @Override
-    public String text() {
+    public String toString() {
         return "000";
     }
 }

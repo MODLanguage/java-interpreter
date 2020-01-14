@@ -20,9 +20,4 @@ public class Array implements PairValue, Structure, ValueItem, ArrayItem {
         visitor.accept(this);
         arrayItems.forEach(s -> s.visit(visitor));
     }
-
-    @Override
-    public String text() {
-        return toString();//TODO: Not the best idea
-    }
 }

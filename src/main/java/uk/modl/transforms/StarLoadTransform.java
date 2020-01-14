@@ -18,7 +18,7 @@ public class StarLoadTransform implements Function1<Either<Error, Modl>, Either<
     /**
      * Function to extract filenames and pairs from a Modl object.
      */
-    private static Function1<Modl, List<Tuple2<String, Pair>>> extractFilenamesAndPairs = (m) -> {
+    private static Function1<Modl, List<Tuple2<List<String>, Pair>>> extractFilenamesAndPairs = (m) -> {
         final StarLoadExtractor starLoadExtractor = new StarLoadExtractor();
         m.visit(starLoadExtractor);
         return starLoadExtractor.getFilenamePairs();
@@ -27,11 +27,17 @@ public class StarLoadTransform implements Function1<Either<Error, Modl>, Either<
     /**
      * Function to convert filenames and pairs to Either Strings/Modl-objects and Pairs.
      */
-    private static Function1<List<Tuple2<String, Pair>>, List<Tuple2<Either<Error, Modl>, Pair>>> convertFilesToModlObjectsAndPairs = (list) -> List.ofAll(
+    private static Function1<List<Tuple2<List<String>, Pair>>, List<Tuple2<Either<Error, Modl>, Pair>>> convertFilesToModlObjectsAndPairs = (list) -> List.ofAll(
             list.map(tuple -> {
-                final Either<Error, String> maybeContents = Util.getFileContents.apply(tuple._1);
-                final Either<Error, Modl> fileAsModl = maybeContents.flatMap(interpreter);
-                return Tuple.of(fileAsModl, tuple._2);
+                final List<String> filenames = tuple._1;
+
+                final String allFileContents = filenames.map(Util.getFileContents)
+                        .map(Either::get)
+                        .mkString(";");
+
+                final Either<Error, Modl> filesAsModl = interpreter.apply(allFileContents);
+
+                return Tuple.of(filesAsModl, tuple._2);
             }));
 
     /**
@@ -44,6 +50,7 @@ public class StarLoadTransform implements Function1<Either<Error, Modl>, Either<
     public Either<Error, Modl> apply(final Either<Error, Modl> modl) {
         final Either<Error, List<Tuple2<Either<Error, Modl>, Pair>>> modlObjectsAndPairs = modl.map(extractFilenamesAndPairs)
                 .map(convertFilesToModlObjectsAndPairs);
+
         return modl;
     }
 
