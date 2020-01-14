@@ -18,10 +18,16 @@ public class StarLoadTransform implements Function1<Either<Error, Modl>, Either<
     /**
      * Function to extract filenames and pairs from a Modl object.
      */
-    private static Function1<Modl, List<Tuple2<List<String>, Pair>>> extractFilenamesAndPairs = (m) -> {
+    private static Function1<Modl, Either<Error, List<Tuple2<List<String>, Pair>>>> extractFilenamesAndPairs = (m) -> {
         final StarLoadExtractor starLoadExtractor = new StarLoadExtractor();
         m.visit(starLoadExtractor);
-        return starLoadExtractor.getFilenamePairs();
+
+        final Error errors = starLoadExtractor.getError();
+        if (errors
+                .isEmpty()) {
+            return Either.left(errors);
+        }
+        return Either.right(starLoadExtractor.getFilenamePairs());
     };
 
     /**
@@ -48,8 +54,17 @@ public class StarLoadTransform implements Function1<Either<Error, Modl>, Either<
      */
     @Override
     public Either<Error, Modl> apply(final Either<Error, Modl> modl) {
-        final Either<Error, List<Tuple2<Either<Error, Modl>, Pair>>> modlObjectsAndPairs = modl.map(extractFilenamesAndPairs)
-                .map(convertFilesToModlObjectsAndPairs);
+        final Either<Error, Either<Error, List<Tuple2<List<String>, Pair>>>> maybeFilenamesAndPairs = modl.map(extractFilenamesAndPairs);
+
+        if (maybeFilenamesAndPairs.isLeft()) {
+            return Either.left(maybeFilenamesAndPairs.getLeft());
+        }
+
+        maybeFilenamesAndPairs.flatMap(tmp -> {
+            final Either<Error, List<Tuple2<Either<Error, Modl>, Pair>>> modlObjectsAndPairs = tmp
+                    .map(convertFilesToModlObjectsAndPairs);
+            return modlObjectsAndPairs;
+        });
 
         return modl;
     }
