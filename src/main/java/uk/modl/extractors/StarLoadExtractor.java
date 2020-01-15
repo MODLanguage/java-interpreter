@@ -14,6 +14,29 @@ public class StarLoadExtractor extends ModlVisitorBase {
     private List<LoadSet> loadSets = List.empty();
     private boolean immutable = false;
 
+    /**
+     * Check whether the key represents a LOAD instruction
+     *
+     * @param key the String to check
+     * @return true if the key represents a LOAD instruction
+     */
+    private static boolean isLoadInstruction(final String key) {
+        final String lowerCase = key.toLowerCase();
+        return lowerCase
+                .equals("*l") || lowerCase
+                .equals("*load");
+    }
+
+    /**
+     * Check whether the key represents an immutable LOAD instruction
+     *
+     * @param key the String to check
+     * @return true if the key represents an immutable LOAD instruction
+     */
+    private static boolean isImmutableLoadInstruction(final String key) {
+        return key.equals("*L") || key.equals("*LOAD");
+    }
+
     @Override
     public void accept(final Pair pair) {
         final String key = pair.key;
@@ -21,16 +44,14 @@ public class StarLoadExtractor extends ModlVisitorBase {
         if (loadSets.size() > 0 && immutable) {
             throw new RuntimeException("Interpreter Error: Cannot load multiple files after *LOAD instruction");
         } else {
-            final String lowerCase = key.toLowerCase();
-            if (lowerCase.equals("*l") || lowerCase.equals("*load")) {
+            if (isLoadInstruction(key)) {
 
-                immutable |= (key.equals("*L") || key.equals("*LOAD"));
+                immutable |= isImmutableLoadInstruction(key);
 
                 final List<FileSpec> specs = Util.getFilenames.apply(pair.value)
                         .map(this::normalize);
 
-                final LoadSet loadSet = new LoadSet(pair, specs);
-                loadSets = loadSets.append(loadSet);
+                loadSets = loadSets.append(new LoadSet(pair, specs));
             }
         }
     }

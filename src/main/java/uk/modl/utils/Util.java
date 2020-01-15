@@ -27,6 +27,7 @@ public class Util {
 
     /**
      * Map a PairValue to a list of Strings - for use as file names.
+     * This is only applicable to *load MODL instructions
      */
     public static Function1<PairValue, List<String>> getFilenames = (pairValue) -> {
         if (pairValue instanceof Primitive) {
@@ -37,6 +38,6 @@ public class Util {
             final Array a = (Array) pairValue;
             return List.ofAll(a.arrayItems.map(Objects::toString));
         }
-        return List.of("TODO");
+        return List.empty();
     };
 }

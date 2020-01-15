@@ -15,7 +15,7 @@ public class SimpleCache<K, V> {
     /**
      * The default cache timeout.
      */
-    private static final int ONE_HOUR = 1000 * 60 * 60;
+    private static final int SEVEN_DAYS = 1000 * 60 * 60 * 24 * 7;
 
     /**
      * The actual cache is a HashMap of K,CacheEntry pairs.
@@ -23,23 +23,9 @@ public class SimpleCache<K, V> {
     private Map<K, CacheEntry<V>> cache = new HashMap<>();
 
     /**
-     * The overridable cache timeout - defaults to 1 hour.
-     */
-    private int millis = ONE_HOUR;
-
-    /**
      * Default Constructor
      */
     public SimpleCache() {
-    }
-
-    /**
-     * Override the default cache timeout. Can be set at any time but only affects items cached after the value is set.
-     *
-     * @param millis The number of milliseconds until the cached item should be considered stale.
-     */
-    public void setTimeToLive(int millis) {
-        this.millis = millis;
     }
 
     /**
@@ -59,7 +45,7 @@ public class SimpleCache<K, V> {
      * @param value The value of class V
      */
     public void put(K key, V value) {
-        final CacheEntry<V> entry = new CacheEntry<>(value, millis + System.currentTimeMillis());
+        final CacheEntry<V> entry = new CacheEntry<>(value, SEVEN_DAYS + System.currentTimeMillis());
         cache.put(key, entry);
     }
 

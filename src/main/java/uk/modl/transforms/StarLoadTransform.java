@@ -4,12 +4,15 @@ import io.vavr.Function1;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.List;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.interpreter.Interpreter;
 import uk.modl.model.Modl;
 import uk.modl.model.Pair;
 import uk.modl.utils.SimpleCache;
 import uk.modl.utils.Util;
+import uk.modl.visitor.ModlVisitorBase;
 
 public class StarLoadTransform implements Function1<Modl, Modl> {
     private static final Interpreter interpreter = new Interpreter();
@@ -73,7 +76,20 @@ public class StarLoadTransform implements Function1<Modl, Modl> {
         final List<Tuple2<List<Modl>, Pair>> loadedModlObjects = loadModlObjects
                 .apply(modl);
 
-        return modl;// TODO: Return the modified Modl object rather than the input object.
+        final StarLoadMutator starLoadMutator = new StarLoadMutator(loadedModlObjects);
+        modl.visit(starLoadMutator);
+        return starLoadMutator.getModl();
     }
 
+}
+
+/**
+ * TODO: Build a new copy of the Modl object with some pairs replaced
+ */
+@RequiredArgsConstructor
+class StarLoadMutator extends ModlVisitorBase {
+    private final List<Tuple2<List<Modl>, Pair>> loadedModlObjects;
+
+    @Getter
+    private Modl modl;
 }
