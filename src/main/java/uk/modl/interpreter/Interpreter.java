@@ -57,11 +57,11 @@ public class Interpreter implements Function1<String, Modl> {
      * @param input a String, which should be a MODL String, but could be any value.
      * @return Either an Error or a Modl object.
      */
+    @Override
     public Modl apply(final String input) {
         // Apply the function and return the result.
         return Option.of(input)
                 .map(interpretFunction::apply)
                 .getOrElseThrow(() -> new RuntimeException("Cannot parse null input"));
     }
-
 }
