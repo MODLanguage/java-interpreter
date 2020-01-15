@@ -14,46 +14,47 @@ import uk.modl.utils.Util;
 public class StarLoadTransform implements Function1<Modl, Modl> {
     private static final Interpreter interpreter = new Interpreter();
     private static SimpleCache<String, Modl> cache = new SimpleCache<>();
+
     /**
      * Function to extract filenames and pairs from a Modl object.
      */
-    private static Function1<Modl, List<Tuple2<List<String>, Pair>>> extractFilenamesAndPairs = (m) -> {
+    private static Function1<Modl, List<StarLoadExtractor.LoadSet>> extractFilenamesAndPairs = (m) -> {
         final StarLoadExtractor starLoadExtractor = new StarLoadExtractor();
         m.visit(starLoadExtractor);
-
-        return starLoadExtractor.getFilenamePairs();
+        return starLoadExtractor.getLoadSets();
     };
+
     /**
      * Function to convert filenames and pairs to Either Strings/Modl-objects and Pairs.
      */
-    private static Function1<List<Tuple2<List<String>, Pair>>, List<Tuple2<List<Modl>, Pair>>> convertFilesToModlObjectsAndPairs = (list) -> {
+    private static Function1<List<StarLoadExtractor.LoadSet>, List<Tuple2<List<Modl>, Pair>>> convertFilesToModlObjectsAndPairs = (list) -> {
 
         List<Tuple2<List<Modl>, Pair>> result = List.empty();
 
-        for (final Tuple2<List<String>, Pair> tuple : list) {
+        for (final StarLoadExtractor.LoadSet loadSet : list) {
 
             // Each tuple has a list of filenames
-            final List<String> filenames = tuple._1;
+            final List<StarLoadExtractor.FileSpec> filenames = loadSet.fileSet;
 
-            final Tuple2<List<String>, List<String>> partition = filenames.partition(s -> cache.contains(s));
-            final List<String> cacheHits = partition._1;
-            final List<String> cacheMisses = partition._2;
+            final Tuple2<List<StarLoadExtractor.FileSpec>, List<StarLoadExtractor.FileSpec>> partition = filenames.partition(spec -> cache.contains(spec.filename) && !spec.forceLoad);
+            final List<StarLoadExtractor.FileSpec> cacheHits = partition._1;
+            final List<StarLoadExtractor.FileSpec> cacheMisses = partition._2;
 
             // Map the filenames to the contents of the files, or Error
-            final List<Tuple2<String, String>> contents = cacheMisses.map(Util.getFileContents);
+            final List<Tuple2<StarLoadExtractor.FileSpec, String>> contents = cacheMisses.map(Util.getFileContents);
 
             // Interpret each MODL string from each file
-            final List<Tuple2<String, Modl>> modlObjects = contents
+            final List<Tuple2<StarLoadExtractor.FileSpec, Modl>> modlObjects = contents
                     .map(filenameAndContents -> Tuple.of(filenameAndContents._1, interpreter.apply(filenameAndContents._2)));
 
             // Add the cache hits
-            final List<Tuple2<String, Modl>> cachedModlObjects = cacheHits.map(filename -> Tuple.of(filename, cache.get(filename)));
+            final List<Tuple2<StarLoadExtractor.FileSpec, Modl>> cachedModlObjects = cacheHits.map(spec -> Tuple.of(spec, cache.get(spec.filename)));
 
-            result = result.append(Tuple.of(modlObjects.map(t -> t._2), tuple._2));
-            result = result.append(Tuple.of(cachedModlObjects.map(t -> t._2), tuple._2));
+            result = result.append(Tuple.of(modlObjects.map(t -> t._2), loadSet.pair));
+            result = result.append(Tuple.of(cachedModlObjects.map(t -> t._2), loadSet.pair));
 
             // Add the cache misses to the cache for next time
-            modlObjects.forEach(t -> cache.put(t._1, t._2));
+            modlObjects.forEach(t -> cache.put(t._1.filename, t._2));
         }
 
         return result;

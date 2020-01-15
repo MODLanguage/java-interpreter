@@ -4,6 +4,7 @@ import io.vavr.Function1;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.List;
+import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.model.Array;
 import uk.modl.model.PairValue;
 import uk.modl.model.Primitive;
@@ -16,9 +17,9 @@ public class Util {
     /**
      * Map a filename to Either an Error or the file contents as a String
      */
-    public static Function1<String, Tuple2<String, String>> getFileContents = (filename) -> {
+    public static Function1<StarLoadExtractor.FileSpec, Tuple2<StarLoadExtractor.FileSpec, String>> getFileContents = (spec) -> {
         try {
-            return Tuple.of(filename, String.join("", Files.readAllLines(Paths.get(filename))));
+            return Tuple.of(spec, String.join("", Files.readAllLines(Paths.get(spec.filename))));
         } catch (final Exception e) {
             throw new RuntimeException("Could not interpret " + e.getMessage());
         }
