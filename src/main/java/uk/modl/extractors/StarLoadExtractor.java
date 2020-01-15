@@ -5,7 +5,6 @@ import io.vavr.Tuple2;
 import io.vavr.collection.List;
 import lombok.Getter;
 import lombok.NonNull;
-import uk.modl.error.Error;
 import uk.modl.model.Pair;
 import uk.modl.utils.Util;
 import uk.modl.visitor.ModlVisitorBase;
@@ -13,7 +12,6 @@ import uk.modl.visitor.ModlVisitorBase;
 @Getter
 public class StarLoadExtractor extends ModlVisitorBase {
 
-    private final Error error = new Error();
     private List<Tuple2<List<String>, Pair>> filenamePairs = List.empty();
     private boolean immutable;
 
@@ -24,7 +22,7 @@ public class StarLoadExtractor extends ModlVisitorBase {
         immutable |= (key.equals("*L") || key.equals("*LOAD"));
 
         if (filenamePairs.size() > 0 && immutable) {
-            error.append("Interpreter Error: Cannot load multiple files after *LOAD instruction");
+            throw new RuntimeException("Interpreter Error: Cannot load multiple files after *LOAD instruction");
         } else {
             final String lowerCase = key.toLowerCase();
             if (lowerCase.equals("*l") || lowerCase.equals("*load")) {
@@ -52,7 +50,7 @@ public class StarLoadExtractor extends ModlVisitorBase {
             normalized = normalized.substring(1, normalized.length() - 1);
         }
 
-        if (!normalized.endsWith(".modl") && !normalized.endsWith(".txt")) {
+        if (normalized != null && !normalized.endsWith(".modl") && !normalized.endsWith(".txt")) {
             normalized += ".modl";
         }
 

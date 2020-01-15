@@ -2,8 +2,6 @@ package uk.modl.utils;
 
 import io.vavr.Function1;
 import io.vavr.collection.List;
-import io.vavr.control.Either;
-import uk.modl.error.Error;
 import uk.modl.model.Array;
 import uk.modl.model.PairValue;
 import uk.modl.model.Primitive;
@@ -16,11 +14,11 @@ public class Util {
     /**
      * Map a filename to Either an Error or the file contents as a String
      */
-    public static Function1<String, Either<Error, String>> getFileContents = (filename) -> {
+    public static Function1<String, String> getFileContents = (filename) -> {
         try {
-            return Either.right(String.join("", Files.readAllLines(Paths.get(filename))));
-        } catch (final Throwable e) {
-            return Either.left(new Error(e.getMessage()));
+            return String.join("", Files.readAllLines(Paths.get(filename)));
+        } catch (final Exception e) {
+            throw new RuntimeException("Could not interpret " + e.getMessage());
         }
     };
 

@@ -1,11 +1,9 @@
 package uk.modl.transforms;
 
 import io.vavr.Function1;
-import io.vavr.control.Either;
-import uk.modl.error.Error;
 import uk.modl.model.Modl;
 
-public class ReferencesTransform implements Function1<Either<Error, Modl>, Either<Error, Modl>> {
+public class ReferencesTransform implements Function1<Modl, Modl> {
     /**
      * Applies this function to one argument and returns the result.
      *
@@ -13,7 +11,7 @@ public class ReferencesTransform implements Function1<Either<Error, Modl>, Eithe
      * @return the result of function application
      */
     @Override
-    public Either<Error, Modl> apply(final Either<Error, Modl> modl) {
+    public Modl apply(final Modl modl) {
         // TODO: currently a no-op
         return modl;
     }

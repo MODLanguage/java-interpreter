@@ -4,47 +4,50 @@ import io.vavr.Function1;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.List;
-import io.vavr.control.Either;
-import uk.modl.error.Error;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.interpreter.Interpreter;
 import uk.modl.model.Modl;
 import uk.modl.model.Pair;
 import uk.modl.utils.Util;
 
-public class StarLoadTransform implements Function1<Either<Error, Modl>, Either<Error, Modl>> {
-    private static Interpreter interpreter = new Interpreter();
-
+public class StarLoadTransform implements Function1<Modl, Modl> {
+    private static final Interpreter interpreter = new Interpreter();
     /**
      * Function to extract filenames and pairs from a Modl object.
      */
-    private static Function1<Modl, Either<Error, List<Tuple2<List<String>, Pair>>>> extractFilenamesAndPairs = (m) -> {
+    private static Function1<Modl, List<Tuple2<List<String>, Pair>>> extractFilenamesAndPairs = (m) -> {
         final StarLoadExtractor starLoadExtractor = new StarLoadExtractor();
         m.visit(starLoadExtractor);
 
-        final Error errors = starLoadExtractor.getError();
-        if (errors
-                .isEmpty()) {
-            return Either.left(errors);
-        }
-        return Either.right(starLoadExtractor.getFilenamePairs());
+        return starLoadExtractor.getFilenamePairs();
     };
-
     /**
      * Function to convert filenames and pairs to Either Strings/Modl-objects and Pairs.
      */
-    private static Function1<List<Tuple2<List<String>, Pair>>, List<Tuple2<Either<Error, Modl>, Pair>>> convertFilesToModlObjectsAndPairs = (list) -> List.ofAll(
-            list.map(tuple -> {
-                final List<String> filenames = tuple._1;
+    private static Function1<List<Tuple2<List<String>, Pair>>, List<Tuple2<List<Modl>, Pair>>> convertFilesToModlObjectsAndPairs = (list) -> {
 
-                final String allFileContents = filenames.map(Util.getFileContents)
-                        .map(Either::get)
-                        .mkString(";");
+        List<Tuple2<List<Modl>, Pair>> result = List.empty();
 
-                final Either<Error, Modl> filesAsModl = interpreter.apply(allFileContents);
+        for (final Tuple2<List<String>, Pair> tuple : list) {
 
-                return Tuple.of(filesAsModl, tuple._2);
-            }));
+            // Each tuple has a list of filenames
+            final List<String> filenames = tuple._1;
+
+            // Map the filenames to the contents of the files, or Error
+            final List<String> contents = filenames.map(Util.getFileContents);
+
+            // Interpret each MODL string from each file
+            final List<Modl> modlObjects = contents
+                    .map(interpreter);
+
+            result = result.append(Tuple.of(modlObjects, tuple._2));
+
+        }
+
+        return result;
+    };
+    private static final Function1<Modl, List<Tuple2<List<Modl>, Pair>>> loadModlObjects = extractFilenamesAndPairs
+            .andThen(convertFilesToModlObjectsAndPairs);
 
     /**
      * Applies this function to one argument and returns the result.
@@ -53,20 +56,11 @@ public class StarLoadTransform implements Function1<Either<Error, Modl>, Either<
      * @return the result of function application
      */
     @Override
-    public Either<Error, Modl> apply(final Either<Error, Modl> modl) {
-        final Either<Error, Either<Error, List<Tuple2<List<String>, Pair>>>> maybeFilenamesAndPairs = modl.map(extractFilenamesAndPairs);
+    public Modl apply(final Modl modl) {
+        final List<Tuple2<List<Modl>, Pair>> loadedModlObjects = loadModlObjects
+                .apply(modl);
 
-        if (maybeFilenamesAndPairs.isLeft()) {
-            return Either.left(maybeFilenamesAndPairs.getLeft());
-        }
-
-        maybeFilenamesAndPairs.flatMap(tmp -> {
-            final Either<Error, List<Tuple2<Either<Error, Modl>, Pair>>> modlObjectsAndPairs = tmp
-                    .map(convertFilesToModlObjectsAndPairs);
-            return modlObjectsAndPairs;
-        });
-
-        return modl;
+        return modl;// TODO: Return the modified Modl object rather than the input object.
     }
 
 }

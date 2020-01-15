@@ -20,11 +20,9 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 package uk.modl.parser;
 
 import io.vavr.Function1;
-import io.vavr.control.Either;
 import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import uk.modl.error.Error;
 import uk.modl.model.Modl;
 import uk.modl.parser.antlr.MODLLexer;
 import uk.modl.parser.antlr.MODLParser;
@@ -38,7 +36,7 @@ import java.nio.charset.StandardCharsets;
  * Class to parse MODL Strings to Modl trees.
  */
 @Log4j2
-public class Parser implements Function1<String, Either<Error, Modl>> {
+public class Parser implements Function1<String, Modl> {
 
     /**
      * Parse a MODL String to a Modl object
@@ -46,7 +44,7 @@ public class Parser implements Function1<String, Either<Error, Modl>> {
      * @param input the MODL String
      * @return Either a Throwable or a Modl object
      */
-    public Either<Error, Modl> apply(final String input) {
+    public Modl apply(final String input) {
         try {
             // Antlr boilerplate
             final InputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
@@ -62,10 +60,10 @@ public class Parser implements Function1<String, Either<Error, Modl>> {
 
             // The String has been parsed by Antlr, now its our turn
             final ModlParsedVisitor visitor = new ModlParsedVisitor(modlCtx);
-            return Either.right(visitor.modl);
-        } catch (final Throwable e) {
+            return visitor.modl;
+        } catch (final Exception e) {
             log.error(e);
-            return Either.left(new Error(e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 }

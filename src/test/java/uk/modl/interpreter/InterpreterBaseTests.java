@@ -2,10 +2,8 @@ package uk.modl.interpreter;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vavr.control.Either;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Test;
-import uk.modl.error.Error;
 import uk.modl.model.Modl;
 
 import java.io.FileInputStream;
@@ -68,8 +66,8 @@ public class InterpreterBaseTests {
         log.info("Expected : " + testInput.expected_output);
 
         try {
-            final Either<Error, Modl> maybeModlObject = interpreter.apply(testInput.input);
-            if (maybeModlObject.isRight()) {
+            final Modl maybeModlObject = interpreter.apply(testInput.input);
+            if (maybeModlObject != null) {
                 log.info("Test: " + testInput.id + " - no errors\n");
             } else {
                 log.error("Test: " + testInput.id + " - no result\n");
