@@ -46,6 +46,10 @@ public class StarLoadTransform implements Function1<Modl, Modl> {
             // Map the filenames to the contents of the files, or Error
             final List<Tuple2<StarLoadExtractor.FileSpec, String>> contents = cacheMisses.map(Util.getFileContents);
 
+            //
+            // TODO: If any load returns an error AND we have a cached copy then use the cached copy for up to 7 days.
+            //
+
             // Interpret each MODL string from each file
             final List<Tuple2<StarLoadExtractor.FileSpec, Modl>> modlObjects = contents
                     .map(filenameAndContents -> Tuple.of(filenameAndContents._1, interpreter.apply(filenameAndContents._2)));

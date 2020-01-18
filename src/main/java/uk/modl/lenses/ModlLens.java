@@ -19,7 +19,11 @@ public class ModlLens implements Lens<Modl, List<Structure>> {
 
     @Override
     public Tuple2<Modl, List<Structure>> set(final Modl modl, final List<Structure> structures) {
-        return Tuple.of(new Modl(structures), modl.structures);
+        if (structures != null) {
+            return Tuple.of(new Modl(structures), modl.structures);
+        } else {
+            return Tuple.of(new Modl(List.empty()), modl.structures);
+        }
     }
 
 }
