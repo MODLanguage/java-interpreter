@@ -56,9 +56,16 @@ public class ProfunctorLensTest {
     public void test_1() {
         final ProfunctorLens<Shelf, Book, Shelf, Book> lens1 = new ShelfBook1();
         final ProfunctorLens<Bookcase, Shelf, Bookcase, Shelf> lens2 = new BookcaseShelf1();
-        final ProfunctorLens<Bookcase, Book, Bookcase, Book> lens3 = lens2.andThenLens(lens1);
+        final ProfunctorLens<Room, Bookcase, Room, Bookcase> lens3 = new RoomBookcase1();
+        final ProfunctorLens<Floor, Room, Floor, Room> lens4 = new FloorRoom1();
+        final ProfunctorLens<Library, Floor, Library, Floor> lens5 = new LibraryFloor1();
 
-        final Tuple2<Bookcase, Book> updated = lens3.set(library.floor1.room1.bookcase1, new Book("New Book"));
+
+        final ProfunctorLens<Library, Book, Library, Book> lens = lens5.andThenLens(lens4)
+                .andThenLens(lens3)
+                .andThenLens(lens2)
+                .andThenLens(lens1);
+        final Tuple2<Library, Book> updated = lens.set(library, new Book("New Book"));
 
         Assert.assertNotNull(updated);
         Assert.assertNotNull(updated._1);
@@ -139,12 +146,12 @@ class ShelfBook1 implements ProfunctorLens<Shelf, Book, Shelf, Book> {
 
     @Override
     public Shelf getTFromS(final Shelf shelf) {
-        return new Shelf(shelf.book0, shelf.book1, shelf.book2);
+        return shelf;
     }
 
     @Override
     public Shelf getSFromT(final Shelf shelf) {
-        return new Shelf(shelf.book0, shelf.book1, shelf.book2);
+        return shelf;
     }
 }
 
@@ -181,11 +188,138 @@ class BookcaseShelf1 implements ProfunctorLens<Bookcase, Shelf, Bookcase, Shelf>
 
     @Override
     public Bookcase getTFromS(final Bookcase bookcase) {
-        return new Bookcase(bookcase.shelf0, bookcase.shelf1, bookcase.shelf2);
+        return bookcase;
     }
 
     @Override
     public Bookcase getSFromT(final Bookcase bookcase) {
-        return new Bookcase(bookcase.shelf0, bookcase.shelf1, bookcase.shelf2);
+        return bookcase;
+    }
+}
+
+
+class RoomBookcase1 implements ProfunctorLens<Room, Bookcase, Room, Bookcase> {
+    @Override
+    public Bookcase getAFromS(final Room room) {
+        return room.bookcase1;
+    }
+
+    @Override
+    public Bookcase getBFromA(final Bookcase bookcase) {
+        return bookcase;
+    }
+
+    @Override
+    public Room getTFromB(final Room room, final Bookcase bookcase) {
+        return new Room(room.bookcase0, bookcase, room.bookcase2);
+    }
+
+    @Override
+    public Bookcase getBFromT(final Room room) {
+        return room.bookcase1;
+    }
+
+    @Override
+    public Bookcase getAFromB(final Bookcase bookcase) {
+        return bookcase;
+    }
+
+    @Override
+    public Room getSFromA(final Room room, final Bookcase bookcase) {
+        return getTFromB(room, bookcase);
+    }
+
+    @Override
+    public Room getTFromS(final Room room) {
+        return room;
+    }
+
+    @Override
+    public Room getSFromT(final Room room) {
+        return room;
+    }
+}
+
+class FloorRoom1 implements ProfunctorLens<Floor, Room, Floor, Room> {
+    @Override
+    public Room getAFromS(final Floor floor) {
+        return floor.room1;
+    }
+
+    @Override
+    public Room getBFromA(final Room room) {
+        return room;
+    }
+
+    @Override
+    public Floor getTFromB(final Floor floor, final Room room) {
+        return new Floor(floor.room0, room, floor.room2);
+    }
+
+    @Override
+    public Room getBFromT(final Floor floor) {
+        return floor.room1;
+    }
+
+    @Override
+    public Room getAFromB(final Room room) {
+        return room;
+    }
+
+    @Override
+    public Floor getSFromA(final Floor floor, final Room room) {
+        return getTFromB(floor, room);
+    }
+
+    @Override
+    public Floor getTFromS(final Floor floor) {
+        return floor;
+    }
+
+    @Override
+    public Floor getSFromT(final Floor floor) {
+        return floor;
+    }
+}
+
+class LibraryFloor1 implements ProfunctorLens<Library, Floor, Library, Floor> {
+    @Override
+    public Floor getAFromS(final Library library) {
+        return library.floor1;
+    }
+
+    @Override
+    public Floor getBFromA(final Floor floor) {
+        return floor;
+    }
+
+    @Override
+    public Library getTFromB(final Library library, final Floor floor) {
+        return new Library(library.floor0, floor, library.floor2);
+    }
+
+    @Override
+    public Floor getBFromT(final Library library) {
+        return library.floor1;
+    }
+
+    @Override
+    public Floor getAFromB(final Floor floor) {
+        return floor;
+    }
+
+    @Override
+    public Library getSFromA(final Library library, final Floor floor) {
+        return getTFromB(library, floor);
+    }
+
+    @Override
+    public Library getTFromS(final Library library) {
+        return library;
+    }
+
+    @Override
+    public Library getSFromT(final Library library) {
+        return library;
     }
 }
