@@ -11,11 +11,6 @@ public class MapLens implements Lens<Map, List<MapItem>, Map, List<MapItem>> {
     }
 
     @Override
-    public List<MapItem> getBFromA(final List<MapItem> mapItems) {
-        return mapItems;
-    }
-
-    @Override
     public Map getTFromB(final Map map, final List<MapItem> mapItems) {
         return new Map(mapItems);
     }
@@ -26,22 +21,7 @@ public class MapLens implements Lens<Map, List<MapItem>, Map, List<MapItem>> {
     }
 
     @Override
-    public List<MapItem> getAFromB(final List<MapItem> mapItems) {
-        return mapItems;
-    }
-
-    @Override
     public Map getSFromA(final Map map, final List<MapItem> mapItems) {
         return new Map(mapItems);
-    }
-
-    @Override
-    public Map getTFromS(final Map map) {
-        return map;
-    }
-
-    @Override
-    public Map getSFromT(final Map map) {
-        return map;
     }
 }

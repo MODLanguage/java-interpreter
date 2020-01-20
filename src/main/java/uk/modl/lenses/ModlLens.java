@@ -11,11 +11,6 @@ public class ModlLens implements Lens<Modl, List<Structure>, Modl, List<Structur
     }
 
     @Override
-    public List<Structure> getBFromA(final List<Structure> structures) {
-        return structures;
-    }
-
-    @Override
     public Modl getTFromB(final Modl modl, final List<Structure> structures) {
         return new Modl(structures);
     }
@@ -26,22 +21,7 @@ public class ModlLens implements Lens<Modl, List<Structure>, Modl, List<Structur
     }
 
     @Override
-    public List<Structure> getAFromB(final List<Structure> structures) {
-        return structures;
-    }
-
-    @Override
     public Modl getSFromA(final Modl modl, final List<Structure> structures) {
         return new Modl(structures);
-    }
-
-    @Override
-    public Modl getTFromS(final Modl modl) {
-        return modl;
-    }
-
-    @Override
-    public Modl getSFromT(final Modl modl) {
-        return modl;
     }
 }

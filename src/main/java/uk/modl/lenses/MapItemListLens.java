@@ -16,11 +16,6 @@ public class MapItemListLens implements Lens<List<MapItem>, Pair, List<MapItem>,
     }
 
     @Override
-    public Pair getBFromA(final Pair mapItem) {
-        return mapItem;
-    }
-
-    @Override
     public List<MapItem> getTFromB(final List<MapItem> mapItems, final Pair mapItem) {
         return mapItems.update(i.value, mapItem);
     }
@@ -31,22 +26,7 @@ public class MapItemListLens implements Lens<List<MapItem>, Pair, List<MapItem>,
     }
 
     @Override
-    public Pair getAFromB(final Pair mapItem) {
-        return mapItem;
-    }
-
-    @Override
     public List<MapItem> getSFromA(final List<MapItem> mapItems, final Pair mapItem) {
         return mapItems.update(i.value, mapItem);
-    }
-
-    @Override
-    public List<MapItem> getTFromS(final List<MapItem> mapItems) {
-        return mapItems;
-    }
-
-    @Override
-    public List<MapItem> getSFromT(final List<MapItem> mapItems) {
-        return mapItems;
     }
 }

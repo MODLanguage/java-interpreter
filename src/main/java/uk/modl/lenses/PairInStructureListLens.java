@@ -18,11 +18,6 @@ public class PairInStructureListLens implements Lens<List<Structure>, Pair, List
     }
 
     @Override
-    public Pair getBFromA(final Pair structure) {
-        return structure;
-    }
-
-    @Override
     public List<Structure> getTFromB(final List<Structure> structures, final Pair structure) {
         return structures.update(i.value, structure);
     }
@@ -33,23 +28,8 @@ public class PairInStructureListLens implements Lens<List<Structure>, Pair, List
     }
 
     @Override
-    public Pair getAFromB(final Pair structure) {
-        return structure;
-    }
-
-    @Override
     public List<Structure> getSFromA(final List<Structure> structures, final Pair structure) {
         return structures.update(i.value, structure);
-    }
-
-    @Override
-    public List<Structure> getTFromS(final List<Structure> structures) {
-        return structures;
-    }
-
-    @Override
-    public List<Structure> getSFromT(final List<Structure> structures) {
-        return structures;
     }
 
     @Override
@@ -60,5 +40,4 @@ public class PairInStructureListLens implements Lens<List<Structure>, Pair, List
             return Lens.super.set(structures, structure);
         }
     }
-
 }

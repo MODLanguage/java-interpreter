@@ -28,7 +28,10 @@ public interface Lens<S, A, T, B> {
      * @param a the A
      * @return a B
      */
-    B getBFromA(final A a);
+    @SuppressWarnings("unchecked")
+    default B getBFromA(final A a) {
+        return (B) a;
+    }
 
     /**
      * Transform an S with a field A into a T with a field B
@@ -53,7 +56,10 @@ public interface Lens<S, A, T, B> {
      * @param b the B
      * @return an A
      */
-    A getAFromB(final B b);
+    @SuppressWarnings("unchecked")
+    default A getAFromB(final B b) {
+        return (A) b;
+    }
 
     /**
      * Transform a T with a B into an S with an A
@@ -70,7 +76,10 @@ public interface Lens<S, A, T, B> {
      * @param s the S
      * @return a T
      */
-    T getTFromS(final S s);
+    @SuppressWarnings("unchecked")
+    default T getTFromS(final S s) {
+        return (T) s;
+    }
 
     /**
      * Transform a T into an S
@@ -78,7 +87,10 @@ public interface Lens<S, A, T, B> {
      * @param t the T
      * @return an S
      */
-    S getSFromT(final T t);
+    @SuppressWarnings("unchecked")
+    default S getSFromT(final T t) {
+        return (S) t;
+    }
 
     /**
      * Given an S with a field of type A and a new A, transform the new A into a new B and the S into a new T with the new B in place of the old B
