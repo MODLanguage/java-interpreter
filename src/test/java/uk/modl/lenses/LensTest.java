@@ -61,10 +61,10 @@ public class LensTest {
         final Lens<Library, Floor, Library, Floor> lens5 = new LibraryFloor1();
 
 
-        final Lens<Library, Book, Library, Book> lens = lens5.andThenLens(lens4)
-                .andThenLens(lens3)
-                .andThenLens(lens2)
-                .andThenLens(lens1);
+        final Lens<Library, Book, Library, Book> lens = lens5.then(lens4)
+                .then(lens3)
+                .then(lens2)
+                .then(lens1);
         final Tuple2<Library, Book> updated = lens.set(library, new Book("New Book"));
 
         Assert.assertNotNull(updated);

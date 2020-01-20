@@ -3,24 +3,90 @@ package uk.modl.lenses;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 
+/**
+ * Generalisation of the Getter/Setter pattern to support composition and deeply nested immutable objects.
+ *
+ * @param <S> The Source object type, e.g the type that contains a field of type A
+ * @param <A> The field type in S
+ * @param <T> The Target object type - often the same as S
+ * @param <B> The field type in T - often the same as A
+ * @author tonywalmsley
+ */
 public interface Lens<S, A, T, B> {
 
+    /**
+     * Get a field of type A from S
+     *
+     * @param s the S
+     * @return an A
+     */
     A getAFromS(final S s);
 
+    /**
+     * Transform an A into a B
+     *
+     * @param a the A
+     * @return a B
+     */
     B getBFromA(final A a);
 
+    /**
+     * Transform an S with a field A into a T with a field B
+     *
+     * @param s the S
+     * @param b the B
+     * @return a T
+     */
     T getTFromB(final S s, final B b);
 
+    /**
+     * Get a field of type B from T
+     *
+     * @param t the T
+     * @return a B
+     */
     B getBFromT(final T t);
 
+    /**
+     * Transform a B into an A
+     *
+     * @param b the B
+     * @return an A
+     */
     A getAFromB(final B b);
 
+    /**
+     * Transform a T with a B into an S with an A
+     *
+     * @param t the T
+     * @param a the A
+     * @return an S
+     */
     S getSFromA(final T t, final A a);
 
+    /**
+     * Transform an S into a T
+     *
+     * @param s the S
+     * @return a T
+     */
     T getTFromS(final S s);
 
+    /**
+     * Transform a T into an S
+     *
+     * @param t the T
+     * @return an S
+     */
     S getSFromT(final T t);
 
+    /**
+     * Given an S with a field of type A and a new A, transform the new A into a new B and the S into a new T with the new B in place of the old B
+     *
+     * @param s the S
+     * @param a the new A
+     * @return a new T with a new B, and the old B
+     */
     default Tuple2<T, B> set(final S s, final A a) {
         final B oldB = getBFromA(getAFromS(s));
         final B newB = getBFromA(a);
@@ -28,7 +94,31 @@ public interface Lens<S, A, T, B> {
         return Tuple.of(t, oldB);
     }
 
-    default <AP, BP> Lens<S, AP, T, BP> andThenLens(final Lens<A, AP, B, BP> m) {
+    /**
+     * Create a new Lens that is the composition of this lens and the given lens.
+     * <pre>
+     *
+     * S -> A ... (S) -> AP
+     *      |            |
+     *      v            v
+     * T <- B ... (T) <- BP
+     *
+     * </pre>
+     *
+     * @param m    the given Lens - its S and T must be the same type as A and B on this
+     * @param <AP> the A for the lens m (AP means A prime)
+     * @param <BP> the B for the lens m (BP meand B prime)
+     * @return a new Lens such that
+     * <pre>
+     *
+     * S -> AP
+     *      |
+     *      v
+     * T <- BP
+     *
+     * </pre>
+     */
+    default <AP, BP> Lens<S, AP, T, BP> then(final Lens<A, AP, B, BP> m) {
         return new Lens<S, AP, T, BP>() {
 
             @Override

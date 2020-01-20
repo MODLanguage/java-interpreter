@@ -23,9 +23,9 @@ public class ModlLensTest {
         final PairInStructureListLens sll1 = new PairInStructureListLens(new PositiveInt(1));
         final PairInStructureListLens sll2 = new PairInStructureListLens(new PositiveInt(2));
 
-        final Lens<Modl, Pair, Modl, Pair> lens0 = ml.andThenLens(sll0);
-        final Lens<Modl, Pair, Modl, Pair> lens1 = ml.andThenLens(sll1);
-        final Lens<Modl, Pair, Modl, Pair> lens2 = ml.andThenLens(sll2);
+        final Lens<Modl, Pair, Modl, Pair> lens0 = ml.then(sll0);
+        final Lens<Modl, Pair, Modl, Pair> lens1 = ml.then(sll1);
+        final Lens<Modl, Pair, Modl, Pair> lens2 = ml.then(sll2);
 
         final Structure s0 = lens0.getAFromS(modl);
         final Structure s1 = lens1.getAFromS(modl);
@@ -48,7 +48,7 @@ public class ModlLensTest {
         final ModlLens ml = new ModlLens();
         final PairInStructureListLens sll1 = new PairInStructureListLens(new PositiveInt(1));
 
-        final Lens<Modl, Pair, Modl, Pair> lens1 = ml.andThenLens(sll1);
+        final Lens<Modl, Pair, Modl, Pair> lens1 = ml.then(sll1);
 
         final Tuple2<Modl, Pair> result = lens1.set(modl, (Pair) modl.structures.get(3));
 
@@ -67,7 +67,7 @@ public class ModlLensTest {
         final ModlLens ml = new ModlLens();
         final PairInStructureListLens sll1 = new PairInStructureListLens(new PositiveInt(1));
 
-        final Lens<Modl, Pair, Modl, Pair> lens1 = ml.andThenLens(sll1);
+        final Lens<Modl, Pair, Modl, Pair> lens1 = ml.then(sll1);
 
         final Tuple2<Modl, Pair> result = lens1.set(modl, null);
 
@@ -92,17 +92,17 @@ public class ModlLensTest {
         final Lens<Pair, PairValue, Pair, PairValue> pairValue = new PairValueLens();
 
 
-        final Lens<Modl, PairValue, Modl, PairValue> lensOnPairEF = ml.andThenLens(firstStructureAsPair)
-                .andThenLens(pairValueAsMap)
-                .andThenLens(mapItemsInMap)
-                .andThenLens(secondMapItemAsPair)
-                .andThenLens(pairValueAsMap)
-                .andThenLens(mapItemsInMap)
-                .andThenLens(secondMapItemAsPair)
-                .andThenLens(pairValueAsMap)
-                .andThenLens(mapItemsInMap)
-                .andThenLens(firstMapItemAsPair)
-                .andThenLens(pairValue);
+        final Lens<Modl, PairValue, Modl, PairValue> lensOnPairEF = ml.then(firstStructureAsPair)
+                .then(pairValueAsMap)
+                .then(mapItemsInMap)
+                .then(secondMapItemAsPair)
+                .then(pairValueAsMap)
+                .then(mapItemsInMap)
+                .then(secondMapItemAsPair)
+                .then(pairValueAsMap)
+                .then(mapItemsInMap)
+                .then(firstMapItemAsPair)
+                .then(pairValue);
 
         final Tuple2<Modl, PairValue> result = lensOnPairEF.set(modl, new StringPrimitive("changed"));
 
