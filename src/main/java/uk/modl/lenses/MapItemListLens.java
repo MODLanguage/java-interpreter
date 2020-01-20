@@ -1,37 +1,52 @@
 package uk.modl.lenses;
 
-import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import io.vavr.collection.List;
 import lombok.RequiredArgsConstructor;
 import uk.modl.model.MapItem;
+import uk.modl.model.Pair;
 import uk.modl.utils.PositiveInt;
 
 @RequiredArgsConstructor
-public class MapItemListLens implements Lens<List<MapItem>, MapItem> {
+public class MapItemListLens implements Lens<List<MapItem>, Pair, List<MapItem>, Pair> {
     private final PositiveInt i;
 
     @Override
-    public Tuple2<List<MapItem>, MapItem> set(final List<MapItem> mapItems, final MapItem mapItem) {
-        if (i.value < mapItems.size()) {
-            final MapItem replaced = mapItems.get(i.value);
-            if (mapItem != null) {
-                final List<MapItem> result = mapItems.update(i.value, mapItem);
-                return Tuple.of(result, replaced);
-            } else {
-                final List<MapItem> result = mapItems.remove(replaced);
-                return Tuple.of(result, replaced);
-            }
-        }
-
-        return Tuple.of(mapItems, mapItem);
+    public Pair getAFromS(final List<MapItem> mapItems) {
+        return (Pair) mapItems.get(i.value);
     }
 
     @Override
-    public MapItem get(final List<MapItem> mapItems) {
-        if (mapItems.size() <= i.value) {
-            return null;
-        }
-        return mapItems.get(i.value);
+    public Pair getBFromA(final Pair mapItem) {
+        return mapItem;
+    }
+
+    @Override
+    public List<MapItem> getTFromB(final List<MapItem> mapItems, final Pair mapItem) {
+        return mapItems.update(i.value, mapItem);
+    }
+
+    @Override
+    public Pair getBFromT(final List<MapItem> mapItems) {
+        return (Pair) mapItems.get(i.value);
+    }
+
+    @Override
+    public Pair getAFromB(final Pair mapItem) {
+        return mapItem;
+    }
+
+    @Override
+    public List<MapItem> getSFromA(final List<MapItem> mapItems, final Pair mapItem) {
+        return mapItems.update(i.value, mapItem);
+    }
+
+    @Override
+    public List<MapItem> getTFromS(final List<MapItem> mapItems) {
+        return mapItems;
+    }
+
+    @Override
+    public List<MapItem> getSFromT(final List<MapItem> mapItems) {
+        return mapItems;
     }
 }

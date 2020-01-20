@@ -6,7 +6,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ProfunctorLensTest {
+public class LensTest {
     public static final String T = "Title";
     private Library library;
 
@@ -54,14 +54,14 @@ public class ProfunctorLensTest {
 
     @Test
     public void test_1() {
-        final ProfunctorLens<Shelf, Book, Shelf, Book> lens1 = new ShelfBook1();
-        final ProfunctorLens<Bookcase, Shelf, Bookcase, Shelf> lens2 = new BookcaseShelf1();
-        final ProfunctorLens<Room, Bookcase, Room, Bookcase> lens3 = new RoomBookcase1();
-        final ProfunctorLens<Floor, Room, Floor, Room> lens4 = new FloorRoom1();
-        final ProfunctorLens<Library, Floor, Library, Floor> lens5 = new LibraryFloor1();
+        final Lens<Shelf, Book, Shelf, Book> lens1 = new ShelfBook1();
+        final Lens<Bookcase, Shelf, Bookcase, Shelf> lens2 = new BookcaseShelf1();
+        final Lens<Room, Bookcase, Room, Bookcase> lens3 = new RoomBookcase1();
+        final Lens<Floor, Room, Floor, Room> lens4 = new FloorRoom1();
+        final Lens<Library, Floor, Library, Floor> lens5 = new LibraryFloor1();
 
 
-        final ProfunctorLens<Library, Book, Library, Book> lens = lens5.andThenLens(lens4)
+        final Lens<Library, Book, Library, Book> lens = lens5.andThenLens(lens4)
                 .andThenLens(lens3)
                 .andThenLens(lens2)
                 .andThenLens(lens1);
@@ -113,7 +113,7 @@ class Book {
     final String title;
 }
 
-class ShelfBook1 implements ProfunctorLens<Shelf, Book, Shelf, Book> {
+class ShelfBook1 implements Lens<Shelf, Book, Shelf, Book> {
     @Override
     public Book getAFromS(final Shelf shelf) {
         return shelf.book1;
@@ -155,7 +155,7 @@ class ShelfBook1 implements ProfunctorLens<Shelf, Book, Shelf, Book> {
     }
 }
 
-class BookcaseShelf1 implements ProfunctorLens<Bookcase, Shelf, Bookcase, Shelf> {
+class BookcaseShelf1 implements Lens<Bookcase, Shelf, Bookcase, Shelf> {
     @Override
     public Shelf getAFromS(final Bookcase bookcase) {
         return bookcase.shelf1;
@@ -198,7 +198,7 @@ class BookcaseShelf1 implements ProfunctorLens<Bookcase, Shelf, Bookcase, Shelf>
 }
 
 
-class RoomBookcase1 implements ProfunctorLens<Room, Bookcase, Room, Bookcase> {
+class RoomBookcase1 implements Lens<Room, Bookcase, Room, Bookcase> {
     @Override
     public Bookcase getAFromS(final Room room) {
         return room.bookcase1;
@@ -240,7 +240,7 @@ class RoomBookcase1 implements ProfunctorLens<Room, Bookcase, Room, Bookcase> {
     }
 }
 
-class FloorRoom1 implements ProfunctorLens<Floor, Room, Floor, Room> {
+class FloorRoom1 implements Lens<Floor, Room, Floor, Room> {
     @Override
     public Room getAFromS(final Floor floor) {
         return floor.room1;
@@ -282,7 +282,7 @@ class FloorRoom1 implements ProfunctorLens<Floor, Room, Floor, Room> {
     }
 }
 
-class LibraryFloor1 implements ProfunctorLens<Library, Floor, Library, Floor> {
+class LibraryFloor1 implements Lens<Library, Floor, Library, Floor> {
     @Override
     public Floor getAFromS(final Library library) {
         return library.floor1;
