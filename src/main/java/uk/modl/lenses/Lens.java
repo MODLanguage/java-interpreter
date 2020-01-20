@@ -172,4 +172,12 @@ public interface Lens<S, A, T, B> {
             }
         };
     }
+
+    /**
+     * Support composition as the reverse of Lens.then()
+     */
+    default <SP, TP> Lens<SP, A, TP, B> compose(final Lens<SP, S, TP, T> m) {
+        return m.then(this);
+    }
+
 }

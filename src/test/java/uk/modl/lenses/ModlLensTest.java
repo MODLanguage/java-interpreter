@@ -104,12 +104,24 @@ public class ModlLensTest {
                 .then(firstMapItemAsPair)
                 .then(pairValue);
 
+        final Lens<Modl, PairValue, Modl, PairValue> lensOnPairEF2 = pairValue.compose(firstMapItemAsPair)
+                .compose(mapItemsInMap)
+                .compose(pairValueAsMap)
+                .compose(secondMapItemAsPair)
+                .compose(mapItemsInMap)
+                .compose(pairValueAsMap)
+                .compose(secondMapItemAsPair)
+                .compose(mapItemsInMap)
+                .compose(pairValueAsMap)
+                .compose(firstStructureAsPair)
+                .compose(ml);
+
         final Tuple2<Modl, PairValue> result = lensOnPairEF.set(modl, new StringPrimitive("changed"));
 
         assertEquals(expected, result._1);
         assertEquals(new StringPrimitive("f"), result._2);
 
-        final Tuple2<Modl, PairValue> result2 = lensOnPairEF.set(result._1, new StringPrimitive("f"));
+        final Tuple2<Modl, PairValue> result2 = lensOnPairEF2.set(result._1, new StringPrimitive("f"));
 
         assertEquals(modl, result2._1);
         assertEquals(new StringPrimitive("changed"), result2._2);
