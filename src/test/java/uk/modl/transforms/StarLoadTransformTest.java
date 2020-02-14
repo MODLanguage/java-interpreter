@@ -20,6 +20,6 @@ public class StarLoadTransformTest {
         assertNotNull(result);
 
         final Modl expected = parser.apply("a=b;c=d");
-        assertEquals(expected, modl);
+        assertEquals(expected, result);
     }
 }

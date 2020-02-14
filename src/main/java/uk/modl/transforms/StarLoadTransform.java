@@ -4,12 +4,14 @@ import io.vavr.Function1;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.List;
+import io.vavr.control.Option;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.interpreter.Interpreter;
 import uk.modl.model.Modl;
 import uk.modl.model.Pair;
+import uk.modl.model.Structure;
 import uk.modl.utils.SimpleCache;
 import uk.modl.utils.Util;
 import uk.modl.visitor.ModlVisitorBase;
@@ -39,6 +41,7 @@ public class StarLoadTransform implements Function1<Modl, Modl> {
             // Each tuple has a list of filenames
             final List<StarLoadExtractor.FileSpec> filenames = loadSet.fileSet;
 
+            // Partition the file specs into cache hits and those that are either cache misses or force-reloads.
             final Tuple2<List<StarLoadExtractor.FileSpec>, List<StarLoadExtractor.FileSpec>> partition = filenames.partition(spec -> cache.contains(spec.filename) && !spec.forceLoad);
             final List<StarLoadExtractor.FileSpec> cacheHits = partition._1;
             final List<StarLoadExtractor.FileSpec> cacheMisses = partition._2;
@@ -66,6 +69,10 @@ public class StarLoadTransform implements Function1<Modl, Modl> {
 
         return result;
     };
+
+    /**
+     * Load and interpret the Modl objects in the files specified by the *load statements
+     */
     private static final Function1<Modl, List<Tuple2<List<Modl>, Pair>>> loadModlObjects = extractFilenamesAndPairs
             .andThen(convertFilesToModlObjectsAndPairs);
 
@@ -77,10 +84,13 @@ public class StarLoadTransform implements Function1<Modl, Modl> {
      */
     @Override
     public Modl apply(final Modl modl) {
+
+        // Each tuple in this list holds the original Pair with the `*load` statements and the set of Modl objects
+        // loaded using the filename[s] specified in the file list - there can be 1 or several.
         final List<Tuple2<List<Modl>, Pair>> loadedModlObjects = loadModlObjects
                 .apply(modl);
 
-        final StarLoadMutator starLoadMutator = new StarLoadMutator(loadedModlObjects);
+        final StarLoadMutator starLoadMutator = new StarLoadMutator(loadedModlObjects, modl);
         modl.visit(starLoadMutator);
         return starLoadMutator.getModl();
     }
@@ -88,12 +98,46 @@ public class StarLoadTransform implements Function1<Modl, Modl> {
 }
 
 /**
- * TODO: Build a new copy of the Modl object with some pairs replaced
+ * Build a new copy of the Modl object with some pairs replaced
  */
-@RequiredArgsConstructor
+@AllArgsConstructor
 class StarLoadMutator extends ModlVisitorBase {
     private final List<Tuple2<List<Modl>, Pair>> loadedModlObjects;
 
     @Getter
     private Modl modl;
+
+    @Override
+    public void accept(final Pair pair) {
+        final Option<Tuple2<List<Modl>, Pair>> maybeFoundPair = loadedModlObjects.find(tuple2 -> pair.equals(tuple2._2));
+
+        // Create a new Modl object with the updated pair.
+        modl = maybeFoundPair.map(p -> replace(modl, p))
+                .getOrElse(modl);
+    }
+
+    /**
+     * Replace any *load commands with their contents
+     *
+     * @param modl        the current Modl object
+     * @param replacement the pair to be replaced and the set of Modl objects loaded from the files.
+     * @return a new Modl object with the relevant changes, sharing existing objects where possible
+     */
+    private Modl replace(final Modl modl, final Tuple2<List<Modl>, Pair> replacement) {
+
+        //
+        // TODO: This only handles *loads at the top level in a MODL file. Needs to be more general to handle them anywhere in the file, e.g. nested in maps, conditionals etc.
+        //
+
+        final List<Structure> newStructures = List.ofAll(modl.structures.flatMap(structure -> {
+            if (structure.equals(replacement._2)) {
+                return replacement._1.flatMap(m -> m.structures);
+            } else {
+                return List.of(structure);
+            }
+        }));
+
+        return new Modl(newStructures);
+    }
+
 }
