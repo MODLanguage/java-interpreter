@@ -66,10 +66,6 @@ public class InterpreterBaseTests {
     }
 
     private void checkValidTestInput(final TestInput testInput) {
-        log.info("Input : " + testInput.input);
-        log.info("Minimised : " + testInput.minimised_modl);
-        log.info("Expected : " + testInput.expected_output);
-
         try {
             final Modl modl = interpreter.apply(testInput.input);
             if (modl != null) {
@@ -87,6 +83,11 @@ public class InterpreterBaseTests {
                             .replace("\r", "");
 
                     if (!expected.equals(actual)) {
+                        log.info("Input : " + testInput.input);
+                        log.info("Minimised : " + testInput.minimised_modl);
+                        log.info("Expected : " + testInput.expected_output);
+                        log.info("Actual : " + output);
+
                         errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : " + output + "\n");
                     } else {
                         log.info("Test: " + testInput.id + " - no errors\n");

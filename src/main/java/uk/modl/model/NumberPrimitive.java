@@ -20,4 +20,8 @@ public class NumberPrimitive implements Primitive {
     public String toString() {
         return value;
     }
+
+    public double numericValue() {
+        return Double.parseDouble(value);
+    }
 }

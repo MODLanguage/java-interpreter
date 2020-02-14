@@ -5,15 +5,17 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vavr.Function1;
+import io.vavr.collection.List;
 import io.vavr.control.Either;
 import io.vavr.control.Option;
-import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import uk.modl.model.*;
-import uk.modl.parser.errors.InterpreterError;
 
 import java.util.function.Function;
 
+@Log4j2
 public class JacksonTransformer implements Function1<Modl, Either<Exception, JsonNode>> {
+    private JsonNode result;
 
     /**
      * Applies this function to one argument and returns the result.
@@ -24,147 +26,152 @@ public class JacksonTransformer implements Function1<Modl, Either<Exception, Jso
     @Override
     public Either<Exception, JsonNode> apply(final Modl modl) {
         try {
-            final JsonRenderer renderer = new JsonRenderer();
-            renderer.accept(modl);
-            return Either.right(renderer.getResult());
+            accept(modl);
+            return Either.right(result);
         } catch (final Exception e) {
             return Either.left(e);
         }
     }
 
-    private static class JsonRenderer {
-        @Getter
-        private JsonNode result;
+    public void accept(final Modl modl) {
+        final List<Structure> filtered = modl.structures.filter(item -> (!(item instanceof Pair) || !((Pair) item).key.startsWith("_")));
+        switch (filtered.size()) {
+            case 0:
+                break;
+            case 1:
+                // For a single structure, pull up the next level to the top level.
+                final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+                this.result = objectNode;
+                accept(objectNode, filtered.get(0));
+                break;
+            default:
+                // For multiple items make the result an ArrayNode
+                final ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
+                this.result = arrayNode;
+                filtered.forEach(s -> accept(arrayNode, s));
+        }
+    }
 
-        public void accept(final Modl modl) {
-            switch (modl.structures.length()) {
-                case 0:
-                    break;
-                case 1:
-                    // For a single structure, pull up the next level to the top level.
-                    final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
-                    this.result = objectNode;
-                    accept(objectNode, modl.structures.get(0));
-                    break;
-                default:
-                    // For multiple items make the result an ArrayNode
-                    final ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
-                    this.result = arrayNode;
-                    modl.structures.forEach(s -> {
-                        accept(arrayNode, s);
-                    });
+    private void accept(final ArrayNode node, final Structure structure) {
+        Option.of(structure)
+                .map(addMapItemsToArrayNode(node))
+                .map(addArrayItemsToArrayNode(node))
+                .map(addPairToArrayNode(node));
+
+    }
+
+    private Function<Object, Object> addPairToArrayNode(final ArrayNode node) {
+        return s -> {
+            if (s instanceof Pair) {
+
+                final Pair p = (Pair) s;
+                final ObjectNode newNode = JsonNodeFactory.instance.objectNode();
+                accept(newNode, p);
+                node.add(newNode);
             }
-        }
+            return s;
+        };
+    }
 
-        private void accept(final ArrayNode node, final Structure structure) {
-            Option.of(structure)
-                    .map(addMapItemsToArrayNode(node))
-                    .map(addArrayItemsToArrayNode(node));
+    private Function<Object, Object> addArrayItemsToArrayNode(final ArrayNode node) {
+        return s -> {
+            if (s instanceof Array) {
 
-        }
+                final Array arr = (Array) s;
+                arr.arrayItems.forEach(arrayItem -> accept(node, arrayItem));
 
-        private Function<Structure, Structure> addArrayItemsToArrayNode(final ArrayNode node) {
-            return s -> {
-                if (s instanceof Array) {
+            }
+            return s;
+        };
+    }
 
-                    final Array arr = (Array) s;
-                    arr.arrayItems.forEach(arrayItem -> node.add(accept(arrayItem)));
+    private Function<Object, Object> addMapItemsToArrayNode(final ArrayNode node) {
+        return s -> {
+            if (s instanceof Map) {
 
+                final Map map = (Map) s;
+                map.mapItems.forEach(mapItem -> accept(node, mapItem));
+
+            }
+            return s;
+        };
+    }
+
+    private void accept(final ArrayNode node, final MapItem mapItem) {
+        Option.of(mapItem)
+                .map(addMapItemsToArrayNode(node));
+    }
+
+    private void accept(final ArrayNode node, final ArrayItem arrayItem) {
+        Option.of(arrayItem)
+                .map(addArrayItemsToArrayNode(node));
+    }
+
+    private void accept(final ObjectNode node, final Structure structure) {
+        Option.of(structure)
+                .map(addMapItemsToObjectNode(node));
+    }
+
+    private Function<Object, Object> addMapItemsToObjectNode(final ObjectNode node) {
+        return s -> {
+            if (s instanceof Map) {
+
+                final Map map = (Map) s;
+                map.mapItems.forEach(mapItem -> {
+                    if (mapItem instanceof Pair) {
+                        final Pair p = (Pair) mapItem;
+                        accept(node, p);
+                    } else {
+                        log.error("Cannot process object type: {}", s.getClass()
+                                .getName());
+                    }
+                });
+
+            }
+            return s;
+        };
+    }
+
+    private void accept(final ObjectNode node, final Pair pair) {
+        Option.of(pair)
+                .map(addPairToObjectNode(node));
+    }
+
+    private Function<Object, Object> addPairToObjectNode(final ObjectNode node) {
+        return p -> {
+            if (p instanceof Pair) {
+                final Pair pair = (Pair) p;
+                if (pair.key.startsWith("_")) {
+                    return p;
                 }
-                return s;
-            };
-        }
-
-        private Function<Structure, Structure> addMapItemsToArrayNode(final ArrayNode node) {
-            return s -> {
-                if (s instanceof Map) {
-
-                    final Map map = (Map) s;
-                    map.mapItems.forEach(mapItem -> node.add(accept(mapItem)));
-
-                }
-                return s;
-            };
-        }
-
-        private JsonNode accept(final MapItem mapItem) {
-            return null;
-        }
-
-        private JsonNode accept(final ArrayItem arrayItem) {
-            return null;
-        }
-
-        private void accept(final ObjectNode node, final Structure structure) {
-            Option.of(structure)
-                    .map(addMapItemsToObjectNode(node))
-                    .map(addArrayItemsToObjectNode(node));
-        }
-
-        private Function<Structure, Structure> addArrayItemsToObjectNode(final ObjectNode node) {
-            return s -> {
-                if (s instanceof Array) {
-
-                    final Array arr = (Array) s;
-                    arr.arrayItems.forEach(arrayItem -> {
-                        if (arrayItem instanceof Pair) {
-                            final Pair p = (Pair) arrayItem;
-                            accept(node, p);
-                        } else {
-                            throw new InterpreterError("Cannot process object type: " + s.getClass()
-                                    .getName());
-                        }
-                    });
-
-                }
-                return s;
-            };
-        }
-
-        private Function<Structure, Structure> addMapItemsToObjectNode(final ObjectNode node) {
-            return s -> {
-                if (s instanceof Map) {
-
-                    final Map map = (Map) s;
-                    map.mapItems.forEach(mapItem -> {
-                        if (mapItem instanceof Pair) {
-                            final Pair p = (Pair) mapItem;
-                            accept(node, p);
-                        } else {
-                            throw new InterpreterError("Cannot process object type: " + s.getClass()
-                                    .getName());
-                        }
-                    });
-
-                }
-                return s;
-            };
-        }
-
-        private void accept(final ObjectNode node, final Pair pair) {
-            Option.of(pair)
-                    .map(addValueItemToObjectNode(node));
-        }
-
-        private Function<Pair, Pair> addValueItemToObjectNode(final ObjectNode node) {
-            return p -> {
-                if (p.value instanceof ValueItem) {
+                if (pair.value instanceof StringPrimitive) {
+                    final Primitive prim = (Primitive) ((Pair) p).value;
+                    node.set(pair.key, JsonNodeFactory.instance.textNode(prim.toString()));
+                } else if (pair.value instanceof NumberPrimitive) {
+                    final NumberPrimitive prim = (NumberPrimitive) ((Pair) p).value;
+                    node.set(pair.key, JsonNodeFactory.instance.numberNode(prim.numericValue()));
+                } else if (pair.value instanceof TruePrimitive) {
+                    node.set(pair.key, JsonNodeFactory.instance.booleanNode(true));
+                } else if (pair.value instanceof FalsePrimitive) {
+                    node.set(pair.key, JsonNodeFactory.instance.booleanNode(false));
+                } else if (pair.value instanceof NullPrimitive) {
+                    node.set(pair.key, JsonNodeFactory.instance.nullNode());
+                } else if (pair.value instanceof Primitive) {
+                    final Primitive prim = (Primitive) ((Pair) p).value;
+                    node.set(pair.key, JsonNodeFactory.instance.textNode(prim.toString()));
+                } else if (pair.value instanceof ValueItem) {
                     final ObjectNode newNode = JsonNodeFactory.instance.objectNode();
-                    node.set(p.key, newNode);
-                    accept(newNode, (ValueItem) p.value);
+                    node.set(pair.key, newNode);
+                    accept(newNode, (ValueItem) pair.value);
                 }
-                return p;
-            };
-        }
+            }
+            return p;
+        };
+    }
 
-        private void accept(final ObjectNode node, final ValueItem item) {
-            Option.of(item)
-                    .map(i -> {
-                        if (i instanceof Map) {
-                            addMapItemsToObjectNode(node).apply((Map) (i));
-                        }
-                        return i;
-                    });
-        }
+    private void accept(final ObjectNode node, final ValueItem item) {
+        Option.of(item)
+                .map(addMapItemsToObjectNode(node))
+                .map(addPairToObjectNode(node));
     }
 }
