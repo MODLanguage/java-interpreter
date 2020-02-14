@@ -3,7 +3,6 @@ package uk.modl.interpreter;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vavr.control.Either;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Test;
@@ -69,11 +68,10 @@ public class InterpreterBaseTests {
         try {
             final Modl modl = interpreter.apply(testInput.input);
             if (modl != null) {
-                final Either<Exception, JsonNode> jsonResult = jsonTransformer.apply(modl);
+                final JsonNode jsonResult = jsonTransformer.apply(modl);
 
-                final Either<Exception, String> mapResult = jsonResult.map(Util.jsonNodeToString);
-                if (mapResult.isRight()) {
-                    final String output = mapResult.get();
+                final String output = Util.jsonNodeToString.apply(jsonResult);
+                if (output != null) {
 
                     final String expected = testInput.expected_output.replace(" ", "")
                             .replace("\n", "")
@@ -94,9 +92,7 @@ public class InterpreterBaseTests {
                     }
 
                 } else {
-                    final Exception e = mapResult.getLeft();
-                    log.error(e);
-                    errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : " + e.getMessage() + "\n");
+                    errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : null\n");
                 }
 
             } else {

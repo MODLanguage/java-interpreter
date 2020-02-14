@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vavr.Function1;
 import io.vavr.collection.List;
-import io.vavr.control.Either;
 import io.vavr.control.Option;
 import lombok.extern.log4j.Log4j2;
 import uk.modl.model.*;
@@ -14,7 +13,7 @@ import uk.modl.model.*;
 import java.util.function.Function;
 
 @Log4j2
-public class JacksonTransformer implements Function1<Modl, Either<Exception, JsonNode>> {
+public class JacksonTransformer implements Function1<Modl, JsonNode> {
     private JsonNode result;
 
     /**
@@ -24,13 +23,9 @@ public class JacksonTransformer implements Function1<Modl, Either<Exception, Jso
      * @return the result of function application
      */
     @Override
-    public Either<Exception, JsonNode> apply(final Modl modl) {
-        try {
-            accept(modl);
-            return Either.right(result);
-        } catch (final Exception e) {
-            return Either.left(e);
-        }
+    public JsonNode apply(final Modl modl) {
+        accept(modl);
+        return result;
     }
 
     public void accept(final Modl modl) {

@@ -1,7 +1,6 @@
 package uk.modl.interpreter;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.vavr.control.Either;
 import org.junit.Assert;
 import org.junit.Test;
 import uk.modl.model.Modl;
@@ -19,12 +18,12 @@ public class InterpreterTest {
     public void parseOk() {
         final Modl modl = interpreter.apply(INPUT);
         Assert.assertNotNull(modl);
-        final Either<Exception, JsonNode> jsonResult = jsonTransformer.apply(modl);
+        final JsonNode jsonResult = jsonTransformer.apply(modl);
 
-        final Either<Exception, String> mapResult = jsonResult.map(Util.jsonNodeToString);
-        Assert.assertTrue(mapResult.isRight());
-        System.out.println(mapResult.get());
-        Assert.assertEquals(EXPECTED, mapResult.get());
+        final String mapResult = Util.jsonNodeToString.apply(jsonResult);
+        Assert.assertNotNull(mapResult);
+        System.out.println(mapResult);
+        Assert.assertEquals(EXPECTED, mapResult);
     }
 
     @Test(expected = RuntimeException.class)
