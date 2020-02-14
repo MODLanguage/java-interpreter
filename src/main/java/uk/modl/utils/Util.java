@@ -1,5 +1,8 @@
 package uk.modl.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vavr.Function1;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -40,4 +43,16 @@ public class Util {
         }
         return List.empty();
     };
+
+    /**
+     * Render a JSON Node to a String.
+     */
+    public static Function1<JsonNode, String> jsonNodeToString = (jsonNode -> {
+        try {
+            return new ObjectMapper().writeValueAsString(jsonNode);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    });
+
 }

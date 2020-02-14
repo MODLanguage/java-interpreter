@@ -1,10 +1,15 @@
 package uk.modl.interpreter;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vavr.control.Either;
+import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Test;
 import uk.modl.model.Modl;
+import uk.modl.transforms.JacksonTransformer;
+import uk.modl.utils.Util;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -21,9 +26,9 @@ import static org.junit.Assert.fail;
 public class InterpreterBaseTests {
 
     private static Interpreter interpreter = new Interpreter();
+    private static JacksonTransformer jsonTransformer = new JacksonTransformer();
     private List<String> errors = new ArrayList<>();
     private ObjectMapper mapper = new ObjectMapper();
-
     /**
      * Read a set of tests from a file
      */
@@ -66,9 +71,33 @@ public class InterpreterBaseTests {
         log.info("Expected : " + testInput.expected_output);
 
         try {
-            final Modl maybeModlObject = interpreter.apply(testInput.input);
-            if (maybeModlObject != null) {
-                log.info("Test: " + testInput.id + " - no errors\n");
+            final Modl modl = interpreter.apply(testInput.input);
+            if (modl != null) {
+                final Either<Exception, JsonNode> jsonResult = jsonTransformer.apply(modl);
+
+                final Either<Exception, String> mapResult = jsonResult.map(Util.jsonNodeToString);
+                if (mapResult.isRight()) {
+                    final String output = mapResult.get();
+
+                    final String expected = testInput.expected_output.replace(" ", "")
+                            .replace("\n", "")
+                            .replace("\r", "");
+                    final String actual = output.replace(" ", "")
+                            .replace("\n", "")
+                            .replace("\r", "");
+
+                    if (!expected.equals(actual)) {
+                        errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : " + output + "\n");
+                    } else {
+                        log.info("Test: " + testInput.id + " - no errors\n");
+                    }
+
+                } else {
+                    final Exception e = mapResult.getLeft();
+                    log.error(e);
+                    errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : " + e.getMessage() + "\n");
+                }
+
             } else {
                 log.error("Test: " + testInput.id + " - no result\n");
 
@@ -80,7 +109,7 @@ public class InterpreterBaseTests {
     }
 
     @Test
-    public void testErrorTest() throws Exception {
+    public void testErrorTest() {
         // Go through grammar_test/error_tests.json making sure all tests raise an error of some kind
         final List<TestInput> list = load.apply("../grammar/tests/error_tests.json");
         int testNumber = 1;
@@ -113,54 +142,12 @@ public class InterpreterBaseTests {
         }
     }
 
+    @Data
     public static class TestInput {
         public String input;
         public String minimised_modl;
         public String expected_output;
         public String[] tested_features;
         public int id;
-
-        public TestInput() {
-        }
-
-        public String[] getTested_features() {
-            return tested_features;
-        }
-
-        public void setTested_features(String[] tested_features) {
-            this.tested_features = tested_features;
-        }
-
-        public String getInput() {
-            return input;
-        }
-
-        public void setInput(String input) {
-            this.input = input;
-        }
-
-        public String getMinimised_modl() {
-            return minimised_modl;
-        }
-
-        public void setMinimised_modl(String minised_modl) {
-            this.minimised_modl = minised_modl;
-        }
-
-        public String getExpected_output() {
-            return expected_output;
-        }
-
-        public void setExpected_output(String expected_output) {
-            this.expected_output = expected_output;
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        public void setId(int id) {
-            this.id = id;
-        }
     }
 }
