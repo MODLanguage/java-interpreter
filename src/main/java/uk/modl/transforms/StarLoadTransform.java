@@ -95,49 +95,49 @@ public class StarLoadTransform implements Function1<Modl, Modl> {
         return starLoadMutator.getModl();
     }
 
-}
-
-/**
- * Build a new copy of the Modl object with some pairs replaced
- */
-@AllArgsConstructor
-class StarLoadMutator extends ModlVisitorBase {
-    private final List<Tuple2<List<Modl>, Pair>> loadedModlObjects;
-
-    @Getter
-    private Modl modl;
-
-    @Override
-    public void accept(final Pair pair) {
-        final Option<Tuple2<List<Modl>, Pair>> maybeFoundPair = loadedModlObjects.find(tuple2 -> pair.equals(tuple2._2));
-
-        // Create a new Modl object with the updated pair.
-        modl = maybeFoundPair.map(p -> replace(modl, p))
-                .getOrElse(modl);
-    }
-
     /**
-     * Replace any *load commands with their contents
-     *
-     * @param modl        the current Modl object
-     * @param replacement the pair to be replaced and the set of Modl objects loaded from the files.
-     * @return a new Modl object with the relevant changes, sharing existing objects where possible
+     * Build a new copy of the Modl object with some pairs replaced
      */
-    private Modl replace(final Modl modl, final Tuple2<List<Modl>, Pair> replacement) {
+    @AllArgsConstructor
+    private static class StarLoadMutator extends ModlVisitorBase {
+        private final List<Tuple2<List<Modl>, Pair>> loadedModlObjects;
 
-        //
-        // TODO: This only handles *loads at the top level in a MODL file. Needs to be more general to handle them anywhere in the file, e.g. nested in maps, conditionals etc.
-        //
+        @Getter
+        private Modl modl;
 
-        final List<Structure> newStructures = List.ofAll(modl.structures.flatMap(structure -> {
-            if (structure.equals(replacement._2)) {
-                return replacement._1.flatMap(m -> m.structures);
-            } else {
-                return List.of(structure);
-            }
-        }));
+        @Override
+        public void accept(final Pair pair) {
+            final Option<Tuple2<List<Modl>, Pair>> maybeFoundPair = loadedModlObjects.find(tuple2 -> pair.equals(tuple2._2));
 
-        return new Modl(newStructures);
+            // Create a new Modl object with the updated pair.
+            modl = maybeFoundPair.map(p -> replace(modl, p))
+                    .getOrElse(modl);
+        }
+
+        /**
+         * Replace any *load commands with their contents
+         *
+         * @param modl        the current Modl object
+         * @param replacement the pair to be replaced and the set of Modl objects loaded from the files.
+         * @return a new Modl object with the relevant changes, sharing existing objects where possible
+         */
+        private Modl replace(final Modl modl, final Tuple2<List<Modl>, Pair> replacement) {
+
+            //
+            // TODO: This only handles *loads at the top level in a MODL file. Needs to be more general to handle them anywhere in the file, e.g. nested in maps, conditionals etc.
+            //
+
+            final List<Structure> newStructures = List.ofAll(modl.structures.flatMap(structure -> {
+                if (structure.equals(replacement._2)) {
+                    return replacement._1.flatMap(m -> m.structures);
+                } else {
+                    return List.of(structure);
+                }
+            }));
+
+            return new Modl(newStructures);
+        }
+
     }
-
 }
+

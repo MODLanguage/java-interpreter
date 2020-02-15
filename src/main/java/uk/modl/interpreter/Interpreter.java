@@ -23,9 +23,7 @@ import io.vavr.Function1;
 import io.vavr.control.Option;
 import uk.modl.model.Modl;
 import uk.modl.parser.Parser;
-import uk.modl.transforms.ReferencesTransform;
-import uk.modl.transforms.StarClassTransform;
-import uk.modl.transforms.StarLoadTransform;
+import uk.modl.transforms.*;
 
 /**
  * Interpret a MODL String
@@ -44,11 +42,15 @@ public class Interpreter implements Function1<String, Modl> {
         final StarLoadTransform starLoadTransform = new StarLoadTransform();
         final StarClassTransform starClassTransform = new StarClassTransform();
         final ReferencesTransform referencesTransform = new ReferencesTransform();
+        final InstructionTransform instructionTransform = new InstructionTransform();
+        final ConditionalsTransform conditionalsTransform = new ConditionalsTransform();
 
         // Build the function to do the interpreting
         interpretFunction = parser.andThen(starLoadTransform)
                 .andThen(starClassTransform)
-                .andThen(referencesTransform);
+                .andThen(referencesTransform)
+                .andThen(instructionTransform)
+                .andThen(conditionalsTransform);
     }
 
     /**

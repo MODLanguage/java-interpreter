@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Test;
 import uk.modl.model.Modl;
-import uk.modl.transforms.JacksonTransformer;
+import uk.modl.transforms.JacksonJsonNodeTransformer;
 import uk.modl.utils.Util;
 
 import java.io.FileInputStream;
@@ -25,7 +25,7 @@ import static org.junit.Assert.fail;
 public class InterpreterBaseTests {
 
     private static Interpreter interpreter = new Interpreter();
-    private static JacksonTransformer jsonTransformer = new JacksonTransformer();
+    private static JacksonJsonNodeTransformer jsonTransformer = new JacksonJsonNodeTransformer();
     private List<String> errors = new ArrayList<>();
     private ObjectMapper mapper = new ObjectMapper();
     /**

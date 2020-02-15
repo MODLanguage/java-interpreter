@@ -7,6 +7,7 @@ import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.tree.ParseTree;
 import uk.modl.model.*;
 import uk.modl.parser.antlr.MODLParser;
+import uk.modl.parser.errors.InterpreterError;
 
 /**
  * Parser for a MODLParser.ModlContext object
@@ -19,6 +20,8 @@ public class ModlParsedVisitor {
      */
     public final Modl modl;
 
+    private int inConditional = 0;
+
     /**
      * Constructor
      *
@@ -29,7 +32,7 @@ public class ModlParsedVisitor {
 
         final List<Structure> structures = List.ofAll(ctx.modl_structure()
                 .stream()
-                .map(ModlParsedVisitor::visitStructure));
+                .map(this::visitStructure));
 
         modl = new Modl(structures);
     }
@@ -40,7 +43,7 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a Structure
      */
-    private static Structure visitStructure(final MODLParser.Modl_structureContext ctx) {
+    private Structure visitStructure(final MODLParser.Modl_structureContext ctx) {
         log.trace("visitStructure()");
 
         return (ctx.modl_array() != null) ?
@@ -60,19 +63,19 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a TopLevelConditional
      */
-    private static TopLevelConditional visitTopLevelConditional(final MODLParser.Modl_top_level_conditionalContext ctx) {
+    private TopLevelConditional visitTopLevelConditional(final MODLParser.Modl_top_level_conditionalContext ctx) {
         log.trace("visitTopLevelConditional()");
 
         final List<ConditionTest> tests = (ctx.modl_condition_test() != null) ?
                 List.ofAll(ctx.modl_condition_test()
                         .stream()
-                        .map(ModlParsedVisitor::visitConditionTest)) :
+                        .map(this::visitConditionTest)) :
                 null;
 
         final List<TopLevelConditionalReturn> returns = (ctx.modl_top_level_conditional_return() != null) ?
                 List.ofAll(ctx.modl_top_level_conditional_return()
                         .stream()
-                        .map(ModlParsedVisitor::visitTopLevelConditionalReturn)) :
+                        .map(this::visitTopLevelConditionalReturn)) :
                 null;
 
         return new TopLevelConditional(tests, returns);
@@ -84,18 +87,18 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a MapConditional
      */
-    private static MapConditional visitMapConditional(final MODLParser.Modl_map_conditionalContext ctx) {
+    private MapConditional visitMapConditional(final MODLParser.Modl_map_conditionalContext ctx) {
         log.trace("visitMapConditional()");
         final List<ConditionTest> tests = (ctx.modl_condition_test() != null) ?
                 List.ofAll(ctx.modl_condition_test()
                         .stream()
-                        .map(ModlParsedVisitor::visitConditionTest)) :
+                        .map(this::visitConditionTest)) :
                 null;
 
         final List<MapConditionalReturn> returns = (ctx.modl_map_conditional_return() != null) ?
                 List.ofAll(ctx.modl_map_conditional_return()
                         .stream()
-                        .map(ModlParsedVisitor::visitMapConditionalReturn)) :
+                        .map(this::visitMapConditionalReturn)) :
                 null;
 
         return new MapConditional(tests, returns);
@@ -107,11 +110,11 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a MapConditionalReturn
      */
-    private static MapConditionalReturn visitMapConditionalReturn(final MODLParser.Modl_map_conditional_returnContext ctx) {
+    private MapConditionalReturn visitMapConditionalReturn(final MODLParser.Modl_map_conditional_returnContext ctx) {
         log.trace("visitMapConditionalReturn()");
         final List<MapItem> items = List.ofAll(ctx.modl_map_item()
                 .stream()
-                .map(ModlParsedVisitor::visitMapItem));
+                .map(this::visitMapItem));
         return new MapConditionalReturn(items);
     }
 
@@ -121,13 +124,13 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a TopLevelConditionalReturn
      */
-    private static TopLevelConditionalReturn visitTopLevelConditionalReturn(final MODLParser.Modl_top_level_conditional_returnContext ctx) {
+    private TopLevelConditionalReturn visitTopLevelConditionalReturn(final MODLParser.Modl_top_level_conditional_returnContext ctx) {
         log.trace("visitTopLevelConditionalReturn()");
 
         final List<Structure> structures = (ctx.modl_structure() != null) ?
                 List.ofAll(ctx.modl_structure()
                         .stream()
-                        .map(ModlParsedVisitor::visitStructure)) :
+                        .map(this::visitStructure)) :
                 null;
 
         return new TopLevelConditionalReturn(structures);
@@ -139,7 +142,7 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a ConditionTest
      */
-    private static ConditionTest visitConditionTest(final MODLParser.Modl_condition_testContext ctx) {
+    private ConditionTest visitConditionTest(final MODLParser.Modl_condition_testContext ctx) {
         log.trace("visitConditionTest()");
 
         List<Tuple2<ConditionOrConditionGroupInterface, String>> subConditionList = List.empty();
@@ -190,7 +193,7 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a ConditionGroup
      */
-    private static ConditionGroup visitConditionGroup(final MODLParser.Modl_condition_groupContext ctx) {
+    private ConditionGroup visitConditionGroup(final MODLParser.Modl_condition_groupContext ctx) {
         log.trace("visitConditionGroup()");
         final List<Tuple2<ConditionTest, String>> subConditionList = handleConditionGroup(ctx);
         return new ConditionGroup(subConditionList);
@@ -202,7 +205,7 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a list of subconditions
      */
-    private static List<Tuple2<ConditionTest, String>> handleConditionGroup(final MODLParser.Modl_condition_groupContext ctx) {
+    private List<Tuple2<ConditionTest, String>> handleConditionGroup(final MODLParser.Modl_condition_groupContext ctx) {
         log.trace("handleConditionGroup()");
         List<Tuple2<ConditionTest, String>> subConditionList = List.empty();
 
@@ -226,7 +229,7 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a ConditionGroup
      */
-    private static NegatedConditionGroup visitNegatedConditionGroup(final MODLParser.Modl_condition_groupContext ctx) {
+    private NegatedConditionGroup visitNegatedConditionGroup(final MODLParser.Modl_condition_groupContext ctx) {
         log.trace("visitNegatedConditionGroup()");
         final List<Tuple2<ConditionTest, String>> subConditionList = handleConditionGroup(ctx);
         return new NegatedConditionGroup(subConditionList);
@@ -238,17 +241,19 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a Condition
      */
-    private static Condition visitCondition(final MODLParser.Modl_conditionContext ctx) {
+    private Condition visitCondition(final MODLParser.Modl_conditionContext ctx) {
         log.trace("visitCondition()");
+        inConditional++;
         final Operator op = (ctx.modl_operator() != null) ? visitOperator(ctx.modl_operator()) : null;
 
         final List<ValueItem> values = (ctx.modl_value() != null) ? List.ofAll(ctx.modl_value()
                 .stream()
-                .map(ModlParsedVisitor::visitValue)) : List.empty();
+                .map(this::visitValue)) : List.empty();
 
         final String lhs = (ctx.STRING() != null) ? ctx.STRING()
                 .getText() : null;
 
+        inConditional--;
         return new Condition(lhs, op, values);
     }
 
@@ -258,13 +263,13 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a Condition
      */
-    private static NegatedCondition visitNegatedCondition(final MODLParser.Modl_conditionContext ctx) {
+    private NegatedCondition visitNegatedCondition(final MODLParser.Modl_conditionContext ctx) {
         log.trace("visitNegatedCondition()");
         final Operator op = (ctx.modl_operator() != null) ? visitOperator(ctx.modl_operator()) : null;
 
         final List<ValueItem> values = (ctx.modl_value() != null) ? List.ofAll(ctx.modl_value()
                 .stream()
-                .map(ModlParsedVisitor::visitValue)) : List.empty();
+                .map(this::visitValue)) : List.empty();
 
         return new NegatedCondition(op, values);
     }
@@ -275,7 +280,7 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return an Operator
      */
-    private static Operator visitOperator(final MODLParser.Modl_operatorContext ctx) {
+    private Operator visitOperator(final MODLParser.Modl_operatorContext ctx) {
         log.trace("visitOperator()");
 
         final boolean equals = ctx.EQUALS() != null;
@@ -310,15 +315,15 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a list of ArrayItems
      */
-    private static Array visitArray(final MODLParser.Modl_arrayContext ctx) {
+    private Array visitArray(final MODLParser.Modl_arrayContext ctx) {
         log.trace("visitArray()");
 
         final List<ArrayItem> items = List.ofAll(ctx.modl_array_item()
                 .stream()
-                .map(ModlParsedVisitor::visitArrayItem))
+                .map(this::visitArrayItem))
                 .appendAll(List.ofAll(ctx.modl_nb_array()
                         .stream()
-                        .map(ModlParsedVisitor::visitNbArray)));
+                        .map(this::visitNbArray)));
 
         return new Array(items);
     }
@@ -329,12 +334,12 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a list of ArrayItems
      */
-    private static Array visitNbArray(final MODLParser.Modl_nb_arrayContext ctx) {
+    private Array visitNbArray(final MODLParser.Modl_nb_arrayContext ctx) {
         log.trace("visitNbArray()");
 
         final List<ArrayItem> items = List.ofAll(ctx.modl_array_item()
                 .stream()
-                .map(ModlParsedVisitor::visitArrayItem));
+                .map(this::visitArrayItem));
 
         return new Array(items);
     }
@@ -345,7 +350,7 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a list of ArrayItems
      */
-    private static ArrayItem visitArrayItem(final MODLParser.Modl_array_itemContext ctx) {
+    private ArrayItem visitArrayItem(final MODLParser.Modl_array_itemContext ctx) {
         log.trace("visitArrayItem()");
 
         return (ctx.modl_array_conditional() != null) ?
@@ -361,7 +366,7 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return an ArrayItem
      */
-    private static ArrayItem visitArrayValueItem(final MODLParser.Modl_array_value_itemContext ctx) {
+    private ArrayItem visitArrayValueItem(final MODLParser.Modl_array_value_itemContext ctx) {
         log.trace("visitArrayValueItem()");
 
         return (ctx.modl_array() != null) ?
@@ -380,18 +385,18 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return an ArrayItem
      */
-    private static ArrayConditional visitArrayConditional(final MODLParser.Modl_array_conditionalContext ctx) {
+    private ArrayConditional visitArrayConditional(final MODLParser.Modl_array_conditionalContext ctx) {
         log.trace("visitArrayConditional()");
         final List<ConditionTest> tests = (ctx.modl_condition_test() != null) ?
                 List.ofAll((ctx.modl_condition_test()
                         .stream()
-                        .map(ModlParsedVisitor::visitConditionTest))) :
+                        .map(this::visitConditionTest))) :
                 null;
 
         final List<ArrayConditionalReturn> returns = (ctx.modl_array_conditional_return() != null) ?
                 List.ofAll((ctx.modl_array_conditional_return()
                         .stream()
-                        .map(ModlParsedVisitor::visitArrayConditionalReturn))) :
+                        .map(this::visitArrayConditionalReturn))) :
                 null;
 
         return new ArrayConditional(tests, returns);
@@ -403,11 +408,11 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return an ArrayConditionalReturn
      */
-    private static ArrayConditionalReturn visitArrayConditionalReturn(final MODLParser.Modl_array_conditional_returnContext ctx) {
+    private ArrayConditionalReturn visitArrayConditionalReturn(final MODLParser.Modl_array_conditional_returnContext ctx) {
         log.trace("visitMapConditionalReturn()");
         final List<ArrayItem> items = List.ofAll(ctx.modl_array_item()
                 .stream()
-                .map(ModlParsedVisitor::visitArrayItem));
+                .map(this::visitArrayItem));
         return new ArrayConditionalReturn(items);
     }
 
@@ -417,12 +422,12 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a list of MapItems
      */
-    private static Map visitMap(final MODLParser.Modl_mapContext ctx) {
+    private Map visitMap(final MODLParser.Modl_mapContext ctx) {
         log.trace("visitMap()");
 
         final List<MapItem> items = List.ofAll(ctx.modl_map_item()
                 .stream()
-                .map(ModlParsedVisitor::visitMapItem));
+                .map(this::visitMapItem));
 
         return new Map(items);
     }
@@ -433,7 +438,7 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a MapItem
      */
-    private static MapItem visitMapItem(MODLParser.Modl_map_itemContext ctx) {
+    private MapItem visitMapItem(MODLParser.Modl_map_itemContext ctx) {
         log.trace("visitMapItem()");
 
         return (ctx.modl_pair() != null) ?
@@ -449,11 +454,15 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a Pair
      */
-    private static Pair visitPair(final MODLParser.Modl_pairContext ctx) {
+    private Pair visitPair(final MODLParser.Modl_pairContext ctx) {
         log.trace("visitPair()");
         final String key = (ctx.QUOTED() != null) ? ctx.QUOTED()
                 .getText() : (ctx.STRING() != null) ? ctx.STRING()
                 .getText() : null;
+
+        if (inConditional == 0 && key != null && (key.contains("%") || key.contains(" "))) {
+            throw new InterpreterError("Invalid key - spaces and % characters are not allowed: " + key);
+        }
 
         final PairValue value;
         if (ctx.modl_array() != null) {
@@ -474,7 +483,7 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a ValueItem
      */
-    private static ValueItem visitValueItem(final MODLParser.Modl_value_itemContext ctx) {
+    private ValueItem visitValueItem(final MODLParser.Modl_value_itemContext ctx) {
         log.trace("visitValueItem()");
         if (ctx.modl_value() != null) {
             return visitValue(ctx.modl_value());
@@ -491,18 +500,18 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a ValueItem
      */
-    private static ValueConditional visitValueConditional(final MODLParser.Modl_value_conditionalContext ctx) {
+    private ValueConditional visitValueConditional(final MODLParser.Modl_value_conditionalContext ctx) {
         log.trace("visitValueConditional()");
         final List<ConditionTest> tests = (ctx.modl_condition_test() != null) ?
                 List.ofAll(ctx.modl_condition_test()
                         .stream()
-                        .map(ModlParsedVisitor::visitConditionTest)) :
+                        .map(this::visitConditionTest)) :
                 null;
 
         final List<ValueConditionalReturn> returns = (ctx.modl_value_conditional_return() != null) ?
                 List.ofAll(ctx.modl_value_conditional_return()
                         .stream()
-                        .map(ModlParsedVisitor::visitValueConditionReturn)) :
+                        .map(this::visitValueConditionReturn)) :
                 null;
 
         return new ValueConditional(tests, returns);
@@ -514,12 +523,12 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a ValueConditionalReturn
      */
-    private static ValueConditionalReturn visitValueConditionReturn(final MODLParser.Modl_value_conditional_returnContext ctx) {
+    private ValueConditionalReturn visitValueConditionReturn(final MODLParser.Modl_value_conditional_returnContext ctx) {
         log.trace("visitValueConditionalReturn()");
 
         final List<ValueItem> items = List.ofAll(ctx.modl_value_item()
                 .stream()
-                .map(ModlParsedVisitor::visitValueItem));
+                .map(this::visitValueItem));
 
         return new ValueConditionalReturn(items);
     }
@@ -530,7 +539,7 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a Value
      */
-    private static ValueItem visitValue(final MODLParser.Modl_valueContext ctx) {
+    private ValueItem visitValue(final MODLParser.Modl_valueContext ctx) {
         log.trace("visitValue()");
         return (ctx.modl_array() != null) ?
                 visitArray(ctx.modl_array()) :
@@ -551,7 +560,7 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a ValueItem
      */
-    private static ValueItem visitPrimitive(final MODLParser.Modl_primitiveContext ctx) {
+    private ValueItem visitPrimitive(final MODLParser.Modl_primitiveContext ctx) {
         log.trace("visitPrimitive()");
 
         return (ctx.FALSE() != null) ?
