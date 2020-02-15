@@ -111,10 +111,6 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                     final ArrayNode newNode = JsonNodeFactory.instance.arrayNode();
                     node.add(newNode);
                     addArrayItemsToArrayNode(newNode).apply(pv);
-                } else {
-                    final ObjectNode newNode = JsonNodeFactory.instance.objectNode();
-                    node.add(newNode);
-                    addPairToObjectNode(newNode).apply(p);
                 }
             }
             return p;

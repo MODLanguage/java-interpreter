@@ -1,6 +1,7 @@
 package uk.modl.transforms;
 
 import io.vavr.Function1;
+import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
@@ -133,8 +134,12 @@ public class ReferencesTransform implements Function1<Modl, Modl> {
             pairKeysWithReferences = HashMap.ofEntries(
                     pairKeysWithReferences.map(tuple2 -> {
                         final Matcher matcher = referencePattern.matcher(tuple2._2.value.toString());
-                        if (matcher.find()) {
-                            final String reference = matcher.group(0);
+
+                        Tuple2<String, Pair> result = tuple2;
+
+                        while (matcher.find()) {
+                            final PairValue pairValue = result._2.value;
+                            final String reference = matcher.group();
                             if (reference.startsWith("%*")) {
                                 // These are handled by the InstructionTransform
                             } else if (reference.contains(".")) {
@@ -147,19 +152,25 @@ public class ReferencesTransform implements Function1<Modl, Modl> {
                                     if (index >= 0 && index < objectIndex.arrayItems.size()) {
                                         // Handle numeric references using the index
                                         final Pair newPair = new Pair(tuple2._1, (PairValue) objectIndex.arrayItems.get(index));
-                                        return tuple2.update2(newPair);
+                                        result = tuple2.update2(newPair);
                                     }
                                 } else {
                                     final PairValue pv = pairs.get(refKey)
-                                            .map(p -> p.value)
+                                            .map(p -> {
+                                                if (pairValue instanceof StringPrimitive) {
+                                                    final String newValue = ((StringPrimitive) pairValue).value.replace(reference, p.value.toString());
+                                                    return new StringPrimitive(newValue);
+                                                }
+                                                return p.value;
+                                            })
                                             .getOrElse(tuple2._2);
 
                                     final Pair newPair = new Pair(tuple2._1, pv);
-                                    return tuple2.update2(newPair);
+                                    result = tuple2.update2(newPair);
                                 }
                             }
                         }
-                        return tuple2;
+                        return result;
                     }));
         }
     }
