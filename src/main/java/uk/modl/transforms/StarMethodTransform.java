@@ -3,7 +3,7 @@ package uk.modl.transforms;
 import io.vavr.Function1;
 import uk.modl.model.Modl;
 
-public class InstructionTransform implements Function1<Modl, Modl> {
+public class StarMethodTransform implements Function1<Modl, Modl> {
     /**
      * Applies this function to one argument and returns the result.
      *

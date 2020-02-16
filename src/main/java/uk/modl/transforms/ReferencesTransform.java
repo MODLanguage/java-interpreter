@@ -157,11 +157,109 @@ public class ReferencesTransform implements Function1<Modl, Modl> {
          * @return an updated Structure
          */
         private Structure replace(final Structure structure) {
-            // Only Pairs contain references at present
             if (structure instanceof Pair) {
                 return replace((Pair) structure);
+            } else if (structure instanceof uk.modl.model.Map) {
+                return replace((uk.modl.model.Map) structure);
+            } else if (structure instanceof uk.modl.model.Array) {
+                return replace((uk.modl.model.Array) structure);
+            } else if (structure instanceof uk.modl.model.TopLevelConditional) {
+                return replace((uk.modl.model.TopLevelConditional) structure);
             }
             return structure;
+        }
+
+        /**
+         * Handle references in a Map
+         *
+         * @param map the Map
+         * @return a possibly new Map
+         */
+        private uk.modl.model.Map replace(final uk.modl.model.Map map) {
+            final List<MapItem> mapItems = List.ofAll(map.mapItems.map(mi -> {
+                if (mi instanceof Pair) {
+                    return replace((Pair) mi);
+                } else if (mi instanceof MapConditional) {
+                    return replace((MapConditional) mi);
+                } else {
+                    throw new InterpreterError("Unknown MapItem type: " + mi.getClass());
+                }
+            }));
+
+            // Was it updated?
+            if (!mapItems.eq(map.mapItems)) {
+                return new uk.modl.model.Map(mapItems);
+            }
+            // Return the existing map if there were no changes
+            return map;
+        }
+
+        /**
+         * Replace the elements of an Array if necessary
+         *
+         * @param arr the Array that might contain references
+         * @return a possibly updated Array
+         */
+        private Array replace(final uk.modl.model.Array arr) {
+            final List<ArrayItem> arrayItems = List.ofAll(arr.arrayItems.map(ai -> {
+                if (ai instanceof Pair) {
+                    return replace((Pair) ai);
+                } else if (ai instanceof uk.modl.model.Map) {
+                    return replace((uk.modl.model.Map) ai);
+                } else if (ai instanceof Array) {
+                    return replace((Array) ai);
+                } else if (ai instanceof Primitive) {
+                    return ai;// Primitives are handled as Pair values
+                } else if (ai instanceof ArrayConditional) {
+                    return replace((ArrayConditional) ai);
+                } else {
+                    throw new InterpreterError("Unknown ArrayItem type: " + ai.getClass());
+                }
+            }));
+
+            // Was it updated?
+            if (!arrayItems.eq(arr.arrayItems)) {
+                return new uk.modl.model.Array(arrayItems);
+            }
+            // Return the existing Array if there were no changes
+            return arr;
+        }
+
+        private ArrayConditional replace(final ArrayConditional conditional) {
+            // TODO
+            conditional.tests.map(test -> {
+                test.conditions.map(cond -> {
+                    if (cond._1 instanceof Condition) {
+                        final String lhs = ((Condition) cond._1).lhs;// TODO
+                        final String newLhs = replace(lhs);
+                        final List<ValueItem> values = ((Condition) cond._1).values;// TODO
+                    } else if (cond._1 instanceof ConditionGroup) {
+
+                    }
+                });
+            });// TODO
+
+            conditional.returns.map(ret -> {
+
+            });// TODO
+
+            // TODO return new Conditional if there are changes
+            return conditional;
+        }
+
+        private String replace(final String s) {
+            // TODO
+            return s;
+        }
+
+        private Structure replace(final uk.modl.model.TopLevelConditional tlc) {
+            // TODO
+            return tlc;
+        }
+
+        private MapConditional replace(final MapConditional mi) {
+            // TODO
+            return mi;
         }
 
         /**
@@ -181,7 +279,9 @@ public class ReferencesTransform implements Function1<Modl, Modl> {
         public void resolve() {
             pairKeysWithReferences = HashMap.ofEntries(
                     pairKeysWithReferences.map(tuple2 -> {
-                        final Matcher matcher = referencePattern.matcher(tuple2._2.value.toString());
+                        final String stringWithRefs = tuple2._2.value.toString();
+
+                        final Matcher matcher = referencePattern.matcher(stringWithRefs);
 
                         // Gather the match groups into a list of references
                         List<String> groups = List.empty();
@@ -219,7 +319,7 @@ public class ReferencesTransform implements Function1<Modl, Modl> {
          * @return a function to convert the Pair in the supplied tuple to a Pair with references replaced
          */
         private Function<List<Tuple4<String, String, Integer, Option<ArrayItem>>>, Tuple2<String, Pair>> replaceAllObjectIndexRefs(final Tuple2<String, Pair> tuple2) {
-            return refTuples -> refTuples.foldLeft(tuple2, replaceObjectIndexRef());
+            return refTuples -> refTuples.foldLeft(tuple2, replaceObjectIndexRefInArrayItem());
         }
 
         /**
@@ -229,7 +329,7 @@ public class ReferencesTransform implements Function1<Modl, Modl> {
          * @return a function to convert the Pair in the supplied tuple to a Pair with references replaced
          */
         private Function<List<Tuple3<String, String, Option<Pair>>>, Tuple2<String, Pair>> replaceAllSimpleRefs(final Tuple2<String, Pair> tuple2) {
-            return refTuples -> refTuples.foldLeft(tuple2, replaceSimpleRef());
+            return refTuples -> refTuples.foldLeft(tuple2, replaceSimpleRefInPair());
         }
 
         /**
@@ -265,7 +365,7 @@ public class ReferencesTransform implements Function1<Modl, Modl> {
          *
          * @return a tuple with an updated Pair
          */
-        private BiFunction<Tuple2<String, Pair>, Tuple4<String, String, Integer, Option<ArrayItem>>, Tuple2<String, Pair>> replaceObjectIndexRef() {
+        private BiFunction<Tuple2<String, Pair>, Tuple4<String, String, Integer, Option<ArrayItem>>, Tuple2<String, Pair>> replaceObjectIndexRefInArrayItem() {
             return (curr, next) -> {
                 if (next._4.isDefined()) {
                     // If the item containing the reference is a StringPrimitive then do String substitution
@@ -283,11 +383,30 @@ public class ReferencesTransform implements Function1<Modl, Modl> {
         }
 
         /**
+         * Update the `curr` value by replacing the reference if it matches the index in the `next` tuple
+         *
+         * @return a tuple with an updated Pair
+         */
+        private BiFunction<String, Tuple4<String, String, Integer, Option<ArrayItem>>, String> replaceObjectIndexRefInString() {
+            return (curr, next) -> {
+                if (next._4.isDefined()) {
+                    // If the item containing the reference is a StringPrimitive then do String substitution
+                    if (next._4.get() instanceof StringPrimitive) {
+                        final String r = objectIndex.arrayItems.get(next._3)
+                                .toString();
+                        return curr.replace(next._1, r);
+                    }
+                }
+                return curr;
+            };
+        }
+
+        /**
          * Update the Pair in the `curr` tuple by replacing the reference if it matches the index in the `next` tuple
          *
          * @return a tuple with an updated Pair
          */
-        private BiFunction<Tuple2<String, Pair>, Tuple3<String, String, Option<Pair>>, Tuple2<String, Pair>> replaceSimpleRef() {
+        private BiFunction<Tuple2<String, Pair>, Tuple3<String, String, Option<Pair>>, Tuple2<String, Pair>> replaceSimpleRefInPair() {
             return (curr, next) -> {
                 if (next._3.isDefined()) {
                     // If the item containing the reference is a StringPrimitive then do String substitution
@@ -298,6 +417,24 @@ public class ReferencesTransform implements Function1<Modl, Modl> {
                     }
                     // Otherwise replace the whole thing
                     return curr.update2(next._3.get());
+                }
+                return curr;
+            };
+        }
+
+        /**
+         * Update `curr` String by replacing the reference if it matches the index in the `next` tuple
+         *
+         * @return an updated String
+         */
+        private BiFunction<String, Tuple3<String, String, Option<Pair>>, String> replaceSimpleRefInString() {
+            return (curr, next) -> {
+                if (next._3.isDefined()) {
+                    // If the item containing the reference is a StringPrimitive then do String substitution
+                    if (next._3.get().value instanceof StringPrimitive) {
+                        final String r = ((StringPrimitive) next._3.get().value).value;
+                        return curr.replace(next._1, r);
+                    }
                 }
                 return curr;
             };

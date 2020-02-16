@@ -41,15 +41,15 @@ public class Interpreter implements Function1<String, Modl> {
         final Parser parser = new Parser();
         final StarLoadTransform starLoadTransform = new StarLoadTransform();
         final StarClassTransform starClassTransform = new StarClassTransform();
+        final StarMethodTransform starMethodTransform = new StarMethodTransform();
         final ReferencesTransform referencesTransform = new ReferencesTransform();
-        final InstructionTransform instructionTransform = new InstructionTransform();
         final ConditionalsTransform conditionalsTransform = new ConditionalsTransform();
 
         // Build the function to do the interpreting
         interpretFunction = parser.andThen(starLoadTransform)
                 .andThen(starClassTransform)
+                .andThen(starMethodTransform)
                 .andThen(referencesTransform)
-                .andThen(instructionTransform)
                 .andThen(conditionalsTransform);
     }
 
