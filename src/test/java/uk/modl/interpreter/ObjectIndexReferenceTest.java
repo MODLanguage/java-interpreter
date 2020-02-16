@@ -9,8 +9,8 @@ import uk.modl.utils.Util;
 
 public class ObjectIndexReferenceTest {
 
-    public static final String EXPECTED = "{\"letters\":[\"a\",\"b\",\"c\"]}";
-    public static final String INPUT = "?[[a;b;c]];letters=%0";
+    public static final String EXPECTED = "[{\"letters\":[\"a\",\"b\",\"c\"]},{\"letters2\":\"defdef\"}]";
+    public static final String INPUT = "?[[a;b;c];d;e;f];letters=%0;letters2=%1%%2%%3%%1%%2%%3%";
     private static Interpreter interpreter = new Interpreter();
     private static JacksonJsonNodeTransformer jsonTransformer = new JacksonJsonNodeTransformer();
 
