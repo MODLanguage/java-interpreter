@@ -23,7 +23,6 @@ import io.vavr.Function1;
 import io.vavr.control.Option;
 import uk.modl.model.Modl;
 import uk.modl.parser.Parser;
-import uk.modl.transforms.*;
 
 /**
  * Interpret a MODL String
@@ -32,26 +31,8 @@ import uk.modl.transforms.*;
  */
 public class Interpreter implements Function1<String, Modl> {
 
-    private final Function1<String, Modl> interpretFunction;
-
-    /**
-     * Constructor
-     */
-    public Interpreter() {
-        final Parser parser = new Parser();
-        final StarLoadTransform starLoadTransform = new StarLoadTransform();
-        final StarClassTransform starClassTransform = new StarClassTransform();
-        final StarMethodTransform starMethodTransform = new StarMethodTransform();
-        final ReferencesTransform referencesTransform = new ReferencesTransform();
-        final ConditionalsTransform conditionalsTransform = new ConditionalsTransform();
-
-        // Build the function to do the interpreting
-        interpretFunction = parser.andThen(starLoadTransform)
-                .andThen(starClassTransform)
-                .andThen(starMethodTransform)
-                .andThen(referencesTransform)
-                .andThen(conditionalsTransform);
-    }
+    private final Parser parser = new Parser();
+    private final InterpreterVisitor interpreterVisitor = new InterpreterVisitor();
 
     /**
      * Interpreter entry point
@@ -63,7 +44,8 @@ public class Interpreter implements Function1<String, Modl> {
     public Modl apply(final String input) {
         // Apply the function and return the result.
         return Option.of(input)
-                .map(interpretFunction::apply)
+                .map(parser)
+                .map(interpreterVisitor)
                 .getOrElseThrow(() -> new RuntimeException("Cannot parse null input"));
     }
 }
