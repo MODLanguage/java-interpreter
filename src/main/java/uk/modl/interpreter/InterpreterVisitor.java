@@ -29,9 +29,10 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
         referencesTransform = new ReferencesTransform(ctx);
         conditionalsTransform = new ConditionalsTransform(ctx);
 
-        pipeline = referencesTransform.andThen(starLoadTransform)
+        pipeline = starLoadTransform
                 .andThen(starClassTransform)
                 .andThen(starMethodTransform)
+                .andThen(referencesTransform)
                 .andThen(conditionalsTransform);
     }
 

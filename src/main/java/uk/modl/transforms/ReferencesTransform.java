@@ -504,7 +504,21 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
             } else if ("%*class".equals(ir)) {
                 // TODO:
             } else if ("%*method".equals(ir)) {
-                // TODO:
+                return ctx.getMethods()
+                        .map(m -> {
+                            List<MapItem> mthdItems = List.empty();
+                            final Pair transformPair = new Pair("transform", new StringPrimitive(m.transform));
+                            if (m.name != null) {
+                                final Pair namePair = new Pair("name", new StringPrimitive(m.name));
+                                mthdItems = mthdItems.append(namePair);
+                            }
+                            mthdItems = mthdItems.append(transformPair);
+
+
+                            final MapItem mthdMap = new Pair(m.id, new uk.modl.model.Map(mthdItems));
+                            final List<MapItem> mthd = List.of(mthdMap);
+                            return (ArrayItem) new uk.modl.model.Map(mthd);
+                        });
             }
             return List.empty();
         });

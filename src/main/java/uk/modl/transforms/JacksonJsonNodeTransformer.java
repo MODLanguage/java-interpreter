@@ -36,11 +36,6 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
      */
     @Override
     public JsonNode apply(final Modl modl) {
-        accept(modl);
-        return result;
-    }
-
-    public void accept(final Modl modl) {
         final List<Structure> filtered = modl.structures.filter(shouldAppearInOutput);
 
         switch (filtered.size()) {
@@ -48,9 +43,16 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                 break;
             case 1:
                 // For a single structure, pull up the next level to the top level.
-                final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
-                this.result = objectNode;
-                accept(objectNode, filtered.get(0));
+                final Structure structure = filtered.get(0);
+                if (structure instanceof Array) {
+                    final ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
+                    this.result = arrayNode;
+                    filtered.forEach(s -> accept(arrayNode, s));
+                } else {
+                    final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+                    this.result = objectNode;
+                    accept(objectNode, structure);
+                }
                 break;
             default:
                 // For multiple items make the result an ArrayNode
@@ -58,14 +60,14 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                 this.result = arrayNode;
                 filtered.forEach(s -> accept(arrayNode, s));
         }
+        return result;
     }
 
     private void accept(final ArrayNode node, final Structure structure) {
         Option.of(structure)
-                .map(addMapItemsToArrayNode(node))
-                .map(addArrayItemsToArrayNode(node))
-                .map(addPairToArrayNode(node))
-                .map(addPairValueToArrayNode(node));
+                .map(addMapToArrayNode(node))
+                .map(addArrayToArrayNode(node))
+                .map(addPairToArrayNode(node));
 
     }
 
@@ -115,14 +117,14 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                 } else if (pv instanceof Array) {
                     final ArrayNode newNode = JsonNodeFactory.instance.arrayNode();
                     node.add(newNode);
-                    addArrayItemsToArrayNode(newNode).apply(pv);
+                    addArrayToArrayNode(newNode).apply(pv);
                 }
             }
             return p;
         };
     }
 
-    private Function<Object, Object> addArrayItemsToArrayNode(final ArrayNode node) {
+    private Function<Object, Object> addArrayToArrayNode(final ArrayNode node) {
         return s -> {
             if (s instanceof Array) {
 
@@ -134,38 +136,41 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
         };
     }
 
-    private Function<Object, Object> addMapItemsToArrayNode(final ArrayNode node) {
+    private Function<Object, Object> addMapToArrayNode(final ArrayNode node) {
         return s -> {
             if (s instanceof Map) {
 
+                // Add a new Object node and add the map items to it.
+                final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+                node.add(objectNode);
                 final Map map = (Map) s;
-                map.mapItems.forEach(mapItem -> accept(node, mapItem));
-
+                accept(objectNode, map);
             }
             return s;
         };
     }
 
-    private void accept(final ArrayNode node, final MapItem mapItem) {
-        Option.of(mapItem)
-                .map(addMapItemsToArrayNode(node));
+    private void accept(final ObjectNode node, final Map map) {
+        Option.of(map)
+                .map(addMapToObjectNode(node));
+
     }
 
     private void accept(final ArrayNode node, final ArrayItem arrayItem) {
         Option.of(arrayItem)
-                .map(addArrayItemsToArrayNode(node))
-                .map(addMapItemsToArrayNode(node))
+                .map(addArrayToArrayNode(node))
+                .map(addMapToArrayNode(node))
                 .map(addPairToArrayNode(node))
                 .map(addPairValueToArrayNode(node));
     }
 
     private void accept(final ObjectNode node, final Structure structure) {
         Option.of(structure)
-                .map(addMapItemsToObjectNode(node))
+                .map(addMapToObjectNode(node))
                 .map(addPairToObjectNode(node));
     }
 
-    private Function<Object, Object> addMapItemsToObjectNode(final ObjectNode node) {
+    private Function<Object, Object> addMapToObjectNode(final ObjectNode node) {
         return s -> {
             if (s instanceof Map) {
 
@@ -224,7 +229,7 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                 } else if (pair.value instanceof Array) {
                     final ArrayNode newNode = JsonNodeFactory.instance.arrayNode();
                     node.set(pair.key, newNode);
-                    addArrayItemsToArrayNode(newNode).apply(pair.value);
+                    addArrayToArrayNode(newNode).apply(pair.value);
                 } else if (pair.value instanceof ValueItem) {
                     final ObjectNode newNode = JsonNodeFactory.instance.objectNode();
                     node.set(pair.key, newNode);
@@ -237,7 +242,7 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
 
     private void accept(final ObjectNode node, final ValueItem item) {
         Option.of(item)
-                .map(addMapItemsToObjectNode(node))
+                .map(addMapToObjectNode(node))
                 .map(addPairToObjectNode(node));
     }
 }
