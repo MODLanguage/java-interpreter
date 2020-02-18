@@ -97,7 +97,12 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                     node.add(JsonNodeFactory.instance.textNode(prim.toString()));
                 } else if (pv instanceof NumberPrimitive) {
                     final NumberPrimitive prim = (NumberPrimitive) pv;
-                    node.add(JsonNodeFactory.instance.numberNode(prim.numericValue()));
+                    final Number n = prim.numericValue();
+                    if (n instanceof Double || n instanceof Float) {
+                        node.add(JsonNodeFactory.instance.numberNode(n.doubleValue()));
+                    } else if (n instanceof Integer || n instanceof Long) {
+                        node.add(JsonNodeFactory.instance.numberNode(n.longValue()));
+                    }
                 } else if (pv instanceof TruePrimitive) {
                     node.add(JsonNodeFactory.instance.booleanNode(true));
                 } else if (pv instanceof FalsePrimitive) {
@@ -197,7 +202,16 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                     node.set(pair.key, JsonNodeFactory.instance.textNode(prim.toString()));
                 } else if (pair.value instanceof NumberPrimitive) {
                     final NumberPrimitive prim = (NumberPrimitive) ((Pair) p).value;
-                    node.set(pair.key, JsonNodeFactory.instance.numberNode(prim.numericValue()));
+                    final Number n = prim.numericValue();
+                    if (n instanceof Double) {
+                        node.set(pair.key, JsonNodeFactory.instance.numberNode(n.doubleValue()));
+                    } else if (n instanceof Float) {
+                        node.set(pair.key, JsonNodeFactory.instance.numberNode(n.floatValue()));
+                    } else if (n instanceof Integer) {
+                        node.set(pair.key, JsonNodeFactory.instance.numberNode(n.intValue()));
+                    } else if (n instanceof Long) {
+                        node.set(pair.key, JsonNodeFactory.instance.numberNode(n.longValue()));
+                    }
                 } else if (pair.value instanceof TruePrimitive) {
                     node.set(pair.key, JsonNodeFactory.instance.booleanNode(true));
                 } else if (pair.value instanceof FalsePrimitive) {

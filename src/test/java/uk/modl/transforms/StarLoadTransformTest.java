@@ -1,7 +1,11 @@
 package uk.modl.transforms;
 
+import io.vavr.collection.List;
 import org.junit.Test;
+import uk.modl.model.Array;
 import uk.modl.model.Modl;
+import uk.modl.model.Pair;
+import uk.modl.model.StringPrimitive;
 import uk.modl.parser.Parser;
 
 import static org.junit.Assert.assertEquals;
@@ -16,10 +20,10 @@ public class StarLoadTransformTest {
         final Modl modl = parser.apply("*l=`./src/test/resources/modl/load_test_1.modl`;c=d");
         assertNotNull(modl);
 
-        final Modl result = starLoadTransform.apply(modl);
+        final Pair result = starLoadTransform.apply((Pair) modl.structures.get(0));
         assertNotNull(result);
 
-        final Modl expected = parser.apply("a=b;c=d");
+        final Pair expected = new Pair("*l", new Array(List.of(new Pair("a", new StringPrimitive("b")))));
         assertEquals(expected, result);
     }
 }

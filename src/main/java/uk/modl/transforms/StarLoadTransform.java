@@ -9,21 +9,22 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.interpreter.Interpreter;
+import uk.modl.model.Array;
+import uk.modl.model.ArrayItem;
 import uk.modl.model.Modl;
 import uk.modl.model.Pair;
-import uk.modl.model.Structure;
 import uk.modl.utils.SimpleCache;
 import uk.modl.utils.Util;
 import uk.modl.visitor.ModlVisitorBase;
 
-public class StarLoadTransform implements Function1<Modl, Modl> {
+public class StarLoadTransform implements Function1<Pair, Pair> {
     private static final Interpreter interpreter = new Interpreter();
     private static SimpleCache<String, Modl> cache = new SimpleCache<>();
 
     /**
      * Function to extract filenames and pairs from a Modl object.
      */
-    private static Function1<Modl, List<StarLoadExtractor.LoadSet>> extractFilenamesAndPairs = (m) -> {
+    private static Function1<Pair, List<StarLoadExtractor.LoadSet>> extractFilenamesAndPairs = (m) -> {
         final StarLoadExtractor starLoadExtractor = new StarLoadExtractor();
         m.visit(starLoadExtractor);
         return starLoadExtractor.getLoadSets();
@@ -73,26 +74,26 @@ public class StarLoadTransform implements Function1<Modl, Modl> {
     /**
      * Load and interpret the Modl objects in the files specified by the *load statements
      */
-    private static final Function1<Modl, List<Tuple2<List<Modl>, Pair>>> loadModlObjects = extractFilenamesAndPairs
+    private static final Function1<Pair, List<Tuple2<List<Modl>, Pair>>> loadModlObjects = extractFilenamesAndPairs
             .andThen(convertFilesToModlObjectsAndPairs);
 
     /**
      * Applies this function to one argument and returns the result.
      *
-     * @param modl argument 1
+     * @param p argument 1
      * @return the result of function application
      */
     @Override
-    public Modl apply(final Modl modl) {
+    public Pair apply(final Pair p) {
 
         // Each tuple in this list holds the original Pair with the `*load` statements and the set of Modl objects
         // loaded using the filename[s] specified in the file list - there can be 1 or several.
         final List<Tuple2<List<Modl>, Pair>> loadedModlObjects = loadModlObjects
-                .apply(modl);
+                .apply(p);
 
-        final StarLoadMutator starLoadMutator = new StarLoadMutator(loadedModlObjects, modl);
-        modl.visit(starLoadMutator);
-        return starLoadMutator.getModl();
+        final StarLoadMutator starLoadMutator = new StarLoadMutator(loadedModlObjects, p);
+        p.visit(starLoadMutator);
+        return starLoadMutator.getPair();
     }
 
     /**
@@ -103,39 +104,34 @@ public class StarLoadTransform implements Function1<Modl, Modl> {
         private final List<Tuple2<List<Modl>, Pair>> loadedModlObjects;
 
         @Getter
-        private Modl modl;
+        private Pair pair;
 
         @Override
         public void accept(final Pair pair) {
             final Option<Tuple2<List<Modl>, Pair>> maybeFoundPair = loadedModlObjects.find(tuple2 -> pair.equals(tuple2._2));
 
             // Create a new Modl object with the updated pair.
-            modl = maybeFoundPair.map(p -> replace(modl, p))
-                    .getOrElse(modl);
+            this.pair = maybeFoundPair.map(p -> replace(pair, p))
+                    .getOrElse(this.pair);
         }
 
         /**
          * Replace any *load commands with their contents
          *
-         * @param modl        the current Modl object
+         * @param p           the current Modl object
          * @param replacement the pair to be replaced and the set of Modl objects loaded from the files.
          * @return a new Modl object with the relevant changes, sharing existing objects where possible
          */
-        private Modl replace(final Modl modl, final Tuple2<List<Modl>, Pair> replacement) {
+        private Pair replace(final Pair p, final Tuple2<List<Modl>, Pair> replacement) {
 
-            //
-            // TODO: This only handles *loads at the top level in a MODL file. Needs to be more general to handle them anywhere in the file, e.g. nested in maps, conditionals etc.
-            //
+            if (p.equals(replacement._2)) {
 
-            final List<Structure> newStructures = List.ofAll(modl.structures.flatMap(structure -> {
-                if (structure.equals(replacement._2)) {
-                    return replacement._1.flatMap(m -> m.structures);
-                } else {
-                    return List.of(structure);
-                }
-            }));
+                final List<ArrayItem> arrayItems = replacement._1.flatMap(m -> m.structures.map(structure -> (ArrayItem) structure));
+                return new Pair(p.key, new Array(arrayItems));
+            } else {
+                return p;
+            }
 
-            return new Modl(newStructures);
         }
 
     }

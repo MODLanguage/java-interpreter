@@ -1,6 +1,7 @@
 package uk.modl.model;
 
 import lombok.EqualsAndHashCode;
+import org.apache.commons.lang3.math.NumberUtils;
 import uk.modl.visitor.ModlVisitor;
 
 @EqualsAndHashCode
@@ -21,7 +22,7 @@ public class NumberPrimitive implements Primitive {
         return value;
     }
 
-    public double numericValue() {
-        return Double.parseDouble(value);
+    public Number numericValue() {
+        return NumberUtils.createNumber(value);
     }
 }

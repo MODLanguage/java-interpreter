@@ -285,16 +285,18 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private Pair visitPair(final Pair p) {
 
-        // TODO
-        final PairValue value;
-        if (p.value instanceof Array) {
-            value = visitArray((Array) p.value);
-        } else if (p.value instanceof Map) {
-            value = visitMap((Map) p.value);
-        } else if (p.value instanceof ValueItem) {
-            value = visitValueItem((ValueItem) p.value);
-        } else {
-            value = p.value;
+        referencesTransform.accept(p);
+        Pair result = referencesTransform.replace(p);
+        result = starLoadTransform.apply(result);
+
+        PairValue value = result.value;
+
+        if (value instanceof Array) {
+            value = visitArray((Array) value);
+        } else if (value instanceof Map) {
+            value = visitMap((Map) value);
+        } else if (value instanceof ValueItem) {
+            value = visitValueItem((ValueItem) value);
         }
         return new Pair(p.key, value);
     }
@@ -368,7 +370,6 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @return a ValueItem
      */
     private Primitive visitPrimitive(final Primitive prim) {
-        // TODO
         return prim;
     }
 
@@ -380,6 +381,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     @Override
     public Modl apply(final Modl modl) {
+
         final List<Structure> structures = List.ofAll(modl.structures
                 .map(this::visitStructure));
 
