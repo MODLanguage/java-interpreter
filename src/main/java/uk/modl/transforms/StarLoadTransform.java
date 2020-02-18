@@ -9,15 +9,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.interpreter.Interpreter;
-import uk.modl.model.Array;
-import uk.modl.model.ArrayItem;
-import uk.modl.model.Modl;
-import uk.modl.model.Pair;
+import uk.modl.model.*;
 import uk.modl.utils.SimpleCache;
 import uk.modl.utils.Util;
 import uk.modl.visitor.ModlVisitorBase;
 
-public class StarLoadTransform implements Function1<Pair, Pair> {
+public class StarLoadTransform implements Function1<Structure, Structure> {
     private static final Interpreter interpreter = new Interpreter();
     private static SimpleCache<String, Modl> cache = new SimpleCache<>();
 
@@ -80,20 +77,24 @@ public class StarLoadTransform implements Function1<Pair, Pair> {
     /**
      * Applies this function to one argument and returns the result.
      *
-     * @param p argument 1
+     * @param structure argument 1
      * @return the result of function application
      */
     @Override
-    public Pair apply(final Pair p) {
+    public Structure apply(final Structure structure) {
 
-        // Each tuple in this list holds the original Pair with the `*load` statements and the set of Modl objects
-        // loaded using the filename[s] specified in the file list - there can be 1 or several.
-        final List<Tuple2<List<Modl>, Pair>> loadedModlObjects = loadModlObjects
-                .apply(p);
+        if (structure instanceof Pair) {
+            final Pair p = (Pair) structure;
+            // Each tuple in this list holds the original Pair with the `*load` statements and the set of Modl objects
+            // loaded using the filename[s] specified in the file list - there can be 1 or several.
+            final List<Tuple2<List<Modl>, Pair>> loadedModlObjects = loadModlObjects
+                    .apply(p);
 
-        final StarLoadMutator starLoadMutator = new StarLoadMutator(loadedModlObjects, p);
-        p.visit(starLoadMutator);
-        return starLoadMutator.getPair();
+            final StarLoadMutator starLoadMutator = new StarLoadMutator(loadedModlObjects, p);
+            p.visit(starLoadMutator);
+            return starLoadMutator.getPair();
+        }
+        return structure;
     }
 
     /**

@@ -20,7 +20,7 @@ public class StarLoadTransformTest {
         final Modl modl = parser.apply("*l=`./src/test/resources/modl/load_test_1.modl`;c=d");
         assertNotNull(modl);
 
-        final Pair result = starLoadTransform.apply((Pair) modl.structures.get(0));
+        final Pair result = (Pair) starLoadTransform.apply(modl.structures.get(0));
         assertNotNull(result);
 
         final Pair expected = new Pair("*l", new Array(List.of(new Pair("a", new StringPrimitive("b")))));

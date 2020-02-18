@@ -11,11 +11,23 @@ import uk.modl.transforms.*;
  */
 public class InterpreterVisitor implements Function1<Modl, Modl> {
 
-    private final StarLoadTransform starLoadTransform = new StarLoadTransform();
-    private final StarClassTransform starClassTransform = new StarClassTransform();
-    private final StarMethodTransform starMethodTransform = new StarMethodTransform();
-    private final ReferencesTransform referencesTransform = new ReferencesTransform();
-    private final ConditionalsTransform conditionalsTransform = new ConditionalsTransform();
+    private final Function1<Structure, Structure> transform;
+
+    /**
+     * Constructor
+     */
+    public InterpreterVisitor() {
+        final StarLoadTransform starLoadTransform = new StarLoadTransform();
+        final StarClassTransform starClassTransform = new StarClassTransform();
+        final StarMethodTransform starMethodTransform = new StarMethodTransform();
+        final ReferencesTransform referencesTransform = new ReferencesTransform();
+        final ConditionalsTransform conditionalsTransform = new ConditionalsTransform();
+
+        transform = referencesTransform.andThen(starLoadTransform)
+                .andThen(starClassTransform)
+                .andThen(starMethodTransform)
+                .andThen(conditionalsTransform);
+    }
 
     /**
      * Parse Structures
@@ -106,7 +118,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private ConditionTest visitConditionTest(final ConditionTest ct) {
         // TODO
-        return referencesTransform.replace(ct);
+        return ct;
     }
 
     /**
@@ -283,9 +295,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private Pair visitPair(final Pair p) {
 
-        referencesTransform.accept(p);
-        Pair result = referencesTransform.replace(p);
-        result = starLoadTransform.apply(result);
+        Pair result = (Pair) transform.apply(p);
 
         PairValue value = result.value;
 

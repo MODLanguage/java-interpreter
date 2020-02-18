@@ -1,9 +1,6 @@
 package uk.modl.transforms;
 
-import io.vavr.Tuple;
-import io.vavr.Tuple2;
-import io.vavr.Tuple3;
-import io.vavr.Tuple4;
+import io.vavr.*;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
@@ -11,14 +8,13 @@ import io.vavr.control.Option;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
-import uk.modl.visitor.ModlVisitorBase;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ReferencesTransform extends ModlVisitorBase {
+public class ReferencesTransform implements Function1<Structure, Structure> {
     private static Pattern referencePattern = Pattern.compile("((%\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|(%` ?[\\w-]+`[\\w.<>,]*%?)|(%\\*?[\\w]+(\\.%?\\w*<?[\\w,]*>?)*%?))");
     /**
      * Possible targets of references
@@ -68,8 +64,7 @@ public class ReferencesTransform extends ModlVisitorBase {
      *
      * @param pair a Pair
      */
-    @Override
-    public void accept(final Pair pair) {
+    private void accept(final Pair pair) {
         if (pair.key.equals("?")) {
 
             // Capture the Object Index
@@ -111,7 +106,7 @@ public class ReferencesTransform extends ModlVisitorBase {
      * @param modl the Modl object
      * @return the updated copy of the Modl object
      */
-    public Modl replace(final Modl modl) {
+    private Modl replace(final Modl modl) {
         final List<Structure> list = List.ofAll(modl.structures.map(this::replace));
         return new Modl(list);
     }
@@ -236,7 +231,7 @@ public class ReferencesTransform extends ModlVisitorBase {
      * @param test a ConditionTest
      * @return a ConditionTest
      */
-    public ConditionTest replace(final ConditionTest test) {
+    private ConditionTest replace(final ConditionTest test) {
         final List<Tuple2<ConditionOrConditionGroupInterface, String>> newConditions = test.conditions.map(cond -> {
             if (cond._1 instanceof Condition) {
                 final Condition condition = (Condition) cond._1;
@@ -441,7 +436,9 @@ public class ReferencesTransform extends ModlVisitorBase {
      * @param p a Pair with references
      * @return a Pair with the references resolved
      */
-    public Pair replace(final Pair p) {
+    private Pair replace(final Pair p) {
+        accept(p);
+        resolve();
         if (p.value instanceof ValueConditional) {
             final ValueConditional vc = replace((ValueConditional) p.value);
             return new Pair(p.key, vc);
@@ -454,7 +451,7 @@ public class ReferencesTransform extends ModlVisitorBase {
     /**
      * Update the pairKeysWithReferences to new values with the references replaced by actual values
      */
-    public void resolve() {
+    private void resolve() {
         pairKeysWithReferences = HashMap.ofEntries(
                 pairKeysWithReferences.map(tuple2 -> {
 
@@ -645,6 +642,17 @@ public class ReferencesTransform extends ModlVisitorBase {
             }
             return curr;
         };
+    }
+
+    /**
+     * Applies this function to one argument and returns the result.
+     *
+     * @param structure argument 1
+     * @return the result of function application
+     */
+    @Override
+    public Structure apply(final Structure structure) {
+        return replace(structure);
     }
 
     private enum ReferenceType {
