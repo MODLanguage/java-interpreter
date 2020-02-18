@@ -105,10 +105,8 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @return a ConditionTest
      */
     private ConditionTest visitConditionTest(final ConditionTest ct) {
-
         // TODO
-
-        return ct;
+        return referencesTransform.replace(ct);
     }
 
     /**

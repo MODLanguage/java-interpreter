@@ -236,7 +236,7 @@ public class ReferencesTransform extends ModlVisitorBase {
      * @param test a ConditionTest
      * @return a ConditionTest
      */
-    private ConditionTest replace(final ConditionTest test) {
+    public ConditionTest replace(final ConditionTest test) {
         final List<Tuple2<ConditionOrConditionGroupInterface, String>> newConditions = test.conditions.map(cond -> {
             if (cond._1 instanceof Condition) {
                 final Condition condition = (Condition) cond._1;
