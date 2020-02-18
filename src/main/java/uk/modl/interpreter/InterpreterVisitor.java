@@ -11,19 +11,20 @@ import uk.modl.transforms.*;
  */
 public class InterpreterVisitor implements Function1<Modl, Modl> {
 
-    private final Function1<Structure, Structure> transform;
+    private final Function1<Structure, Structure> pipeline;
 
     /**
      * Constructor
      */
     public InterpreterVisitor() {
-        final StarLoadTransform starLoadTransform = new StarLoadTransform();
-        final StarClassTransform starClassTransform = new StarClassTransform();
-        final StarMethodTransform starMethodTransform = new StarMethodTransform();
-        final ReferencesTransform referencesTransform = new ReferencesTransform();
-        final ConditionalsTransform conditionalsTransform = new ConditionalsTransform();
+        final TransformationContext ctx = new TransformationContext();
+        final StarLoadTransform starLoadTransform = new StarLoadTransform(ctx);
+        final StarClassTransform starClassTransform = new StarClassTransform(ctx);
+        final StarMethodTransform starMethodTransform = new StarMethodTransform(ctx);
+        final ReferencesTransform referencesTransform = new ReferencesTransform(ctx);
+        final ConditionalsTransform conditionalsTransform = new ConditionalsTransform(ctx);
 
-        transform = referencesTransform.andThen(starLoadTransform)
+        pipeline = referencesTransform.andThen(starLoadTransform)
                 .andThen(starClassTransform)
                 .andThen(starMethodTransform)
                 .andThen(conditionalsTransform);
@@ -57,10 +58,12 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private TopLevelConditional visitTopLevelConditional(final TopLevelConditional tlc) {
 
-        final List<ConditionTest> tests = tlc.tests
+        final TopLevelConditional result = (TopLevelConditional) pipeline.apply(tlc);
+
+        final List<ConditionTest> tests = result.tests
                 .map(this::visitConditionTest);
 
-        final List<TopLevelConditionalReturn> returns = tlc.returns
+        final List<TopLevelConditionalReturn> returns = result.returns
                 .map(this::visitTopLevelConditionalReturn);
 
         return new TopLevelConditional(tests, returns);
@@ -193,7 +196,9 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private Array visitArray(final Array arr) {
 
-        final List<ArrayItem> items = arr.arrayItems
+        Array result = (Array) pipeline.apply(arr);
+
+        final List<ArrayItem> items = result.arrayItems
                 .map(this::visitArrayItem);
 
         return new Array(items);
@@ -267,8 +272,9 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @return a Map
      */
     private Map visitMap(final Map map) {
+        Map result = (Map) pipeline.apply(map);
 
-        final List<MapItem> items = map.mapItems
+        final List<MapItem> items = result.mapItems
                 .map(this::visitMapItem);
 
         return new Map(items);
@@ -295,7 +301,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private Pair visitPair(final Pair p) {
 
-        Pair result = (Pair) transform.apply(p);
+        Pair result = (Pair) pipeline.apply(p);
 
         PairValue value = result.value;
 

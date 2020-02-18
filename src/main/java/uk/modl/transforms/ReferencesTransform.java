@@ -5,6 +5,8 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.control.Option;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
@@ -14,8 +16,16 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@RequiredArgsConstructor
 public class ReferencesTransform implements Function1<Structure, Structure> {
     private static Pattern referencePattern = Pattern.compile("((%\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|(%` ?[\\w-]+`[\\w.<>,]*%?)|(%\\*?[\\w]+(\\.%?\\w*<?[\\w,]*>?)*%?))");
+
+    /**
+     * The context for this invocation of the interpreter
+     */
+    @NonNull
+    private final TransformationContext ctx;
+
     /**
      * Possible targets of references
      */
@@ -470,11 +480,35 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
                             .getOrElse(result);
 
 
-                    // TODO: Handle %* references
+                    // Handle %* references
+                    result = groupedByType.get(ReferenceType.INSTRUCTION_REF)
+                            .map(this::instructionToReferencedItems)
+                            .map(replaceInstructionReference(result))
+                            .getOrElse(result);
+
                     // TODO: process complex references
 
                     return result;
                 }));
+    }
+
+    private Function<Array, Tuple2<String, Pair>> replaceInstructionReference(final Tuple2<String, Pair> result) {
+        return items -> Tuple.of(result._1, new Pair(result._1, items));
+    }
+
+    private Array instructionToReferencedItems(final List<String> instructionRef) {
+        final List<ArrayItem> list = instructionRef.flatMap(ir -> {
+            if ("%*load".equals(ir)) {
+                return ctx.getFilesLoaded()
+                        .map(f -> (ArrayItem) new StringPrimitive(f));
+            } else if ("%*class".equals(ir)) {
+                // TODO:
+            } else if ("%*method".equals(ir)) {
+                // TODO:
+            }
+            return List.empty();
+        });
+        return new Array(list);
     }
 
     /**

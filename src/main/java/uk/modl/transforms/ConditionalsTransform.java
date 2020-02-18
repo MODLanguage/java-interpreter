@@ -1,9 +1,18 @@
 package uk.modl.transforms;
 
 import io.vavr.Function1;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import uk.modl.model.Structure;
 
+@RequiredArgsConstructor
 public class ConditionalsTransform implements Function1<Structure, Structure> {
+    /**
+     * The context for this invocation of the interpreter
+     */
+    @NonNull
+    private final TransformationContext ctx;
+
     /**
      * Applies this function to one argument and returns the result.
      *

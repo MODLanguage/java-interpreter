@@ -13,7 +13,8 @@ import static org.junit.Assert.assertNotNull;
 
 public class StarLoadTransformTest {
     private static Parser parser = new Parser();
-    private static StarLoadTransform starLoadTransform = new StarLoadTransform();
+    private static TransformationContext ctx = new TransformationContext();
+    private static StarLoadTransform starLoadTransform = new StarLoadTransform(ctx);
 
     @Test
     public void test_load_file_successfully() {
