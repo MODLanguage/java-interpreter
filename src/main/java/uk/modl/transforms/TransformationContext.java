@@ -20,6 +20,6 @@ public class TransformationContext {
      * @param filenames a List of String filenames
      */
     public void addFilesLoaded(final List<String> filenames) {
-        filesLoaded = filesLoaded.appendAll(filenames);
+        filesLoaded = filenames.appendAll(filesLoaded);
     }
 }

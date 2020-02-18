@@ -23,6 +23,7 @@ import io.vavr.Function1;
 import io.vavr.control.Option;
 import uk.modl.model.Modl;
 import uk.modl.parser.Parser;
+import uk.modl.transforms.TransformationContext;
 
 /**
  * Interpret a MODL String
@@ -47,5 +48,9 @@ public class Interpreter implements Function1<String, Modl> {
                 .map(parser)
                 .map(interpreterVisitor)
                 .getOrElseThrow(() -> new RuntimeException("Cannot parse null input"));
+    }
+
+    public void setCtx(final TransformationContext ctx) {
+        interpreterVisitor.setCtx(ctx);
     }
 }

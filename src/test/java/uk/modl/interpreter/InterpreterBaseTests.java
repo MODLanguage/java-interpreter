@@ -24,7 +24,6 @@ import static org.junit.Assert.fail;
 @Log4j2
 public class InterpreterBaseTests {
 
-    private static Interpreter interpreter = new Interpreter();
     private static JacksonJsonNodeTransformer jsonTransformer = new JacksonJsonNodeTransformer();
     private List<String> errors = new ArrayList<>();
     private ObjectMapper mapper = new ObjectMapper();
@@ -66,7 +65,7 @@ public class InterpreterBaseTests {
 
     private void checkValidTestInput(final TestInput testInput) {
         try {
-            final Modl modl = interpreter.apply(testInput.input);
+            final Modl modl = new Interpreter().apply(testInput.input);
             if (modl != null) {
                 final JsonNode jsonResult = jsonTransformer.apply(modl);
 
@@ -130,7 +129,7 @@ public class InterpreterBaseTests {
     private void checkInValidTestInput(final TestInput testInput) {
         log.info("Failing Input : " + testInput.input);
         try {
-            interpreter.apply(testInput.input);
+            new Interpreter().apply(testInput.input);
             fail("Expected error");
         } catch (Exception e) {
             if (!testInput.expected_output.equals(e.getMessage())) {

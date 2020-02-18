@@ -20,7 +20,7 @@ public class StarLoadExtractor extends ModlVisitorBase {
      * @param key the String to check
      * @return true if the key represents a LOAD instruction
      */
-    private static boolean isLoadInstruction(final String key) {
+    public static boolean isLoadInstruction(final String key) {
         final String lowerCase = key.toLowerCase();
         return lowerCase
                 .equals("*l") || lowerCase

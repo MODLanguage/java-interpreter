@@ -12,17 +12,22 @@ import uk.modl.transforms.*;
 public class InterpreterVisitor implements Function1<Modl, Modl> {
 
     private final Function1<Structure, Structure> pipeline;
+    private final StarLoadTransform starLoadTransform;
+    private final StarClassTransform starClassTransform;
+    private final StarMethodTransform starMethodTransform;
+    private final ReferencesTransform referencesTransform;
+    private final ConditionalsTransform conditionalsTransform;
 
     /**
      * Constructor
      */
     public InterpreterVisitor() {
         final TransformationContext ctx = new TransformationContext();
-        final StarLoadTransform starLoadTransform = new StarLoadTransform(ctx);
-        final StarClassTransform starClassTransform = new StarClassTransform(ctx);
-        final StarMethodTransform starMethodTransform = new StarMethodTransform(ctx);
-        final ReferencesTransform referencesTransform = new ReferencesTransform(ctx);
-        final ConditionalsTransform conditionalsTransform = new ConditionalsTransform(ctx);
+        starLoadTransform = new StarLoadTransform(ctx);
+        starClassTransform = new StarClassTransform(ctx);
+        starMethodTransform = new StarMethodTransform(ctx);
+        referencesTransform = new ReferencesTransform(ctx);
+        conditionalsTransform = new ConditionalsTransform(ctx);
 
         pipeline = referencesTransform.andThen(starLoadTransform)
                 .andThen(starClassTransform)
@@ -400,5 +405,14 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
                 .map(this::visitStructure));
 
         return new Modl(structures);
+    }
+
+    public void setCtx(final TransformationContext ctx) {
+        starLoadTransform.seCtx(ctx);
+        starClassTransform.seCtx(ctx);
+        starMethodTransform.seCtx(ctx);
+        referencesTransform.seCtx(ctx);
+        conditionalsTransform.seCtx(ctx);
+
     }
 }

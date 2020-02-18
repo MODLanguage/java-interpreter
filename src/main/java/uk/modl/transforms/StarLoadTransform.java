@@ -17,11 +17,12 @@ import uk.modl.utils.SimpleCache;
 import uk.modl.utils.Util;
 import uk.modl.visitor.ModlVisitorBase;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 @RequiredArgsConstructor
 public class StarLoadTransform implements Function1<Structure, Structure> {
-    private static final Interpreter interpreter = new Interpreter();
     private static SimpleCache<String, Modl> cache = new SimpleCache<>();
-
     /**
      * Function to extract filenames and pairs from a Modl object.
      */
@@ -30,10 +31,17 @@ public class StarLoadTransform implements Function1<Structure, Structure> {
         m.visit(starLoadExtractor);
         return starLoadExtractor.getLoadSets();
     };
+
+    /**
+     * The context for this invocation of the interpreter
+     */
+    @NonNull
+    private TransformationContext ctx;
+
     /**
      * Function to convert filenames and pairs to Either Strings/Modl-objects and Pairs.
      */
-    private static Function1<List<StarLoadExtractor.LoadSet>, List<Tuple3<List<String>, List<Modl>, Pair>>> convertFilesToModlObjectsAndPairs = (list) -> {
+    private List<Tuple3<List<String>, List<Modl>, Pair>> convertFilesToModlObjectsAndPairs(final List<StarLoadExtractor.LoadSet> list) {
 
         List<Tuple3<List<String>, List<Modl>, Pair>> result = List.empty();
 
@@ -48,7 +56,8 @@ public class StarLoadTransform implements Function1<Structure, Structure> {
             final List<StarLoadExtractor.FileSpec> cacheMisses = partition._2;
 
             // Map the filenames to the contents of the files, or Error
-            final List<Tuple2<StarLoadExtractor.FileSpec, String>> contents = cacheMisses.map(Util.getFileContents);
+            final List<Tuple2<StarLoadExtractor.FileSpec, String>> contents = cacheMisses.filter(spec -> Files.exists(Paths.get(spec.filename)))
+                    .map(Util.getFileContents);
 
             //
             // TODO: If any load returns an error AND we have a cached copy then use the cached copy for up to 7 days.
@@ -56,7 +65,11 @@ public class StarLoadTransform implements Function1<Structure, Structure> {
 
             // Interpret each MODL string from each file
             final List<Tuple2<StarLoadExtractor.FileSpec, Modl>> modlObjects = contents
-                    .map(filenameAndContents -> Tuple.of(filenameAndContents._1, interpreter.apply(filenameAndContents._2)));
+                    .map(filenameAndContents -> {
+                        final Interpreter interpreter = new Interpreter();
+                        interpreter.setCtx(ctx);
+                        return Tuple.of(filenameAndContents._1, interpreter.apply(filenameAndContents._2));
+                    });
 
             // Add the cache hits
             final List<Tuple2<StarLoadExtractor.FileSpec, Modl>> cachedModlObjects = cacheHits.map(spec -> Tuple.of(spec, cache.get(spec.filename)));
@@ -76,17 +89,7 @@ public class StarLoadTransform implements Function1<Structure, Structure> {
         }
 
         return result;
-    };
-    /**
-     * Load and interpret the Modl objects in the files specified by the *load statements
-     */
-    private static final Function1<Pair, List<Tuple3<List<String>, List<Modl>, Pair>>> loadModlObjects = extractFilenamesAndPairs
-            .andThen(convertFilesToModlObjectsAndPairs);
-    /**
-     * The context for this invocation of the interpreter
-     */
-    @NonNull
-    private final TransformationContext ctx;
+    }
 
     /**
      * Applies this function to one argument and returns the result.
@@ -99,20 +102,26 @@ public class StarLoadTransform implements Function1<Structure, Structure> {
 
         if (structure instanceof Pair) {
             final Pair p = (Pair) structure;
-            // Each tuple in this list holds the original Pair with the `*load` statements and the set of Modl objects
-            // loaded using the filename[s] specified in the file list - there can be 1 or several.
-            final List<Tuple3<List<String>, List<Modl>, Pair>> loadedModlObjects = loadModlObjects
-                    .apply(p);
+            if (StarLoadExtractor.isLoadInstruction(p.key)) {
+                // Each tuple in this list holds the original Pair with the `*load` statements and the set of Modl objects
+                // loaded using the filename[s] specified in the file list - there can be 1 or several.
+                final List<Tuple3<List<String>, List<Modl>, Pair>> loadedModlObjects = convertFilesToModlObjectsAndPairs(extractFilenamesAndPairs
+                        .apply(p));
 
-            // Record which files were loaded - for use in a `%*load` reference
-            ctx.addFilesLoaded(loadedModlObjects.flatMap(tuple -> tuple._1));
+                // Record which files were loaded - for use in a `%*load` reference
+                ctx.addFilesLoaded(loadedModlObjects.flatMap(tuple -> tuple._1));
 
 
-            final StarLoadMutator starLoadMutator = new StarLoadMutator(loadedModlObjects, p);
-            p.visit(starLoadMutator);
-            return starLoadMutator.getPair();
+                final StarLoadMutator starLoadMutator = new StarLoadMutator(loadedModlObjects, p);
+                p.visit(starLoadMutator);
+                return starLoadMutator.getPair();
+            }
         }
         return structure;
+    }
+
+    public void seCtx(final TransformationContext ctx) {
+        this.ctx = ctx;
     }
 
     /**

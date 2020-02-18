@@ -24,7 +24,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * The context for this invocation of the interpreter
      */
     @NonNull
-    private final TransformationContext ctx;
+    private TransformationContext ctx;
 
     /**
      * Possible targets of references
@@ -687,6 +687,10 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
     @Override
     public Structure apply(final Structure structure) {
         return replace(structure);
+    }
+
+    public void seCtx(final TransformationContext ctx) {
+        this.ctx = ctx;
     }
 
     private enum ReferenceType {

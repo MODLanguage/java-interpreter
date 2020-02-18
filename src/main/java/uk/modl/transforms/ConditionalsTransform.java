@@ -11,7 +11,7 @@ public class ConditionalsTransform implements Function1<Structure, Structure> {
      * The context for this invocation of the interpreter
      */
     @NonNull
-    private final TransformationContext ctx;
+    private TransformationContext ctx;
 
     /**
      * Applies this function to one argument and returns the result.
@@ -25,4 +25,7 @@ public class ConditionalsTransform implements Function1<Structure, Structure> {
         return structure;
     }
 
+    public void seCtx(final TransformationContext ctx) {
+        this.ctx = ctx;
+    }
 }
