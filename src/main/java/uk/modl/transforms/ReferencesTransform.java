@@ -113,43 +113,6 @@ public class ReferencesTransform {
         resolve();
     }
 
-    /**
-     * Replace if necessary
-     *
-     * @param test a ConditionTest
-     * @return a ConditionTest
-     */
-    private ConditionTest replace(final ConditionTest test) {
-        final Vector<Tuple2<ConditionOrConditionGroupInterface, String>> newConditions = test.conditions.map(cond -> {
-            if (cond._1 instanceof Condition) {
-                final Condition condition = (Condition) cond._1;
-                return cond.update1(replace(condition));
-            } else if (cond._1 instanceof ConditionGroup) {
-                final ConditionGroup cg = (ConditionGroup) cond._1;
-                return cond.update1(replace(cg));
-            }
-            return cond;
-        });
-
-        if (!newConditions.equals(test.conditions)) {
-            return new ConditionTest(newConditions);
-        }
-        return test;
-    }
-
-    /**
-     * Replace if necessary
-     *
-     * @param cg a ConditionGroup
-     * @return a ConditionGroup
-     */
-    private ConditionGroup replace(final ConditionGroup cg) {
-        final Vector<Tuple2<ConditionTest, String>> tests = cg.subConditionList.map(tuple -> tuple.update1(replace(tuple._1)));
-        if (!tests.equals(cg.subConditionList)) {
-            return new ConditionGroup(tests);
-        }
-        return cg;
-    }
 
     /**
      * Replace if necessary
@@ -157,7 +120,7 @@ public class ReferencesTransform {
      * @param condition a Condition
      * @return a Condition
      */
-    private Condition replace(final Condition condition) {
+    public Condition apply(final Condition condition) {
         final String lhs = condition.lhs;
         final String newLhs = (lhs == null) ?
                 null :

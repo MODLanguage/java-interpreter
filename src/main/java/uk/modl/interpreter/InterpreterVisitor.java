@@ -128,8 +128,14 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @return a ConditionTest
      */
     private ConditionTest visitConditionTest(final ConditionTest ct) {
-        // TODO
-        return ct;
+        final Vector<Tuple2<ConditionOrConditionGroupInterface, String>> newConditions = ct.conditions.map(c -> {
+            if (c._1 instanceof Condition) {
+                return c.update1(visitCondition((Condition) c._1));
+            } else {
+                return c.update1(visitConditionGroup((ConditionGroup) c._1));
+            }
+        });
+        return new ConditionTest(newConditions);
     }
 
     /**
@@ -173,13 +179,12 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @return a Condition
      */
     private Condition visitCondition(final Condition c) {
+        final Condition newCondition = referencesTransform.apply(c);
 
-        final Vector<ValueItem> values = c.values
+        final Vector<ValueItem> values = newCondition.values
                 .map(this::visitValue);
 
-        final String lhs = c.lhs;// TODO
-
-        return new Condition(lhs, c.op, values);
+        return new Condition(newCondition.lhs, newCondition.op, values);
     }
 
     /**
