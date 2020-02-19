@@ -12,7 +12,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.interpreter.Interpreter;
-import uk.modl.model.*;
+import uk.modl.model.Array;
+import uk.modl.model.ArrayItem;
+import uk.modl.model.Modl;
+import uk.modl.model.Pair;
 import uk.modl.utils.SimpleCache;
 import uk.modl.utils.Util;
 import uk.modl.visitor.ModlVisitorBase;
@@ -20,7 +23,7 @@ import uk.modl.visitor.ModlVisitorBase;
 import java.util.Objects;
 
 @RequiredArgsConstructor
-public class StarLoadTransform implements Function1<Structure, Structure> {
+public class StarLoadTransform {
     private static SimpleCache<String, Modl> cache = new SimpleCache<>();
     /**
      * Function to extract filenames and pairs from a Modl object.
@@ -98,30 +101,26 @@ public class StarLoadTransform implements Function1<Structure, Structure> {
     /**
      * Applies this function to one argument and returns the result.
      *
-     * @param structure argument 1
+     * @param p argument 1
      * @return the result of function application
      */
-    @Override
-    public Structure apply(final Structure structure) {
+    public Pair apply(final Pair p) {
 
-        if (structure instanceof Pair) {
-            final Pair p = (Pair) structure;
-            if (StarLoadExtractor.isLoadInstruction(p.key)) {
-                // Each tuple in this list holds the original Pair with the `*load` statements and the set of Modl objects
-                // loaded using the filename[s] specified in the file list - there can be 1 or several.
-                final Vector<Tuple3<Vector<String>, Vector<Modl>, Pair>> loadedModlObjects = convertFilesToModlObjectsAndPairs(extractFilenamesAndPairs
-                        .apply(p));
+        if (StarLoadExtractor.isLoadInstruction(p.key)) {
+            // Each tuple in this list holds the original Pair with the `*load` statements and the set of Modl objects
+            // loaded using the filename[s] specified in the file list - there can be 1 or several.
+            final Vector<Tuple3<Vector<String>, Vector<Modl>, Pair>> loadedModlObjects = convertFilesToModlObjectsAndPairs(extractFilenamesAndPairs
+                    .apply(p));
 
-                // Record which files were loaded - for use in a `%*load` reference
-                ctx.addFilesLoaded(loadedModlObjects.flatMap(tuple -> tuple._1));
+            // Record which files were loaded - for use in a `%*load` reference
+            ctx.addFilesLoaded(loadedModlObjects.flatMap(tuple -> tuple._1));
 
 
-                final StarLoadMutator starLoadMutator = new StarLoadMutator(loadedModlObjects, p);
-                p.visit(starLoadMutator);
-                return starLoadMutator.getPair();
-            }
+            final StarLoadMutator starLoadMutator = new StarLoadMutator(loadedModlObjects, p);
+            p.visit(starLoadMutator);
+            return starLoadMutator.getPair();
         }
-        return structure;
+        return p;
     }
 
     public void seCtx(final TransformationContext ctx) {

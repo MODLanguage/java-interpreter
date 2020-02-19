@@ -1,6 +1,9 @@
 package uk.modl.transforms;
 
-import io.vavr.*;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import io.vavr.Tuple3;
+import io.vavr.Tuple4;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import io.vavr.collection.Vector;
@@ -17,7 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
-public class ReferencesTransform implements Function1<Structure, Structure> {
+public class ReferencesTransform {
     private static Pattern referencePattern = Pattern.compile("((%\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|(%` ?[\\w-]+`[\\w.<>,]*%?)|(%\\*?[\\w]+(\\.%?\\w*<?[\\w,]*>?)*%?))");
 
     /**
@@ -111,131 +114,6 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
     }
 
     /**
-     * Replace references in a Modl object
-     *
-     * @param modl the Modl object
-     * @return the updated copy of the Modl object
-     */
-    private Modl replace(final Modl modl) {
-        final Vector<Structure> list = Vector.ofAll(modl.structures.map(this::replace));
-        return new Modl(list);
-    }
-
-    /**
-     * Dispatch `replace()` based on the Structure type
-     *
-     * @param structure a Structure
-     * @return an updated Structure
-     */
-    private Structure replace(final Structure structure) {
-        if (structure instanceof Pair) {
-            return replace((Pair) structure);
-        } else if (structure instanceof uk.modl.model.Map) {
-            return replace((uk.modl.model.Map) structure);
-        } else if (structure instanceof uk.modl.model.Array) {
-            return replace((uk.modl.model.Array) structure);
-        } else if (structure instanceof uk.modl.model.TopLevelConditional) {
-            return replace((uk.modl.model.TopLevelConditional) structure);
-        }
-        return structure;
-    }
-
-    /**
-     * Handle references in a Map
-     *
-     * @param map the Map
-     * @return a possibly new Map
-     */
-    private uk.modl.model.Map replace(final uk.modl.model.Map map) {
-        final Vector<MapItem> mapItems = Vector.ofAll(map.mapItems.map(mi -> {
-            if (mi instanceof Pair) {
-                return replace((Pair) mi);
-            } else if (mi instanceof MapConditional) {
-                return replace((MapConditional) mi);
-            } else {
-                throw new InterpreterError("Unknown MapItem type: " + mi.getClass());
-            }
-        }));
-
-        // Was it updated?
-        if (!mapItems.eq(map.mapItems)) {
-            return new uk.modl.model.Map(mapItems);
-        }
-        // Return the existing map if there were no changes
-        return map;
-    }
-
-    /**
-     * Replace the elements of an Array if necessary
-     *
-     * @param arr the Array that might contain references
-     * @return a possibly updated Array
-     */
-    private Array replace(final uk.modl.model.Array arr) {
-        final Vector<ArrayItem> arrayItems = Vector.ofAll(arr.arrayItems.map(ai -> {
-            if (ai instanceof Pair) {
-                return replace((Pair) ai);
-            } else if (ai instanceof uk.modl.model.Map) {
-                return replace((uk.modl.model.Map) ai);
-            } else if (ai instanceof Array) {
-                return replace((Array) ai);
-            } else if (ai instanceof Primitive) {
-                return ai;// Primitives are handled as Pair values
-            } else if (ai instanceof ArrayConditional) {
-                return replace((ArrayConditional) ai);
-            } else {
-                throw new InterpreterError("Unknown ArrayItem type: " + ai.getClass());
-            }
-        }));
-
-        // Was it updated?
-        if (!arrayItems.eq(arr.arrayItems)) {
-            return new uk.modl.model.Array(arrayItems);
-        }
-        // Return the existing Array if there were no changes
-        return arr;
-    }
-
-    /**
-     * Replace if necessary
-     *
-     * @param conditional an ArrayConditional
-     * @return an ArrayConditional
-     */
-    private ArrayConditional replace(final ArrayConditional conditional) {
-
-        final Vector<ConditionTest> newConditionTests = conditional.tests.map(this::replace);
-
-        final Vector<ArrayConditionalReturn> arrayConditionalReturns = conditional.returns.map(ret -> {
-            final Vector<ArrayItem> arrayItems = ret.items.map(ai -> {
-                if (ai instanceof ArrayConditional) {
-                    return replace((ArrayConditional) ai);
-                } else if (ai instanceof uk.modl.model.Map) {
-                    return replace((uk.modl.model.Map) ai);
-                } else if (ai instanceof Pair) {
-                    return replace((Pair) ai);
-                } else if (ai instanceof Array) {
-                    return replace((Array) ai);
-                } else if (ai instanceof Primitive) {
-                    return (Primitive) replace((Primitive) ai);
-                } else {
-                    throw new InterpreterError("Unknown ArrayItem type: " + ai.getClass());
-                }
-            });
-
-            if (!ret.items.equals(arrayItems)) {
-                return new ArrayConditionalReturn(arrayItems);
-            }
-            return ret;
-        });
-
-        if (!newConditionTests.equals(conditional.tests) || !arrayConditionalReturns.equals(conditional.returns)) {
-            return new ArrayConditional(newConditionTests, arrayConditionalReturns);
-        }
-        return conditional;
-    }
-
-    /**
      * Replace if necessary
      *
      * @param test a ConditionTest
@@ -290,65 +168,11 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
                                         .get().value.toString() :
                                 lhs;
         final Vector<ValueItem> values = condition.values;
-        final Vector<ValueItem> valueItems = values.map(this::replace);
 
-        if (!valueItems.equals(values) || !(lhs != null && lhs.equals(newLhs))) {
-            return new Condition(newLhs, condition.op, valueItems);
+        if (!(lhs != null && lhs.equals(newLhs))) {
+            return new Condition(newLhs, condition.op, values);
         }
         return condition;
-    }
-
-    /**
-     * Replace if necessary
-     *
-     * @param v a ValueConditional
-     * @return a ValueConditional
-     */
-    private ValueConditional replace(final ValueConditional v) {
-        final Vector<ConditionTest> tests = v.tests.map(this::replace);
-        final Vector<ValueConditionalReturn> returns = v.returns.map(this::replace);
-        if (!tests.equals(v.tests) || !returns.equals(v.returns)) {
-            return new ValueConditional(tests, returns);
-        }
-        return v;
-    }
-
-    /**
-     * Replace if necessary
-     *
-     * @param ret a ValueConditionalReturn
-     * @return a ValueConditionalReturn
-     */
-    private ValueConditionalReturn replace(final ValueConditionalReturn ret) {
-        final Vector<ValueItem> items = ret.items.map(this::replace);
-        if (!items.equals(ret.items)) {
-            return new ValueConditionalReturn(items);
-        }
-        return ret;
-    }
-
-    /**
-     * Replace if necessary
-     *
-     * @param v a ValueItem
-     * @return a ValueItem
-     */
-    private ValueItem replace(final ValueItem v) {
-        if (v instanceof ValueConditional) {
-            return replace((ValueConditional) v);
-        } else if (v instanceof uk.modl.model.Map) {
-            return replace((uk.modl.model.Map) v);
-        } else if (v instanceof Pair) {
-            return replace((Pair) v);
-        } else if (v instanceof Array) {
-            return replace((Array) v);
-        } else if (v instanceof StringPrimitive) {
-            final String s = replace(((StringPrimitive) v).value);
-            if (!s.equals(((StringPrimitive) v).value)) {
-                return new StringPrimitive(s);
-            }
-        }
-        return v;
     }
 
     /**
@@ -375,90 +199,15 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
     }
 
     /**
-     * Replace if necessary
-     *
-     * @param tlc a TopLevelConditional
-     * @return a TopLevelConditional
-     */
-    private Structure replace(final TopLevelConditional tlc) {
-        final Vector<ConditionTest> tests = tlc.tests.map(this::replace);
-        final Vector<TopLevelConditionalReturn> returns = tlc.returns.map(this::replace);
-        if (!tests.equals(tlc.tests) || !returns.equals(tlc.returns)) {
-            return new TopLevelConditional(tests, returns);
-        }
-        return tlc;
-    }
-
-    /**
-     * Replace if necessary
-     *
-     * @param tlcr a TopLevelConditionalReturn
-     * @return a TopLevelConditionalReturn
-     */
-    private TopLevelConditionalReturn replace(final TopLevelConditionalReturn tlcr) {
-        final Vector<Structure> structures = tlcr.structures.map(this::replace);
-        if (!structures.equals(tlcr.structures)) {
-            return new TopLevelConditionalReturn(structures);
-        }
-        return tlcr;
-    }
-
-    /**
-     * Replace if necessary
-     *
-     * @param mi a MapConditional
-     * @return a MapConditional
-     */
-    private MapConditional replace(final MapConditional mi) {
-        final Vector<ConditionTest> tests = mi.tests.map(this::replace);
-        final Vector<MapConditionalReturn> returns = mi.returns.map(this::replace);
-        if (!tests.equals(mi.tests) || !returns.equals(mi.returns)) {
-            return new MapConditional(tests, returns);
-        }
-        return mi;
-    }
-
-    /**
-     * Replace if necessary
-     *
-     * @param mcr a MapConditionalReturn
-     * @return a MapConditionalReturn
-     */
-    private MapConditionalReturn replace(final MapConditionalReturn mcr) {
-        final Vector<MapItem> mapItems = mcr.items.map(this::replace);
-        if (!mapItems.equals(mcr.items)) {
-            return new MapConditionalReturn(mapItems);
-        }
-        return mcr;
-    }
-
-    /**
-     * Replace if necessary
-     *
-     * @param mi a MapItem
-     * @return a MapItem
-     */
-    private MapItem replace(final MapItem mi) {
-        if (mi instanceof MapConditional) {
-            return replace((MapConditional) mi);
-        } else if (mi instanceof Pair) {
-            return replace((Pair) mi);
-        }
-        return mi;
-    }
-
-    /**
      * Replace a pair with a new value that has its references resolved.
      *
      * @param p a Pair with references
      * @return a Pair with the references resolved
      */
-    private Pair replace(final Pair p) {
+    public Pair apply(final Pair p) {
         accept(p);
-        resolve();
         if (p.value instanceof ValueConditional) {
-            final ValueConditional vc = replace((ValueConditional) p.value);
-            return new Pair(p.key, vc);
+            return p;
         } else {
             return pairKeysWithReferences.get(p.key)
                     .getOrElse(p);
@@ -740,17 +489,6 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
             }
             return curr;
         };
-    }
-
-    /**
-     * Applies this function to one argument and returns the result.
-     *
-     * @param structure argument 1
-     * @return the result of function application
-     */
-    @Override
-    public Structure apply(final Structure structure) {
-        return replace(structure);
     }
 
     public void seCtx(final TransformationContext ctx) {

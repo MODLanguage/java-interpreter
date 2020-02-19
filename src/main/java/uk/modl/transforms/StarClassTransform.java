@@ -1,15 +1,17 @@
 package uk.modl.transforms;
 
-import io.vavr.Function1;
 import io.vavr.collection.Vector;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import uk.modl.model.*;
+import uk.modl.model.Map;
+import uk.modl.model.MapItem;
+import uk.modl.model.Pair;
+import uk.modl.model.PairValue;
 import uk.modl.parser.errors.InterpreterError;
 
 @RequiredArgsConstructor
-public class StarClassTransform implements Function1<Structure, Structure> {
+public class StarClassTransform {
 
     /**
      * The context for this invocation of the interpreter
@@ -34,18 +36,14 @@ public class StarClassTransform implements Function1<Structure, Structure> {
     /**
      * Applies this function to one argument and returns the result.
      *
-     * @param structure argument 1
+     * @param p argument 1
      * @return the result of function application
      */
-    @Override
-    public Structure apply(final Structure structure) {
-        if (structure instanceof Pair) {
-            final Pair p = (Pair) structure;
-            if (isClassInstruction(p.key)) {
-                accept(p);
-            }
+    public Pair apply(final Pair p) {
+        if (isClassInstruction(p.key)) {
+            accept(p);
         }
-        return structure;
+        return p;
     }
 
     public void seCtx(final TransformationContext ctx) {

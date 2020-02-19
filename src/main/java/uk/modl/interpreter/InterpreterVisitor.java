@@ -11,7 +11,6 @@ import uk.modl.transforms.*;
  */
 public class InterpreterVisitor implements Function1<Modl, Modl> {
 
-    private final Function1<Structure, Structure> pipeline;
     private final StarLoadTransform starLoadTransform;
     private final StarClassTransform starClassTransform;
     private final StarMethodTransform starMethodTransform;
@@ -29,11 +28,14 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
         referencesTransform = new ReferencesTransform(ctx);
         conditionalsTransform = new ConditionalsTransform(ctx);
 
+        /* Suggested order of processing
         pipeline = starLoadTransform
                 .andThen(starClassTransform)
                 .andThen(starMethodTransform)
                 .andThen(referencesTransform)
                 .andThen(conditionalsTransform);
+
+         */
     }
 
     /**
@@ -64,7 +66,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private TopLevelConditional visitTopLevelConditional(final TopLevelConditional tlc) {
 
-        final TopLevelConditional result = (TopLevelConditional) pipeline.apply(tlc);
+        final TopLevelConditional result = conditionalsTransform.apply(tlc);
 
         final Vector<ConditionTest> tests = result.tests
                 .map(this::visitConditionTest);
@@ -202,9 +204,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private Array visitArray(final Array arr) {
 
-        Array result = (Array) pipeline.apply(arr);
-
-        final Vector<ArrayItem> items = result.arrayItems
+        final Vector<ArrayItem> items = arr.arrayItems
                 .map(this::visitArrayItem);
 
         return new Array(items);
@@ -278,9 +278,8 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @return a Map
      */
     private Map visitMap(final Map map) {
-        Map result = (Map) pipeline.apply(map);
 
-        final Vector<MapItem> items = result.mapItems
+        final Vector<MapItem> items = map.mapItems
                 .map(this::visitMapItem);
 
         return new Map(items);
@@ -307,9 +306,8 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private Pair visitPair(final Pair p) {
 
-        Pair result = (Pair) pipeline.apply(p);
-
-        PairValue value = result.value;
+        final Pair pair = referencesTransform.apply(starMethodTransform.apply(starClassTransform.apply(starLoadTransform.apply(p))));
+        PairValue value = pair.value;
 
         if (value instanceof Array) {
             value = visitArray((Array) value);
