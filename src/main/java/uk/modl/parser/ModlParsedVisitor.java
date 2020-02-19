@@ -148,30 +148,28 @@ public class ModlParsedVisitor {
 
         Vector<Tuple2<ConditionOrConditionGroupInterface, String>> subConditionList = Vector.empty();
 
-        String lastOperator = null;
+        Tuple2<ConditionOrConditionGroupInterface, String> lastSubCondition = null;
         boolean shouldNegate = false;
         for (final ParseTree child : ctx.children) {
             if (child instanceof MODLParser.Modl_condition_groupContext) {
                 if (shouldNegate) {
                     final NegatedConditionGroup conditionGroup = visitNegatedConditionGroup((MODLParser.Modl_condition_groupContext) child);
-                    subConditionList = subConditionList.append(Tuple.of(conditionGroup, lastOperator));
+                    lastSubCondition = Tuple.of(conditionGroup, null);
                 } else {
                     final ConditionGroup conditionGroup = visitConditionGroup((MODLParser.Modl_condition_groupContext) child);
-                    subConditionList = subConditionList.append(Tuple.of(conditionGroup, lastOperator));
+                    lastSubCondition = Tuple.of(conditionGroup, null);
                 }
 
-                lastOperator = null;
                 shouldNegate = false;
             } else if (child instanceof MODLParser.Modl_conditionContext) {
                 if (shouldNegate) {
                     final NegatedCondition condition = visitNegatedCondition(((MODLParser.Modl_conditionContext) child));
-                    subConditionList = subConditionList.append(Tuple.of(condition, lastOperator));
+                    lastSubCondition = Tuple.of(condition, null);
                 } else {
                     final Condition condition = visitCondition((MODLParser.Modl_conditionContext) child);
-                    subConditionList = subConditionList.append(Tuple.of(condition, lastOperator));
+                    lastSubCondition = Tuple.of(condition, null);
                 }
 
-                lastOperator = null;
                 shouldNegate = false;
             } else {
                 if (child
@@ -179,10 +177,15 @@ public class ModlParsedVisitor {
                         .equals("!")) {
                     shouldNegate = true;
                 } else {
-                    lastOperator = child.getText();
+                    assert lastSubCondition != null;
+                    subConditionList = subConditionList.append(lastSubCondition.update2(child.getText()));
+                    lastSubCondition = null;
                 }
             }
 
+        }
+        if (lastSubCondition != null) {
+            subConditionList = subConditionList.append(lastSubCondition);
         }
 
         return new ConditionTest(subConditionList);
