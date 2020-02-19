@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import uk.modl.model.*;
 import uk.modl.parser.antlr.MODLParser;
 import uk.modl.parser.errors.InterpreterError;
+import uk.modl.utils.Util;
 
 /**
  * Parser for a MODLParser.ModlContext object
@@ -575,8 +576,9 @@ public class ModlParsedVisitor {
                                         (ctx.NUMBER() != null) ?
                                                 new NumberPrimitive(ctx.NUMBER()
                                                         .getText()) :
-                                                (ctx.QUOTED() != null) ? new StringPrimitive(ctx.QUOTED()
-                                                        .getText()) :
+                                                (ctx.QUOTED() != null) ? new StringPrimitive(Util.unquote(ctx.QUOTED()
+                                                        .getText())) :
                                                         null;
     }
+
 }

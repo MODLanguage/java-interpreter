@@ -281,11 +281,18 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      */
     private Condition replace(final Condition condition) {
         final String lhs = condition.lhs;
-        final String newLhs = (lhs == null) ? null : replace(lhs);
+        final String newLhs = (lhs == null) ?
+                null :
+                (lhs.contains("%")) ?
+                        replace(lhs) :
+                        pairs.containsKey(lhs) ?
+                                pairs.get(lhs)
+                                        .get().value.toString() :
+                                lhs;
         final Vector<ValueItem> values = condition.values;
         final Vector<ValueItem> valueItems = values.map(this::replace);
 
-        if (!valueItems.equals(values)) {
+        if (!valueItems.equals(values) || !(lhs != null && lhs.equals(newLhs))) {
             return new Condition(newLhs, condition.op, valueItems);
         }
         return condition;

@@ -7,6 +7,7 @@ import io.vavr.Function1;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
+import org.apache.commons.lang3.StringUtils;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.model.Array;
 import uk.modl.model.PairValue;
@@ -20,6 +21,7 @@ import java.util.Objects;
 import java.util.Scanner;
 
 public class Util {
+    public static final String GRAVE = "`";
     /**
      * Map a filename to Either an Error or the file contents as a String
      */
@@ -65,4 +67,13 @@ public class Util {
         }
     });
 
+    /**
+     * Remove single quotes from a String
+     *
+     * @param text the possibly quoted String
+     * @return an unquoted String
+     */
+    public static String unquote(final String text) {
+        return StringUtils.removeEnd(StringUtils.removeStart(text, GRAVE), GRAVE);
+    }
 }

@@ -3,7 +3,9 @@ package uk.modl.transforms;
 import io.vavr.Function1;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import uk.modl.model.ArrayConditional;
 import uk.modl.model.Structure;
+import uk.modl.model.TopLevelConditional;
 
 @RequiredArgsConstructor
 public class ConditionalsTransform implements Function1<Structure, Structure> {
@@ -21,7 +23,13 @@ public class ConditionalsTransform implements Function1<Structure, Structure> {
      */
     @Override
     public Structure apply(final Structure structure) {
-        // TODO: currently a no-op
+        // TODO:
+        if (structure instanceof TopLevelConditional) {
+            final TopLevelConditional tlc = (TopLevelConditional) structure;
+        } else if (structure instanceof ArrayConditional) {
+            // TODO:
+            System.out.println("CONDITION: ArrayConditional");
+        }
         return structure;
     }
 
