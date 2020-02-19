@@ -1,6 +1,6 @@
 package uk.modl.extractors;
 
-import io.vavr.collection.List;
+import io.vavr.collection.Vector;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,7 @@ import uk.modl.visitor.ModlVisitorBase;
 @Getter
 public class StarLoadExtractor extends ModlVisitorBase {
 
-    private List<LoadSet> loadSets = List.empty();
+    private Vector<LoadSet> loadSets = Vector.empty();
     private boolean immutable = false;
 
     /**
@@ -48,7 +48,7 @@ public class StarLoadExtractor extends ModlVisitorBase {
 
                 immutable |= isImmutableLoadInstruction(key);
 
-                final List<FileSpec> specs = Util.getFilenames.apply(pair.value)
+                final Vector<FileSpec> specs = Util.getFilenames.apply(pair.value)
                         .map(this::normalize);
 
                 loadSets = loadSets.append(new LoadSet(pair, specs));
@@ -95,7 +95,7 @@ public class StarLoadExtractor extends ModlVisitorBase {
     @RequiredArgsConstructor
     public static class LoadSet {
         public final Pair pair;
-        public final List<FileSpec> fileSet;
+        public final Vector<FileSpec> fileSet;
     }
 
     /**

@@ -2,7 +2,7 @@ package uk.modl.interpreter;
 
 import io.vavr.Function1;
 import io.vavr.Tuple2;
-import io.vavr.collection.List;
+import io.vavr.collection.Vector;
 import uk.modl.model.*;
 import uk.modl.transforms.*;
 
@@ -66,10 +66,10 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
 
         final TopLevelConditional result = (TopLevelConditional) pipeline.apply(tlc);
 
-        final List<ConditionTest> tests = result.tests
+        final Vector<ConditionTest> tests = result.tests
                 .map(this::visitConditionTest);
 
-        final List<TopLevelConditionalReturn> returns = result.returns
+        final Vector<TopLevelConditionalReturn> returns = result.returns
                 .map(this::visitTopLevelConditionalReturn);
 
         return new TopLevelConditional(tests, returns);
@@ -83,10 +83,10 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private MapConditional visitMapConditional(final MapConditional mc) {
 
-        final List<ConditionTest> tests = mc.tests
+        final Vector<ConditionTest> tests = mc.tests
                 .map(this::visitConditionTest);
 
-        final List<MapConditionalReturn> returns = mc.returns
+        final Vector<MapConditionalReturn> returns = mc.returns
                 .map(this::visitMapConditionalReturn);
 
         return new MapConditional(tests, returns);
@@ -100,7 +100,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private MapConditionalReturn visitMapConditionalReturn(final MapConditionalReturn mcr) {
 
-        final List<MapItem> items = mcr.items
+        final Vector<MapItem> items = mcr.items
                 .map(this::visitMapItem);
         return new MapConditionalReturn(items);
     }
@@ -113,7 +113,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private TopLevelConditionalReturn visitTopLevelConditionalReturn(final TopLevelConditionalReturn tlcr) {
 
-        final List<Structure> structures = tlcr.structures
+        final Vector<Structure> structures = tlcr.structures
                 .map(this::visitStructure);
 
         return new TopLevelConditionalReturn(structures);
@@ -137,7 +137,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @return a ConditionGroup
      */
     private ConditionGroup visitConditionGroup(final ConditionGroup cg) {
-        final List<Tuple2<ConditionTest, String>> subConditionList = handleConditionGroup(cg.subConditionList);
+        final Vector<Tuple2<ConditionTest, String>> subConditionList = handleConditionGroup(cg.subConditionList);
         return new ConditionGroup(subConditionList);
     }
 
@@ -147,7 +147,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param list the context
      * @return a list of subconditions
      */
-    private List<Tuple2<ConditionTest, String>> handleConditionGroup(final List<Tuple2<ConditionTest, String>> list) {
+    private Vector<Tuple2<ConditionTest, String>> handleConditionGroup(final Vector<Tuple2<ConditionTest, String>> list) {
         // TODO
         return list;
     }
@@ -160,7 +160,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private NegatedConditionGroup visitNegatedConditionGroup(final NegatedConditionGroup ncg) {
 
-        final List<Tuple2<ConditionTest, String>> subConditionList = handleConditionGroup(ncg.subConditionList);
+        final Vector<Tuple2<ConditionTest, String>> subConditionList = handleConditionGroup(ncg.subConditionList);
         return new NegatedConditionGroup(subConditionList);
     }
 
@@ -172,7 +172,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private Condition visitCondition(final Condition c) {
 
-        final List<ValueItem> values = c.values
+        final Vector<ValueItem> values = c.values
                 .map(this::visitValue);
 
         final String lhs = c.lhs;// TODO
@@ -188,7 +188,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private NegatedCondition visitNegatedCondition(final NegatedCondition nc) {
 
-        final List<ValueItem> values = nc.values
+        final Vector<ValueItem> values = nc.values
                 .map(this::visitValue);
 
         return new NegatedCondition(nc.op, values);
@@ -204,7 +204,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
 
         Array result = (Array) pipeline.apply(arr);
 
-        final List<ArrayItem> items = result.arrayItems
+        final Vector<ArrayItem> items = result.arrayItems
                 .map(this::visitArrayItem);
 
         return new Array(items);
@@ -249,10 +249,10 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private ArrayConditional visitArrayConditional(final ArrayConditional ac) {
 
-        final List<ConditionTest> tests = ac.tests
+        final Vector<ConditionTest> tests = ac.tests
                 .map(this::visitConditionTest);
 
-        final List<ArrayConditionalReturn> returns = ac.returns
+        final Vector<ArrayConditionalReturn> returns = ac.returns
                 .map(this::visitArrayConditionalReturn);
 
         return new ArrayConditional(tests, returns);
@@ -266,7 +266,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private ArrayConditionalReturn visitArrayConditionalReturn(final ArrayConditionalReturn acr) {
 
-        final List<ArrayItem> items = acr.items
+        final Vector<ArrayItem> items = acr.items
                 .map(this::visitArrayItem);
         return new ArrayConditionalReturn(items);
     }
@@ -280,7 +280,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
     private Map visitMap(final Map map) {
         Map result = (Map) pipeline.apply(map);
 
-        final List<MapItem> items = result.mapItems
+        final Vector<MapItem> items = result.mapItems
                 .map(this::visitMapItem);
 
         return new Map(items);
@@ -343,10 +343,10 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private ValueConditional visitValueConditional(final ValueConditional vc) {
 
-        final List<ConditionTest> tests = vc.tests
+        final Vector<ConditionTest> tests = vc.tests
                 .map(this::visitConditionTest);
 
-        final List<ValueConditionalReturn> returns = vc.returns
+        final Vector<ValueConditionalReturn> returns = vc.returns
                 .map(this::visitValueConditionReturn);
 
         return new ValueConditional(tests, returns);
@@ -360,7 +360,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private ValueConditionalReturn visitValueConditionReturn(final ValueConditionalReturn vcr) {
 
-        final List<ValueItem> items = vcr.items
+        final Vector<ValueItem> items = vcr.items
                 .map(this::visitValueItem);
 
         return new ValueConditionalReturn(items);
@@ -402,7 +402,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
     @Override
     public Modl apply(final Modl modl) {
 
-        final List<Structure> structures = List.ofAll(modl.structures
+        final Vector<Structure> structures = Vector.ofAll(modl.structures
                 .map(this::visitStructure));
 
         return new Modl(structures);

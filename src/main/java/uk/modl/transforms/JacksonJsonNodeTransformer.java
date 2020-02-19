@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vavr.Function1;
-import io.vavr.collection.List;
+import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.extern.log4j.Log4j2;
 import uk.modl.model.*;
@@ -39,7 +39,7 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
      */
     @Override
     public JsonNode apply(final Modl modl) {
-        final List<Structure> filtered = modl.structures.filter(shouldAppearInOutput);
+        final Vector<Structure> filtered = modl.structures.filter(shouldAppearInOutput);
 
         switch (filtered.size()) {
             case 0:

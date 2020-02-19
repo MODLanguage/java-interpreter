@@ -1,6 +1,6 @@
 package uk.modl.transforms;
 
-import io.vavr.collection.List;
+import io.vavr.collection.Vector;
 import org.junit.Test;
 import uk.modl.model.Array;
 import uk.modl.model.Modl;
@@ -24,7 +24,7 @@ public class StarLoadTransformTest {
         final Pair result = (Pair) starLoadTransform.apply(modl.structures.get(0));
         assertNotNull(result);
 
-        final Pair expected = new Pair("*l", new Array(List.of(new Pair("a", new StringPrimitive("b")))));
+        final Pair expected = new Pair("*l", new Array(Vector.of(new Pair("a", new StringPrimitive("b")))));
         assertEquals(expected, result);
     }
 }

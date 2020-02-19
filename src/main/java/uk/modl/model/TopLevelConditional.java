@@ -1,6 +1,6 @@
 package uk.modl.model;
 
-import io.vavr.collection.List;
+import io.vavr.collection.Vector;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import uk.modl.visitor.ModlVisitor;
@@ -8,10 +8,10 @@ import uk.modl.visitor.ModlVisitor;
 @ToString
 @EqualsAndHashCode
 public class TopLevelConditional implements Structure {
-    public final List<ConditionTest> tests;
-    public final List<TopLevelConditionalReturn> returns;
+    public final Vector<ConditionTest> tests;
+    public final Vector<TopLevelConditionalReturn> returns;
 
-    public TopLevelConditional(final List<ConditionTest> tests, final List<TopLevelConditionalReturn> returns) {
+    public TopLevelConditional(final Vector<ConditionTest> tests, final Vector<TopLevelConditionalReturn> returns) {
         this.tests = tests;
         this.returns = returns;
     }

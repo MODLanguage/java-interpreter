@@ -4,7 +4,7 @@ import io.vavr.Function1;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.Tuple3;
-import io.vavr.collection.List;
+import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,7 +25,7 @@ public class StarLoadTransform implements Function1<Structure, Structure> {
     /**
      * Function to extract filenames and pairs from a Modl object.
      */
-    private static Function1<Pair, List<StarLoadExtractor.LoadSet>> extractFilenamesAndPairs = (m) -> {
+    private static Function1<Pair, Vector<StarLoadExtractor.LoadSet>> extractFilenamesAndPairs = (m) -> {
         final StarLoadExtractor starLoadExtractor = new StarLoadExtractor();
         m.visit(starLoadExtractor);
         return starLoadExtractor.getLoadSets();
@@ -40,22 +40,22 @@ public class StarLoadTransform implements Function1<Structure, Structure> {
     /**
      * Function to convert filenames and pairs to Either Strings/Modl-objects and Pairs.
      */
-    private List<Tuple3<List<String>, List<Modl>, Pair>> convertFilesToModlObjectsAndPairs(final List<StarLoadExtractor.LoadSet> list) {
+    private Vector<Tuple3<Vector<String>, Vector<Modl>, Pair>> convertFilesToModlObjectsAndPairs(final Vector<StarLoadExtractor.LoadSet> list) {
 
-        List<Tuple3<List<String>, List<Modl>, Pair>> result = List.empty();
+        Vector<Tuple3<Vector<String>, Vector<Modl>, Pair>> result = Vector.empty();
 
         for (final StarLoadExtractor.LoadSet loadSet : list) {
 
             // Each tuple has a list of filenames
-            final List<StarLoadExtractor.FileSpec> filenames = loadSet.fileSet;
+            final Vector<StarLoadExtractor.FileSpec> filenames = loadSet.fileSet;
 
             // Partition the file specs into cache hits and those that are either cache misses or force-reloads.
-            final Tuple2<List<StarLoadExtractor.FileSpec>, List<StarLoadExtractor.FileSpec>> partition = filenames.partition(spec -> cache.contains(spec.filename) && !spec.forceLoad);
-            final List<StarLoadExtractor.FileSpec> cacheHits = partition._1;
-            final List<StarLoadExtractor.FileSpec> cacheMisses = partition._2;
+            final Tuple2<Vector<StarLoadExtractor.FileSpec>, Vector<StarLoadExtractor.FileSpec>> partition = filenames.partition(spec -> cache.contains(spec.filename) && !spec.forceLoad);
+            final Vector<StarLoadExtractor.FileSpec> cacheHits = partition._1;
+            final Vector<StarLoadExtractor.FileSpec> cacheMisses = partition._2;
 
             // Map the filenames to the contents of the files, or Error
-            final List<Tuple2<StarLoadExtractor.FileSpec, String>> contents = cacheMisses.map(Util.getFileContents)
+            final Vector<Tuple2<StarLoadExtractor.FileSpec, String>> contents = cacheMisses.map(Util.getFileContents)
                     .filter(Objects::nonNull);
 
             //
@@ -65,26 +65,26 @@ public class StarLoadTransform implements Function1<Structure, Structure> {
             // Interpret each MODL string from each file
             final Interpreter interpreter = new Interpreter();
             interpreter.setCtx(ctx);
-            final List<Tuple2<StarLoadExtractor.FileSpec, Modl>> modlObjects = contents
+            final Vector<Tuple2<StarLoadExtractor.FileSpec, Modl>> modlObjects = contents
                     .map(filenameAndContents -> {
                         final Modl modl = interpreter.apply(filenameAndContents._2);
                         return Tuple.of(filenameAndContents._1, modl);
                     });
 
             // Add the cache hits
-            final List<Tuple2<StarLoadExtractor.FileSpec, Modl>> cachedModlObjects = cacheHits.map(spec -> Tuple.of(spec, cache.get(spec.filename)));
+            final Vector<Tuple2<StarLoadExtractor.FileSpec, Modl>> cachedModlObjects = cacheHits.map(spec -> Tuple.of(spec, cache.get(spec.filename)));
 
             // Re-interpret the cached Modl objects to extract classes, methods etc. for the current context
             cachedModlObjects.map(t -> t._2)
                     .forEach(interpreter::apply);
 
-            final List<String> modlObjectFilenames = modlObjects.map(t -> t._1.filename);
-            final List<Modl> modlObjectList = modlObjects.map(t -> t._2);
+            final Vector<String> modlObjectFilenames = modlObjects.map(t -> t._1.filename);
+            final Vector<Modl> modlObjectList = modlObjects.map(t -> t._2);
 
             result = result.append(Tuple.of(modlObjectFilenames, modlObjectList, loadSet.pair));
 
-            final List<String> cachedModlObjectFilenames = cachedModlObjects.map(t -> t._1.filename);
-            final List<Modl> cachedModlObjectList = cachedModlObjects.map(t -> t._2);
+            final Vector<String> cachedModlObjectFilenames = cachedModlObjects.map(t -> t._1.filename);
+            final Vector<Modl> cachedModlObjectList = cachedModlObjects.map(t -> t._2);
 
             result = result.append(Tuple.of(cachedModlObjectFilenames, cachedModlObjectList, loadSet.pair));
 
@@ -109,7 +109,7 @@ public class StarLoadTransform implements Function1<Structure, Structure> {
             if (StarLoadExtractor.isLoadInstruction(p.key)) {
                 // Each tuple in this list holds the original Pair with the `*load` statements and the set of Modl objects
                 // loaded using the filename[s] specified in the file list - there can be 1 or several.
-                final List<Tuple3<List<String>, List<Modl>, Pair>> loadedModlObjects = convertFilesToModlObjectsAndPairs(extractFilenamesAndPairs
+                final Vector<Tuple3<Vector<String>, Vector<Modl>, Pair>> loadedModlObjects = convertFilesToModlObjectsAndPairs(extractFilenamesAndPairs
                         .apply(p));
 
                 // Record which files were loaded - for use in a `%*load` reference
@@ -133,14 +133,14 @@ public class StarLoadTransform implements Function1<Structure, Structure> {
      */
     @AllArgsConstructor
     private static class StarLoadMutator extends ModlVisitorBase {
-        private final List<Tuple3<List<String>, List<Modl>, Pair>> loadedModlObjects;
+        private final Vector<Tuple3<Vector<String>, Vector<Modl>, Pair>> loadedModlObjects;
 
         @Getter
         private Pair pair;
 
         @Override
         public void accept(final Pair pair) {
-            final Option<Tuple3<List<String>, List<Modl>, Pair>> maybeFoundPair = loadedModlObjects.find(tuple3 -> pair.equals(tuple3._3));
+            final Option<Tuple3<Vector<String>, Vector<Modl>, Pair>> maybeFoundPair = loadedModlObjects.find(tuple3 -> pair.equals(tuple3._3));
 
             // Create a new Modl object with the updated pair.
             this.pair = maybeFoundPair.map(p -> replace(pair, p))
@@ -154,11 +154,11 @@ public class StarLoadTransform implements Function1<Structure, Structure> {
          * @param replacement the pair to be replaced and the set of Modl objects loaded from the files.
          * @return a new Modl object with the relevant changes, sharing existing objects where possible
          */
-        private Pair replace(final Pair p, final Tuple3<List<String>, List<Modl>, Pair> replacement) {
+        private Pair replace(final Pair p, final Tuple3<Vector<String>, Vector<Modl>, Pair> replacement) {
 
             if (p.equals(replacement._3)) {
 
-                final List<ArrayItem> arrayItems = replacement._2.flatMap(m -> m.structures.map(structure -> (ArrayItem) structure));
+                final Vector<ArrayItem> arrayItems = replacement._2.flatMap(m -> m.structures.map(structure -> (ArrayItem) structure));
                 return new Pair(p.key, new Array(arrayItems));
             } else {
                 return p;

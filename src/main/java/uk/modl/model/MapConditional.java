@@ -1,6 +1,6 @@
 package uk.modl.model;
 
-import io.vavr.collection.List;
+import io.vavr.collection.Vector;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import uk.modl.visitor.ModlVisitor;
@@ -8,10 +8,10 @@ import uk.modl.visitor.ModlVisitor;
 @ToString
 @EqualsAndHashCode
 public class MapConditional implements MapItem {
-    public final List<ConditionTest> tests;
-    public final List<MapConditionalReturn> returns;
+    public final Vector<ConditionTest> tests;
+    public final Vector<MapConditionalReturn> returns;
 
-    public MapConditional(final List<ConditionTest> tests, final List<MapConditionalReturn> returns) {
+    public MapConditional(final Vector<ConditionTest> tests, final Vector<MapConditionalReturn> returns) {
         this.tests = tests;
         this.returns = returns;
     }

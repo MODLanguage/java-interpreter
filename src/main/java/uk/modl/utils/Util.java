@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vavr.Function1;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
-import io.vavr.collection.List;
+import io.vavr.collection.Vector;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.model.Array;
 import uk.modl.model.PairValue;
@@ -42,16 +42,16 @@ public class Util {
      * Map a PairValue to a list of Strings - for use as file names.
      * This is only applicable to *load MODL instructions
      */
-    public static Function1<PairValue, List<String>> getFilenames = (pairValue) -> {
+    public static Function1<PairValue, Vector<String>> getFilenames = (pairValue) -> {
         if (pairValue instanceof Primitive) {
             final Primitive pv = (Primitive) pairValue;
-            return List.of(pv.toString());
+            return Vector.of(pv.toString());
         }
         if (pairValue instanceof Array) {
             final Array a = (Array) pairValue;
-            return List.ofAll(a.arrayItems.map(Objects::toString));
+            return Vector.ofAll(a.arrayItems.map(Objects::toString));
         }
-        return List.empty();
+        return Vector.empty();
     };
 
     /**

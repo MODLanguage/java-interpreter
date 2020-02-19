@@ -1,8 +1,8 @@
 package uk.modl.transforms;
 
 import io.vavr.collection.LinkedHashSet;
-import io.vavr.collection.List;
 import io.vavr.collection.Set;
+import io.vavr.collection.Vector;
 import lombok.Getter;
 
 /**
@@ -14,7 +14,7 @@ public class TransformationContext {
      * Files loaded by a *load instruction
      */
     @Getter
-    private List<String> filesLoaded = List.empty();
+    private Vector<String> filesLoaded = Vector.empty();
 
     /**
      * Methods defined by a *method instruction
@@ -33,7 +33,7 @@ public class TransformationContext {
      *
      * @param filenames a List of String filenames
      */
-    public void addFilesLoaded(final List<String> filenames) {
+    public void addFilesLoaded(final Vector<String> filenames) {
         filesLoaded = filenames.appendAll(filesLoaded);
     }
 

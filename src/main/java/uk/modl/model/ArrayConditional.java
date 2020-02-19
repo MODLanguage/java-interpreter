@@ -1,6 +1,6 @@
 package uk.modl.model;
 
-import io.vavr.collection.List;
+import io.vavr.collection.Vector;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import uk.modl.visitor.ModlVisitor;
@@ -8,10 +8,10 @@ import uk.modl.visitor.ModlVisitor;
 @ToString
 @EqualsAndHashCode
 public class ArrayConditional implements ArrayItem {
-    public final List<ConditionTest> tests;
-    public final List<ArrayConditionalReturn> returns;
+    public final Vector<ConditionTest> tests;
+    public final Vector<ArrayConditionalReturn> returns;
 
-    public ArrayConditional(final List<ConditionTest> tests, final List<ArrayConditionalReturn> returns) {
+    public ArrayConditional(final Vector<ConditionTest> tests, final Vector<ArrayConditionalReturn> returns) {
         this.tests = tests;
         this.returns = returns;
     }

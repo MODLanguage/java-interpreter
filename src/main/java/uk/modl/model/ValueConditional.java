@@ -1,6 +1,6 @@
 package uk.modl.model;
 
-import io.vavr.collection.List;
+import io.vavr.collection.Vector;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import uk.modl.visitor.ModlVisitor;
@@ -8,10 +8,10 @@ import uk.modl.visitor.ModlVisitor;
 @ToString
 @EqualsAndHashCode
 public class ValueConditional implements ValueItem {
-    public final List<ConditionTest> tests;
-    public final List<ValueConditionalReturn> returns;
+    public final Vector<ConditionTest> tests;
+    public final Vector<ValueConditionalReturn> returns;
 
-    public ValueConditional(final List<ConditionTest> tests, final List<ValueConditionalReturn> returns) {
+    public ValueConditional(final Vector<ConditionTest> tests, final Vector<ValueConditionalReturn> returns) {
         this.tests = tests;
         this.returns = returns;
     }

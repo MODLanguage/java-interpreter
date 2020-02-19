@@ -2,8 +2,8 @@ package uk.modl.transforms;
 
 import io.vavr.*;
 import io.vavr.collection.HashMap;
-import io.vavr.collection.List;
 import io.vavr.collection.Map;
+import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -117,7 +117,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * @return the updated copy of the Modl object
      */
     private Modl replace(final Modl modl) {
-        final List<Structure> list = List.ofAll(modl.structures.map(this::replace));
+        final Vector<Structure> list = Vector.ofAll(modl.structures.map(this::replace));
         return new Modl(list);
     }
 
@@ -147,7 +147,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * @return a possibly new Map
      */
     private uk.modl.model.Map replace(final uk.modl.model.Map map) {
-        final List<MapItem> mapItems = List.ofAll(map.mapItems.map(mi -> {
+        final Vector<MapItem> mapItems = Vector.ofAll(map.mapItems.map(mi -> {
             if (mi instanceof Pair) {
                 return replace((Pair) mi);
             } else if (mi instanceof MapConditional) {
@@ -172,7 +172,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * @return a possibly updated Array
      */
     private Array replace(final uk.modl.model.Array arr) {
-        final List<ArrayItem> arrayItems = List.ofAll(arr.arrayItems.map(ai -> {
+        final Vector<ArrayItem> arrayItems = Vector.ofAll(arr.arrayItems.map(ai -> {
             if (ai instanceof Pair) {
                 return replace((Pair) ai);
             } else if (ai instanceof uk.modl.model.Map) {
@@ -204,10 +204,10 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      */
     private ArrayConditional replace(final ArrayConditional conditional) {
 
-        final List<ConditionTest> newConditionTests = conditional.tests.map(this::replace);
+        final Vector<ConditionTest> newConditionTests = conditional.tests.map(this::replace);
 
-        final List<ArrayConditionalReturn> arrayConditionalReturns = conditional.returns.map(ret -> {
-            final List<ArrayItem> arrayItems = ret.items.map(ai -> {
+        final Vector<ArrayConditionalReturn> arrayConditionalReturns = conditional.returns.map(ret -> {
+            final Vector<ArrayItem> arrayItems = ret.items.map(ai -> {
                 if (ai instanceof ArrayConditional) {
                     return replace((ArrayConditional) ai);
                 } else if (ai instanceof uk.modl.model.Map) {
@@ -242,7 +242,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * @return a ConditionTest
      */
     private ConditionTest replace(final ConditionTest test) {
-        final List<Tuple2<ConditionOrConditionGroupInterface, String>> newConditions = test.conditions.map(cond -> {
+        final Vector<Tuple2<ConditionOrConditionGroupInterface, String>> newConditions = test.conditions.map(cond -> {
             if (cond._1 instanceof Condition) {
                 final Condition condition = (Condition) cond._1;
                 return cond.update1(replace(condition));
@@ -266,7 +266,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * @return a ConditionGroup
      */
     private ConditionGroup replace(final ConditionGroup cg) {
-        final List<Tuple2<ConditionTest, String>> tests = cg.subConditionList.map(tuple -> tuple.update1(replace(tuple._1)));
+        final Vector<Tuple2<ConditionTest, String>> tests = cg.subConditionList.map(tuple -> tuple.update1(replace(tuple._1)));
         if (!tests.equals(cg.subConditionList)) {
             return new ConditionGroup(tests);
         }
@@ -282,8 +282,8 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
     private Condition replace(final Condition condition) {
         final String lhs = condition.lhs;
         final String newLhs = (lhs == null) ? null : replace(lhs);
-        final List<ValueItem> values = condition.values;
-        final List<ValueItem> valueItems = values.map(this::replace);
+        final Vector<ValueItem> values = condition.values;
+        final Vector<ValueItem> valueItems = values.map(this::replace);
 
         if (!valueItems.equals(values)) {
             return new Condition(newLhs, condition.op, valueItems);
@@ -298,8 +298,8 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * @return a ValueConditional
      */
     private ValueConditional replace(final ValueConditional v) {
-        final List<ConditionTest> tests = v.tests.map(this::replace);
-        final List<ValueConditionalReturn> returns = v.returns.map(this::replace);
+        final Vector<ConditionTest> tests = v.tests.map(this::replace);
+        final Vector<ValueConditionalReturn> returns = v.returns.map(this::replace);
         if (!tests.equals(v.tests) || !returns.equals(v.returns)) {
             return new ValueConditional(tests, returns);
         }
@@ -313,7 +313,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * @return a ValueConditionalReturn
      */
     private ValueConditionalReturn replace(final ValueConditionalReturn ret) {
-        final List<ValueItem> items = ret.items.map(this::replace);
+        final Vector<ValueItem> items = ret.items.map(this::replace);
         if (!items.equals(ret.items)) {
             return new ValueConditionalReturn(items);
         }
@@ -351,7 +351,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * @return a String
      */
     private String replace(final String s) {
-        final Map<ReferenceType, List<String>> groupedByType = getReferenceGroups(s);
+        final Map<ReferenceType, Vector<String>> groupedByType = getReferenceGroups(s);
 
         // Process the OBJECT_INDEX_REF entries
         String result = groupedByType.get(ReferenceType.OBJECT_INDEX_REF)
@@ -374,8 +374,8 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * @return a TopLevelConditional
      */
     private Structure replace(final TopLevelConditional tlc) {
-        final List<ConditionTest> tests = tlc.tests.map(this::replace);
-        final List<TopLevelConditionalReturn> returns = tlc.returns.map(this::replace);
+        final Vector<ConditionTest> tests = tlc.tests.map(this::replace);
+        final Vector<TopLevelConditionalReturn> returns = tlc.returns.map(this::replace);
         if (!tests.equals(tlc.tests) || !returns.equals(tlc.returns)) {
             return new TopLevelConditional(tests, returns);
         }
@@ -389,7 +389,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * @return a TopLevelConditionalReturn
      */
     private TopLevelConditionalReturn replace(final TopLevelConditionalReturn tlcr) {
-        final List<Structure> structures = tlcr.structures.map(this::replace);
+        final Vector<Structure> structures = tlcr.structures.map(this::replace);
         if (!structures.equals(tlcr.structures)) {
             return new TopLevelConditionalReturn(structures);
         }
@@ -403,8 +403,8 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * @return a MapConditional
      */
     private MapConditional replace(final MapConditional mi) {
-        final List<ConditionTest> tests = mi.tests.map(this::replace);
-        final List<MapConditionalReturn> returns = mi.returns.map(this::replace);
+        final Vector<ConditionTest> tests = mi.tests.map(this::replace);
+        final Vector<MapConditionalReturn> returns = mi.returns.map(this::replace);
         if (!tests.equals(mi.tests) || !returns.equals(mi.returns)) {
             return new MapConditional(tests, returns);
         }
@@ -418,7 +418,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * @return a MapConditionalReturn
      */
     private MapConditionalReturn replace(final MapConditionalReturn mcr) {
-        final List<MapItem> mapItems = mcr.items.map(this::replace);
+        final Vector<MapItem> mapItems = mcr.items.map(this::replace);
         if (!mapItems.equals(mcr.items)) {
             return new MapConditionalReturn(mapItems);
         }
@@ -465,7 +465,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
         pairKeysWithReferences = HashMap.ofEntries(
                 pairKeysWithReferences.map(tuple2 -> {
 
-                    final Map<ReferenceType, List<String>> groupedByType = getReferenceGroups(tuple2._2.value.toString());
+                    final Map<ReferenceType, Vector<String>> groupedByType = getReferenceGroups(tuple2._2.value.toString());
 
                     // Process the OBJECT_INDEX_REF entries
                     Tuple2<String, Pair> result = groupedByType.get(ReferenceType.OBJECT_INDEX_REF)
@@ -496,8 +496,8 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
         return items -> Tuple.of(result._1, new Pair(result._1, items));
     }
 
-    private Array instructionToReferencedItems(final List<String> instructionRef) {
-        final List<ArrayItem> list = instructionRef.flatMap(ir -> {
+    private Array instructionToReferencedItems(final Vector<String> instructionRef) {
+        final Vector<ArrayItem> list = instructionRef.flatMap(ir -> {
             if ("%*load".equals(ir)) {
                 return ctx.getFilesLoaded()
                         .map(f -> (ArrayItem) new StringPrimitive(f));
@@ -508,7 +508,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
                 return ctx.getMethods()
                         .map(this::methodInstructionToArrayItem);
             }
-            return List.empty();
+            return Vector.empty();
         });
         return new Array(list);
     }
@@ -520,7 +520,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * @return an ArrayItem
      */
     private ArrayItem methodInstructionToArrayItem(final StarMethodTransform.MethodInstruction m) {
-        List<MapItem> mthdItems = List.empty();
+        Vector<MapItem> mthdItems = Vector.empty();
         final Pair transformPair = new Pair("transform", new StringPrimitive(m.transform));
         if (m.name != null) {
             final Pair namePair = new Pair("name", new StringPrimitive(m.name));
@@ -530,7 +530,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
 
 
         final MapItem mthdMap = new Pair(m.id, new uk.modl.model.Map(mthdItems));
-        final List<MapItem> mthd = List.of(mthdMap);
+        final Vector<MapItem> mthd = Vector.of(mthdMap);
         return new uk.modl.model.Map(mthd);
     }
 
@@ -542,7 +542,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      */
     private ArrayItem classInstructionToArrayItem(final StarClassTransform.ClassInstruction ci) {
 
-        List<MapItem> clssItems = List.empty();
+        Vector<MapItem> clssItems = Vector.empty();
 
         if (ci.name != null) {
             final Pair p = new Pair("name", new StringPrimitive(ci.name));
@@ -564,7 +564,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
         }
 
         final MapItem clssMap = new Pair(ci.id, new uk.modl.model.Map(clssItems));
-        final List<MapItem> clss = List.of(clssMap);
+        final Vector<MapItem> clss = Vector.of(clssMap);
         return new uk.modl.model.Map(clss);
     }
 
@@ -574,11 +574,11 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * @param stringWithRefs a String
      * @return a Map of references by ReferenceType
      */
-    private Map<ReferenceType, List<String>> getReferenceGroups(final String stringWithRefs) {
+    private Map<ReferenceType, Vector<String>> getReferenceGroups(final String stringWithRefs) {
         final Matcher matcher = referencePattern.matcher(stringWithRefs);
 
         // Gather the match groups into a list of references
-        List<String> groups = List.empty();
+        Vector<String> groups = Vector.empty();
         while (matcher.find()) {
             groups = groups.append(matcher.group());
         }
@@ -593,7 +593,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * @param tuple2 a Tuple2 of a String key and a Pair with references
      * @return a function to convert the Pair in the supplied tuple to a Pair with references replaced
      */
-    private Function<List<Tuple4<String, String, Integer, Option<ArrayItem>>>, Tuple2<String, Pair>> replaceAllObjectIndexRefs(final Tuple2<String, Pair> tuple2) {
+    private Function<Vector<Tuple4<String, String, Integer, Option<ArrayItem>>>, Tuple2<String, Pair>> replaceAllObjectIndexRefs(final Tuple2<String, Pair> tuple2) {
         return refTuples -> refTuples.foldLeft(tuple2, replaceObjectIndexRefInArrayItem());
     }
 
@@ -603,7 +603,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * @param s a String with references
      * @return a function to convert the String to a String with references replaced
      */
-    private Function<List<Tuple4<String, String, Integer, Option<ArrayItem>>>, String> replaceAllObjectIndexRefsInString(final String s) {
+    private Function<Vector<Tuple4<String, String, Integer, Option<ArrayItem>>>, String> replaceAllObjectIndexRefsInString(final String s) {
         return refTuples -> refTuples.foldLeft(s, replaceObjectIndexRefInString());
     }
 
@@ -613,7 +613,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * @param tuple2 a Tuple2 of a String key and a Pair with references
      * @return a function to convert the Pair in the supplied tuple to a Pair with references replaced
      */
-    private Function<List<Tuple3<String, String, Option<Pair>>>, Tuple2<String, Pair>> replaceAllSimpleRefs(final Tuple2<String, Pair> tuple2) {
+    private Function<Vector<Tuple3<String, String, Option<Pair>>>, Tuple2<String, Pair>> replaceAllSimpleRefs(final Tuple2<String, Pair> tuple2) {
         return refTuples -> refTuples.foldLeft(tuple2, replaceSimpleRefInPair());
     }
 
@@ -623,17 +623,17 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      * @param s a String with references
      * @return a function to convert the String to a String with references replaced
      */
-    private Function<List<Tuple3<String, String, Option<Pair>>>, String> replaceAllSimpleRefsInString(final String s) {
+    private Function<Vector<Tuple3<String, String, Option<Pair>>>, String> replaceAllSimpleRefsInString(final String s) {
         return refTuples -> refTuples.foldLeft(s, replaceSimpleRefInString());
     }
 
     /**
      * Map an index to the object that it references
      *
-     * @param list a List of String indexes of the form `%1%` or `%1`
+     * @param list a Vector of String indexes of the form `%1%` or `%1`
      * @return a tuple of the original reference, %-stripped reference, integer value, and possible new value, e.g. ("%1%","1", 1, Option(ArrayItem))
      */
-    private List<Tuple4<String, String, Integer, Option<ArrayItem>>> indexToReferencedObject(final List<String> list) {
+    private Vector<Tuple4<String, String, Integer, Option<ArrayItem>>> indexToReferencedObject(final Vector<String> list) {
         return list.map(s -> Tuple.of(s, stripLeadingAndTrailingPercents(s)))// E.g. ("%1%","1")
                 .map(t -> t.append(Integer.parseInt(t._2)))// E.g. ("%1%","1", 1)
                 .map(t -> {
@@ -647,10 +647,10 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
     /**
      * Map a simple key to the Pair that it references
      *
-     * @param list a List of String indexes of the form `%var%` or `%var`
+     * @param list a Vector of String indexes of the form `%var%` or `%var`
      * @return a tuple of the original reference, %-stripped reference, and possible new value, e.g. ("%var%","var", Option(Pair))
      */
-    private List<Tuple3<String, String, Option<Pair>>> keyToReferencedObject(final List<String> list) {
+    private Vector<Tuple3<String, String, Option<Pair>>> keyToReferencedObject(final Vector<String> list) {
         return list.map(s -> Tuple.of(s, stripLeadingAndTrailingPercents(s)))// E.g. ("%var%","var")
                 .map(t -> t.append(this.pairs.get(t._2)));// E.g. ("%var%","var", Option(Pair))
     }

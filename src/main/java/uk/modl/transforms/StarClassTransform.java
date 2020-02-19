@@ -1,7 +1,7 @@
 package uk.modl.transforms;
 
 import io.vavr.Function1;
-import io.vavr.collection.List;
+import io.vavr.collection.Vector;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +63,7 @@ public class StarClassTransform implements Function1<Structure, Structure> {
             String name = null;
             String superclass = null;
             PairValue assign = null;
-            List<Pair> pairs = List.empty();
+            Vector<Pair> pairs = Vector.empty();
 
             for (final MapItem mi : ((Map) pair.value).mapItems) {
                 if (mi instanceof Pair) {
@@ -107,7 +107,7 @@ public class StarClassTransform implements Function1<Structure, Structure> {
         public final String name;
         public final String superclass;
         public final PairValue assign;
-        public final List<Pair> pairs;
+        public final Vector<Pair> pairs;
     }
 
 }
