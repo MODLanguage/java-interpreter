@@ -170,6 +170,7 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
     private void accept(final ObjectNode node, final Structure structure) {
         Option.of(structure)
                 .map(addMapToObjectNode(node))
+                .map(addTopLevelConditionalToObjectNode(node))
                 .map(addPairToObjectNode(node));
     }
 
@@ -188,6 +189,15 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                     }
                 });
 
+            }
+            return s;
+        };
+    }
+
+    private Function<Object, Object> addTopLevelConditionalToObjectNode(final ObjectNode node) {
+        return s -> {
+            if (s instanceof TopLevelConditional) {
+                ((TopLevelConditional) s).result.forEach(structure -> accept(node, structure));
             }
             return s;
         };

@@ -10,10 +10,16 @@ import uk.modl.visitor.ModlVisitor;
 public class TopLevelConditional implements Structure {
     public final Vector<ConditionTest> tests;
     public final Vector<TopLevelConditionalReturn> returns;
+    public final Vector<Structure> result;
 
     public TopLevelConditional(final Vector<ConditionTest> tests, final Vector<TopLevelConditionalReturn> returns) {
+        this(tests, returns, Vector.empty());
+    }
+
+    public TopLevelConditional(final Vector<ConditionTest> tests, final Vector<TopLevelConditionalReturn> returns, final Vector<Structure> structures) {
         this.tests = tests;
         this.returns = returns;
+        this.result = structures;
     }
 
     @Override
@@ -23,4 +29,7 @@ public class TopLevelConditional implements Structure {
         returns.forEach(s -> s.visit(visitor));
     }
 
+    public TopLevelConditional setResult(final Vector<Structure> structures) {
+        return new TopLevelConditional(tests, returns, structures);
+    }
 }

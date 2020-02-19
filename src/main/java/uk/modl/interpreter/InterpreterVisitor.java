@@ -66,15 +66,15 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private TopLevelConditional visitTopLevelConditional(final TopLevelConditional tlc) {
 
-        final TopLevelConditional result = conditionalsTransform.apply(tlc);
-
-        final Vector<ConditionTest> tests = result.tests
+        final Vector<ConditionTest> tests = tlc.tests
                 .map(this::visitConditionTest);
 
-        final Vector<TopLevelConditionalReturn> returns = result.returns
+        final Vector<TopLevelConditionalReturn> returns = tlc.returns
                 .map(this::visitTopLevelConditionalReturn);
 
-        return new TopLevelConditional(tests, returns);
+        final TopLevelConditional newTlc = new TopLevelConditional(tests, returns);
+
+        return conditionalsTransform.apply(newTlc);
     }
 
     /**
@@ -161,18 +161,6 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
     }
 
     /**
-     * Parse a ConditionGroup
-     *
-     * @param ncg the NegatedConditionGroup
-     * @return a ConditionGroup
-     */
-    private NegatedConditionGroup visitNegatedConditionGroup(final NegatedConditionGroup ncg) {
-
-        final Vector<Tuple2<ConditionTest, String>> subConditionList = handleConditionGroup(ncg.subConditionList);
-        return new NegatedConditionGroup(subConditionList);
-    }
-
-    /**
      * Parse a Condition
      *
      * @param c the Condition
@@ -185,20 +173,6 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
                 .map(this::visitValue);
 
         return new Condition(newCondition.lhs, newCondition.op, values);
-    }
-
-    /**
-     * Parse a Condition
-     *
-     * @param nc the NegatedCondition
-     * @return a Condition
-     */
-    private NegatedCondition visitNegatedCondition(final NegatedCondition nc) {
-
-        final Vector<ValueItem> values = nc.values
-                .map(this::visitValue);
-
-        return new NegatedCondition(nc.op, values);
     }
 
     /**
@@ -417,6 +391,5 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
         starMethodTransform.seCtx(ctx);
         referencesTransform.seCtx(ctx);
         conditionalsTransform.seCtx(ctx);
-
     }
 }

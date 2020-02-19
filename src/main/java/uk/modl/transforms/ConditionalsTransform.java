@@ -1,8 +1,12 @@
 package uk.modl.transforms;
 
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import io.vavr.collection.Vector;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import uk.modl.model.TopLevelConditional;
+import uk.modl.model.*;
+import uk.modl.parser.errors.InterpreterError;
 
 @RequiredArgsConstructor
 public class ConditionalsTransform {
@@ -19,8 +23,97 @@ public class ConditionalsTransform {
      * @return the result of function application
      */
     public TopLevelConditional apply(final TopLevelConditional tlc) {
-        // TODO:
+        if (tlc.tests.size() == 1) {
+            if (evaluate(tlc.tests.get(0))) {
+                final Vector<Structure> structures = tlc.returns.get(0).structures;
+
+                // TODO: Handle nested TopLevelConditionals and
+                return tlc.setResult(structures);
+            } else {
+                final Vector<Structure> structures = tlc.returns.get(1).structures;
+
+                // TODO: Handle nested TopLevelConditionals and
+                return tlc.setResult(structures);
+            }
+        } else {
+            int i = 0;
+            for (final ConditionTest test : tlc.tests) {
+                if (evaluate(test)) {
+                    final Vector<Structure> structures = tlc.returns.get(i).structures;
+
+                    // TODO: Handle nested TopLevelConditionals and
+                    return tlc.setResult(structures);
+                }
+                i += 1;
+            }
+        }
         return tlc;
+    }
+
+    private boolean evaluate(final ConditionTest test) {
+        final Vector<Tuple2<Boolean, String>> partial = test.conditions.map(this::evaluate);
+        return evaluate(partial);
+    }
+
+    private Tuple2<Boolean, String> evaluate(final Tuple2<ConditionOrConditionGroupInterface, String> tuple) {
+        // TODO
+        if (tuple._1 instanceof Condition) {
+            return Tuple.of(evaluate((Condition) tuple._1), tuple._2);
+        } else {
+            return Tuple.of(evaluate((ConditionGroup) tuple._1), tuple._2);
+        }
+    }
+
+    private boolean evaluate(final ConditionGroup cg) {
+
+        final Vector<Tuple2<Boolean, String>> partial = cg.subConditionList.map(sc -> Tuple.of(evaluate(sc._1), sc._2));
+
+        return evaluate(partial);
+    }
+
+    private boolean evaluate(final Vector<Tuple2<Boolean, String>> partial) {
+        boolean first = true;
+        boolean result = false;
+        String lastOp = null;
+        for (Tuple2<Boolean, String> partialItem : partial) {
+            if (first) {
+                first = false;
+                result = partialItem._1;
+            } else {
+                switch (lastOp) {
+                    case "&":
+                        result = result && partialItem._1;
+                        break;
+                    case "|":
+                        result = result || partialItem._1;
+                        break;
+                    default:
+                        throw new InterpreterError("Invalid operation in conditional: " + lastOp);
+                }
+            }
+            lastOp = partialItem._2;
+        }
+        return result;
+    }
+
+    private boolean evaluate(final Condition c) {
+        final int count = countMatches(c);
+        if (c.op instanceof EqualsOperator) {
+            return count > 0;
+        }
+        if (c.op instanceof NotEqualsOperator) {
+            return (count == 0);
+        }
+        return false;
+    }
+
+    private int countMatches(final Condition c) {
+        return c.values.count(v -> {
+            if (v instanceof StringPrimitive) {
+                return ((StringPrimitive) v).value.equals(c.lhs);
+            }
+            return false;
+        });
     }
 
     /**
