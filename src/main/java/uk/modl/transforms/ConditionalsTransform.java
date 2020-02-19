@@ -25,29 +25,33 @@ public class ConditionalsTransform {
     public TopLevelConditional apply(final TopLevelConditional tlc) {
         if (tlc.tests.size() == 1) {
             if (evaluate(tlc.tests.get(0))) {
-                final Vector<Structure> structures = tlc.returns.get(0).structures;
+                final Vector<Structure> structures = tlc.returns.get(0).structures.map(this::handleNestedTopLevelConditionals);
 
-                // TODO: Handle nested TopLevelConditionals and
                 return tlc.setResult(structures);
             } else {
-                final Vector<Structure> structures = tlc.returns.get(1).structures;
+                final Vector<Structure> structures = tlc.returns.get(1).structures.map(this::handleNestedTopLevelConditionals);
 
-                // TODO: Handle nested TopLevelConditionals and
                 return tlc.setResult(structures);
             }
         } else {
             int i = 0;
             for (final ConditionTest test : tlc.tests) {
                 if (evaluate(test)) {
-                    final Vector<Structure> structures = tlc.returns.get(i).structures;
+                    final Vector<Structure> structures = tlc.returns.get(i).structures.map(this::handleNestedTopLevelConditionals);
 
-                    // TODO: Handle nested TopLevelConditionals and
                     return tlc.setResult(structures);
                 }
                 i += 1;
             }
         }
         return tlc;
+    }
+
+    private Structure handleNestedTopLevelConditionals(final Structure structure) {
+        if (structure instanceof TopLevelConditional) {
+            return apply((TopLevelConditional) structure);
+        }
+        return structure;
     }
 
     private boolean evaluate(final ConditionTest test) {
