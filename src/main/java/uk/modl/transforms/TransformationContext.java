@@ -1,6 +1,8 @@
 package uk.modl.transforms;
 
+import io.vavr.collection.LinkedHashSet;
 import io.vavr.collection.List;
+import io.vavr.collection.Set;
 import lombok.Getter;
 
 /**
@@ -18,7 +20,13 @@ public class TransformationContext {
      * Methods defined by a *method instruction
      */
     @Getter
-    private List<StarMethodTransform.MethodInstruction> methods = List.empty();
+    private Set<StarMethodTransform.MethodInstruction> methods = LinkedHashSet.empty();
+
+    /**
+     * Classes defined by a *class instruction
+     */
+    @Getter
+    private Set<StarClassTransform.ClassInstruction> classes = LinkedHashSet.empty();
 
     /**
      * Add files loaded by a *load instruction
@@ -35,6 +43,15 @@ public class TransformationContext {
      * @param mi a StarMethodTransform.MethodInstruction
      */
     public void addMethodInstruction(final StarMethodTransform.MethodInstruction mi) {
-        methods = methods.append(mi);
+        methods = methods.add(mi);
+    }
+
+    /**
+     * Add a class defined by a *class instruction
+     *
+     * @param ci a StarClassTransform.ClassInstruction
+     */
+    public void addClassInstruction(final StarClassTransform.ClassInstruction ci) {
+        classes = classes.add(ci);
     }
 }

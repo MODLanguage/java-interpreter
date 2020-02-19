@@ -502,27 +502,70 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
                 return ctx.getFilesLoaded()
                         .map(f -> (ArrayItem) new StringPrimitive(f));
             } else if ("%*class".equals(ir)) {
-                // TODO:
+                return ctx.getClasses()
+                        .map(this::classInstructionToArrayItem);
             } else if ("%*method".equals(ir)) {
                 return ctx.getMethods()
-                        .map(m -> {
-                            List<MapItem> mthdItems = List.empty();
-                            final Pair transformPair = new Pair("transform", new StringPrimitive(m.transform));
-                            if (m.name != null) {
-                                final Pair namePair = new Pair("name", new StringPrimitive(m.name));
-                                mthdItems = mthdItems.append(namePair);
-                            }
-                            mthdItems = mthdItems.append(transformPair);
-
-
-                            final MapItem mthdMap = new Pair(m.id, new uk.modl.model.Map(mthdItems));
-                            final List<MapItem> mthd = List.of(mthdMap);
-                            return (ArrayItem) new uk.modl.model.Map(mthd);
-                        });
+                        .map(this::methodInstructionToArrayItem);
             }
             return List.empty();
         });
         return new Array(list);
+    }
+
+    /**
+     * Convert a StarMethodTransform.MethodInstruction to an ArrayItem
+     *
+     * @param m a StarMethodTransform.MethodInstruction
+     * @return an ArrayItem
+     */
+    private ArrayItem methodInstructionToArrayItem(final StarMethodTransform.MethodInstruction m) {
+        List<MapItem> mthdItems = List.empty();
+        final Pair transformPair = new Pair("transform", new StringPrimitive(m.transform));
+        if (m.name != null) {
+            final Pair namePair = new Pair("name", new StringPrimitive(m.name));
+            mthdItems = mthdItems.append(namePair);
+        }
+        mthdItems = mthdItems.append(transformPair);
+
+
+        final MapItem mthdMap = new Pair(m.id, new uk.modl.model.Map(mthdItems));
+        final List<MapItem> mthd = List.of(mthdMap);
+        return new uk.modl.model.Map(mthd);
+    }
+
+    /**
+     * Convert a StarClassTransform.ClassInstruction to an ArrayItem
+     *
+     * @param ci StarClassTransform.ClassInstruction
+     * @return an ArrayItem
+     */
+    private ArrayItem classInstructionToArrayItem(final StarClassTransform.ClassInstruction ci) {
+
+        List<MapItem> clssItems = List.empty();
+
+        if (ci.name != null) {
+            final Pair p = new Pair("name", new StringPrimitive(ci.name));
+            clssItems = clssItems.append(p);
+        }
+
+        if (ci.superclass != null) {
+            final Pair p = new Pair("superclass", new StringPrimitive(ci.superclass));
+            clssItems = clssItems.append(p);
+        }
+
+        if (ci.assign != null) {
+            final Pair p = new Pair("assign", ci.assign);
+            clssItems = clssItems.append(p);
+        }
+
+        if (ci.pairs != null) {
+            clssItems = clssItems.appendAll(ci.pairs);
+        }
+
+        final MapItem clssMap = new Pair(ci.id, new uk.modl.model.Map(clssItems));
+        final List<MapItem> clss = List.of(clssMap);
+        return new uk.modl.model.Map(clss);
     }
 
     /**

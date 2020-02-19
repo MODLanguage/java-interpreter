@@ -57,35 +57,38 @@ public class StarMethodTransform implements Function1<Structure, Structure> {
      *
      * @param pair the Pair
      */
-    public void accept(final Pair pair) {
-        if (isMethodInstruction(pair.key)) {
-            if (pair.value instanceof Map) {
-                String name = null;
-                String id = null;
-                String transform = null;
+    private void accept(final Pair pair) {
+        if (pair.value instanceof Map) {
+            String name = null;
+            String id = null;
+            String transform = null;
 
-                for (final MapItem mi : ((Map) pair.value).mapItems) {
-                    if (mi instanceof Pair) {
-                        final Pair p = (Pair) mi;
-                        if (p.key.equals("*i") || p.key.equals("*id")) {
+            for (final MapItem mi : ((Map) pair.value).mapItems) {
+                if (mi instanceof Pair) {
+                    final Pair p = (Pair) mi;
+                    switch (p.key) {
+                        case "*i":
+                        case "*id":
                             id = p.value.toString();
-                        }
-                        if (p.key.equals("*n") || p.key.equals("*name")) {
+                            break;
+                        case "*n":
+                        case "*name":
                             name = p.value.toString();
-                        }
-                        if (p.key.equals("*t") || p.key.equals("*transform")) {
+                            break;
+                        case "*t":
+                        case "*transform":
                             transform = p.value.toString();
-                        }
-                    } else {
-                        throw new InterpreterError("Expected a Pair but found a " + mi.getClass());
+                            break;
                     }
+                } else {
+                    throw new InterpreterError("Expected a Pair but found a " + mi.getClass());
                 }
-
-                final MethodInstruction m = new MethodInstruction(id, name, transform);
-                ctx.addMethodInstruction(m);
-            } else {
-                throw new InterpreterError("Expected a map for " + pair.key + " but found a " + pair.value.getClass());
             }
+
+            final MethodInstruction m = new MethodInstruction(id, name, transform);
+            ctx.addMethodInstruction(m);
+        } else {
+            throw new InterpreterError("Expected a map for " + pair.key + " but found a " + pair.value.getClass());
         }
     }
 

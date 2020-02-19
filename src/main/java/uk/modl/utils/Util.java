@@ -12,9 +12,12 @@ import uk.modl.model.Array;
 import uk.modl.model.PairValue;
 import uk.modl.model.Primitive;
 
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.Scanner;
 
 public class Util {
     /**
@@ -22,7 +25,14 @@ public class Util {
      */
     public static Function1<StarLoadExtractor.FileSpec, Tuple2<StarLoadExtractor.FileSpec, String>> getFileContents = (spec) -> {
         try {
-            return Tuple.of(spec, String.join("", Files.readAllLines(Paths.get(spec.filename))));
+            if (spec.filename.startsWith("http")) {
+                final URL url = new URL(spec.filename);
+                return Tuple.of(spec, new Scanner(url.openStream(), StandardCharsets.UTF_8.name()).useDelimiter("\\A")
+                        .next());
+            } else if (Files.exists(Paths.get(spec.filename))) {
+                return Tuple.of(spec, String.join("", Files.readAllLines(Paths.get(spec.filename))));
+            }
+            return null;
         } catch (final Exception e) {
             throw new RuntimeException("Could not interpret " + e.getMessage());
         }

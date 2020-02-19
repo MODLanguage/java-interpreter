@@ -50,6 +50,19 @@ public class Interpreter implements Function1<String, Modl> {
                 .getOrElseThrow(() -> new RuntimeException("Cannot parse null input"));
     }
 
+    /**
+     * Interpreter entry point2 - reprocessing of Modl objects that were cached
+     *
+     * @param modl a Modl object.
+     * @return Either an Error or a Modl object.
+     */
+    public Modl apply(final Modl modl) {
+        // Apply the function and return the result.
+        return Option.of(modl)
+                .map(interpreterVisitor)
+                .getOrElseThrow(() -> new RuntimeException("Cannot parse null input"));
+    }
+
     public void setCtx(final TransformationContext ctx) {
         interpreterVisitor.setCtx(ctx);
     }

@@ -26,6 +26,9 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
         return true;
     });
 
+    /**
+     * The result of converting a Modl object to a JsonNode
+     */
     private JsonNode result;
 
     /**
@@ -115,9 +118,7 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                     final Primitive prim = (Primitive) ((Pair) p).value;
                     node.add(JsonNodeFactory.instance.textNode(prim.toString()));
                 } else if (pv instanceof Array) {
-                    final ArrayNode newNode = JsonNodeFactory.instance.arrayNode();
-                    node.add(newNode);
-                    addArrayToArrayNode(newNode).apply(pv);
+                    // Arrays are added elsewhere
                 }
             }
             return p;
@@ -129,7 +130,9 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
             if (s instanceof Array) {
 
                 final Array arr = (Array) s;
-                arr.arrayItems.forEach(arrayItem -> accept(node, arrayItem));
+                final ArrayNode newNode = JsonNodeFactory.instance.arrayNode();
+                node.add(newNode);
+                arr.arrayItems.forEach(arrayItem -> accept(newNode, arrayItem));
 
             }
             return s;
@@ -229,7 +232,13 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                 } else if (pair.value instanceof Array) {
                     final ArrayNode newNode = JsonNodeFactory.instance.arrayNode();
                     node.set(pair.key, newNode);
-                    addArrayToArrayNode(newNode).apply(pair.value);
+                    ((Array) pair.value).arrayItems.forEach(ai -> {
+                        accept(newNode, ai);
+                    });
+                } else if (pair.value instanceof Map) {
+                    final ObjectNode newNode = JsonNodeFactory.instance.objectNode();
+                    node.set(pair.key, newNode);
+                    addMapToObjectNode(newNode).apply(pair.value);
                 } else if (pair.value instanceof ValueItem) {
                     final ObjectNode newNode = JsonNodeFactory.instance.objectNode();
                     node.set(pair.key, newNode);

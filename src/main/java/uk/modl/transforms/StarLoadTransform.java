@@ -17,8 +17,7 @@ import uk.modl.utils.SimpleCache;
 import uk.modl.utils.Util;
 import uk.modl.visitor.ModlVisitorBase;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 public class StarLoadTransform implements Function1<Structure, Structure> {
@@ -56,23 +55,28 @@ public class StarLoadTransform implements Function1<Structure, Structure> {
             final List<StarLoadExtractor.FileSpec> cacheMisses = partition._2;
 
             // Map the filenames to the contents of the files, or Error
-            final List<Tuple2<StarLoadExtractor.FileSpec, String>> contents = cacheMisses.filter(spec -> Files.exists(Paths.get(spec.filename)))
-                    .map(Util.getFileContents);
+            final List<Tuple2<StarLoadExtractor.FileSpec, String>> contents = cacheMisses.map(Util.getFileContents)
+                    .filter(Objects::nonNull);
 
             //
             // TODO: If any load returns an error AND we have a cached copy then use the cached copy for up to 7 days.
             //
 
             // Interpret each MODL string from each file
+            final Interpreter interpreter = new Interpreter();
+            interpreter.setCtx(ctx);
             final List<Tuple2<StarLoadExtractor.FileSpec, Modl>> modlObjects = contents
                     .map(filenameAndContents -> {
-                        final Interpreter interpreter = new Interpreter();
-                        interpreter.setCtx(ctx);
-                        return Tuple.of(filenameAndContents._1, interpreter.apply(filenameAndContents._2));
+                        final Modl modl = interpreter.apply(filenameAndContents._2);
+                        return Tuple.of(filenameAndContents._1, modl);
                     });
 
             // Add the cache hits
             final List<Tuple2<StarLoadExtractor.FileSpec, Modl>> cachedModlObjects = cacheHits.map(spec -> Tuple.of(spec, cache.get(spec.filename)));
+
+            // Re-interpret the cached Modl objects to extract classes, methods etc. for the current context
+            cachedModlObjects.map(t -> t._2)
+                    .forEach(interpreter::apply);
 
             final List<String> modlObjectFilenames = modlObjects.map(t -> t._1.filename);
             final List<Modl> modlObjectList = modlObjects.map(t -> t._2);
