@@ -22,6 +22,7 @@ import java.util.Scanner;
 
 public class Util {
     public static final String GRAVE = "`";
+    public static final String DOUBLEQUOTE = "\"";
     /**
      * Map a filename to Either an Error or the file contents as a String
      */
@@ -74,6 +75,6 @@ public class Util {
      * @return an unquoted String
      */
     public static String unquote(final String text) {
-        return StringUtils.removeEnd(StringUtils.removeStart(text, GRAVE), GRAVE);
+        return StringUtils.removeEnd(StringUtils.removeStart(StringUtils.removeEnd(StringUtils.removeStart(text, GRAVE), GRAVE), DOUBLEQUOTE), DOUBLEQUOTE);
     }
 }

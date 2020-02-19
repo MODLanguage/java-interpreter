@@ -126,4 +126,44 @@ public class ConditionalsTransform {
     public void seCtx(final TransformationContext ctx) {
         this.ctx = ctx;
     }
+
+    public ValueConditional apply(final ValueConditional vc) {
+        if (vc.tests.size() == 1) {
+            if (evaluate(vc.tests.get(0))) {
+                if (vc.returns.size() == 0) {
+                    return vc.setResult(Vector.of(TruePrimitive.instance));
+                }
+                final Vector<ValueItem> items = vc.returns.get(0).items.map(this::handleNestedValueConditionals);
+
+                return vc.setResult(items);
+            } else {
+                if (vc.returns.size() == 0) {
+                    return vc.setResult(Vector.of(FalsePrimitive.instance));
+                }
+                final Vector<ValueItem> items = vc.returns.get(1).items.map(this::handleNestedValueConditionals);
+
+                return vc.setResult(items);
+            }
+        } else {
+            int i = 0;
+            for (final ConditionTest test : vc.tests) {
+                if (evaluate(test)) {
+                    final Vector<ValueItem> items = vc.returns.get(i).items.map(this::handleNestedValueConditionals);
+
+                    return vc.setResult(items);
+                }
+                i += 1;
+            }
+        }
+        return vc;
+    }
+
+    private ValueItem handleNestedValueConditionals(final ValueItem vi) {
+        if (vi instanceof ValueConditional) {
+            return apply((ValueConditional) vi);
+        }
+        return vi;
+    }
+
+
 }

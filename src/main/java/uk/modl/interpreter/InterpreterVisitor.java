@@ -167,12 +167,12 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @return a Condition
      */
     private Condition visitCondition(final Condition c) {
-        final Condition newCondition = referencesTransform.apply(c);
+        final Condition c2 = referencesTransform.apply(c);
 
-        final Vector<ValueItem> values = newCondition.values
+        final Vector<ValueItem> values = c2.values
                 .map(this::visitValue);
 
-        return new Condition(newCondition.lhs, newCondition.op, values);
+        return new Condition(c2.lhs, c2.op, values);
     }
 
     /**
@@ -326,7 +326,8 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
         final Vector<ValueConditionalReturn> returns = vc.returns
                 .map(this::visitValueConditionReturn);
 
-        return new ValueConditional(tests, returns);
+        final ValueConditional valueConditional = new ValueConditional(tests, returns);
+        return conditionalsTransform.apply(valueConditional);
     }
 
     /**
@@ -351,13 +352,18 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private ValueItem visitValue(final ValueItem vi) {
 
+        if (vi instanceof StringPrimitive) {
+            final StringPrimitive stringPrimitive = new StringPrimitive(referencesTransform.apply(((StringPrimitive) vi).value));
+            return visitPrimitive(stringPrimitive);
+        }
+
         return (vi instanceof Array) ?
                 visitArray((Array) vi) :
                 (vi instanceof Map) ?
                         visitMap((Map) vi) :
                         (vi instanceof Pair) ?
                                 visitPair((Pair) vi) :
-                                visitPrimitive((Primitive) vi);
+                                vi;
     }
 
     /**

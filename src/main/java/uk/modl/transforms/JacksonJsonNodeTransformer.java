@@ -249,6 +249,13 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                     final ObjectNode newNode = JsonNodeFactory.instance.objectNode();
                     node.set(pair.key, newNode);
                     addMapToObjectNode(newNode).apply(pair.value);
+                } else if (pair.value instanceof ValueConditional) {
+                    final Vector<ValueItem> valueItems = ((ValueConditional) pair.value).result;
+                    if (valueItems.size() == 1) {
+                        accept(node, new Pair(pair.key, valueItems.get(0)));
+                    } else {
+                        accept(node, new Pair(pair.key, new Array(valueItems.map(v -> (ArrayItem) v))));
+                    }
                 } else if (pair.value instanceof ValueItem) {
                     final ObjectNode newNode = JsonNodeFactory.instance.objectNode();
                     node.set(pair.key, newNode);

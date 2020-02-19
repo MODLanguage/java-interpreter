@@ -125,7 +125,7 @@ public class ReferencesTransform {
         final String newLhs = (lhs == null) ?
                 null :
                 (lhs.contains("%")) ?
-                        replace(lhs) :
+                        apply(lhs) :
                         pairs.containsKey(lhs) ?
                                 pairs.get(lhs)
                                         .get().value.toString() :
@@ -144,7 +144,7 @@ public class ReferencesTransform {
      * @param s a String
      * @return a String
      */
-    private String replace(final String s) {
+    public String apply(final String s) {
         final Map<ReferenceType, Vector<String>> groupedByType = getReferenceGroups(s);
 
         // Process the OBJECT_INDEX_REF entries
