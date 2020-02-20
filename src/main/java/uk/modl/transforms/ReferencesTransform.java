@@ -36,10 +36,6 @@ public class ReferencesTransform {
      */
     private Map<String, Pair> pairs = HashMap.empty();
     /**
-     * Pair keys with a reference in the Pair value
-     */
-    private Map<String, Pair> pairKeysWithReferences = HashMap.empty();
-    /**
      * The Modl Object Index
      */
     private Array objectIndex;
@@ -95,21 +91,6 @@ public class ReferencesTransform {
             // ...and by their key without the underscore prefix if there is one.
             if (pair.key.startsWith("_")) {
                 pairs = pairs.put(pair.key.substring(1), pair);
-            }
-
-            // Handle References in StringPrimitives
-            if (pair.value instanceof StringPrimitive) {
-                final StringPrimitive prim = (StringPrimitive) pair.value;
-
-                // Keep track of pairs with references in their value
-                if (prim.value.contains("%")) {
-                    pairKeysWithReferences = pairKeysWithReferences.put(pair.key, pair);
-
-                    // Also track them without the underscore prefix if there is one
-                    if (pair.key.startsWith("_")) {
-                        pairKeysWithReferences = pairKeysWithReferences.put(pair.key.substring(1), pair);
-                    }
-                }
             }
         }
         resolve();
@@ -260,7 +241,7 @@ public class ReferencesTransform {
             return p;
         } else {
             accept(p);
-            return pairKeysWithReferences.get(p.key)
+            return pairs.get(p.key)
                     .getOrElse(p);
         }
     }
@@ -269,8 +250,8 @@ public class ReferencesTransform {
      * Update the pairKeysWithReferences to new values with the references replaced by actual values
      */
     private void resolve() {
-        pairKeysWithReferences = HashMap.ofEntries(
-                pairKeysWithReferences.map(tuple2 -> {
+        pairs = HashMap.ofEntries(
+                pairs.map(tuple2 -> {
 
                     final Map<ReferenceType, Vector<String>> groupedByType = getReferenceGroups(tuple2._2.value.toString());
 
