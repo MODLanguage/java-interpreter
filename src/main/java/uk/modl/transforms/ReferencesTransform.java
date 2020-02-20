@@ -95,7 +95,7 @@ public class ReferencesTransform {
                 pairs = pairs.put(pair.key.substring(1), pair);
             }
 
-            // References will only be in StringPrimitives
+            // Handle References in StringPrimitives
             if (pair.value instanceof StringPrimitive) {
                 final StringPrimitive prim = (StringPrimitive) pair.value;
 
@@ -121,19 +121,24 @@ public class ReferencesTransform {
      * @return a Condition
      */
     public Condition apply(final Condition condition) {
-        final String lhs = condition.lhs;
-        final String newLhs = (lhs == null) ?
-                null :
-                (lhs.contains("%")) ?
-                        apply(lhs) :
-                        pairs.containsKey(lhs) ?
-                                pairs.get(lhs)
-                                        .get().value.toString() :
-                                lhs;
-        final Vector<ValueItem> values = condition.values;
+        final ValueItem lhs = condition.lhs;
+
+        ValueItem newLhs = lhs;
+        if (lhs instanceof StringPrimitive) {
+            final String value = ((StringPrimitive) lhs).value;
+
+            if (value.contains("%")) {
+                newLhs = apply(lhs);
+            } else {
+                if (pairs.containsKey(value)) {
+                    newLhs = (ValueItem) pairs.get(value)
+                            .get().value;
+                }
+            }
+        }
 
         if (!(lhs != null && lhs.equals(newLhs))) {
-            return new Condition(newLhs, condition.op, values);
+            return new Condition(newLhs, condition.op, condition.values);
         }
         return condition;
     }
@@ -141,24 +146,31 @@ public class ReferencesTransform {
     /**
      * Replace if necessary
      *
-     * @param s a String
-     * @return a String
+     * @param vi a ValueItem
+     * @return a ValueItem
      */
-    public String apply(final String s) {
-        final Map<ReferenceType, Vector<String>> groupedByType = getReferenceGroups(s);
+    public ValueItem apply(final ValueItem vi) {
+        if (vi instanceof StringPrimitive) {
+            final String s = ((StringPrimitive) vi).value;
+            final Map<ReferenceType, Vector<String>> groupedByType = getReferenceGroups(s);
 
-        // Process the OBJECT_INDEX_REF entries
-        String result = groupedByType.get(ReferenceType.OBJECT_INDEX_REF)
-                .map(this::indexToReferencedObject)
-                .map(replaceAllObjectIndexRefsInString(s))
-                .getOrElse(s);
+            // Process the OBJECT_INDEX_REF entries
+            ValueItem result = groupedByType.get(ReferenceType.OBJECT_INDEX_REF)
+                    .map(this::indexToReferencedObject)
+                    .map(replaceAllObjectIndexRefsInValueItem(vi))
+                    .getOrElse(vi);
 
-        // Process simple String references, e.g. %val% etc.
-        result = groupedByType.get(ReferenceType.SIMPLE_REF)
-                .map(this::keyToReferencedObject)
-                .map(replaceAllSimpleRefsInString(result))
-                .getOrElse(result);
-        return result;
+            // Process simple String references, e.g. %val% etc.
+            result = groupedByType.get(ReferenceType.SIMPLE_REF)
+                    .map(this::keyToReferencedObject)
+                    .map(replaceAllSimpleRefsInValueItem(result))
+                    .getOrElse(result);
+
+            // TODO: process complex references
+
+            return result;
+        }
+        return vi;
     }
 
     /**
@@ -206,6 +218,10 @@ public class ReferencesTransform {
                             .getOrElse(result);
 
                     // TODO: process complex references
+                    groupedByType.get(ReferenceType.COMPLEX_REF)
+                            .forEach(x -> {
+                                System.out.println(x);
+                            });
 
                     return result;
                 }));
@@ -319,11 +335,11 @@ public class ReferencesTransform {
     /**
      * Return a function to fold a list of replacement values into a value with references, i.e. replace references with their actual values.
      *
-     * @param s a String with references
+     * @param vi a ValueItem with references
      * @return a function to convert the String to a String with references replaced
      */
-    private Function<Vector<Tuple4<String, String, Integer, Option<ArrayItem>>>, String> replaceAllObjectIndexRefsInString(final String s) {
-        return refTuples -> refTuples.foldLeft(s, replaceObjectIndexRefInString());
+    private Function<Vector<Tuple4<String, String, Integer, Option<ArrayItem>>>, ValueItem> replaceAllObjectIndexRefsInValueItem(final ValueItem vi) {
+        return refTuples -> refTuples.foldLeft(vi, replaceObjectIndexRefInValueItem());
     }
 
     /**
@@ -339,11 +355,11 @@ public class ReferencesTransform {
     /**
      * Return a function to fold a list of replacement values into a value with references, i.e. replace references with their actual values.
      *
-     * @param s a String with references
+     * @param vi a ValueItem with references
      * @return a function to convert the String to a String with references replaced
      */
-    private Function<Vector<Tuple3<String, String, Option<Pair>>>, String> replaceAllSimpleRefsInString(final String s) {
-        return refTuples -> refTuples.foldLeft(s, replaceSimpleRefInString());
+    private Function<Vector<Tuple3<String, String, Option<Pair>>>, ValueItem> replaceAllSimpleRefsInValueItem(final ValueItem vi) {
+        return refTuples -> refTuples.foldLeft(vi, replaceSimpleRefInValueItem());
     }
 
     /**
@@ -401,14 +417,14 @@ public class ReferencesTransform {
      *
      * @return a tuple with an updated Pair
      */
-    private BiFunction<String, Tuple4<String, String, Integer, Option<ArrayItem>>, String> replaceObjectIndexRefInString() {
+    private BiFunction<ValueItem, Tuple4<String, String, Integer, Option<ArrayItem>>, ValueItem> replaceObjectIndexRefInValueItem() {
         return (curr, next) -> {
             if (next._4.isDefined()) {
                 // If the item containing the reference is a StringPrimitive then do String substitution
-                if (next._4.get() instanceof StringPrimitive) {
+                if (next._4.get() instanceof StringPrimitive && curr instanceof StringPrimitive) {
                     final String r = objectIndex.arrayItems.get(next._3)
                             .toString();
-                    return curr.replace(next._1, r);
+                    return new StringPrimitive(((StringPrimitive) curr).value.replace(next._1, r));
                 }
             }
             return curr;
@@ -441,13 +457,13 @@ public class ReferencesTransform {
      *
      * @return an updated String
      */
-    private BiFunction<String, Tuple3<String, String, Option<Pair>>, String> replaceSimpleRefInString() {
+    private BiFunction<ValueItem, Tuple3<String, String, Option<Pair>>, ValueItem> replaceSimpleRefInValueItem() {
         return (curr, next) -> {
             if (next._3.isDefined()) {
                 // If the item containing the reference is a StringPrimitive then do String substitution
-                if (next._3.get().value instanceof StringPrimitive) {
+                if (next._3.get().value instanceof StringPrimitive && curr instanceof StringPrimitive) {
                     final String r = ((StringPrimitive) next._3.get().value).value;
-                    return curr.replace(next._1, r);
+                    return new StringPrimitive(((StringPrimitive) curr).value.replace(next._1, r));
                 }
             }
             return curr;

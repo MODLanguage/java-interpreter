@@ -114,7 +114,7 @@ public class ConditionalsTransform {
     private int countMatches(final Condition c) {
         return c.values.count(v -> {
             if (v instanceof StringPrimitive) {
-                return ((StringPrimitive) v).value.equals(c.lhs);
+                return ((StringPrimitive) v).value.equals(c.lhs.toString());
             }
             return false;
         });

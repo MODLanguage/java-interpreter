@@ -308,8 +308,16 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
 
         if (vi instanceof ValueConditional) {
             return visitValueConditional((ValueConditional) vi);
+        } else if (vi instanceof Map) {
+            return visitMap((Map) vi);
+        } else if (vi instanceof Array) {
+            return visitArray((Array) vi);
+        } else if (vi instanceof Pair) {
+            return visitPair((Pair) vi);
+        } else if (vi instanceof Primitive) {
+            return visitPrimitive((Primitive) vi);
         }
-        return visitValue(vi);
+        return vi;
     }
 
     /**
@@ -353,8 +361,8 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
     private ValueItem visitValue(final ValueItem vi) {
 
         if (vi instanceof StringPrimitive) {
-            final StringPrimitive stringPrimitive = new StringPrimitive(referencesTransform.apply(((StringPrimitive) vi).value));
-            return visitPrimitive(stringPrimitive);
+            final ValueItem newValueItem = referencesTransform.apply(vi);
+            return visitValueItem(newValueItem);
         }
 
         return (vi instanceof Array) ?

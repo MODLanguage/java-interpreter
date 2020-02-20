@@ -258,7 +258,7 @@ public class ModlParsedVisitor {
                 .getText() : null;
 
         inConditional--;
-        return new Condition(lhs, op, values);
+        return new Condition(new StringPrimitive(lhs), op, values);
     }
 
     /**
