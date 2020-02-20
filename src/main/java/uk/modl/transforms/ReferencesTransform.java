@@ -13,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
+import uk.modl.utils.Util;
 
+import java.net.IDN;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -182,11 +184,12 @@ public class ReferencesTransform {
 
     private ValueItem complexRefToValueItem(final String ref) {
         final String[] refList = ref.split("\\.");
-        final Vector<Tuple3<String, String, Option<Pair>>> referencedObject = keyToReferencedObject(Vector.of(refList[0]));
+        Vector<Tuple3<String, String, Option<Pair>>> referencedObject = keyToReferencedObject(Vector.of(refList[0]));
 
-        return referencedObject.flatMap(t -> t._3)
-                .map(pair -> followNestedRef(pair, refList, 1))
-                .get(0);// TODO: Check the result properly
+        final Vector<ValueItem> valueItems = referencedObject.flatMap(t -> (t._3.isDefined()) ? t._3 : Option.of(new StringPrimitive(t._2)))
+                .map(pair -> followNestedRef(pair, refList, 1));
+
+        return valueItems.get(0);// TODO: Check the result properly
     }
 
     private ValueItem followNestedRef(final ValueItem vi, final String[] refList, final int refIndex) {
@@ -215,12 +218,35 @@ public class ReferencesTransform {
 
                 final Tuple3<String, String, Option<Pair>> referencedObjectTuple = referencedObjects.get(0);
 
-                return referencedObjectTuple._3
-                        .map(pair -> followNestedRef(pair, refList, refIndex + 1))
-                        .getOrElse(vi);
+                if (referencedObjectTuple._3()
+                        .isDefined()) {
+                    return referencedObjectTuple._3
+                            .map(pair -> followNestedRef(pair, refList, refIndex + 1))
+                            .getOrElse(vi);
+                }
+
+                // Maybe this is a String with a method to execute
+                if (vi instanceof StringPrimitive && ref.length() == 1) {
+                    switch (ref) {
+                        case "p":
+                            final String s = replacePunycode(Util.unquote(((StringPrimitive) vi).value));
+                            return followNestedRef(new StringPrimitive(s), refList, refIndex + 1);
+                        default:
+                            break;
+                    }
+                }
             }
         }
         return vi;
+    }
+
+    private String replacePunycode(final String s) {
+        // Prefix it with xn-- (the letters xn and two dashes) and decode using punycode / IDN library. Replace the full part (including graves) with the decoded value.
+        if (s == null) {
+            return null;
+        }
+
+        return IDN.toUnicode("xn--" + s);
     }
 
     /**
@@ -268,10 +294,13 @@ public class ReferencesTransform {
                             .getOrElse(result);
 
                     // TODO: process complex references
-                    groupedByType.get(ReferenceType.COMPLEX_REF)
-                            .forEach(x -> {
-                                System.out.println(x);
-                            });
+                    result = groupedByType.get(ReferenceType.COMPLEX_REF)
+                            .map(refList -> refList.map(ref -> Tuple.of(tuple2._1, new Pair(tuple2._1, complexRefToValueItem(ref)))))
+                            .map(x -> {
+                                // TODO
+                                return x.get(0);
+                            })
+                            .getOrElse(result);
 
                     return result;
                 }));
