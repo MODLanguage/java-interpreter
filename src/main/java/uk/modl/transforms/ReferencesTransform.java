@@ -166,9 +166,59 @@ public class ReferencesTransform {
                     .map(replaceAllSimpleRefsInValueItem(result))
                     .getOrElse(result);
 
-            // TODO: process complex references
+            // Process complex references
+            result = groupedByType.get(ReferenceType.COMPLEX_REF)
+                    .map(refList -> refList.map(this::complexRefToValueItem))
+                    .map(x -> {
+                        // TODO
+                        return x.get(0);
+                    })
+                    .getOrElse(result);
 
             return result;
+        }
+        return vi;
+    }
+
+    private ValueItem complexRefToValueItem(final String ref) {
+        final String[] refList = ref.split("\\.");
+        final Vector<Tuple3<String, String, Option<Pair>>> referencedObject = keyToReferencedObject(Vector.of(refList[0]));
+
+        return referencedObject.flatMap(t -> t._3)
+                .map(pair -> followNestedRef(pair, refList, 1))
+                .get(0);// TODO: Check the result properly
+    }
+
+    private ValueItem followNestedRef(final ValueItem vi, final String[] refList, final int refIndex) {
+        // TODO
+
+        if (refIndex == refList.length) {
+            return vi;
+        }
+        final String ref = refList[refIndex];
+        if (StringUtils.isNumeric(ref)) {
+            final int refNum = Integer.parseInt(ref);
+            if (vi instanceof Array) {
+                final Array arr = (Array) vi;
+                final ValueItem valueItem = (ValueItem) arr.arrayItems.get(refNum);
+
+                return followNestedRef(valueItem, refList, refIndex + 1);
+
+            } else if (vi instanceof Pair && ((Pair) vi).value instanceof Array) {
+                final ValueItem valueItem = (ValueItem) ((Array) ((Pair) vi).value).arrayItems.get(refNum);
+                return followNestedRef(valueItem, refList, refIndex + 1);
+            }
+        } else {
+            final Vector<Tuple3<String, String, Option<Pair>>> referencedObjects = keyToReferencedObject(Vector.of(ref));
+            if (referencedObjects.size() > 0) {
+                // TODO: What if there are multiple objects?
+
+                final Tuple3<String, String, Option<Pair>> referencedObjectTuple = referencedObjects.get(0);
+
+                return referencedObjectTuple._3
+                        .map(pair -> followNestedRef(pair, refList, refIndex + 1))
+                        .getOrElse(vi);
+            }
         }
         return vi;
     }
@@ -180,10 +230,10 @@ public class ReferencesTransform {
      * @return a Pair with the references resolved
      */
     public Pair apply(final Pair p) {
-        accept(p);
         if (p.value instanceof ValueConditional) {
             return p;
         } else {
+            accept(p);
             return pairKeysWithReferences.get(p.key)
                     .getOrElse(p);
         }
