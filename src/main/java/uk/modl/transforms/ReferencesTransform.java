@@ -167,7 +167,16 @@ public class ReferencesTransform {
         final String[] refList = ref.split("\\.");
         Vector<Tuple3<String, String, Option<Pair>>> referencedObject = keyToReferencedObject(Vector.of(refList[0]));
 
-        final Vector<ValueItem> valueItems = referencedObject.flatMap(t -> (t._3.isDefined()) ? t._3 : Option.of(new StringPrimitive(t._2)))
+        final Vector<ValueItem> valueItems = referencedObject.flatMap(t -> {
+            if (t._3.isDefined()) {
+                return t._3;
+            }
+            if (StringUtils.isNumeric(t._2)) {
+                return Option.of((ValueItem) objectIndex.arrayItems.get(Integer.parseInt(t._2)));
+            } else {
+                return Option.of(new StringPrimitive(t._2));
+            }
+        })
                 .map(pair -> followNestedRef(pair, refList, 1));
 
         return valueItems.get(0);// TODO: Check the result properly

@@ -50,7 +50,7 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                 if (structure instanceof Array) {
                     final ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
                     this.result = arrayNode;
-                    filtered.forEach(s -> accept(arrayNode, s));
+                    ((Array) structure).arrayItems.forEach(arrayItem -> accept(arrayNode, arrayItem));
                 } else {
                     final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
                     this.result = objectNode;
