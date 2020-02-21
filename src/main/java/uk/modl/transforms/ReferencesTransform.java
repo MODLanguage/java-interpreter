@@ -11,11 +11,14 @@ import io.vavr.control.Option;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.WordUtils;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
 import uk.modl.utils.Util;
 
 import java.net.IDN;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -240,6 +243,28 @@ public class ReferencesTransform {
                 switch (pathComponent) {
                     case "p":
                         valueStr = replacePunycode(Util.unquote(valueStr));
+                        break;
+                    case "u":
+                        valueStr = Util.unquote(valueStr)
+                                .toUpperCase();
+                        break;
+                    case "d":
+                        valueStr = Util.unquote(valueStr)
+                                .toLowerCase();
+                        break;
+                    case "i":
+                        valueStr = WordUtils.capitalize(Util.unquote(valueStr));
+                        break;
+                    case "s":
+                        valueStr = StringUtils.capitalize(Util.unquote(valueStr));
+                        break;
+                    case "e":
+                        try {
+                            valueStr = URLEncoder.encode(valueStr, StandardCharsets.UTF_8.toString());
+                        } catch (final Exception e) {
+                            throw new InterpreterError("Error processing URL encoding instruction: " + e.getMessage());
+                        }
+                        break;
                     default:
                         break;
                 }
