@@ -10,10 +10,16 @@ import uk.modl.visitor.ModlVisitor;
 public class ArrayConditional implements ArrayItem {
     public final Vector<ConditionTest> tests;
     public final Vector<ArrayConditionalReturn> returns;
+    public final Vector<ArrayItem> result;
 
     public ArrayConditional(final Vector<ConditionTest> tests, final Vector<ArrayConditionalReturn> returns) {
+        this(tests, returns, Vector.empty());
+    }
+
+    public ArrayConditional(final Vector<ConditionTest> tests, final Vector<ArrayConditionalReturn> returns, final Vector<ArrayItem> result) {
         this.tests = tests;
         this.returns = returns;
+        this.result = result;
     }
 
     @Override
@@ -23,4 +29,7 @@ public class ArrayConditional implements ArrayItem {
         returns.forEach(s -> s.visit(visitor));
     }
 
+    public ArrayConditional setResult(final Vector<ArrayItem> result) {
+        return new ArrayConditional(tests, returns, result);
+    }
 }

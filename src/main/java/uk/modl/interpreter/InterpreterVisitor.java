@@ -234,7 +234,8 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
         final Vector<ArrayConditionalReturn> returns = ac.returns
                 .map(this::visitArrayConditionalReturn);
 
-        return new ArrayConditional(tests, returns);
+        final ArrayConditional arrayConditional = new ArrayConditional(tests, returns);
+        return conditionalsTransform.apply(arrayConditional);
     }
 
     /**

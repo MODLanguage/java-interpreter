@@ -161,5 +161,42 @@ public class ConditionalsTransform {
         return vi;
     }
 
+    private ArrayItem handleNestedArrayConditionals(final ArrayItem vi) {
+        if (vi instanceof ArrayConditional) {
+            return apply((ArrayConditional) vi);
+        }
+        return vi;
+    }
 
+
+    public ArrayConditional apply(final ArrayConditional ac) {
+        if (ac.tests.size() == 1) {
+            if (evaluate(ac.tests.get(0))) {
+                if (ac.returns.size() == 0) {
+                    return ac.setResult(Vector.of(TruePrimitive.instance));
+                }
+                final Vector<ArrayItem> items = ac.returns.get(0).items.map(this::handleNestedArrayConditionals);
+
+                return ac.setResult(items);
+            } else {
+                if (ac.returns.size() == 0) {
+                    return ac.setResult(Vector.of(FalsePrimitive.instance));
+                }
+                final Vector<ArrayItem> items = ac.returns.get(1).items.map(this::handleNestedArrayConditionals);
+
+                return ac.setResult(items);
+            }
+        } else {
+            int i = 0;
+            for (final ConditionTest test : ac.tests) {
+                if (evaluate(test)) {
+                    final Vector<ArrayItem> items = ac.returns.get(i).items.map(this::handleNestedArrayConditionals);
+
+                    return ac.setResult(items);
+                }
+                i += 1;
+            }
+        }
+        return ac;
+    }
 }

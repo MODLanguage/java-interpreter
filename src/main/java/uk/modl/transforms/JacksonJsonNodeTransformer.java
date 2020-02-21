@@ -66,14 +66,6 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
         return result;
     }
 
-    private void accept(final ArrayNode node, final Structure structure) {
-        Option.of(structure)
-                .map(addMapToArrayNode(node))
-                .map(addArrayToArrayNode(node))
-                .map(addPairToArrayNode(node));
-
-    }
-
     private Function<Object, Object> addPairToArrayNode(final ArrayNode node) {
         return p -> {
             if (p instanceof Pair) {
@@ -164,7 +156,8 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                 .map(addArrayToArrayNode(node))
                 .map(addMapToArrayNode(node))
                 .map(addPairToArrayNode(node))
-                .map(addPairValueToArrayNode(node));
+                .map(addPairValueToArrayNode(node))
+                .map(addArrayConditionalToArrayNode(node));
     }
 
     private void accept(final ObjectNode node, final Structure structure) {
@@ -198,6 +191,15 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
         return s -> {
             if (s instanceof TopLevelConditional) {
                 ((TopLevelConditional) s).result.forEach(structure -> accept(node, structure));
+            }
+            return s;
+        };
+    }
+
+    private Function<Object, Object> addArrayConditionalToArrayNode(final ArrayNode node) {
+        return s -> {
+            if (s instanceof ArrayConditional) {
+                ((ArrayConditional) s).result.forEach(arrayItem -> accept(node, arrayItem));
             }
             return s;
         };
@@ -255,6 +257,13 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                         accept(node, new Pair(pair.key, valueItems.get(0)));
                     } else {
                         accept(node, new Pair(pair.key, new Array(valueItems.map(v -> (ArrayItem) v))));
+                    }
+                } else if (pair.value instanceof ArrayConditional) {
+                    final Vector<ArrayItem> arrayItems = ((ArrayConditional) pair.value).result;
+                    if (arrayItems.size() == 1) {
+                        accept(node, new Pair(pair.key, (ValueItem) arrayItems.get(0)));
+                    } else {
+                        accept(node, new Pair(pair.key, new Array(arrayItems)));
                     }
                 } else if (pair.value instanceof ValueItem) {
                     final ObjectNode newNode = JsonNodeFactory.instance.objectNode();
