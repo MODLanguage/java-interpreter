@@ -155,10 +155,7 @@ public class ReferencesTransform {
             // Process complex references
             result = groupedByType.get(ReferenceType.COMPLEX_REF)
                     .map(refList -> refList.map(this::complexRefToValueItem))
-                    .map(x -> {
-                        // TODO
-                        return x.get(0);
-                    })
+                    .map(x -> x.get(0))
                     .getOrElse(result);
 
             return result;
@@ -182,15 +179,19 @@ public class ReferencesTransform {
         })
                 .map(pair -> followNestedRef(pair, refList, 1));
 
-        return valueItems.get(0);// TODO: Check the result properly
+        if (valueItems.size() > 0) {
+            // TODO
+            return valueItems.get(0);
+        } else {
+            throw new InterpreterError("UNHANDLED CODE PATH");
+        }
     }
 
     private ValueItem followNestedRef(final ValueItem vi, final String[] refList, final int refIndex) {
-        // TODO
-
         if (refIndex == refList.length) {
             return vi;
         }
+
         final String ref = refList[refIndex];
         if (StringUtils.isNumeric(ref)) {
             final int refNum = Integer.parseInt(ref);
@@ -268,6 +269,10 @@ public class ReferencesTransform {
                     default:
                         break;
                 }
+            } else if (pathComponent.startsWith("r<")) {
+                valueStr = Util.replacer(pathComponent, valueStr);
+            } else if (pathComponent.startsWith("t<")) {
+                valueStr = Util.trimmer(pathComponent, valueStr);
             } else {
                 valueStr += "." + pathComponent;
             }
@@ -329,19 +334,21 @@ public class ReferencesTransform {
                                 .map(replaceInstructionReference(result))
                                 .getOrElse(result);
 
-                        // TODO: process complex references
+                        // Process complex references
+                        final Tuple2<String, Pair> finalResult = result;
                         result = groupedByType.get(ReferenceType.COMPLEX_REF)
-                                .map(refList -> refList.map(ref -> Tuple.of(tuple2._1, new Pair(tuple2._1, complexRefToValueItem(ref)))))
-                                .map(x -> {
-                                    // TODO
-                                    return x.get(0);
-                                })
+                                .map(refList -> complexRefToReferencedItems(finalResult, refList))
+                                .map(replaceAllSimpleRefs(result))
                                 .getOrElse(result);
 
                         return result;
                     }
                     return tuple2;
                 }));
+    }
+
+    private Vector<Tuple3<String, String, Option<Pair>>> complexRefToReferencedItems(final Tuple2<String, Pair> finalResult, final Vector<String> refList) {
+        return refList.map(ref -> Tuple.of(ref, finalResult._1, Option.of(new Pair(finalResult._1, complexRefToValueItem(ref)))));
     }
 
     private Function<Array, Tuple2<String, Pair>> replaceInstructionReference(final Tuple2<String, Pair> result) {

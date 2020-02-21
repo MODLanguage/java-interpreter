@@ -19,6 +19,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Util {
     public static final String GRAVE = "`";
@@ -69,6 +71,16 @@ public class Util {
     });
 
     /**
+     * A Regex to match the parameters of a MODL replace method
+     */
+    private static Pattern replacerPattern = Pattern.compile("^r<(.*),(.*)>$");
+
+    /**
+     * A Regex to match the parameters of a MODL trim method
+     */
+    private static Pattern trimmerPattern = Pattern.compile("^t<(.*)>$");
+
+    /**
      * Remove single quotes from a String
      *
      * @param text the possibly quoted String
@@ -76,5 +88,48 @@ public class Util {
      */
     public static String unquote(final String text) {
         return StringUtils.removeEnd(StringUtils.removeStart(StringUtils.removeEnd(StringUtils.removeStart(text, GRAVE), GRAVE), DOUBLEQUOTE), DOUBLEQUOTE);
+    }
+
+    /**
+     * Replace parts of a String
+     *
+     * @param spec a spec of the form: r&lt;this,that&gt;
+     * @param s    the String to be processed
+     * @return the updated String
+     */
+    public static String replacer(final String spec, final String s) {
+        final Matcher matcher = replacerPattern.matcher(spec);
+
+        if (matcher.find()) {
+            final String text = matcher.group(1);
+            final String newText = Util.unquote(matcher.group(2));
+
+            return s.replace(text, newText);
+        } else {
+            // TODO
+        }
+        return s;
+    }
+
+    /**
+     * Trim a String
+     *
+     * @param spec a spec of the form: t&lt;this&gt;
+     * @param s    the String to be processed
+     * @return the updated String
+     */
+    public static String trimmer(final String spec, final String s) {
+        final Matcher matcher = trimmerPattern.matcher(spec);
+
+        if (matcher.find()) {
+            final String text = matcher.group(1);
+            final int i = s.indexOf(text);
+            if (i > -1) {
+                return s.substring(0, i);
+            }
+        } else {
+            // TODO
+        }
+        return s;
     }
 }
