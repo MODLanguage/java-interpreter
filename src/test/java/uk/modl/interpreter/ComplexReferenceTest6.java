@@ -7,10 +7,10 @@ import uk.modl.model.Modl;
 import uk.modl.transforms.JacksonJsonNodeTransformer;
 import uk.modl.utils.Util;
 
-public class ObjectIndexReferenceTest {
+public class ComplexReferenceTest6 {
 
-    public static final String EXPECTED = "[{\"letters\":[\"a\",\"b\",\"c\"]},{\"letters2\":\"defdef\"}]";
-    public static final String INPUT = "?[[a;b;c];d;e;f];letters=%0;letters2=%1%%2%%3%%1%%2%%3%";
+    public static final String EXPECTED = "{\"object\":{\"print_test\":\"123.test\"}}";
+    public static final String INPUT = "_test=123;object(print_test = %test.test)";
     private static Interpreter interpreter = new Interpreter();
     private static JacksonJsonNodeTransformer jsonTransformer = new JacksonJsonNodeTransformer();
 

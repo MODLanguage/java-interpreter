@@ -202,32 +202,52 @@ public class ReferencesTransform {
                 return followNestedRef(valueItem, refList, refIndex + 1);
             }
         } else {
-            final Vector<Tuple3<String, String, Option<Pair>>> referencedObjects = keyToReferencedObject(Vector.of(ref));
-            if (referencedObjects.size() > 0) {
-                // TODO: What if there are multiple objects?
-
-                final Tuple3<String, String, Option<Pair>> referencedObjectTuple = referencedObjects.get(0);
-
-                if (referencedObjectTuple._3()
-                        .isDefined()) {
-                    return referencedObjectTuple._3
-                            .map(pair -> followNestedRef(pair, refList, refIndex + 1))
-                            .getOrElse(vi);
+            // If we have a Map then try to get a Pair from within it and recurse.
+            if (vi instanceof uk.modl.model.Map) {
+                final Option<MapItem> matchingMapItem = ((uk.modl.model.Map) vi).mapItems.find(mapItem -> {
+                    return mapItem instanceof Pair && ((Pair) mapItem).key.equals(ref);
+                });
+                if (matchingMapItem.isDefined()) {
+                    return followNestedRef((ValueItem) matchingMapItem.get(), refList, refIndex + 1);
+                } else {
+                    throw new InterpreterError("No entry '" + ref + "' in Map '" + vi + "'");
                 }
+            }
+            // If we have a Pair then take the pair value and recurse if possible
+            if (vi instanceof Pair) {
+                final PairValue value = ((Pair) vi).value;
 
-                // Maybe this is a String with a method to execute
-                if (vi instanceof StringPrimitive && ref.length() == 1) {
-                    switch (ref) {
-                        case "p":
-                            final String s = replacePunycode(Util.unquote(((StringPrimitive) vi).value));
-                            return followNestedRef(new StringPrimitive(s), refList, refIndex + 1);
-                        default:
-                            break;
-                    }
+                if (!(value instanceof Primitive)) {
+                    return followNestedRef((ValueItem) value, refList, refIndex + 1);
                 }
+                // Handle methods and trailing values
+                final String valueStr = handleMethodsAndTrailingPathComponents(refList, refIndex, value.toString());
+                return new StringPrimitive(valueStr);
+            }
+            if (vi instanceof StringPrimitive) {
+                // Handle methods and trailing values
+                final String valueStr = handleMethodsAndTrailingPathComponents(refList, refIndex, vi.toString());
+                return new StringPrimitive(valueStr);
             }
         }
         return vi;
+    }
+
+    private String handleMethodsAndTrailingPathComponents(final String[] refList, final int refIndex, String valueStr) {
+        for (int i = refIndex; i < refList.length; i++) {
+            final String pathComponent = refList[i];
+            if (pathComponent.length() == 1) {
+                switch (pathComponent) {
+                    case "p":
+                        valueStr = replacePunycode(Util.unquote(valueStr));
+                    default:
+                        break;
+                }
+            } else {
+                valueStr += "." + pathComponent;
+            }
+        }
+        return valueStr;
     }
 
     private String replacePunycode(final String s) {
@@ -262,37 +282,40 @@ public class ReferencesTransform {
         pairs = HashMap.ofEntries(
                 pairs.map(tuple2 -> {
 
-                    final Map<ReferenceType, Vector<String>> groupedByType = getReferenceGroups(tuple2._2.value.toString());
+                    if (tuple2._2.value instanceof StringPrimitive) {
+                        final Map<ReferenceType, Vector<String>> groupedByType = getReferenceGroups(tuple2._2.value.toString());
 
-                    // Process the OBJECT_INDEX_REF entries
-                    Tuple2<String, Pair> result = groupedByType.get(ReferenceType.OBJECT_INDEX_REF)
-                            .map(this::indexToReferencedObject)
-                            .map(replaceAllObjectIndexRefs(tuple2))
-                            .getOrElse(tuple2);
+                        // Process the OBJECT_INDEX_REF entries
+                        Tuple2<String, Pair> result = groupedByType.get(ReferenceType.OBJECT_INDEX_REF)
+                                .map(this::indexToReferencedObject)
+                                .map(replaceAllObjectIndexRefs(tuple2))
+                                .getOrElse(tuple2);
 
-                    // Process simple String references, e.g. %val% etc.
-                    result = groupedByType.get(ReferenceType.SIMPLE_REF)
-                            .map(this::keyToReferencedObject)
-                            .map(replaceAllSimpleRefs(result))
-                            .getOrElse(result);
+                        // Process simple String references, e.g. %val% etc.
+                        result = groupedByType.get(ReferenceType.SIMPLE_REF)
+                                .map(this::keyToReferencedObject)
+                                .map(replaceAllSimpleRefs(result))
+                                .getOrElse(result);
 
 
-                    // Handle %* references
-                    result = groupedByType.get(ReferenceType.INSTRUCTION_REF)
-                            .map(this::instructionToReferencedItems)
-                            .map(replaceInstructionReference(result))
-                            .getOrElse(result);
+                        // Handle %* references
+                        result = groupedByType.get(ReferenceType.INSTRUCTION_REF)
+                                .map(this::instructionToReferencedItems)
+                                .map(replaceInstructionReference(result))
+                                .getOrElse(result);
 
-                    // TODO: process complex references
-                    result = groupedByType.get(ReferenceType.COMPLEX_REF)
-                            .map(refList -> refList.map(ref -> Tuple.of(tuple2._1, new Pair(tuple2._1, complexRefToValueItem(ref)))))
-                            .map(x -> {
-                                // TODO
-                                return x.get(0);
-                            })
-                            .getOrElse(result);
+                        // TODO: process complex references
+                        result = groupedByType.get(ReferenceType.COMPLEX_REF)
+                                .map(refList -> refList.map(ref -> Tuple.of(tuple2._1, new Pair(tuple2._1, complexRefToValueItem(ref)))))
+                                .map(x -> {
+                                    // TODO
+                                    return x.get(0);
+                                })
+                                .getOrElse(result);
 
-                    return result;
+                        return result;
+                    }
+                    return tuple2;
                 }));
     }
 

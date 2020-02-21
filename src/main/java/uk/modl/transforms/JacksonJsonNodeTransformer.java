@@ -58,10 +58,10 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                 }
                 break;
             default:
-                // For multiple items make the result an ArrayNode
-                final ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
-                this.result = arrayNode;
-                filtered.forEach(s -> accept(arrayNode, s));
+                // For multiple items make the result an ObjectNode and assume all the values are Pairs
+                final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+                this.result = objectNode;
+                filtered.forEach(s -> accept(objectNode, s));
         }
         return result;
     }
