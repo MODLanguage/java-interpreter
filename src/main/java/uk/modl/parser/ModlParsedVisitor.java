@@ -460,9 +460,9 @@ public class ModlParsedVisitor {
      */
     private Pair visitPair(final MODLParser.Modl_pairContext ctx) {
         log.trace("visitPair()");
-        final String key = (ctx.QUOTED() != null) ? ctx.QUOTED()
+        final String key = Util.unquote((ctx.QUOTED() != null) ? ctx.QUOTED()
                 .getText() : (ctx.STRING() != null) ? ctx.STRING()
-                .getText() : null;
+                .getText() : null);
 
         if (inConditional == 0 && key != null && (key.contains("%") || key.contains(" "))) {
             throw new InterpreterError("Invalid key - spaces and % characters are not allowed: " + key);
