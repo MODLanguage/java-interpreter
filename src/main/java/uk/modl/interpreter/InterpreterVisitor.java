@@ -145,19 +145,8 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @return a ConditionGroup
      */
     private ConditionGroup visitConditionGroup(final ConditionGroup cg) {
-        final Vector<Tuple2<ConditionTest, String>> subConditionList = handleConditionGroup(cg.subConditionList);
+        final Vector<Tuple2<ConditionTest, String>> subConditionList = cg.subConditionList.map(t -> t.update1(visitConditionTest(t._1)));
         return new ConditionGroup(subConditionList);
-    }
-
-    /**
-     * Convert a ConditionGroup context to a list of subconditions
-     *
-     * @param list the context
-     * @return a list of subconditions
-     */
-    private Vector<Tuple2<ConditionTest, String>> handleConditionGroup(final Vector<Tuple2<ConditionTest, String>> list) {
-        // TODO
-        return list;
     }
 
     /**
