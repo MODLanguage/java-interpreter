@@ -1,7 +1,6 @@
 package uk.modl.transforms;
 
 import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import io.vavr.Tuple3;
 import io.vavr.Tuple4;
 import io.vavr.collection.HashMap;
@@ -96,7 +95,6 @@ public class ReferencesTransform {
                 pairs = pairs.put(pair.key.substring(1), pair);
             }
         }
-        resolve();
     }
 
 
@@ -299,7 +297,9 @@ public class ReferencesTransform {
         if (p.value instanceof ValueConditional) {
             return p;
         } else {
-            accept(p);
+            final Pair resolved = resolve(p);
+            accept(resolved);
+
             return pairs.get(p.key)
                     .getOrElse(p);
         }
@@ -308,51 +308,47 @@ public class ReferencesTransform {
     /**
      * Update the pairKeysWithReferences to new values with the references replaced by actual values
      */
-    private void resolve() {
-        pairs = HashMap.ofEntries(
-                pairs.map(tuple2 -> {
+    private Pair resolve(final Pair p) {
+        if (p.value instanceof StringPrimitive) {
+            final Map<ReferenceType, Vector<String>> groupedByType = getReferenceGroups(p.value.toString());
 
-                    if (tuple2._2.value instanceof StringPrimitive) {
-                        final Map<ReferenceType, Vector<String>> groupedByType = getReferenceGroups(tuple2._2.value.toString());
+            // Process the OBJECT_INDEX_REF entries
+            Pair result = groupedByType.get(ReferenceType.OBJECT_INDEX_REF)
+                    .map(this::indexToReferencedObject)
+                    .map(replaceAllObjectIndexRefs(p))
+                    .getOrElse(p);
 
-                        // Process the OBJECT_INDEX_REF entries
-                        Tuple2<String, Pair> result = groupedByType.get(ReferenceType.OBJECT_INDEX_REF)
-                                .map(this::indexToReferencedObject)
-                                .map(replaceAllObjectIndexRefs(tuple2))
-                                .getOrElse(tuple2);
-
-                        // Process simple String references, e.g. %val% etc.
-                        result = groupedByType.get(ReferenceType.SIMPLE_REF)
-                                .map(this::keyToReferencedObject)
-                                .map(replaceAllSimpleRefs(result))
-                                .getOrElse(result);
+            // Process simple String references, e.g. %val% etc.
+            result = groupedByType.get(ReferenceType.SIMPLE_REF)
+                    .map(this::keyToReferencedObject)
+                    .map(replaceAllSimpleRefs(result))
+                    .getOrElse(result);
 
 
-                        // Handle %* references
-                        result = groupedByType.get(ReferenceType.INSTRUCTION_REF)
-                                .map(this::instructionToReferencedItems)
-                                .map(replaceInstructionReference(result))
-                                .getOrElse(result);
+            // Handle %* references
+            result = groupedByType.get(ReferenceType.INSTRUCTION_REF)
+                    .map(this::instructionToReferencedItems)
+                    .map(replaceInstructionReference(result))
+                    .getOrElse(result);
 
-                        // Process complex references
-                        final Tuple2<String, Pair> finalResult = result;
-                        result = groupedByType.get(ReferenceType.COMPLEX_REF)
-                                .map(refList -> complexRefToReferencedItems(finalResult, refList))
-                                .map(replaceAllSimpleRefs(result))
-                                .getOrElse(result);
+            // Process complex references
+            final Pair finalResult = result;
+            result = groupedByType.get(ReferenceType.COMPLEX_REF)
+                    .map(refList -> complexRefToReferencedItems(finalResult, refList))
+                    .map(replaceAllSimpleRefs(result))
+                    .getOrElse(result);
 
-                        return result;
-                    }
-                    return tuple2;
-                }));
+            return result;
+        }
+        return p;
     }
 
-    private Vector<Tuple3<String, String, Option<Pair>>> complexRefToReferencedItems(final Tuple2<String, Pair> finalResult, final Vector<String> refList) {
-        return refList.map(ref -> Tuple.of(ref, finalResult._1, Option.of(new Pair(finalResult._1, complexRefToValueItem(ref)))));
+    private Vector<Tuple3<String, String, Option<Pair>>> complexRefToReferencedItems(final Pair p, final Vector<String> refList) {
+        return refList.map(ref -> Tuple.of(ref, p.key, Option.of(new Pair(p.key, complexRefToValueItem(ref)))));
     }
 
-    private Function<Array, Tuple2<String, Pair>> replaceInstructionReference(final Tuple2<String, Pair> result) {
-        return items -> Tuple.of(result._1, new Pair(result._1, items));
+    private Function<Array, Pair> replaceInstructionReference(final Pair p) {
+        return items -> new Pair(p.key, items);
     }
 
     private Array instructionToReferencedItems(final Vector<String> instructionRef) {
@@ -449,11 +445,11 @@ public class ReferencesTransform {
     /**
      * Return a function to fold a list of replacement values into a value with references, i.e. replace references with their actual values.
      *
-     * @param tuple2 a Tuple2 of a String key and a Pair with references
+     * @param p a Pair with references
      * @return a function to convert the Pair in the supplied tuple to a Pair with references replaced
      */
-    private Function<Vector<Tuple4<String, String, Integer, Option<ArrayItem>>>, Tuple2<String, Pair>> replaceAllObjectIndexRefs(final Tuple2<String, Pair> tuple2) {
-        return refTuples -> refTuples.foldLeft(tuple2, replaceObjectIndexRefInArrayItem());
+    private Function<Vector<Tuple4<String, String, Integer, Option<ArrayItem>>>, Pair> replaceAllObjectIndexRefs(final Pair p) {
+        return refTuples -> refTuples.foldLeft(p, replaceObjectIndexRefInArrayItem());
     }
 
     /**
@@ -469,11 +465,11 @@ public class ReferencesTransform {
     /**
      * Return a function to fold a list of replacement values into a value with references, i.e. replace references with their actual values.
      *
-     * @param tuple2 a Tuple2 of a String key and a Pair with references
+     * @param p a Pair with references
      * @return a function to convert the Pair in the supplied tuple to a Pair with references replaced
      */
-    private Function<Vector<Tuple3<String, String, Option<Pair>>>, Tuple2<String, Pair>> replaceAllSimpleRefs(final Tuple2<String, Pair> tuple2) {
-        return refTuples -> refTuples.foldLeft(tuple2, replaceSimpleRefInPair());
+    private Function<Vector<Tuple3<String, String, Option<Pair>>>, Pair> replaceAllSimpleRefs(final Pair p) {
+        return refTuples -> refTuples.foldLeft(p, replaceSimpleRefInPair());
     }
 
     /**
@@ -519,18 +515,18 @@ public class ReferencesTransform {
      *
      * @return a tuple with an updated Pair
      */
-    private BiFunction<Tuple2<String, Pair>, Tuple4<String, String, Integer, Option<ArrayItem>>, Tuple2<String, Pair>> replaceObjectIndexRefInArrayItem() {
+    private BiFunction<Pair, Tuple4<String, String, Integer, Option<ArrayItem>>, Pair> replaceObjectIndexRefInArrayItem() {
         return (curr, next) -> {
             if (next._4.isDefined()) {
                 // If the item containing the reference is a StringPrimitive then do String substitution
                 if (next._4.get() instanceof StringPrimitive) {
-                    final String s = ((StringPrimitive) curr._2.value).value;
+                    final String s = ((StringPrimitive) curr.value).value;
                     final String r = objectIndex.arrayItems.get(next._3)
                             .toString();
-                    return curr.update2(new Pair(curr._1, new StringPrimitive(s.replace(next._1, r))));
+                    return new Pair(curr.key, new StringPrimitive(s.replace(next._1, r)));
                 }
                 // Otherwise replace the whole thing
-                return curr.update2(new Pair(curr._1, (PairValue) objectIndex.arrayItems.get(next._3)));
+                return new Pair(curr.key, (PairValue) objectIndex.arrayItems.get(next._3));
             }
             return curr;
         };
@@ -560,17 +556,17 @@ public class ReferencesTransform {
      *
      * @return a tuple with an updated Pair
      */
-    private BiFunction<Tuple2<String, Pair>, Tuple3<String, String, Option<Pair>>, Tuple2<String, Pair>> replaceSimpleRefInPair() {
+    private BiFunction<Pair, Tuple3<String, String, Option<Pair>>, Pair> replaceSimpleRefInPair() {
         return (curr, next) -> {
             if (next._3.isDefined()) {
                 // If the item containing the reference is a StringPrimitive then do String substitution
                 if (next._3.get().value instanceof StringPrimitive) {
-                    final String s = ((StringPrimitive) curr._2.value).value;
+                    final String s = ((StringPrimitive) curr.value).value;
                     final String r = ((StringPrimitive) next._3.get().value).value;
-                    return curr.update2(new Pair(curr._1, new StringPrimitive(s.replace(next._1, r))));
+                    return new Pair(curr.key, new StringPrimitive(s.replace(next._1, r)));
                 }
                 // Otherwise replace the whole thing
-                return curr.update2(next._3.get());
+                return next._3.get();
             }
             return curr;
         };

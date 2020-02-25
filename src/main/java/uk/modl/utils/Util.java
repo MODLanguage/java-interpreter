@@ -12,6 +12,7 @@ import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.model.Array;
 import uk.modl.model.PairValue;
 import uk.modl.model.Primitive;
+import uk.modl.parser.errors.InterpreterError;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -106,9 +107,8 @@ public class Util {
 
             return s.replace(text, newText);
         } else {
-            // TODO
+            throw new InterpreterError("Invalid method: " + spec);
         }
-        return s;
     }
 
     /**
@@ -128,7 +128,7 @@ public class Util {
                 return s.substring(0, i);
             }
         } else {
-            // TODO
+            throw new InterpreterError("Invalid method: " + spec);
         }
         return s;
     }

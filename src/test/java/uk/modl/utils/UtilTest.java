@@ -2,12 +2,13 @@ package uk.modl.utils;
 
 import org.junit.Assert;
 import org.junit.Test;
+import uk.modl.parser.errors.InterpreterError;
 
 public class UtilTest {
 
     public static final String TEST_TEXT = "Some test text.";
 
-    @Test
+    @Test(expected = InterpreterError.class)
     public void replacerTest_1() {
         final String result = Util.replacer("", TEST_TEXT);
         Assert.assertEquals(TEST_TEXT, result);

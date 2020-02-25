@@ -7,10 +7,10 @@ import uk.modl.model.Modl;
 import uk.modl.transforms.JacksonJsonNodeTransformer;
 import uk.modl.utils.Util;
 
-public class SimpleReferenceTest {
+public class SimpleReferenceTest2 {
 
-    public static final String EXPECTED = "{\"msg\":\"Hello World\"}";
-    public static final String INPUT = "_var1=Hello;_var2=World;msg=%var1 %var2";
+    public static final String EXPECTED = "{\"out\":\"NotThisOneblahdeblah\"}";
+    public static final String INPUT = "_var = NotThisOne;_var=%var%blah;out=%var%deblah";
     private static Interpreter interpreter = new Interpreter();
     private static JacksonJsonNodeTransformer jsonTransformer = new JacksonJsonNodeTransformer();
 
