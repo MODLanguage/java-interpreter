@@ -168,6 +168,12 @@ public class ConditionalsTransform {
         return vi;
     }
 
+    private MapItem handleNestedMapConditionals(final MapItem vi) {
+        if (vi instanceof MapConditional) {
+            return apply((MapConditional) vi);
+        }
+        return vi;
+    }
 
     public ArrayConditional apply(final ArrayConditional ac) {
         if (ac.tests.size() == 1) {
@@ -198,5 +204,36 @@ public class ConditionalsTransform {
             }
         }
         return ac;
+    }
+
+    public MapConditional apply(final MapConditional mc) {
+        if (mc.tests.size() == 1) {
+            if (evaluate(mc.tests.get(0))) {
+                if (mc.returns.size() == 0) {
+                    return mc.setResult(Vector.of((MapItem) TruePrimitive.instance));
+                }
+                final Vector<MapItem> items = mc.returns.get(0).items.map(this::handleNestedMapConditionals);
+
+                return mc.setResult(items);
+            } else {
+                if (mc.returns.size() == 0) {
+                    return mc.setResult(Vector.of((MapItem) FalsePrimitive.instance));
+                }
+                final Vector<MapItem> items = mc.returns.get(1).items.map(this::handleNestedMapConditionals);
+
+                return mc.setResult(items);
+            }
+        } else {
+            int i = 0;
+            for (final ConditionTest test : mc.tests) {
+                if (evaluate(test)) {
+                    final Vector<MapItem> items = mc.returns.get(i).items.map(this::handleNestedMapConditionals);
+
+                    return mc.setResult(items);
+                }
+                i += 1;
+            }
+        }
+        return mc;
     }
 }

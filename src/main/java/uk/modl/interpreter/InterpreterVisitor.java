@@ -91,7 +91,9 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
         final Vector<MapConditionalReturn> returns = mc.returns
                 .map(this::visitMapConditionalReturn);
 
-        return new MapConditional(tests, returns);
+        final MapConditional mapConditional = new MapConditional(tests, returns);
+        return conditionalsTransform.apply(mapConditional);
+
     }
 
     /**

@@ -176,8 +176,10 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                     if (mapItem instanceof Pair) {
                         final Pair p = (Pair) mapItem;
                         accept(node, p);
+                    } else if (mapItem instanceof MapConditional) {
+                        accept(node, (MapConditional) mapItem);
                     } else {
-                        log.error("Cannot process object type: {}", s.getClass()
+                        log.error("Cannot process object type: {}", mapItem.getClass()
                                 .getName());
                     }
                 });
@@ -185,6 +187,11 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
             }
             return s;
         };
+    }
+
+    private void accept(final ObjectNode node, final MapConditional mc) {
+        Option.of(mc)
+                .map(addMapConditionalToMapNode(node));
     }
 
     private Function<Object, Object> addTopLevelConditionalToObjectNode(final ObjectNode node) {
@@ -200,6 +207,15 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
         return s -> {
             if (s instanceof ArrayConditional) {
                 ((ArrayConditional) s).result.forEach(arrayItem -> accept(node, arrayItem));
+            }
+            return s;
+        };
+    }
+
+    private Function<Object, Object> addMapConditionalToMapNode(final ObjectNode node) {
+        return s -> {
+            if (s instanceof MapConditional) {
+                ((MapConditional) s).result.forEach(mapItem -> accept(node, (ValueItem) mapItem));
             }
             return s;
         };
