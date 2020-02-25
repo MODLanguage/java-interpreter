@@ -39,6 +39,7 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
      */
     @Override
     public JsonNode apply(final Modl modl) {
+        this.result = null;// In case this object is being re-used
         final Vector<Structure> filtered = modl.structures.filter(shouldAppearInOutput);
 
         switch (filtered.size()) {

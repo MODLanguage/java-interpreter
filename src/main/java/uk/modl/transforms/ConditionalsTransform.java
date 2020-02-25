@@ -30,9 +30,11 @@ public class ConditionalsTransform {
 
                 return tlc.setResult(structures);
             } else {
-                final Vector<Structure> structures = tlc.returns.get(1).structures.map(this::handleNestedTopLevelConditionals);
+                if (tlc.returns.size() > 1) {
+                    final Vector<Structure> structures = tlc.returns.get(1).structures.map(this::handleNestedTopLevelConditionals);
 
-                return tlc.setResult(structures);
+                    return tlc.setResult(structures);
+                }
             }
         } else {
             int i = 0;

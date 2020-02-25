@@ -48,7 +48,6 @@ public class InterpreterBaseTests {
         final int startFromTestNumber = 0;// Use this to skip tests manually to make it easier for debugging a specific test.
         for (final TestInput testInput : list) {
             if (testNumber >= startFromTestNumber && !testInput.input.equals("DELETED")) {
-                log.info("Running test number: " + testNumber);
                 checkValidTestInput(testInput);
             }
             testNumber++;
@@ -80,6 +79,7 @@ public class InterpreterBaseTests {
                             .replace("\r", "");
 
                     if (!expected.equals(actual)) {
+                        log.info("Running test number: " + testInput.id);
                         log.info("Input : " + testInput.input);
                         log.info("Minimised : " + testInput.minimised_modl);
                         log.info("Expected : " + testInput.expected_output);
@@ -99,7 +99,7 @@ public class InterpreterBaseTests {
 
             }
         } catch (final Exception e) {
-            log.error(e);
+            log.error("Test: " + testInput.id + " - exception: " + e);
             errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : " + e.getMessage() + "\n");
         }
     }

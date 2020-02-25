@@ -84,7 +84,7 @@ public class ReferencesTransform {
             if (pair.value instanceof Array) {
                 objectIndex = (Array) pair.value;
             } else {
-                throw new InterpreterError("Object index is not an Array");
+                objectIndex = new Array(Vector.of((ArrayItem) pair.value));
             }
         } else {
             // Keep a map of pairs indexed by their key...
@@ -117,16 +117,18 @@ public class ReferencesTransform {
             if (op == null) {
                 newLhs = values.get(0);
                 newLhs = apply(newLhs);
-                final String key = newLhs.toString();
-                if (pairs.containsKey(key)) {
-                    newLhs = (ValueItem) pairs.get(key)
-                            .get().value;
-                    values = Vector.of(newLhs);
-                    if (newLhs instanceof FalsePrimitive) {
-                        newLhs = TruePrimitive.instance;// Force a false match result
+                if (!(newLhs instanceof TruePrimitive || newLhs instanceof FalsePrimitive)) {
+                    final String key = newLhs.toString();
+                    if (pairs.containsKey(key)) {
+                        newLhs = (ValueItem) pairs.get(key)
+                                .get().value;
+                        values = Vector.of(newLhs);
+                        if (newLhs instanceof FalsePrimitive) {
+                            newLhs = TruePrimitive.instance;// Force a false match result
+                        }
+                    } else {
+                        newLhs = FalsePrimitive.instance;
                     }
-                } else {
-                    newLhs = FalsePrimitive.instance;
                 }
                 op = EqualsOperator.instance;
             }
