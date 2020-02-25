@@ -264,6 +264,9 @@ public class ReferencesTransform {
                     // Use the current refIndex since we haven't yet consumed it.
                     return followNestedRef((ValueItem) value, refList, refIndex);
                 }
+                if (((Pair) vi).key.equals(ref)) {
+                    return (ValueItem) value;
+                }
                 // Handle methods and trailing values
                 final String valueStr = handleMethodsAndTrailingPathComponents(refList, skipRefIndexesForPathElementsWithReferences, value.toString());
                 return new StringPrimitive(valueStr);
