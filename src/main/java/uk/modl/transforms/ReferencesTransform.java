@@ -261,8 +261,12 @@ public class ReferencesTransform {
                 final PairValue value = ((Pair) vi).value;
 
                 if (!(value instanceof Primitive)) {
-                    // Use the current refIndex since we haven't yet consumed it.
-                    return followNestedRef((ValueItem) value, refList, refIndex);
+                    if (((Pair) vi).key.equals(ref)) {
+                        return followNestedRef((ValueItem) value, refList, refIndex + 1);
+                    } else {
+                        // Use the current refIndex since we haven't yet consumed it.
+                        return followNestedRef((ValueItem) value, refList, refIndex);
+                    }
                 }
                 if (((Pair) vi).key.equals(ref)) {
                     return (ValueItem) value;
