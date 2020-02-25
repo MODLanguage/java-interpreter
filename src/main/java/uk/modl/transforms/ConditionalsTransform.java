@@ -112,8 +112,16 @@ public class ConditionalsTransform {
     }
 
     private int countMatches(final Condition c) {
-        return c.values.count(v -> v.toString()
-                .equals(c.lhs.toString()));
+        return c.values.map(Object::toString)
+                .count(v -> {
+                    if (!v.contains("*")) {
+                        return v.equals(c.lhs.toString());
+                    } else {
+                        final String regexStr = v.replaceAll("\\*", ".*");
+                        return c.lhs.toString()
+                                .matches(regexStr);
+                    }
+                });
     }
 
     /**
