@@ -207,28 +207,48 @@ public class ReferencesTransform {
             // If we have a Map then try to get a Pair from within it and recurse.
             if (vi instanceof uk.modl.model.Map) {
                 final Option<MapItem> matchingMapItem = ((uk.modl.model.Map) vi).mapItems.find(mapItem -> {
-                    return mapItem instanceof Pair && ((Pair) mapItem).key.equals(ref);
+                    // Check whether the reference key needs de-referencing
+                    if (ref.contains("%")) {
+                        String actualRef = pairs.get(stripLeadingAndTrailingPercents(ref))
+                                .map(pair -> pair.value.toString())
+                                .getOrElse(ref);
+
+                        // Now try to de-reference this value as well
+                        /*
+                        actualRef = pairs.get(actualRef)
+                                .map(p -> p.value.toString())
+                                .getOrElse(actualRef);
+
+                         */
+
+                        return mapItem instanceof Pair && ((Pair) mapItem).key.equals(actualRef);
+                    } else {
+                        return mapItem instanceof Pair && ((Pair) mapItem).key.equals(ref);
+                    }
+
                 });
                 if (matchingMapItem.isDefined()) {
-                    return followNestedRef((ValueItem) matchingMapItem.get(), refList, refIndex + 1);
+                    return followNestedRef((ValueItem) matchingMapItem.get(), refList, refIndex);
                 } else {
                     throw new InterpreterError("No entry '" + ref + "' in Map '" + vi + "'");
                 }
             }
             // If we have a Pair then take the pair value and recurse if possible
+            final int skipRefIndexesForPathElementsWithReferences = (ref.contains("%")) ? refIndex + 1 : refIndex;
             if (vi instanceof Pair) {
                 final PairValue value = ((Pair) vi).value;
 
                 if (!(value instanceof Primitive)) {
-                    return followNestedRef((ValueItem) value, refList, refIndex + 1);
+                    // Use the current refIndex since we haven't yet consumed it.
+                    return followNestedRef((ValueItem) value, refList, refIndex);
                 }
                 // Handle methods and trailing values
-                final String valueStr = handleMethodsAndTrailingPathComponents(refList, refIndex, value.toString());
+                final String valueStr = handleMethodsAndTrailingPathComponents(refList, skipRefIndexesForPathElementsWithReferences, value.toString());
                 return new StringPrimitive(valueStr);
             }
             if (vi instanceof StringPrimitive) {
                 // Handle methods and trailing values
-                final String valueStr = handleMethodsAndTrailingPathComponents(refList, refIndex, vi.toString());
+                final String valueStr = handleMethodsAndTrailingPathComponents(refList, skipRefIndexesForPathElementsWithReferences, vi.toString());
                 return new StringPrimitive(valueStr);
             }
         }
