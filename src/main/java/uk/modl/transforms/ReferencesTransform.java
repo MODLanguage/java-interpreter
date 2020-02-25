@@ -108,21 +108,43 @@ public class ReferencesTransform {
         final ValueItem lhs = condition.lhs;
 
         ValueItem newLhs = lhs;
+        Operator op = condition.op;
+        Vector<ValueItem> values = condition.values;
+
         if (lhs instanceof StringPrimitive) {
             final String value = ((StringPrimitive) lhs).value;
 
-            if (value.contains("%")) {
-                newLhs = apply(lhs);
-            } else {
-                if (pairs.containsKey(value)) {
-                    newLhs = (ValueItem) pairs.get(value)
+            if (op == null) {
+                newLhs = values.get(0);
+                newLhs = apply(newLhs);
+                final String key = newLhs.toString();
+                if (pairs.containsKey(key)) {
+                    newLhs = (ValueItem) pairs.get(key)
                             .get().value;
+                    values = Vector.of(newLhs);
+                    if (newLhs instanceof FalsePrimitive) {
+                        newLhs = TruePrimitive.instance;// Force a false match result
+                    }
+                } else {
+                    newLhs = FalsePrimitive.instance;
+                }
+                op = EqualsOperator.instance;
+            }
+
+            if (value != null) {
+                if (value.contains("%")) {
+                    newLhs = apply(newLhs);
+                } else {
+                    if (pairs.containsKey(value)) {
+                        newLhs = (ValueItem) pairs.get(value)
+                                .get().value;
+                    }
                 }
             }
         }
 
         if (!(lhs != null && lhs.equals(newLhs))) {
-            return new Condition(newLhs, condition.op, condition.values);
+            return new Condition(newLhs, op, values);
         }
         return condition;
     }
@@ -580,13 +602,18 @@ public class ReferencesTransform {
         return (curr, next) -> {
             if (next._3.isDefined()) {
                 // If the item containing the reference is a StringPrimitive then do String substitution
-                if (next._3.get().value instanceof StringPrimitive) {
+                final Pair p = next._3.get();
+                if (p.value instanceof StringPrimitive) {
                     final String s = ((StringPrimitive) curr.value).value;
-                    final String r = ((StringPrimitive) next._3.get().value).value;
+                    final String r = ((StringPrimitive) p.value).value;
                     return new Pair(curr.key, new StringPrimitive(s.replace(next._1, r)));
+                } else if (p.value instanceof NumberPrimitive) {
+                    final String s = ((StringPrimitive) curr.value).value;
+                    final String r = ((NumberPrimitive) p.value).value;
+                    return new Pair(curr.key, new NumberPrimitive(s.replace(next._1, r)));
                 }
                 // Otherwise replace the whole thing
-                return next._3.get();
+                return new Pair(curr.key, p.value);
             }
             return curr;
         };
@@ -604,6 +631,8 @@ public class ReferencesTransform {
                 if (next._3.get().value instanceof StringPrimitive && curr instanceof StringPrimitive) {
                     final String r = ((StringPrimitive) next._3.get().value).value;
                     return new StringPrimitive(((StringPrimitive) curr).value.replace(next._1, r));
+                } else {
+                    return (ValueItem) next._3.get().value;
                 }
             }
             return curr;

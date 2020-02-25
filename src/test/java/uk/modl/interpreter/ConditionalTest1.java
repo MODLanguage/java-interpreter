@@ -7,7 +7,7 @@ import uk.modl.model.Modl;
 import uk.modl.transforms.JacksonJsonNodeTransformer;
 import uk.modl.utils.Util;
 
-public class SimpleConditionalTest1 {
+public class ConditionalTest1 {
 
     public static final String EXPECTED = "{\"a\":1,\"b\":2,\"c\":true}";
     public static final String INPUT = "a=1;b=2;c={{a=1}|{b=2}?true/?false}";

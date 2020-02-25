@@ -294,21 +294,21 @@ public class ModlParsedVisitor {
 
         if (equals) {
             if (gthan) {
-                return new GreaterThanOrEqualsOperator();
+                return GreaterThanOrEqualsOperator.instance;
             }
             if (lthan) {
-                return new LessThanOrEqualsOperator();
+                return LessThanOrEqualsOperator.instance;
             }
             if (negate) {
-                return new NotEqualsOperator();
+                return NotEqualsOperator.instance;
             }
-            return new EqualsOperator();
+            return EqualsOperator.instance;
         }
         if (gthan) {
-            return new GreaterThanOperator();
+            return GreaterThanOperator.instance;
         }
         if (lthan) {
-            return new LessThanOperator();
+            return LessThanOperator.instance;
         }
         return null;// Should never get here unless the grammar changes.
     }

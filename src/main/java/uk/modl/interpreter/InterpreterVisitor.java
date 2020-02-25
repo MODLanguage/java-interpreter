@@ -158,10 +158,11 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
     private Condition visitCondition(final Condition c) {
         final Condition c2 = referencesTransform.apply(c);
 
+        final ValueItem newLhs = visitValue(c2.lhs);
         final Vector<ValueItem> values = c2.values
                 .map(this::visitValue);
 
-        return new Condition(c2.lhs, c2.op, values);
+        return new Condition(newLhs, c2.op, values);
     }
 
     /**
