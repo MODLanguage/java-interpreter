@@ -7,11 +7,13 @@ import io.vavr.Function1;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
+import io.vavr.control.Option;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.model.Array;
 import uk.modl.model.PairValue;
 import uk.modl.model.Primitive;
+import uk.modl.model.ValueItem;
 import uk.modl.parser.errors.InterpreterError;
 
 import java.net.URL;
@@ -131,5 +133,49 @@ public class Util {
             throw new InterpreterError("Invalid method: " + spec);
         }
         return s;
+    }
+
+    public static boolean greaterThanAll(final ValueItem lhs, final Vector<ValueItem> values) {
+        final double v1 = Double.parseDouble(lhs.toString());
+
+        final Option<ValueItem> result = values.find(v -> {
+            final double v2 = Double.parseDouble(v.toString());
+            return v1 <= v2;
+        });
+
+        return !result.isDefined();
+    }
+
+    public static boolean greaterThanOrEqualToAll(final ValueItem lhs, final Vector<ValueItem> values) {
+        final double v1 = Double.parseDouble(lhs.toString());
+
+        final Option<ValueItem> result = values.find(v -> {
+            final double v2 = Double.parseDouble(v.toString());
+            return v1 < v2;
+        });
+
+        return !result.isDefined();
+    }
+
+    public static boolean lessThanAll(final ValueItem lhs, final Vector<ValueItem> values) {
+        final double v1 = Double.parseDouble(lhs.toString());
+
+        final Option<ValueItem> result = values.find(v -> {
+            final double v2 = Double.parseDouble(v.toString());
+            return v1 >= v2;
+        });
+
+        return !result.isDefined();
+    }
+
+    public static boolean lessThanOrEqualToAll(final ValueItem lhs, final Vector<ValueItem> values) {
+        final double v1 = Double.parseDouble(lhs.toString());
+
+        final Option<ValueItem> result = values.find(v -> {
+            final double v2 = Double.parseDouble(v.toString());
+            return v1 > v2;
+        });
+
+        return !result.isDefined();
     }
 }

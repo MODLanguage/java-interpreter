@@ -7,6 +7,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
+import uk.modl.utils.Util;
 
 @RequiredArgsConstructor
 public class ConditionalsTransform {
@@ -101,6 +102,19 @@ public class ConditionalsTransform {
     }
 
     private boolean evaluate(final Condition c) {
+        if (c.op instanceof GreaterThanOperator) {
+            return Util.greaterThanAll(c.lhs, c.values);
+        }
+        if (c.op instanceof GreaterThanOrEqualsOperator) {
+            return Util.greaterThanOrEqualToAll(c.lhs, c.values);
+        }
+        if (c.op instanceof LessThanOperator) {
+            return Util.lessThanAll(c.lhs, c.values);
+        }
+        if (c.op instanceof LessThanOrEqualsOperator) {
+            return Util.lessThanOrEqualToAll(c.lhs, c.values);
+        }
+
         final int count = countMatches(c);
         if (c.op instanceof EqualsOperator) {
             return count > 0;
