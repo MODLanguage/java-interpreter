@@ -20,8 +20,6 @@ import uk.modl.utils.SimpleCache;
 import uk.modl.utils.Util;
 import uk.modl.visitor.ModlVisitorBase;
 
-import java.util.Objects;
-
 @RequiredArgsConstructor
 public class StarLoadTransform {
     private static SimpleCache<String, Modl> cache = new SimpleCache<>();
@@ -52,47 +50,38 @@ public class StarLoadTransform {
             // Each tuple has a list of filenames
             final Vector<StarLoadExtractor.FileSpec> filenames = loadSet.fileSet;
 
-            // Partition the file specs into cache hits and those that are either cache misses or force-reloads.
-            final Tuple2<Vector<StarLoadExtractor.FileSpec>, Vector<StarLoadExtractor.FileSpec>> partition = filenames.partition(spec -> cache.contains(spec.filename) && !spec.forceLoad);
-            final Vector<StarLoadExtractor.FileSpec> cacheHits = partition._1;
-            final Vector<StarLoadExtractor.FileSpec> cacheMisses = partition._2;
+            for (final StarLoadExtractor.FileSpec spec : filenames) {
+                // Interpret each MODL string from each file
+                final Interpreter interpreter = new Interpreter();
+                interpreter.setCtx(ctx);
 
-            // Map the filenames to the contents of the files, or Error
-            final Vector<Tuple2<StarLoadExtractor.FileSpec, String>> contents = cacheMisses.map(Util.getFileContents)
-                    .filter(Objects::nonNull);
+                if (cache.contains(spec.filename) && !spec.forceLoad) {
+                    // Its cached and not force-loaded
+                    final Tuple2<StarLoadExtractor.FileSpec, Modl> cachedModl = Tuple.of(spec, cache.get(spec.filename));
+
+                    // Re-interpret the cached Modl objects to extract classes, methods etc. for the current context
+                    interpreter.apply(cachedModl._2);
+
+                    result = result.append(Tuple.of(Vector.of(cachedModl._1.filename), Vector.of(cachedModl._2), loadSet.pair));
+
+                    // Add the cache misses to the cache for next time
+                    cache.put(cachedModl._1.filename, cachedModl._2);
+                } else {
+                    // Its either not cached or not force-loaded
+                    // Map the filenames to the contents of the files, or Error
+                    final Tuple2<StarLoadExtractor.FileSpec, String> contents = Util.getFileContents.apply(spec);
+                    if (contents != null) {
+                        final Modl modl = interpreter.apply(contents._2);
+
+                        result = result.append(Tuple.of(Vector.of(contents._1.filename), Vector.of(modl), loadSet.pair));
+                    }
+                }
+            }
 
             //
             // TODO: If any load returns an error AND we have a cached copy then use the cached copy for up to 7 days.
             //
 
-            // Interpret each MODL string from each file
-            final Interpreter interpreter = new Interpreter();
-            interpreter.setCtx(ctx);
-            final Vector<Tuple2<StarLoadExtractor.FileSpec, Modl>> modlObjects = contents
-                    .map(filenameAndContents -> {
-                        final Modl modl = interpreter.apply(filenameAndContents._2);
-                        return Tuple.of(filenameAndContents._1, modl);
-                    });
-
-            // Add the cache hits
-            final Vector<Tuple2<StarLoadExtractor.FileSpec, Modl>> cachedModlObjects = cacheHits.map(spec -> Tuple.of(spec, cache.get(spec.filename)));
-
-            // Re-interpret the cached Modl objects to extract classes, methods etc. for the current context
-            cachedModlObjects.map(t -> t._2)
-                    .forEach(interpreter::apply);
-
-            final Vector<String> modlObjectFilenames = modlObjects.map(t -> t._1.filename);
-            final Vector<Modl> modlObjectList = modlObjects.map(t -> t._2);
-
-            result = result.append(Tuple.of(modlObjectFilenames, modlObjectList, loadSet.pair));
-
-            final Vector<String> cachedModlObjectFilenames = cachedModlObjects.map(t -> t._1.filename);
-            final Vector<Modl> cachedModlObjectList = cachedModlObjects.map(t -> t._2);
-
-            result = result.append(Tuple.of(cachedModlObjectFilenames, cachedModlObjectList, loadSet.pair));
-
-            // Add the cache misses to the cache for next time
-            modlObjects.forEach(t -> cache.put(t._1.filename, t._2));
         }
 
         return result;
@@ -139,7 +128,8 @@ public class StarLoadTransform {
 
         @Override
         public void accept(final Pair pair) {
-            final Option<Tuple3<Vector<String>, Vector<Modl>, Pair>> maybeFoundPair = loadedModlObjects.find(tuple3 -> pair.equals(tuple3._3));
+            // Find the last matching loaded object (last because the earlier ones might be overridden by later ones)
+            final Option<Tuple3<Vector<String>, Vector<Modl>, Pair>> maybeFoundPair = loadedModlObjects.findLast(tuple3 -> pair.equals(tuple3._3));
 
             // Create a new Modl object with the updated pair.
             this.pair = maybeFoundPair.map(p -> replace(pair, p))

@@ -4,6 +4,7 @@ import io.vavr.collection.Vector;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import uk.modl.model.Pair;
 import uk.modl.utils.Util;
 import uk.modl.visitor.ModlVisitorBase;
@@ -102,6 +103,7 @@ public class StarLoadExtractor extends ModlVisitorBase {
      * A file can be immutable or forced load, and has a filename
      */
     @RequiredArgsConstructor
+    @ToString
     public static class FileSpec {
         public final String filename;
         public final boolean forceLoad;

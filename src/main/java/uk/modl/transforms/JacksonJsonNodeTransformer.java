@@ -64,6 +64,10 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                 this.result = objectNode;
                 filtered.forEach(s -> accept(objectNode, s));
         }
+        if (!result.elements()
+                .hasNext()) {
+            result = null;
+        }
         return result;
     }
 
