@@ -20,4 +20,9 @@ public class NullPrimitive implements Primitive {
     public String toString() {
         return "000";
     }
+
+    @Override
+    public Number numericValue() {
+        return null;
+    }
 }

@@ -19,4 +19,9 @@ public class Pair implements Structure, MapItem, ValueItem, ArrayItem {
     public void visit(final ModlVisitor visitor) {
         visitor.accept(this);
     }
+
+    @Override
+    public Number numericValue() {
+        return value.numericValue();
+    }
 }

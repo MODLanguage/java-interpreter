@@ -1,5 +1,6 @@
 package uk.modl.transforms;
 
+import io.vavr.Function1;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import uk.modl.model.Map;
@@ -8,7 +9,7 @@ import uk.modl.model.Pair;
 import uk.modl.parser.errors.InterpreterError;
 
 @RequiredArgsConstructor
-public class StarMethodTransform {
+public class StarMethodTransform implements Function1<Pair, Pair> {
 
     /**
      * The context for this invocation of the interpreter

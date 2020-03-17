@@ -20,4 +20,9 @@ public class TruePrimitive implements Primitive {
     public String toString() {
         return "01";
     }
+
+    @Override
+    public Number numericValue() {
+        return 1;
+    }
 }

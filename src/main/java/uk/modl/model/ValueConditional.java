@@ -3,6 +3,7 @@ package uk.modl.model;
 import io.vavr.collection.Vector;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import uk.modl.parser.errors.InterpreterError;
 import uk.modl.visitor.ModlVisitor;
 
 @ToString
@@ -32,4 +33,10 @@ public class ValueConditional implements ValueItem {
     public ValueConditional setResult(final Vector<ValueItem> items) {
         return new ValueConditional(tests, returns, items);
     }
+
+    @Override
+    public Number numericValue() {
+        throw new InterpreterError("Cannot convert a conditional to a numeric value.");
+    }
+
 }

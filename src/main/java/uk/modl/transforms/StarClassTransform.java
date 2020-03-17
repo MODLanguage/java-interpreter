@@ -1,9 +1,11 @@
 package uk.modl.transforms;
 
+import io.vavr.Function1;
 import io.vavr.collection.Vector;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import uk.modl.model.Map;
 import uk.modl.model.MapItem;
 import uk.modl.model.Pair;
@@ -11,7 +13,7 @@ import uk.modl.model.PairValue;
 import uk.modl.parser.errors.InterpreterError;
 
 @RequiredArgsConstructor
-public class StarClassTransform {
+public class StarClassTransform implements Function1<Pair, Pair> {
 
     /**
      * The context for this invocation of the interpreter
@@ -91,6 +93,9 @@ public class StarClassTransform {
                 }
             }
 
+            if (superclass == null) {
+                superclass = "map";// TODO: implement superclass inference
+            }
             final ClassInstruction c = new ClassInstruction(id, name, superclass, assign, pairs);
             ctx.addClassInstruction(c);
         } else {
@@ -100,6 +105,7 @@ public class StarClassTransform {
 
     @RequiredArgsConstructor
     @EqualsAndHashCode
+    @ToString
     static class ClassInstruction {
         public final String id;
         public final String name;

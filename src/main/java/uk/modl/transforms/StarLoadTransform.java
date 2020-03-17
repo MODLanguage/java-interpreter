@@ -21,7 +21,7 @@ import uk.modl.utils.Util;
 import uk.modl.visitor.ModlVisitorBase;
 
 @RequiredArgsConstructor
-public class StarLoadTransform {
+public class StarLoadTransform implements Function1<Pair, Pair> {
     private static SimpleCache<String, Modl> cache = new SimpleCache<>();
     /**
      * Function to extract filenames and pairs from a Modl object.

@@ -20,4 +20,9 @@ public class FalsePrimitive implements Primitive {
     public String toString() {
         return "00";
     }
+
+    @Override
+    public Number numericValue() {
+        return 0;
+    }
 }

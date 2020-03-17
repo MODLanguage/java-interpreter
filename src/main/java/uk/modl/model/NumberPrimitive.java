@@ -22,7 +22,9 @@ public class NumberPrimitive implements Primitive {
         return value;
     }
 
+    @Override
     public Number numericValue() {
         return NumberUtils.createNumber(value);
     }
+
 }

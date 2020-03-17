@@ -66,9 +66,18 @@ public class ConditionalsTransform {
         // TODO
         if (tuple._1 instanceof Condition) {
             return Tuple.of(evaluate((Condition) tuple._1), tuple._2);
+        } else if (tuple._1 instanceof NegatedCondition) {
+            return Tuple.of(evaluate((NegatedCondition) tuple._1), tuple._2);
+        } else if (tuple._1 instanceof NegatedConditionGroup) {
+            return Tuple.of(evaluate((NegatedConditionGroup) tuple._1), tuple._2);
         } else {
             return Tuple.of(evaluate((ConditionGroup) tuple._1), tuple._2);
         }
+    }
+
+    private boolean evaluate(final NegatedCondition c) {
+        // TODO: handle NegatedConditions
+        return true;
     }
 
     private boolean evaluate(final ConditionGroup cg) {
@@ -76,6 +85,13 @@ public class ConditionalsTransform {
         final Vector<Tuple2<Boolean, String>> partial = cg.subConditionList.map(sc -> Tuple.of(evaluate(sc._1), sc._2));
 
         return evaluate(partial);
+    }
+
+    private boolean evaluate(final NegatedConditionGroup cg) {
+
+        final Vector<Tuple2<Boolean, String>> partial = cg.subConditionList.map(sc -> Tuple.of(evaluate(sc._1), sc._2));
+
+        return !evaluate(partial);
     }
 
     private boolean evaluate(final Vector<Tuple2<Boolean, String>> partial) {

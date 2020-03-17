@@ -16,6 +16,8 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
     private final StarMethodTransform starMethodTransform;
     private final ReferencesTransform referencesTransform;
     private final ConditionalsTransform conditionalsTransform;
+    private final ClassExpansionTransform classExpansionTransform;
+    private final Function1<Pair, Pair> processPairs;
 
     /**
      * Constructor
@@ -27,15 +29,12 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
         starMethodTransform = new StarMethodTransform(ctx);
         referencesTransform = new ReferencesTransform(ctx);
         conditionalsTransform = new ConditionalsTransform(ctx);
+        classExpansionTransform = new ClassExpansionTransform(ctx);
 
-        /* Suggested order of processing
-        pipeline = starLoadTransform
-                .andThen(starClassTransform)
-                .andThen(starMethodTransform)
-                .andThen(referencesTransform)
-                .andThen(conditionalsTransform);
-
-         */
+        processPairs = classExpansionTransform.compose(referencesTransform)
+                .compose(starMethodTransform)
+                .compose(starClassTransform)
+                .compose(starLoadTransform);
     }
 
     /**
@@ -133,6 +132,10 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
         final Vector<Tuple2<ConditionOrConditionGroupInterface, String>> newConditions = ct.conditions.map(c -> {
             if (c._1 instanceof Condition) {
                 return c.update1(visitCondition((Condition) c._1));
+            } else if (c._1 instanceof NegatedCondition) {
+                return c.update1(visitNegatedCondition((NegatedCondition) c._1));
+            } else if (c._1 instanceof NegatedConditionGroup) {
+                return c.update1(visitNegatedConditionGroup((NegatedConditionGroup) c._1));
             } else {
                 return c.update1(visitConditionGroup((ConditionGroup) c._1));
             }
@@ -152,6 +155,17 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
     }
 
     /**
+     * Parse a NegatedConditionGroup
+     *
+     * @param cg the NegatedConditionGroup
+     * @return a NegatedConditionGroup
+     */
+    private NegatedConditionGroup visitNegatedConditionGroup(final NegatedConditionGroup cg) {
+        final Vector<Tuple2<ConditionTest, String>> subConditionList = cg.subConditionList.map(t -> t.update1(visitConditionTest(t._1)));
+        return new NegatedConditionGroup(subConditionList);
+    }
+
+    /**
      * Parse a Condition
      *
      * @param c the Condition
@@ -165,6 +179,19 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
                 .map(this::visitValue);
 
         return new Condition(newLhs, c2.op, values);
+    }
+
+    /**
+     * Parse a NegatedCondition
+     *
+     * @param c the Condition
+     * @return a Condition
+     */
+    private NegatedCondition visitNegatedCondition(final NegatedCondition c) {
+        final Vector<ValueItem> values = c.values
+                .map(this::visitValue);
+
+        return new NegatedCondition(c.op, values);
     }
 
     /**
@@ -278,7 +305,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private Pair visitPair(final Pair p) {
 
-        final Pair pair = referencesTransform.apply(starMethodTransform.apply(starClassTransform.apply(starLoadTransform.apply(p))));
+        final Pair pair = processPairs.apply(p);
         PairValue value = pair.value;
 
         if (value instanceof Array) {

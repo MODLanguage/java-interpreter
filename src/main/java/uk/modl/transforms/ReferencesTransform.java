@@ -1,5 +1,6 @@
 package uk.modl.transforms;
 
+import io.vavr.Function1;
 import io.vavr.Tuple;
 import io.vavr.Tuple3;
 import io.vavr.Tuple4;
@@ -24,7 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
-public class ReferencesTransform {
+public class ReferencesTransform implements Function1<Pair, Pair> {
     private static Pattern referencePattern = Pattern.compile("((%\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|(%` ?[\\w-]+`[\\w.<>,]*%?)|(%\\*?[\\w]+(\\.%?\\w*<?[\\w,]*>?)*%?))");
 
     /**
