@@ -10,9 +10,11 @@ import uk.modl.visitor.ModlVisitor;
 @EqualsAndHashCode
 public class ConditionGroup implements ConditionOrConditionGroupInterface {
     public final Vector<Tuple2<ConditionTest, String>> subConditionList;
+    public final boolean shouldNegate;
 
-    public ConditionGroup(final Vector<Tuple2<ConditionTest, String>> subConditionList) {
+    public ConditionGroup(final Vector<Tuple2<ConditionTest, String>> subConditionList, final boolean shouldNegate) {
         this.subConditionList = subConditionList;
+        this.shouldNegate = shouldNegate;
     }
 
     @Override

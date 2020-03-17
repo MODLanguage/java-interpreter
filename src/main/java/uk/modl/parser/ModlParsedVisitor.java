@@ -152,23 +152,13 @@ public class ModlParsedVisitor {
         boolean shouldNegate = false;
         for (final ParseTree child : ctx.children) {
             if (child instanceof MODLParser.Modl_condition_groupContext) {
-                if (shouldNegate) {
-                    final NegatedConditionGroup conditionGroup = visitNegatedConditionGroup((MODLParser.Modl_condition_groupContext) child);
-                    lastSubCondition = Tuple.of(conditionGroup, null);
-                } else {
-                    final ConditionGroup conditionGroup = visitConditionGroup((MODLParser.Modl_condition_groupContext) child);
-                    lastSubCondition = Tuple.of(conditionGroup, null);
-                }
+                final ConditionGroup conditionGroup = visitConditionGroup((MODLParser.Modl_condition_groupContext) child, shouldNegate);
+                lastSubCondition = Tuple.of(conditionGroup, null);
 
                 shouldNegate = false;
             } else if (child instanceof MODLParser.Modl_conditionContext) {
-                if (shouldNegate) {
-                    final NegatedCondition condition = visitNegatedCondition(((MODLParser.Modl_conditionContext) child));
-                    lastSubCondition = Tuple.of(condition, null);
-                } else {
-                    final Condition condition = visitCondition((MODLParser.Modl_conditionContext) child);
-                    lastSubCondition = Tuple.of(condition, null);
-                }
+                final Condition condition = visitCondition((MODLParser.Modl_conditionContext) child, shouldNegate);
+                lastSubCondition = Tuple.of(condition, null);
 
                 shouldNegate = false;
             } else {
@@ -197,10 +187,10 @@ public class ModlParsedVisitor {
      * @param ctx the context
      * @return a ConditionGroup
      */
-    private ConditionGroup visitConditionGroup(final MODLParser.Modl_condition_groupContext ctx) {
+    private ConditionGroup visitConditionGroup(final MODLParser.Modl_condition_groupContext ctx, final boolean shouldNegate) {
         log.trace("visitConditionGroup()");
         final Vector<Tuple2<ConditionTest, String>> subConditionList = handleConditionGroup(ctx);
-        return new ConditionGroup(subConditionList);
+        return new ConditionGroup(subConditionList, shouldNegate);
     }
 
     /**
@@ -228,24 +218,12 @@ public class ModlParsedVisitor {
     }
 
     /**
-     * Parse a ConditionGroup
-     *
-     * @param ctx the context
-     * @return a ConditionGroup
-     */
-    private NegatedConditionGroup visitNegatedConditionGroup(final MODLParser.Modl_condition_groupContext ctx) {
-        log.trace("visitNegatedConditionGroup()");
-        final Vector<Tuple2<ConditionTest, String>> subConditionList = handleConditionGroup(ctx);
-        return new NegatedConditionGroup(subConditionList);
-    }
-
-    /**
      * Parse a Condition
      *
      * @param ctx the context
      * @return a Condition
      */
-    private Condition visitCondition(final MODLParser.Modl_conditionContext ctx) {
+    private Condition visitCondition(final MODLParser.Modl_conditionContext ctx, final boolean shouldNegate) {
         log.trace("visitCondition()");
         inConditional++;
         final Operator op = (ctx.modl_operator() != null) ? visitOperator(ctx.modl_operator()) : null;
@@ -258,24 +236,7 @@ public class ModlParsedVisitor {
                 .getText() : null;
 
         inConditional--;
-        return new Condition(new StringPrimitive(lhs), op, values);
-    }
-
-    /**
-     * Parse a Condition
-     *
-     * @param ctx the context
-     * @return a Condition
-     */
-    private NegatedCondition visitNegatedCondition(final MODLParser.Modl_conditionContext ctx) {
-        log.trace("visitNegatedCondition()");
-        final Operator op = (ctx.modl_operator() != null) ? visitOperator(ctx.modl_operator()) : null;
-
-        final Vector<ValueItem> values = (ctx.modl_value() != null) ? Vector.ofAll(ctx.modl_value()
-                .stream()
-                .map(this::visitValue)) : Vector.empty();
-
-        return new NegatedCondition(op, values);
+        return new Condition(new StringPrimitive(lhs), op, values, shouldNegate);
     }
 
     /**

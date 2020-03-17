@@ -67,16 +67,6 @@ public abstract class ModlVisitorBase implements ModlVisitor {
     }
 
     @Override
-    public void accept(final NegatedCondition negatedCondition) {
-
-    }
-
-    @Override
-    public void accept(final NegatedConditionGroup negatedConditionGroup) {
-
-    }
-
-    @Override
     public void accept(final TopLevelConditionalReturn topLevelConditionalReturn) {
 
     }

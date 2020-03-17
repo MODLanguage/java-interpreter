@@ -132,10 +132,6 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
         final Vector<Tuple2<ConditionOrConditionGroupInterface, String>> newConditions = ct.conditions.map(c -> {
             if (c._1 instanceof Condition) {
                 return c.update1(visitCondition((Condition) c._1));
-            } else if (c._1 instanceof NegatedCondition) {
-                return c.update1(visitNegatedCondition((NegatedCondition) c._1));
-            } else if (c._1 instanceof NegatedConditionGroup) {
-                return c.update1(visitNegatedConditionGroup((NegatedConditionGroup) c._1));
             } else {
                 return c.update1(visitConditionGroup((ConditionGroup) c._1));
             }
@@ -151,18 +147,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private ConditionGroup visitConditionGroup(final ConditionGroup cg) {
         final Vector<Tuple2<ConditionTest, String>> subConditionList = cg.subConditionList.map(t -> t.update1(visitConditionTest(t._1)));
-        return new ConditionGroup(subConditionList);
-    }
-
-    /**
-     * Parse a NegatedConditionGroup
-     *
-     * @param cg the NegatedConditionGroup
-     * @return a NegatedConditionGroup
-     */
-    private NegatedConditionGroup visitNegatedConditionGroup(final NegatedConditionGroup cg) {
-        final Vector<Tuple2<ConditionTest, String>> subConditionList = cg.subConditionList.map(t -> t.update1(visitConditionTest(t._1)));
-        return new NegatedConditionGroup(subConditionList);
+        return new ConditionGroup(subConditionList, cg.shouldNegate);
     }
 
     /**
@@ -178,20 +163,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
         final Vector<ValueItem> values = c2.values
                 .map(this::visitValue);
 
-        return new Condition(newLhs, c2.op, values);
-    }
-
-    /**
-     * Parse a NegatedCondition
-     *
-     * @param c the Condition
-     * @return a Condition
-     */
-    private NegatedCondition visitNegatedCondition(final NegatedCondition c) {
-        final Vector<ValueItem> values = c.values
-                .map(this::visitValue);
-
-        return new NegatedCondition(c.op, values);
+        return new Condition(newLhs, c2.op, values, c2.shouldNegate);
     }
 
     /**

@@ -147,7 +147,7 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
         }
 
         if (!(lhs != null && lhs.equals(newLhs))) {
-            return new Condition(newLhs, op, values);
+            return new Condition(newLhs, op, values, condition.shouldNegate);
         }
         return condition;
     }

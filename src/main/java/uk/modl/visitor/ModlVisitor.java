@@ -27,10 +27,6 @@ public interface ModlVisitor {
 
     void accept(final MapConditionalReturn mapConditionalReturn);
 
-    void accept(final NegatedCondition negatedCondition);
-
-    void accept(final NegatedConditionGroup negatedConditionGroup);
-
     void accept(final TopLevelConditionalReturn topLevelConditionalReturn);
 
     void accept(final ValueConditional valueConditional);
