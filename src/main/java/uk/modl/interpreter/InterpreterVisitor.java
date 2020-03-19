@@ -278,6 +278,10 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
     private Pair visitPair(final Pair p) {
 
         final Pair pair = processPairs.apply(p);
+        if (pair == null) {
+            return null;
+        }
+
         PairValue value = pair.value;
 
         if (value instanceof Array) {

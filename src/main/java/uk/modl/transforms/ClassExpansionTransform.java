@@ -7,6 +7,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.model.*;
+import uk.modl.parser.errors.InterpreterError;
 
 @RequiredArgsConstructor
 public class ClassExpansionTransform implements Function1<Pair, Pair> {
@@ -25,9 +26,11 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
      */
     @Override
     public Pair apply(final Pair p) {
-        final Option<StarClassTransform.ClassInstruction> maybeClass = ctx.getClassByNameOrId(p.key);
-        if (maybeClass.isDefined()) {
-            return accept(p, maybeClass.get());
+        if (p != null && !p.key.startsWith("*")) {
+            final Option<StarClassTransform.ClassInstruction> maybeClass = ctx.getClassByNameOrId(p.key);
+            if (maybeClass.isDefined()) {
+                return accept(p, maybeClass.get());
+            }
         }
         return p;
     }
@@ -50,7 +53,12 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
         // TODO: ALL of this!
         switch (ci.superclass) {
             case "map":
-                pairValue = p.value;
+                if (p.value instanceof Array) {
+                    final Vector<MapItem> mapItems = toMapUsingAssign((Array) p.value, ci);
+                    pairValue = new Map(mapItems);
+                } else if (p.value instanceof Map) {
+                    pairValue = p.value;
+                }
                 break;
             case "arr":
                 pairValue = new Array(Vector.empty());
@@ -66,6 +74,22 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
                 pairValue = inherit(ci.superclass, p.value);
         }
         return new Pair(newKey, pairValue);
+    }
+
+    private Vector<MapItem> toMapUsingAssign(final Array array, final StarClassTransform.ClassInstruction ci) {
+        // Find the correct assign statement
+        final Option<ArrayItem> maybeAssignArray = ci.assign.find(arr -> ((Array) arr).arrayItems.size() == array.arrayItems.size());
+        final Array assignArray = (Array) maybeAssignArray.getOrElseThrow(() -> new InterpreterError("No matching *assign value of length: " + array.arrayItems.size()));
+
+        // Convert the array items to pairs using the assign statement.
+        Vector<MapItem> result = Vector.empty();
+        int i = 0;
+        while (i < array.arrayItems.size()) {
+            result = result.append(new Pair(assignArray.arrayItems.get(i)
+                    .toString(), (PairValue) array.arrayItems.get(i)));
+            i++;
+        }
+        return result;
     }
 
     private PairValue inherit(final String superclass, final PairValue value) {

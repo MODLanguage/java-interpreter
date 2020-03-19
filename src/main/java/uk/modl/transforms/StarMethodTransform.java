@@ -37,7 +37,7 @@ public class StarMethodTransform implements Function1<Pair, Pair> {
      * @return the result of function application
      */
     public Pair apply(final Pair p) {
-        if (isMethodInstruction(p.key)) {
+        if (p != null && isMethodInstruction(p.key)) {
             accept(p);
         }
         return p;

@@ -3,16 +3,13 @@ package uk.modl.transforms;
 import io.vavr.collection.Vector;
 import org.junit.Assert;
 import org.junit.Test;
-import uk.modl.model.Array;
-import uk.modl.model.Map;
-import uk.modl.model.Pair;
-import uk.modl.model.StringPrimitive;
+import uk.modl.model.*;
 
 public class ClassExpansionTransformTest2 {
     @Test
     public void testAssigns() {
         final TransformationContext ctx = new TransformationContext();
-        final Array assign = new Array(Vector.of(new Array(Vector.of(new StringPrimitive("first"), new StringPrimitive("second"), new StringPrimitive("third")))));
+        final Vector<ArrayItem> assign = Vector.of(new Array(Vector.of(new StringPrimitive("first"), new StringPrimitive("second"), new StringPrimitive("third"))));
         final Vector<Pair> pairs = Vector.of(new Pair("item1", new StringPrimitive("value1")), new Pair("item2", new StringPrimitive("value2")), new Pair("item3", new StringPrimitive("value3")));
 
         final StarClassTransform.ClassInstruction classInstruction = new StarClassTransform.ClassInstruction("id", "name", "map", assign, pairs);

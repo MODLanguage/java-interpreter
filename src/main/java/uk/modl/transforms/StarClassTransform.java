@@ -6,10 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import uk.modl.model.Map;
-import uk.modl.model.MapItem;
-import uk.modl.model.Pair;
-import uk.modl.model.PairValue;
+import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
 
 @RequiredArgsConstructor
@@ -44,6 +41,7 @@ public class StarClassTransform implements Function1<Pair, Pair> {
     public Pair apply(final Pair p) {
         if (isClassInstruction(p.key)) {
             accept(p);
+            return null;
         }
         return p;
     }
@@ -62,7 +60,7 @@ public class StarClassTransform implements Function1<Pair, Pair> {
             String id = null;
             String name = null;
             String superclass = null;
-            PairValue assign = null;
+            Vector<ArrayItem> assign = null;
             Vector<Pair> pairs = Vector.empty();
 
             for (final MapItem mi : ((Map) pair.value).mapItems) {
@@ -83,7 +81,17 @@ public class StarClassTransform implements Function1<Pair, Pair> {
                             break;
                         case "*a":
                         case "*assign":
-                            assign = p.value;
+                            if (p.value instanceof Array) {
+                                assign = ((Array) p.value).arrayItems.map(ai -> {
+                                    if (ai instanceof Array) {
+                                        return ai;
+                                    } else {
+                                        throw new InterpreterError("*assign statement should be an Array of Arrays");
+                                    }
+                                });
+                            } else {
+                                throw new InterpreterError("*assign statement should be an Array of Arrays");
+                            }
                             break;
                         default:
                             pairs = pairs.append(p);
@@ -103,15 +111,26 @@ public class StarClassTransform implements Function1<Pair, Pair> {
         }
     }
 
-    @RequiredArgsConstructor
     @EqualsAndHashCode
     @ToString
     static class ClassInstruction {
         public final String id;
         public final String name;
         public final String superclass;
-        public final PairValue assign;
+        public final Vector<ArrayItem> assign;
         public final Vector<Pair> pairs;
+
+        ClassInstruction(final String id, final String name, final String superclass, final Vector<ArrayItem> assign, final Vector<Pair> pairs) {
+            this.id = id;
+            this.name = name;
+            if (superclass == null) {
+                this.superclass = "map"; // TODO: Use type inference to set this
+            } else {
+                this.superclass = superclass;
+            }
+            this.assign = assign;
+            this.pairs = pairs;
+        }
     }
 
 }

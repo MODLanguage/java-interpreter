@@ -346,6 +346,10 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
      * @return a Pair with the references resolved
      */
     public Pair apply(final Pair p) {
+        if (p == null) {
+            return null;
+        }
+
         if (p.value instanceof ValueConditional) {
             return p;
         } else {
@@ -462,7 +466,7 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
         }
 
         if (ci.assign != null) {
-            final Pair p = new Pair("assign", ci.assign);
+            final Pair p = new Pair("assign", new Array(ci.assign));
             clssItems = clssItems.append(p);
         }
 
