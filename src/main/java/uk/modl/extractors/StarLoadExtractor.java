@@ -94,6 +94,7 @@ public class StarLoadExtractor extends ModlVisitorBase {
      * A Pair can represent several files to be loaded.
      */
     @RequiredArgsConstructor
+    @ToString
     public static class LoadSet {
         public final Pair pair;
         public final Vector<FileSpec> fileSet;

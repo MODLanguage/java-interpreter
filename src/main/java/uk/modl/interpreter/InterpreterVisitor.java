@@ -17,6 +17,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
     private final ReferencesTransform referencesTransform;
     private final ConditionalsTransform conditionalsTransform;
     private final ClassExpansionTransform classExpansionTransform;
+    private final PercentStarInstructionTransform percentStarInstructionTransform;
     private final Function1<Pair, Pair> processPairs;
 
     /**
@@ -30,8 +31,10 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
         referencesTransform = new ReferencesTransform(ctx);
         conditionalsTransform = new ConditionalsTransform(ctx);
         classExpansionTransform = new ClassExpansionTransform(ctx);
+        percentStarInstructionTransform = new PercentStarInstructionTransform(ctx);
 
-        processPairs = classExpansionTransform.compose(referencesTransform)
+        processPairs = percentStarInstructionTransform.compose(classExpansionTransform)
+                .compose(referencesTransform)
                 .compose(starMethodTransform)
                 .compose(starClassTransform)
                 .compose(starLoadTransform);
@@ -396,10 +399,12 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
     }
 
     public void setCtx(final TransformationContext ctx) {
-        starLoadTransform.seCtx(ctx);
-        starClassTransform.seCtx(ctx);
-        starMethodTransform.seCtx(ctx);
-        referencesTransform.seCtx(ctx);
-        conditionalsTransform.seCtx(ctx);
+        starLoadTransform.setCtx(ctx);
+        starClassTransform.setCtx(ctx);
+        starMethodTransform.setCtx(ctx);
+        referencesTransform.setCtx(ctx);
+        conditionalsTransform.setCtx(ctx);
+        classExpansionTransform.setCtx(ctx);
+        percentStarInstructionTransform.setCtx(ctx);
     }
 }

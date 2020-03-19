@@ -49,9 +49,6 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
      * @return the ReferenceType
      */
     private static ReferenceType refToRefType(final String s) {
-        if (s.startsWith("%*")) {
-            return ReferenceType.INSTRUCTION_REF;
-        }
         if (s.contains(".")) {
             return ReferenceType.COMPLEX_REF;
         }
@@ -238,14 +235,6 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
                                 .map(pair -> pair.value.toString())
                                 .getOrElse(ref);
 
-                        // Now try to de-reference this value as well
-                        /*
-                        actualRef = pairs.get(actualRef)
-                                .map(p -> p.value.toString())
-                                .getOrElse(actualRef);
-
-                         */
-
                         return mapItem instanceof Pair && ((Pair) mapItem).key.equals(actualRef);
                     } else {
                         return mapItem instanceof Pair && ((Pair) mapItem).key.equals(ref);
@@ -380,13 +369,6 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
                     .map(replaceAllSimpleRefs(result))
                     .getOrElse(result);
 
-
-            // Handle %* references
-            result = groupedByType.get(ReferenceType.INSTRUCTION_REF)
-                    .map(this::instructionToReferencedItems)
-                    .map(replaceInstructionReference(result))
-                    .getOrElse(result);
-
             // Process complex references
             final Pair finalResult = result;
             result = groupedByType.get(ReferenceType.COMPLEX_REF)
@@ -401,82 +383,6 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
 
     private Vector<Tuple3<String, String, Option<Pair>>> complexRefToReferencedItems(final Pair p, final Vector<String> refList) {
         return refList.map(ref -> Tuple.of(ref, p.key, Option.of(new Pair(p.key, complexRefToValueItem(ref)))));
-    }
-
-    private Function<Array, Pair> replaceInstructionReference(final Pair p) {
-        return items -> new Pair(p.key, items);
-    }
-
-    private Array instructionToReferencedItems(final Vector<String> instructionRef) {
-        final Vector<ArrayItem> list = instructionRef.flatMap(ir -> {
-            if ("%*load".equals(ir)) {
-                return ctx.getFilesLoaded()
-                        .map(f -> (ArrayItem) new StringPrimitive(f));
-            } else if ("%*class".equals(ir)) {
-                return ctx.getClasses()
-                        .map(this::classInstructionToArrayItem);
-            } else if ("%*method".equals(ir)) {
-                return ctx.getMethods()
-                        .map(this::methodInstructionToArrayItem);
-            }
-            return Vector.empty();
-        });
-        return new Array(list);
-    }
-
-    /**
-     * Convert a StarMethodTransform.MethodInstruction to an ArrayItem
-     *
-     * @param m a StarMethodTransform.MethodInstruction
-     * @return an ArrayItem
-     */
-    private ArrayItem methodInstructionToArrayItem(final StarMethodTransform.MethodInstruction m) {
-        Vector<MapItem> mthdItems = Vector.empty();
-        final Pair transformPair = new Pair("transform", new StringPrimitive(m.transform));
-        if (m.name != null) {
-            final Pair namePair = new Pair("name", new StringPrimitive(m.name));
-            mthdItems = mthdItems.append(namePair);
-        }
-        mthdItems = mthdItems.append(transformPair);
-
-
-        final MapItem mthdMap = new Pair(m.id, new uk.modl.model.Map(mthdItems));
-        final Vector<MapItem> mthd = Vector.of(mthdMap);
-        return new uk.modl.model.Map(mthd);
-    }
-
-    /**
-     * Convert a StarClassTransform.ClassInstruction to an ArrayItem
-     *
-     * @param ci StarClassTransform.ClassInstruction
-     * @return an ArrayItem
-     */
-    private ArrayItem classInstructionToArrayItem(final StarClassTransform.ClassInstruction ci) {
-
-        Vector<MapItem> clssItems = Vector.empty();
-
-        if (ci.name != null) {
-            final Pair p = new Pair("name", new StringPrimitive(ci.name));
-            clssItems = clssItems.append(p);
-        }
-
-        if (ci.superclass != null) {
-            final Pair p = new Pair("superclass", new StringPrimitive(ci.superclass));
-            clssItems = clssItems.append(p);
-        }
-
-        if (ci.assign != null) {
-            final Pair p = new Pair("assign", new Array(ci.assign));
-            clssItems = clssItems.append(p);
-        }
-
-        if (ci.pairs != null) {
-            clssItems = clssItems.appendAll(ci.pairs);
-        }
-
-        final MapItem clssMap = new Pair(ci.id, new uk.modl.model.Map(clssItems));
-        final Vector<MapItem> clss = Vector.of(clssMap);
-        return new uk.modl.model.Map(clss);
     }
 
     /**
@@ -653,11 +559,11 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
         };
     }
 
-    public void seCtx(final TransformationContext ctx) {
+    public void setCtx(final TransformationContext ctx) {
         this.ctx = ctx;
     }
 
     private enum ReferenceType {
-        INSTRUCTION_REF, COMPLEX_REF, OBJECT_INDEX_REF, SIMPLE_REF
+        COMPLEX_REF, OBJECT_INDEX_REF, SIMPLE_REF
     }
 }

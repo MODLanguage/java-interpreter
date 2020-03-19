@@ -35,7 +35,7 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
         return p;
     }
 
-    public void seCtx(final TransformationContext ctx) {
+    public void setCtx(final TransformationContext ctx) {
         this.ctx = ctx;
     }
 
@@ -71,7 +71,12 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
                         .toString());
                 break;
             default:
-                pairValue = inherit(ci.superclass, p.value);
+                if (ctx.getClassByNameOrId(p.key)
+                        .isEmpty()) {
+                    pairValue = inherit(ci.superclass, p.value);
+                } else {
+                    return p;
+                }
         }
         return new Pair(newKey, pairValue);
     }
@@ -85,8 +90,11 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
         Vector<MapItem> result = Vector.empty();
         int i = 0;
         while (i < array.arrayItems.size()) {
-            result = result.append(new Pair(assignArray.arrayItems.get(i)
-                    .toString(), (PairValue) array.arrayItems.get(i)));
+            final ArrayItem item = array.arrayItems.get(i);
+            if (item instanceof PairValue) {
+                result = result.append(new Pair(assignArray.arrayItems.get(i)
+                        .toString(), (PairValue) item));
+            }
             i++;
         }
         return result;
@@ -94,6 +102,16 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
 
     private PairValue inherit(final String superclass, final PairValue value) {
         // TODO:
+        final Option<StarClassTransform.ClassInstruction> maybeClass = ctx.getClassByNameOrId(superclass);
+
+        if (value instanceof Map) {
+            final Vector<MapItem> mapItems =
+                    maybeClass.map(ci -> ci.pairs)
+                            .getOrElse(Vector.empty())
+                            .foldLeft(((Map) value).mapItems, Vector::append);
+
+            return new Map(mapItems);
+        }
         return value;
     }
 

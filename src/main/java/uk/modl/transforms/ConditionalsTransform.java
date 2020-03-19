@@ -143,7 +143,7 @@ public class ConditionalsTransform {
     /**
      * @param ctx the TransformationContext
      */
-    public void seCtx(final TransformationContext ctx) {
+    public void setCtx(final TransformationContext ctx) {
         this.ctx = ctx;
     }
 

@@ -112,7 +112,7 @@ public class StarLoadTransform implements Function1<Pair, Pair> {
         return p;
     }
 
-    public void seCtx(final TransformationContext ctx) {
+    public void setCtx(final TransformationContext ctx) {
         this.ctx = ctx;
     }
 
