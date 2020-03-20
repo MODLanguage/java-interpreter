@@ -4,11 +4,23 @@ import io.vavr.collection.*;
 import io.vavr.control.Option;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import uk.modl.model.Pair;
 
 /**
  * Stores context needed by other parts of the interpreter
  */
 public class TransformationContext {
+
+    /**
+     * Possible targets of references
+     */
+    @Getter
+    private Map<String, Pair> pairs = HashMap.empty();
+    /**
+     * The Modl Object Index
+     */
+    @Getter
+    private uk.modl.model.Array objectIndex;
 
     /**
      * Files loaded by a *load instruction
@@ -90,5 +102,13 @@ public class TransformationContext {
     public Option<StarClassTransform.ClassInstruction> getClassByNameOrId(final String idOrName) {
         final Option<StarClassTransform.ClassInstruction> clss = classesById.get(idOrName);
         return (clss.isDefined()) ? clss : classesByName.get(idOrName);
+    }
+
+    public void setObjectIndex(final uk.modl.model.Array objectIndex) {
+        this.objectIndex = objectIndex;
+    }
+
+    public void addPair(final String key, final Pair p) {
+        pairs = pairs.put(key, p);
     }
 }

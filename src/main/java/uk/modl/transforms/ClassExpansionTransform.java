@@ -71,9 +71,9 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
                         .toString());
                 break;
             default:
-                if (ctx.getClassByNameOrId(p.key)
-                        .isEmpty()) {
-                    pairValue = inherit(ci.superclass, p.value);
+                if (ctx.getClassByNameOrId(ci.superclass)
+                        .isDefined()) {
+                    pairValue = inherit(ci.name, p.value);
                 } else {
                     return p;
                 }
@@ -106,7 +106,7 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
 
         if (value instanceof Map) {
             final Vector<MapItem> mapItems =
-                    maybeClass.map(ci -> ci.pairs)
+                    maybeClass.map(ci -> recurseAddPairs(ci, Vector.empty()))
                             .getOrElse(Vector.empty())
                             .foldLeft(((Map) value).mapItems, Vector::append);
 
@@ -115,4 +115,12 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
         return value;
     }
 
+    private Vector<Pair> recurseAddPairs(final StarClassTransform.ClassInstruction ci, final Vector<Pair> pairs) {
+        Vector<Pair> items = Vector.empty();
+        final Option<StarClassTransform.ClassInstruction> superclass = ctx.getClassByNameOrId(ci.superclass);
+        if (superclass.isDefined()) {
+            items = recurseAddPairs(superclass.get(), pairs);
+        }
+        return ci.pairs.appendAll(items);
+    }
 }

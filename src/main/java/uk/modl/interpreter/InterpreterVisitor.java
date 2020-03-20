@@ -33,7 +33,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
         classExpansionTransform = new ClassExpansionTransform(ctx);
         percentStarInstructionTransform = new PercentStarInstructionTransform(ctx);
 
-        processPairs = percentStarInstructionTransform.compose(classExpansionTransform)
+        processPairs = classExpansionTransform
                 .compose(referencesTransform)
                 .compose(starMethodTransform)
                 .compose(starClassTransform)
@@ -294,7 +294,8 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
         } else if (value instanceof ValueItem) {
             value = visitValueItem((ValueItem) value);
         }
-        return new Pair(p.key, value);
+        final Pair newPair = new Pair(pair.key, value);
+        return percentStarInstructionTransform.apply(newPair);
     }
 
     /**

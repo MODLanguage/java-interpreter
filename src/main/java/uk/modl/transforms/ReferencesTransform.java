@@ -4,7 +4,6 @@ import io.vavr.Function1;
 import io.vavr.Tuple;
 import io.vavr.Tuple3;
 import io.vavr.Tuple4;
-import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import io.vavr.collection.Vector;
 import io.vavr.control.Option;
@@ -33,15 +32,6 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
      */
     @NonNull
     private TransformationContext ctx;
-
-    /**
-     * Possible targets of references
-     */
-    private Map<String, Pair> pairs = HashMap.empty();
-    /**
-     * The Modl Object Index
-     */
-    private Array objectIndex;
 
     /**
      * Determine the ReferenceType for a reference String
@@ -79,18 +69,20 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
         if (pair.key.equals("?")) {
 
             // Capture the Object Index
+            final Array objectIndex;
             if (pair.value instanceof Array) {
                 objectIndex = (Array) pair.value;
             } else {
                 objectIndex = new Array(Vector.of((ArrayItem) pair.value));
             }
+            ctx.setObjectIndex(objectIndex);
         } else {
             // Keep a map of pairs indexed by their key...
-            pairs = pairs.put(pair.key, pair);
+            ctx.addPair(pair.key, pair);
 
             // ...and by their key without the underscore prefix if there is one.
             if (pair.key.startsWith("_")) {
-                pairs = pairs.put(pair.key.substring(1), pair);
+                ctx.addPair(pair.key.substring(1), pair);
             }
         }
     }
@@ -117,8 +109,10 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
                 newLhs = apply(newLhs);
                 if (!(newLhs instanceof TruePrimitive || newLhs instanceof FalsePrimitive)) {
                     final String key = newLhs.toString();
-                    if (pairs.containsKey(key)) {
-                        newLhs = (ValueItem) pairs.get(key)
+                    if (ctx.getPairs()
+                            .containsKey(key)) {
+                        newLhs = (ValueItem) ctx.getPairs()
+                                .get(key)
                                 .get().value;
                         values = Vector.of(newLhs);
                         if (newLhs instanceof FalsePrimitive) {
@@ -135,8 +129,10 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
                 if (value.contains("%")) {
                     newLhs = apply(newLhs);
                 } else {
-                    if (pairs.containsKey(value)) {
-                        newLhs = (ValueItem) pairs.get(value)
+                    if (ctx.getPairs()
+                            .containsKey(value)) {
+                        newLhs = (ValueItem) ctx.getPairs()
+                                .get(value)
                                 .get().value;
                     }
                 }
@@ -192,7 +188,7 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
                 return t._3;
             }
             if (StringUtils.isNumeric(t._2)) {
-                return Option.of((ValueItem) objectIndex.arrayItems.get(Integer.parseInt(t._2)));
+                return Option.of((ValueItem) ctx.getObjectIndex().arrayItems.get(Integer.parseInt(t._2)));
             } else {
                 return Option.of(new StringPrimitive(t._2));
             }
@@ -231,7 +227,8 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
                 final Option<MapItem> matchingMapItem = ((uk.modl.model.Map) vi).mapItems.find(mapItem -> {
                     // Check whether the reference key needs de-referencing
                     if (ref.contains("%")) {
-                        String actualRef = pairs.get(stripLeadingAndTrailingPercents(ref))
+                        String actualRef = ctx.getPairs()
+                                .get(stripLeadingAndTrailingPercents(ref))
                                 .map(pair -> pair.value.toString())
                                 .getOrElse(ref);
 
@@ -345,7 +342,8 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
             final Pair resolved = resolve(p);
             accept(resolved);
 
-            return pairs.get(p.key)
+            return ctx.getPairs()
+                    .get(p.key)
                     .getOrElse(p);
         }
     }
@@ -454,8 +452,8 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
         return list.map(s -> Tuple.of(s, stripLeadingAndTrailingPercents(s)))// E.g. ("%1%","1")
                 .map(t -> t.append(Integer.parseInt(t._2)))// E.g. ("%1%","1", 1)
                 .map(t -> {
-                    if (t._3 >= 0 && t._3 < objectIndex.arrayItems.size()) {
-                        return t.append(Option.of(objectIndex.arrayItems.get(t._3)));
+                    if (t._3 >= 0 && t._3 < ctx.getObjectIndex().arrayItems.size()) {
+                        return t.append(Option.of(ctx.getObjectIndex().arrayItems.get(t._3)));
                     }
                     return t.append(Option.none());
                 });// E.g. ("%1%","1", 1, Option(ArrayItem))
@@ -469,7 +467,8 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
      */
     private Vector<Tuple3<String, String, Option<Pair>>> keyToReferencedObject(final Vector<String> list) {
         return list.map(s -> Tuple.of(s, stripLeadingAndTrailingPercents(s)))// E.g. ("%var%","var")
-                .map(t -> t.append(this.pairs.get(t._2)));// E.g. ("%var%","var", Option(Pair))
+                .map(t -> t.append(this.ctx.getPairs()
+                        .get(t._2)));// E.g. ("%var%","var", Option(Pair))
     }
 
     /**
@@ -483,12 +482,12 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
                 // If the item containing the reference is a StringPrimitive then do String substitution
                 if (next._4.get() instanceof StringPrimitive) {
                     final String s = ((StringPrimitive) curr.value).value;
-                    final String r = objectIndex.arrayItems.get(next._3)
+                    final String r = ctx.getObjectIndex().arrayItems.get(next._3)
                             .toString();
                     return new Pair(curr.key, new StringPrimitive(s.replace(next._1, r)));
                 }
                 // Otherwise replace the whole thing
-                return new Pair(curr.key, (PairValue) objectIndex.arrayItems.get(next._3));
+                return new Pair(curr.key, (PairValue) ctx.getObjectIndex().arrayItems.get(next._3));
             }
             return curr;
         };
@@ -504,7 +503,7 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
             if (next._4.isDefined()) {
                 // If the item containing the reference is a StringPrimitive then do String substitution
                 if (next._4.get() instanceof StringPrimitive && curr instanceof StringPrimitive) {
-                    final String r = objectIndex.arrayItems.get(next._3)
+                    final String r = ctx.getObjectIndex().arrayItems.get(next._3)
                             .toString();
                     return new StringPrimitive(((StringPrimitive) curr).value.replace(next._1, r));
                 }

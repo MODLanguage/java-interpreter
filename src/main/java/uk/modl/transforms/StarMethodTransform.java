@@ -39,6 +39,7 @@ public class StarMethodTransform implements Function1<Pair, Pair> {
     public Pair apply(final Pair p) {
         if (p != null && isMethodInstruction(p.key)) {
             accept(p);
+            return null;
         }
         return p;
     }
