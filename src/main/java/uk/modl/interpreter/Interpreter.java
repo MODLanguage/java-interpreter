@@ -2143,12 +2143,10 @@ public class Interpreter {
 
             if (string.string.startsWith("%*")) {
                 if (string.string.equals("%*class")) {
-                    value = InstructionProcessor.processClassInstruction(klasses);
-                }
-                if (string.string.equals("%*load")) {
+                    value = InstructionProcessor.processClassInstruction(klasses, new StringTransformer(valuePairs, variables, numberedVariables));
+                } else if (string.string.equals("%*load")) {
                     value = InstructionProcessor.processLoadInstruction(loadedFiles);
-                }
-                if (string.string.equals("%*method")) {
+                } else if (string.string.equals("%*method")) {
                     value = InstructionProcessor.processMethodInstruction(methodList);
                 }
             }

@@ -22,7 +22,7 @@ class InstructionProcessor {
         return result;
     }
 
-    static ModlValue processClassInstruction(final Map<String, Map<String, Object>> classes) {
+    static ModlValue processClassInstruction(final Map<String, Map<String, Object>> classes, final StringTransformer stringTransformer) {
         final ModlObject.Array result = new ModlObject.Array();
 
         for (final String key : classes.keySet()) {
@@ -33,18 +33,14 @@ class InstructionProcessor {
 
             final Map<String, Object> klass = classes.get(key);
 
-            addClassField(classDetails, klass, "name", "*name");
-            if (klass.containsKey("object_type")) {
-                addClassField(classDetails, klass, "superclass", "object_type");
-            } else {
-                addClassField(classDetails, klass, "superclass", "*superclass");
-            }
+            addClassField(classDetails, klass, "name", "*name", stringTransformer);
+            addClassField(classDetails, klass, "superclass", "*superclass", stringTransformer);
             addClassParams(classDetails, klass);
-            addClassField(classDetails, klass, "expect", "*expect");
+            addClassField(classDetails, klass, "expect", "*expect", stringTransformer);
 
             for (final String k : klass.keySet()) {
                 if (!k.startsWith("*")) {
-                    addClassField(classDetails, klass, k, k);
+                    addClassField(classDetails, klass, k, k, stringTransformer);
                 }
             }
             final ModlObject.Pair pair = new ModlObject.Pair(pairKey, classDetails);
@@ -54,20 +50,24 @@ class InstructionProcessor {
         return result;
     }
 
-    private static void addClassField(ModlObject.Map classDetails,
-                                      Map<String, Object> klass,
-                                      String fieldName,
-                                      String keyName) {
+    private static void addClassField(final ModlObject.Map classDetails,
+                                      final Map<String, Object> klass,
+                                      final String fieldName,
+                                      final String keyName,
+                                      final StringTransformer stringTransformer) {
         final Object nameObject = klass.get(keyName);
+        final ModlObject.String classKeyObject = new ModlObject.String(fieldName);
         if (nameObject != null) {
-            final ModlObject.String classKeyObject = new ModlObject.String(fieldName);
             if (nameObject instanceof String) {
                 final String value = (String) nameObject;
-                final ModlObject.String classValueObject = new ModlObject.String(value);
+                final ModlObject.String classValueObject = new ModlObject.String(stringTransformer.transformString(value)
+                        .toString());
                 classDetails.addPair(new ModlObject.Pair(classKeyObject, classValueObject));
             } else if (nameObject instanceof ModlObject.String) {
                 final String value = ((ModlObject.String) nameObject).string;
-                ModlObject.String classValueObject = new ModlObject.String(value);
+
+                ModlObject.String classValueObject = new ModlObject.String(stringTransformer.transformString(value)
+                        .toString());
                 classDetails.addPair(new ModlObject.Pair(classKeyObject, classValueObject));
             } else if (nameObject instanceof ModlObject.Array) {
                 final List<ModlValue> values = ((ModlObject.Array) nameObject).getValues();
@@ -77,10 +77,13 @@ class InstructionProcessor {
                 }
                 classDetails.addPair(new ModlObject.Pair(classKeyObject, array));
             } else {
-                final String value = "Unknown field type for class " + nameObject.getClass().getName();
+                final String value = "Unknown field type for class " + nameObject.getClass()
+                        .getName();
                 ModlObject.String classValueObject = new ModlObject.String(value);
                 classDetails.addPair(new ModlObject.Pair(classKeyObject, classValueObject));
             }
+        } else if (fieldName.equals("superclass")) {
+            classDetails.addPair(new ModlObject.Pair(classKeyObject, new ModlObject.Null()));
         }
     }
 
@@ -103,13 +106,15 @@ class InstructionProcessor {
                     }
                     paramsArray.addValue(array);
                 } else {
-                    final String value = "Unknown field type for class " + nameObject.getClass().getName();
+                    final String value = "Unknown field type for class " + nameObject.getClass()
+                            .getName();
                     throw new RuntimeException(value);
                 }
             }
         }
 
-        if (paramsArray.getModlValues().size() > 0) {
+        if (paramsArray.getModlValues()
+                .size() > 0) {
             classDetails.addPair(new ModlObject.Pair(classKeyObject, paramsArray));
         }
     }
@@ -124,7 +129,7 @@ class InstructionProcessor {
 
             methodDetails.addPair(new ModlObject.Pair(new ModlObject.String("name"), new ModlObject.String(mthd.name)));
             methodDetails.addPair(new ModlObject.Pair(new ModlObject.String("transform"),
-                                                      new ModlObject.String(mthd.transform)));
+                    new ModlObject.String(mthd.transform)));
 
             final ModlObject.Pair pair = new ModlObject.Pair(pairKey, methodDetails);
             map.addPair(pair);

@@ -33,8 +33,34 @@ import java.io.IOException;
 public class ScratchTest {
     private final static String[][] expected = {
             {
-                    "*L=https~://www.modl.uk/tests/message-thread.txt;\n\nclasses=*class",
-                    "{\"classes\": \"*class\"}"
+                    "*LOAD=\"https://modules.num.uk/1/locales/en-us.txt\";\n" +
+                            "\n" +
+                            "*class(\n" +
+                            "  *id=u;\n" +
+                            "  *name=url;\n" +
+                            "  object_type=media;\n" +
+                            "  object_display_name=%locale.u.name;\n" +
+                            "  description_default=%locale.u.default;\n" +
+                            "  prefix=\"https://\";\n" +
+                            "  media_type=core\n" +
+                            ");\n" +
+                            "\n" +
+                            "classes=%*class",
+                    "{\n" +
+                            "    \"classes\": [\n" +
+                            "        {\n" +
+                            "            \"u\": {\n" +
+                            "                \"name\": \"url\",\n" +
+                            "                \"superclass\": null,\n" +
+                            "                \"object_type\": \"media\",\n" +
+                            "                \"object_display_name\": \"URL\",\n" +
+                            "                \"description_default\": \"Click\",\n" +
+                            "                \"prefix\": \"https://\",\n" +
+                            "                \"media_type\": \"core\"\n" +
+                            "            }\n" +
+                            "        }\n" +
+                            "    ]\n" +
+                            "}"
             }
     };
 
