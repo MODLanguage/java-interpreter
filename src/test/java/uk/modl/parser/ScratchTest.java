@@ -33,33 +33,43 @@ import java.io.IOException;
 public class ScratchTest {
     private final static String[][] expected = {
             {
-                    "*LOAD=\"https://modules.num.uk/1/locales/en-us.txt\";\n" +
-                            "\n" +
-                            "*class(\n" +
-                            "  *id=u;\n" +
-                            "  *name=url;\n" +
-                            "  object_type=media;\n" +
-                            "  object_display_name=%locale.u.name;\n" +
-                            "  description_default=%locale.u.default;\n" +
-                            "  prefix=\"https://\";\n" +
-                            "  media_type=core\n" +
-                            ");\n" +
-                            "\n" +
-                            "classes=%*class",
+                    "*L=\"https://modules.num.uk/3/rcf.txt\";\n" +
+                            "_n=1;i[(n=NUM Logo;t=logo;v[`https://www.logos.uk/num/num.uk-100.png`:image/png:100:100;`https://www.logos.uk/num/num.uk-250.png`:image/png:250:250;`https://www.logos.uk/num/num.uk-500.png`:image/png:500:500]);(n=NUM Strapline;t=splash;v[`https://www.logos.uk/num/num.uk-strapline.png`:image/png:250:250;`https://www.logos.uk/num/num.uk-strapline-500.png`:image/png:500:500])]",
                     "{\n" +
-                            "    \"classes\": [\n" +
-                            "        {\n" +
-                            "            \"u\": {\n" +
-                            "                \"name\": \"url\",\n" +
-                            "                \"superclass\": null,\n" +
-                            "                \"object_type\": \"media\",\n" +
-                            "                \"object_display_name\": \"URL\",\n" +
-                            "                \"description_default\": \"Click\",\n" +
-                            "                \"prefix\": \"https://\",\n" +
-                            "                \"media_type\": \"core\"\n" +
-                            "            }\n" +
-                            "        }\n" +
-                            "    ]\n" +
+                            "  \"images\" : [ {\n" +
+                            "    \"name\" : \"NUM Logo\",\n" +
+                            "    \"type\" : \"logo\",\n" +
+                            "    \"variants\" : [ {\n" +
+                            "      \"url\" : \"https://www.logos.uk/num/num.uk-100.png\",\n" +
+                            "      \"mime\" : \"image/png\",\n" +
+                            "      \"width\" : 100,\n" +
+                            "      \"height\" : 100\n" +
+                            "    }, {\n" +
+                            "      \"url\" : \"https://www.logos.uk/num/num.uk-250.png\",\n" +
+                            "      \"mime\" : \"image/png\",\n" +
+                            "      \"width\" : 250,\n" +
+                            "      \"height\" : 250\n" +
+                            "    }, {\n" +
+                            "      \"url\" : \"https://www.logos.uk/num/num.uk-500.png\",\n" +
+                            "      \"mime\" : \"image/png\",\n" +
+                            "      \"width\" : 500,\n" +
+                            "      \"height\" : 500\n" +
+                            "    } ]\n" +
+                            "  }, {\n" +
+                            "    \"name\" : \"NUM Strapline\",\n" +
+                            "    \"type\" : \"splash\",\n" +
+                            "    \"variants\" : [ {\n" +
+                            "      \"url\" : \"https://www.logos.uk/num/num.uk-strapline.png\",\n" +
+                            "      \"mime\" : \"image/png\",\n" +
+                            "      \"width\" : 250,\n" +
+                            "      \"height\" : 250\n" +
+                            "    }, {\n" +
+                            "      \"url\" : \"https://www.logos.uk/num/num.uk-strapline-500.png\",\n" +
+                            "      \"mime\" : \"image/png\",\n" +
+                            "      \"width\" : 500,\n" +
+                            "      \"height\" : 500\n" +
+                            "    } ]\n" +
+                            "  } ]\n" +
                             "}"
             }
     };

@@ -530,7 +530,7 @@ public class Interpreter {
                         classNamesForArrayObject = rootClass.get("*params1");
                     }
                     if (classNamesForArrayObject instanceof List) {
-                        final List<ModlObject.String> classNamesForArray = (List<ModlObject.String>) classNamesForArrayObject;
+                        final List<ModlObject.String> classNamesForArray = new ArrayList<>((List<ModlObject.String>) classNamesForArrayObject);
 
                         // If the list of names is of length 1, it might end with a * so we need to repeat it `size` times.
                         if (classNamesForArray.size() == 1) {
