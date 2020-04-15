@@ -33,44 +33,8 @@ import java.io.IOException;
 public class ScratchTest {
     private final static String[][] expected = {
             {
-                    "*L=\"https://modules.num.uk/3/rcf.txt\";\n" +
-                            "_n=1;i[(n=NUM Logo;t=logo;v[`https://www.logos.uk/num/num.uk-100.png`:image/png:100:100;`https://www.logos.uk/num/num.uk-250.png`:image/png:250:250;`https://www.logos.uk/num/num.uk-500.png`:image/png:500:500]);(n=NUM Strapline;t=splash;v[`https://www.logos.uk/num/num.uk-strapline.png`:image/png:250:250;`https://www.logos.uk/num/num.uk-strapline-500.png`:image/png:500:500])]",
-                    "{\n" +
-                            "  \"images\" : [ {\n" +
-                            "    \"name\" : \"NUM Logo\",\n" +
-                            "    \"type\" : \"logo\",\n" +
-                            "    \"variants\" : [ {\n" +
-                            "      \"url\" : \"https://www.logos.uk/num/num.uk-100.png\",\n" +
-                            "      \"mime\" : \"image/png\",\n" +
-                            "      \"width\" : 100,\n" +
-                            "      \"height\" : 100\n" +
-                            "    }, {\n" +
-                            "      \"url\" : \"https://www.logos.uk/num/num.uk-250.png\",\n" +
-                            "      \"mime\" : \"image/png\",\n" +
-                            "      \"width\" : 250,\n" +
-                            "      \"height\" : 250\n" +
-                            "    }, {\n" +
-                            "      \"url\" : \"https://www.logos.uk/num/num.uk-500.png\",\n" +
-                            "      \"mime\" : \"image/png\",\n" +
-                            "      \"width\" : 500,\n" +
-                            "      \"height\" : 500\n" +
-                            "    } ]\n" +
-                            "  }, {\n" +
-                            "    \"name\" : \"NUM Strapline\",\n" +
-                            "    \"type\" : \"splash\",\n" +
-                            "    \"variants\" : [ {\n" +
-                            "      \"url\" : \"https://www.logos.uk/num/num.uk-strapline.png\",\n" +
-                            "      \"mime\" : \"image/png\",\n" +
-                            "      \"width\" : 250,\n" +
-                            "      \"height\" : 250\n" +
-                            "    }, {\n" +
-                            "      \"url\" : \"https://www.logos.uk/num/num.uk-strapline-500.png\",\n" +
-                            "      \"mime\" : \"image/png\",\n" +
-                            "      \"width\" : 500,\n" +
-                            "      \"height\" : 500\n" +
-                            "    } ]\n" +
-                            "  } ]\n" +
-                            "}"
+                    "*load=\"http://modules.num.uk/3/rcf.txt!\";_n=1;?=tesco.com;i[(t=icon;v[%U.l%%0%.png:%M.p%:300:300])]",
+                    "{\"images\":[{\"type\":\"icon\",\"variants\":[{\"url\":\"https://www.logos.uk/num/tesco.com.png\",\"mime\":\"image/png\",\"width\":300,\"height\":300}]}]}"
             }
     };
 

@@ -36,7 +36,6 @@ class InstructionProcessor {
             addClassField(classDetails, klass, "name", "*name", stringTransformer);
             addClassField(classDetails, klass, "superclass", "*superclass", stringTransformer);
             addClassParams(classDetails, klass);
-            addClassField(classDetails, klass, "expect", "*expect", stringTransformer);
 
             for (final String k : klass.keySet()) {
                 if (!k.startsWith("*")) {
