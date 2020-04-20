@@ -48,24 +48,24 @@ public class StarLoadTransform implements Function1<Pair, Pair> {
         for (final StarLoadExtractor.LoadSet loadSet : list) {
 
             // Each tuple has a list of filenames
-            final Vector<StarLoadExtractor.FileSpec> filenames = loadSet.fileSet;
+            final Vector<StarLoadExtractor.FileSpec> filenames = loadSet.getFileSet();
 
             for (final StarLoadExtractor.FileSpec spec : filenames) {
                 // Interpret each MODL string from each file
                 final Interpreter interpreter = new Interpreter();
                 interpreter.setCtx(ctx);
 
-                if (cache.contains(spec.filename) && !spec.forceLoad) {
+                if (cache.contains(spec.getFilename()) && !spec.isForceLoad()) {
                     // Its cached and not force-loaded
-                    final Tuple2<StarLoadExtractor.FileSpec, Modl> cachedModl = Tuple.of(spec, cache.get(spec.filename));
+                    final Tuple2<StarLoadExtractor.FileSpec, Modl> cachedModl = Tuple.of(spec, cache.get(spec.getFilename()));
 
                     // Re-interpret the cached Modl objects to extract classes, methods etc. for the current context
                     interpreter.apply(cachedModl._2);
 
-                    result = result.append(Tuple.of(Vector.of(cachedModl._1.filename), Vector.of(cachedModl._2), loadSet.pair));
+                    result = result.append(Tuple.of(Vector.of(cachedModl._1.getFilename()), Vector.of(cachedModl._2), loadSet.getPair()));
 
                     // Add the cache misses to the cache for next time
-                    cache.put(cachedModl._1.filename, cachedModl._2);
+                    cache.put(cachedModl._1.getFilename(), cachedModl._2);
                 } else {
                     // Its either not cached or not force-loaded
                     // Map the filenames to the contents of the files, or Error
@@ -73,7 +73,7 @@ public class StarLoadTransform implements Function1<Pair, Pair> {
                     if (contents != null) {
                         final Modl modl = interpreter.apply(contents._2);
 
-                        result = result.append(Tuple.of(Vector.of(contents._1.filename), Vector.of(modl), loadSet.pair));
+                        result = result.append(Tuple.of(Vector.of(contents._1.getFilename()), Vector.of(modl), loadSet.getPair()));
                     }
                 }
             }

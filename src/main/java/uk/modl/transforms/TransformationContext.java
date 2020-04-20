@@ -100,8 +100,8 @@ public class TransformationContext {
      * @return an Option of a StarClassTransform.ClassInstruction
      */
     public Option<StarClassTransform.ClassInstruction> getClassByNameOrId(final String idOrName) {
-        final Option<StarClassTransform.ClassInstruction> clss = classesById.get(idOrName);
-        return (clss.isDefined()) ? clss : classesByName.get(idOrName);
+        return classesById.get(idOrName)
+                .orElse(classesByName.get(idOrName));
     }
 
     public void setObjectIndex(final uk.modl.model.Array objectIndex) {

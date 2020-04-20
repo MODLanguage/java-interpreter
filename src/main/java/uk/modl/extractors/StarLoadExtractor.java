@@ -1,7 +1,11 @@
 package uk.modl.extractors;
 
 import io.vavr.collection.Vector;
-import lombok.*;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import uk.modl.model.Pair;
 import uk.modl.utils.Util;
 import uk.modl.visitor.ModlVisitorBase;
@@ -19,10 +23,7 @@ public class StarLoadExtractor extends ModlVisitorBase {
      * @return true if the key represents a LOAD instruction
      */
     public static boolean isLoadInstruction(final String key) {
-        final String lowerCase = key.toLowerCase();
-        return lowerCase
-                .equals("*l") || lowerCase
-                .equals("*load");
+        return StringUtils.equalsAnyIgnoreCase(key, "*l", "*load");
     }
 
     /**
@@ -32,7 +33,7 @@ public class StarLoadExtractor extends ModlVisitorBase {
      * @return true if the key represents an immutable LOAD instruction
      */
     private static boolean isImmutableLoadInstruction(final String key) {
-        return key.equals("*L") || key.equals("*LOAD");
+        return StringUtils.equalsAny(key, "*L", "*LOAD");
     }
 
     @Override
@@ -41,16 +42,16 @@ public class StarLoadExtractor extends ModlVisitorBase {
 
         if (loadSets.size() > 0 && immutable) {
             throw new RuntimeException("Interpreter Error: Cannot load multiple files after *LOAD instruction");
-        } else {
-            if (isLoadInstruction(key)) {
+        }
 
-                immutable |= isImmutableLoadInstruction(key);
+        if (isLoadInstruction(key)) {
 
-                val specs = Util.getFilenames.apply(pair.getValue())
-                        .map(this::normalize);
+            immutable |= isImmutableLoadInstruction(key);
 
-                loadSets = loadSets.append(new LoadSet(pair, specs));
-            }
+            val specs = Util.getFilenames.apply(pair.getValue())
+                    .map(this::normalize);
+
+            loadSets = loadSets.append(new LoadSet(pair, specs));
         }
     }
 
@@ -90,20 +91,18 @@ public class StarLoadExtractor extends ModlVisitorBase {
     /**
      * A Pair can represent several files to be loaded.
      */
-    @RequiredArgsConstructor
-    @ToString
+    @Value
     public static class LoadSet {
-        public final Pair pair;
-        public final Vector<FileSpec> fileSet;
+        Pair pair;
+        Vector<FileSpec> fileSet;
     }
 
     /**
      * A file can be immutable or forced load, and has a filename
      */
-    @RequiredArgsConstructor
-    @ToString
+    @Value
     public static class FileSpec {
-        public final String filename;
-        public final boolean forceLoad;
+        String filename;
+        boolean forceLoad;
     }
 }

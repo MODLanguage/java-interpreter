@@ -3,6 +3,7 @@ package uk.modl.parser;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.tree.ParseTree;
 import uk.modl.model.*;
@@ -19,7 +20,8 @@ public class ModlParsedVisitor {
     /**
      * Immutable result
      */
-    public final Modl modl;
+    @Getter
+    private final Modl modl;
 
     private int inConditional = 0;
 

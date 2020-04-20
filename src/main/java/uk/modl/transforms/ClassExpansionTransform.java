@@ -86,27 +86,15 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
 
     private Vector<MapItem> toMapUsingAssign(final Array array, final StarClassTransform.ClassInstruction ci) {
         // Find the correct assign statement
-        final Option<ArrayItem> maybeAssignArray = ci.assign.find(arr -> ((Array) arr).getArrayItems()
+        final Array assignArray = (Array) ci.assign.find(arr -> ((Array) arr).getArrayItems()
                 .size() == array.getArrayItems()
-                .size());
-        final Array assignArray = (Array) maybeAssignArray.getOrElseThrow(() -> new InterpreterError("No matching *assign value of length: " + array.getArrayItems()
-                .size()));
+                .size())
+                .getOrElseThrow(() -> new InterpreterError("No matching *assign value of length: " + array.getArrayItems()
+                        .size()));
 
         // Convert the array items to pairs using the assign statement.
-        Vector<MapItem> result = Vector.empty();
-        int i = 0;
-        while (i < array.getArrayItems()
-                .size()) {
-            final ArrayItem item = array.getArrayItems()
-                    .get(i);
-            if (item instanceof PairValue) {
-                result = result.append(new Pair(assignArray.getArrayItems()
-                        .get(i)
-                        .toString(), (PairValue) item));
-            }
-            i++;
-        }
-        return result;
+        return array.getArrayItems()
+                .zipWith(assignArray.getArrayItems(), (item, assign) -> new Pair(assign.toString(), (PairValue) item));
     }
 
     private PairValue inherit(final String superclass, final PairValue value) {

@@ -59,8 +59,7 @@ public class Parser implements Function1<String, Modl> {
             final MODLParser.ModlContext modlCtx = parser.modl();
 
             // The String has been parsed by Antlr, now its our turn
-            final ModlParsedVisitor visitor = new ModlParsedVisitor(modlCtx);
-            return visitor.modl;
+            return new ModlParsedVisitor(modlCtx).getModl();
         } catch (final Exception e) {
             log.error(e);
             throw new RuntimeException(e);

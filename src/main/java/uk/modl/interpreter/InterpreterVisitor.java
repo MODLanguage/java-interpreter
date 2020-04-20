@@ -48,16 +48,15 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private Structure visitStructure(final Structure s) {
 
-        if (s instanceof Map) {
-            return visitMap((Map) s);
-        } else if (s instanceof Array) {
-            return visitArray((Array) s);
-        } else if (s instanceof Pair) {
-            return visitPair((Pair) s);
-        } else if (s instanceof TopLevelConditional) {
-            return visitTopLevelConditional((TopLevelConditional) s);
-        }
-        return s;
+        return (s instanceof Map) ?
+                visitMap((Map) s) :
+                (s instanceof Array) ?
+                        visitArray((Array) s) :
+                        (s instanceof Pair) ?
+                                visitPair((Pair) s) :
+                                (s instanceof TopLevelConditional) ?
+                                        visitTopLevelConditional((TopLevelConditional) s) :
+                                        s;
     }
 
     /**
@@ -289,13 +288,14 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
 
         PairValue value = pair.getValue();
 
-        if (value instanceof Array) {
-            value = visitArray((Array) value);
-        } else if (value instanceof Map) {
-            value = visitMap((Map) value);
-        } else if (value instanceof ValueItem) {
-            value = visitValueItem((ValueItem) value);
-        }
+        value = (value instanceof Array) ?
+                visitArray((Array) value) :
+                (value instanceof Map) ?
+                        visitMap((Map) value) :
+                        (value instanceof ValueItem) ?
+                                visitValueItem((ValueItem) value) :
+                                value;
+
         final Pair newPair = new Pair(pair.getKey(), value);
         return percentStarInstructionTransform.apply(newPair);
     }
@@ -308,18 +308,17 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      */
     private ValueItem visitValueItem(final ValueItem vi) {
 
-        if (vi instanceof ValueConditional) {
-            return visitValueConditional((ValueConditional) vi);
-        } else if (vi instanceof Map) {
-            return visitMap((Map) vi);
-        } else if (vi instanceof Array) {
-            return visitArray((Array) vi);
-        } else if (vi instanceof Pair) {
-            return visitPair((Pair) vi);
-        } else if (vi instanceof Primitive) {
-            return visitPrimitive((Primitive) vi);
-        }
-        return vi;
+        return (vi instanceof ValueConditional) ?
+                visitValueConditional((ValueConditional) vi) :
+                (vi instanceof Map) ?
+                        visitMap((Map) vi) :
+                        (vi instanceof Array) ?
+                                visitArray((Array) vi) :
+                                (vi instanceof Pair) ?
+                                        visitPair((Pair) vi) :
+                                        (vi instanceof Primitive) ?
+                                                visitPrimitive((Primitive) vi) :
+                                                vi;
     }
 
     /**
