@@ -24,13 +24,13 @@ import static org.junit.Assert.fail;
 @Log4j2
 public class InterpreterBaseTests {
 
-    private static JacksonJsonNodeTransformer jsonTransformer = new JacksonJsonNodeTransformer();
-    private List<String> errors = new ArrayList<>();
-    private ObjectMapper mapper = new ObjectMapper();
+    private static final JacksonJsonNodeTransformer jsonTransformer = new JacksonJsonNodeTransformer();
+    private final List<String> errors = new ArrayList<>();
+    private final ObjectMapper mapper = new ObjectMapper();
     /**
      * Read a set of tests from a file
      */
-    private Function<String, List<TestInput>> load = (filename) -> {
+    private final Function<String, List<TestInput>> load = (filename) -> {
         try (final InputStream fileStream = new FileInputStream(filename)) {
             return mapper.readValue(fileStream, new TypeReference<LinkedList<TestInput>>() {
             });

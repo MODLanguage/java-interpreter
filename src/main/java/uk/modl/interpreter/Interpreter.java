@@ -21,6 +21,7 @@ package uk.modl.interpreter;
 
 import io.vavr.Function1;
 import io.vavr.control.Option;
+import lombok.NonNull;
 import uk.modl.model.Modl;
 import uk.modl.parser.Parser;
 import uk.modl.transforms.TransformationContext;
@@ -42,12 +43,12 @@ public class Interpreter implements Function1<String, Modl> {
      * @return Either an Error or a Modl object.
      */
     @Override
-    public Modl apply(final String input) {
+    public Modl apply(@NonNull final String input) {
         // Apply the function and return the result.
         return Option.of(input)
                 .map(parser)
-                .map(interpreterVisitor)
-                .getOrElseThrow(() -> new RuntimeException("Cannot parse null input"));
+                .map(this::apply)
+                .get();
     }
 
     /**
@@ -56,11 +57,11 @@ public class Interpreter implements Function1<String, Modl> {
      * @param modl a Modl object.
      * @return Either an Error or a Modl object.
      */
-    public Modl apply(final Modl modl) {
+    public Modl apply(@NonNull final Modl modl) {
         // Apply the function and return the result.
         return Option.of(modl)
                 .map(interpreterVisitor)
-                .getOrElseThrow(() -> new RuntimeException("Cannot parse null input"));
+                .get();
     }
 
     public void setCtx(final TransformationContext ctx) {

@@ -1,32 +1,26 @@
 package uk.modl.interpreter;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import lombok.val;
 import org.junit.Assert;
 import org.junit.Test;
-import uk.modl.model.Modl;
 import uk.modl.transforms.JacksonJsonNodeTransformer;
 import uk.modl.utils.Util;
 
 public class InterpreterTest {
 
-    public static final String EXPECTED = "{\"d\":{\"test1\":\"test2\"},\"e\":1,\"f\":2.2,\"g\":null,\"h\":true,\"j\":false}";
+    public static final String EXPECTED = "{\"delta\":{\"test1\":\"test2\",\"y\":\"yankee\",\"x\":\"xray\",\"w\":\"whisky\",\"v\":\"victor\"},\"e\":1,\"f\":2.2,\"g\":null,\"h\":true,\"j\":false}";
     public static final String INPUT = "*c(*i=a;*n=alpha;*s=map;v=victor);*c(*i=b;*n=bravo;*s=a;w=whisky);*c(*i=c;*n=charlie;*s=b;x=xray);*c(*i=d;*n=delta;*s=c;y=yankee);d(test1=test2);e=1;f=2.2;g=000;h=01;j=00";
-    private static Interpreter interpreter = new Interpreter();
-    private static JacksonJsonNodeTransformer jsonTransformer = new JacksonJsonNodeTransformer();
 
     @Test
     public void parseOk() {
-        final Modl modl = interpreter.apply(INPUT);
-        Assert.assertNotNull(modl);
-        final JsonNode jsonResult = jsonTransformer.apply(modl);
+        val f = new Interpreter().andThen(new JacksonJsonNodeTransformer())
+                .andThen(Util.jsonNodeToString);
 
-        final String mapResult = Util.jsonNodeToString.apply(jsonResult);
-        Assert.assertNotNull(mapResult);
-        Assert.assertEquals(EXPECTED, mapResult);
+        Assert.assertEquals(EXPECTED, f.apply(INPUT));
     }
 
     @Test(expected = RuntimeException.class)
     public void parseBad() {
-        interpreter.apply("xxx");
+        new Interpreter().apply("xxx");
     }
 }
