@@ -22,11 +22,11 @@ import uk.modl.visitor.ModlVisitorBase;
 
 @RequiredArgsConstructor
 public class StarLoadTransform implements Function1<Pair, Pair> {
-    private static SimpleCache<String, Modl> cache = new SimpleCache<>();
+    private static final SimpleCache<String, Modl> cache = new SimpleCache<>();
     /**
      * Function to extract filenames and pairs from a Modl object.
      */
-    private static Function1<Pair, Vector<StarLoadExtractor.LoadSet>> extractFilenamesAndPairs = (m) -> {
+    private static final Function1<Pair, Vector<StarLoadExtractor.LoadSet>> extractFilenamesAndPairs = (m) -> {
         final StarLoadExtractor starLoadExtractor = new StarLoadExtractor();
         m.visit(starLoadExtractor);
         return starLoadExtractor.getLoadSets();
@@ -95,7 +95,7 @@ public class StarLoadTransform implements Function1<Pair, Pair> {
      */
     public Pair apply(final Pair p) {
 
-        if (StarLoadExtractor.isLoadInstruction(p.key)) {
+        if (StarLoadExtractor.isLoadInstruction(p.getKey())) {
             // Each tuple in this list holds the original Pair with the `*load` statements and the set of Modl objects
             // loaded using the filename[s] specified in the file list - there can be 1 or several.
             final Vector<Tuple3<Vector<String>, Vector<Modl>, Pair>> loadedModlObjects = convertFilesToModlObjectsAndPairs(extractFilenamesAndPairs
@@ -147,8 +147,9 @@ public class StarLoadTransform implements Function1<Pair, Pair> {
 
             if (p.equals(replacement._3)) {
 
-                final Vector<ArrayItem> arrayItems = replacement._2.flatMap(m -> m.structures.map(structure -> (ArrayItem) structure));
-                return new Pair(p.key, new Array(arrayItems));
+                final Vector<ArrayItem> arrayItems = replacement._2.flatMap(m -> m.getStructures()
+                        .map(structure -> (ArrayItem) structure));
+                return new Pair(p.getKey(), new Array(arrayItems));
             } else {
                 return p;
             }

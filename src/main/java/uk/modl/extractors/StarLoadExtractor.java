@@ -1,10 +1,7 @@
 package uk.modl.extractors;
 
 import io.vavr.collection.Vector;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import uk.modl.model.Pair;
 import uk.modl.utils.Util;
 import uk.modl.visitor.ModlVisitorBase;
@@ -40,7 +37,7 @@ public class StarLoadExtractor extends ModlVisitorBase {
 
     @Override
     public void accept(final Pair pair) {
-        final String key = pair.key;
+        final String key = pair.getKey();
 
         if (loadSets.size() > 0 && immutable) {
             throw new RuntimeException("Interpreter Error: Cannot load multiple files after *LOAD instruction");
@@ -49,7 +46,7 @@ public class StarLoadExtractor extends ModlVisitorBase {
 
                 immutable |= isImmutableLoadInstruction(key);
 
-                final Vector<FileSpec> specs = Util.getFilenames.apply(pair.value)
+                val specs = Util.getFilenames.apply(pair.getValue())
                         .map(this::normalize);
 
                 loadSets = loadSets.append(new LoadSet(pair, specs));

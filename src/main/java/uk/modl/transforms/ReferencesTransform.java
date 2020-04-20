@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 public class ReferencesTransform implements Function1<Pair, Pair> {
-    private static Pattern referencePattern = Pattern.compile("((%\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|(%` ?[\\w-]+`[\\w.<>,]*%?)|(%\\*?[\\w]+(\\.%?\\w*<?[\\w,]*>?)*%?))");
+    private static final Pattern referencePattern = Pattern.compile("((%\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|(%` ?[\\w-]+`[\\w.<>,]*%?)|(%\\*?[\\w]+(\\.%?\\w*<?[\\w,]*>?)*%?))");
 
     /**
      * The context for this invocation of the interpreter
@@ -66,23 +66,26 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
      * @param pair a Pair
      */
     private void accept(final Pair pair) {
-        if (pair.key.equals("?")) {
+        if (pair.getKey()
+                .equals("?")) {
 
             // Capture the Object Index
             final Array objectIndex;
-            if (pair.value instanceof Array) {
-                objectIndex = (Array) pair.value;
+            if (pair.getValue() instanceof Array) {
+                objectIndex = (Array) pair.getValue();
             } else {
-                objectIndex = new Array(Vector.of((ArrayItem) pair.value));
+                objectIndex = new Array(Vector.of((ArrayItem) pair.getValue()));
             }
             ctx.setObjectIndex(objectIndex);
         } else {
             // Keep a map of pairs indexed by their key...
-            ctx.addPair(pair.key, pair);
+            ctx.addPair(pair.getKey(), pair);
 
             // ...and by their key without the underscore prefix if there is one.
-            if (pair.key.startsWith("_")) {
-                ctx.addPair(pair.key.substring(1), pair);
+            if (pair.getKey()
+                    .startsWith("_")) {
+                ctx.addPair(pair.getKey()
+                        .substring(1), pair);
             }
         }
     }
@@ -95,14 +98,14 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
      * @return a Condition
      */
     public Condition apply(final Condition condition) {
-        final ValueItem lhs = condition.lhs;
+        final ValueItem lhs = condition.getLhs();
 
         ValueItem newLhs = lhs;
-        Operator op = condition.op;
-        Vector<ValueItem> values = condition.values;
+        Operator op = condition.getOp();
+        Vector<ValueItem> values = condition.getValues();
 
         if (lhs instanceof StringPrimitive) {
-            final String value = ((StringPrimitive) lhs).value;
+            final String value = ((StringPrimitive) lhs).getValue();
 
             if (op == null) {
                 newLhs = values.get(0);
@@ -113,7 +116,8 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
                             .containsKey(key)) {
                         newLhs = (ValueItem) ctx.getPairs()
                                 .get(key)
-                                .get().value;
+                                .get()
+                                .getValue();
                         values = Vector.of(newLhs);
                         if (newLhs instanceof FalsePrimitive) {
                             newLhs = TruePrimitive.instance;// Force a false match result
@@ -133,14 +137,15 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
                             .containsKey(value)) {
                         newLhs = (ValueItem) ctx.getPairs()
                                 .get(value)
-                                .get().value;
+                                .get()
+                                .getValue();
                     }
                 }
             }
         }
 
         if (!(lhs != null && lhs.equals(newLhs))) {
-            return new Condition(newLhs, op, values, condition.shouldNegate);
+            return new Condition(newLhs, op, values, condition.isShouldNegate());
         }
         return condition;
     }
@@ -153,7 +158,7 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
      */
     public ValueItem apply(final ValueItem vi) {
         if (vi instanceof StringPrimitive) {
-            final String s = ((StringPrimitive) vi).value;
+            final String s = ((StringPrimitive) vi).getValue();
             final Map<ReferenceType, Vector<String>> groupedByType = getReferenceGroups(s);
 
             // Process the OBJECT_INDEX_REF entries
@@ -188,7 +193,9 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
                 return t._3;
             }
             if (StringUtils.isNumeric(t._2)) {
-                return Option.of((ValueItem) ctx.getObjectIndex().arrayItems.get(Integer.parseInt(t._2)));
+                return Option.of((ValueItem) ctx.getObjectIndex()
+                        .getArrayItems()
+                        .get(Integer.parseInt(t._2)));
             } else {
                 return Option.of(new StringPrimitive(t._2));
             }
@@ -213,31 +220,37 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
             final int refNum = Integer.parseInt(ref);
             if (vi instanceof Array) {
                 final Array arr = (Array) vi;
-                final ValueItem valueItem = (ValueItem) arr.arrayItems.get(refNum);
+                final ValueItem valueItem = (ValueItem) arr.getArrayItems()
+                        .get(refNum);
 
                 return followNestedRef(valueItem, refList, refIndex + 1);
 
-            } else if (vi instanceof Pair && ((Pair) vi).value instanceof Array) {
-                final ValueItem valueItem = (ValueItem) ((Array) ((Pair) vi).value).arrayItems.get(refNum);
+            } else if (vi instanceof Pair && ((Pair) vi).getValue() instanceof Array) {
+                final ValueItem valueItem = (ValueItem) ((Array) ((Pair) vi).getValue()).getArrayItems()
+                        .get(refNum);
                 return followNestedRef(valueItem, refList, refIndex + 1);
             }
         } else {
             // If we have a Map then try to get a Pair from within it and recurse.
             if (vi instanceof uk.modl.model.Map) {
-                final Option<MapItem> matchingMapItem = ((uk.modl.model.Map) vi).mapItems.find(mapItem -> {
-                    // Check whether the reference key needs de-referencing
-                    if (ref.contains("%")) {
-                        String actualRef = ctx.getPairs()
-                                .get(stripLeadingAndTrailingPercents(ref))
-                                .map(pair -> pair.value.toString())
-                                .getOrElse(ref);
+                final Option<MapItem> matchingMapItem = ((uk.modl.model.Map) vi).getMapItems()
+                        .find(mapItem -> {
+                            // Check whether the reference key needs de-referencing
+                            if (ref.contains("%")) {
+                                String actualRef = ctx.getPairs()
+                                        .get(stripLeadingAndTrailingPercents(ref))
+                                        .map(pair -> pair.getValue()
+                                                .toString())
+                                        .getOrElse(ref);
 
-                        return mapItem instanceof Pair && ((Pair) mapItem).key.equals(actualRef);
-                    } else {
-                        return mapItem instanceof Pair && ((Pair) mapItem).key.equals(ref);
-                    }
+                                return mapItem instanceof Pair && ((Pair) mapItem).getKey()
+                                        .equals(actualRef);
+                            } else {
+                                return mapItem instanceof Pair && ((Pair) mapItem).getKey()
+                                        .equals(ref);
+                            }
 
-                });
+                        });
                 if (matchingMapItem.isDefined()) {
                     return followNestedRef((ValueItem) matchingMapItem.get(), refList, refIndex);
                 } else {
@@ -247,17 +260,19 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
             // If we have a Pair then take the pair value and recurse if possible
             final int skipRefIndexesForPathElementsWithReferences = (ref.contains("%")) ? refIndex + 1 : refIndex;
             if (vi instanceof Pair) {
-                final PairValue value = ((Pair) vi).value;
+                final PairValue value = ((Pair) vi).getValue();
 
                 if (!(value instanceof Primitive)) {
-                    if (((Pair) vi).key.equals(ref)) {
+                    if (((Pair) vi).getKey()
+                            .equals(ref)) {
                         return followNestedRef((ValueItem) value, refList, refIndex + 1);
                     } else {
                         // Use the current refIndex since we haven't yet consumed it.
                         return followNestedRef((ValueItem) value, refList, refIndex);
                     }
                 }
-                if (((Pair) vi).key.equals(ref)) {
+                if (((Pair) vi).getKey()
+                        .equals(ref)) {
                     return (ValueItem) value;
                 }
                 // Handle methods and trailing values
@@ -336,14 +351,14 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
             return null;
         }
 
-        if (p.value instanceof ValueConditional) {
+        if (p.getValue() instanceof ValueConditional) {
             return p;
         } else {
             final Pair resolved = resolve(p);
             accept(resolved);
 
             return ctx.getPairs()
-                    .get(p.key)
+                    .get(p.getKey())
                     .getOrElse(p);
         }
     }
@@ -352,8 +367,9 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
      * Update the pairKeysWithReferences to new values with the references replaced by actual values
      */
     private Pair resolve(final Pair p) {
-        if (p.value instanceof StringPrimitive) {
-            final Map<ReferenceType, Vector<String>> groupedByType = getReferenceGroups(p.value.toString());
+        if (p.getValue() instanceof StringPrimitive) {
+            final Map<ReferenceType, Vector<String>> groupedByType = getReferenceGroups(p.getValue()
+                    .toString());
 
             // Process the OBJECT_INDEX_REF entries
             Pair result = groupedByType.get(ReferenceType.OBJECT_INDEX_REF)
@@ -380,7 +396,7 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
     }
 
     private Vector<Tuple3<String, String, Option<Pair>>> complexRefToReferencedItems(final Pair p, final Vector<String> refList) {
-        return refList.map(ref -> Tuple.of(ref, p.key, Option.of(new Pair(p.key, complexRefToValueItem(ref)))));
+        return refList.map(ref -> Tuple.of(ref, p.getKey(), Option.of(new Pair(p.getKey(), complexRefToValueItem(ref)))));
     }
 
     /**
@@ -452,8 +468,12 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
         return list.map(s -> Tuple.of(s, stripLeadingAndTrailingPercents(s)))// E.g. ("%1%","1")
                 .map(t -> t.append(Integer.parseInt(t._2)))// E.g. ("%1%","1", 1)
                 .map(t -> {
-                    if (t._3 >= 0 && t._3 < ctx.getObjectIndex().arrayItems.size()) {
-                        return t.append(Option.of(ctx.getObjectIndex().arrayItems.get(t._3)));
+                    if (t._3 >= 0 && t._3 < ctx.getObjectIndex()
+                            .getArrayItems()
+                            .size()) {
+                        return t.append(Option.of(ctx.getObjectIndex()
+                                .getArrayItems()
+                                .get(t._3)));
                     }
                     return t.append(Option.none());
                 });// E.g. ("%1%","1", 1, Option(ArrayItem))
@@ -481,13 +501,17 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
             if (next._4.isDefined()) {
                 // If the item containing the reference is a StringPrimitive then do String substitution
                 if (next._4.get() instanceof StringPrimitive) {
-                    final String s = ((StringPrimitive) curr.value).value;
-                    final String r = ctx.getObjectIndex().arrayItems.get(next._3)
+                    final String s = ((StringPrimitive) curr.getValue()).getValue();
+                    final String r = ctx.getObjectIndex()
+                            .getArrayItems()
+                            .get(next._3)
                             .toString();
-                    return new Pair(curr.key, new StringPrimitive(s.replace(next._1, r)));
+                    return new Pair(curr.getKey(), new StringPrimitive(s.replace(next._1, r)));
                 }
                 // Otherwise replace the whole thing
-                return new Pair(curr.key, (PairValue) ctx.getObjectIndex().arrayItems.get(next._3));
+                return new Pair(curr.getKey(), (PairValue) ctx.getObjectIndex()
+                        .getArrayItems()
+                        .get(next._3));
             }
             return curr;
         };
@@ -503,9 +527,12 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
             if (next._4.isDefined()) {
                 // If the item containing the reference is a StringPrimitive then do String substitution
                 if (next._4.get() instanceof StringPrimitive && curr instanceof StringPrimitive) {
-                    final String r = ctx.getObjectIndex().arrayItems.get(next._3)
+                    final String r = ctx.getObjectIndex()
+                            .getArrayItems()
+                            .get(next._3)
                             .toString();
-                    return new StringPrimitive(((StringPrimitive) curr).value.replace(next._1, r));
+                    return new StringPrimitive(((StringPrimitive) curr).getValue()
+                            .replace(next._1, r));
                 }
             }
             return curr;
@@ -522,17 +549,17 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
             if (next._3.isDefined()) {
                 // If the item containing the reference is a StringPrimitive then do String substitution
                 final Pair p = next._3.get();
-                if (p.value instanceof StringPrimitive) {
-                    final String s = ((StringPrimitive) curr.value).value;
-                    final String r = ((StringPrimitive) p.value).value;
-                    return new Pair(curr.key, new StringPrimitive(s.replace(next._1, r)));
-                } else if (p.value instanceof NumberPrimitive) {
-                    final String s = ((StringPrimitive) curr.value).value;
-                    final String r = ((NumberPrimitive) p.value).value;
-                    return new Pair(curr.key, new NumberPrimitive(s.replace(next._1, r)));
+                if (p.getValue() instanceof StringPrimitive) {
+                    final String s = ((StringPrimitive) curr.getValue()).getValue();
+                    final String r = ((StringPrimitive) p.getValue()).getValue();
+                    return new Pair(curr.getKey(), new StringPrimitive(s.replace(next._1, r)));
+                } else if (p.getValue() instanceof NumberPrimitive) {
+                    final String s = ((StringPrimitive) curr.getValue()).getValue();
+                    final String r = ((NumberPrimitive) p.getValue()).getValue();
+                    return new Pair(curr.getKey(), new NumberPrimitive(s.replace(next._1, r)));
                 }
                 // Otherwise replace the whole thing
-                return new Pair(curr.key, p.value);
+                return new Pair(curr.getKey(), p.getValue());
             }
             return curr;
         };
@@ -547,11 +574,15 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
         return (curr, next) -> {
             if (next._3.isDefined()) {
                 // If the item containing the reference is a StringPrimitive then do String substitution
-                if (next._3.get().value instanceof StringPrimitive && curr instanceof StringPrimitive) {
-                    final String r = ((StringPrimitive) next._3.get().value).value;
-                    return new StringPrimitive(((StringPrimitive) curr).value.replace(next._1, r));
+                if (next._3.get()
+                        .getValue() instanceof StringPrimitive && curr instanceof StringPrimitive) {
+                    final String r = ((StringPrimitive) next._3.get()
+                            .getValue()).getValue();
+                    return new StringPrimitive(((StringPrimitive) curr).getValue()
+                            .replace(next._1, r));
                 } else {
-                    return (ValueItem) next._3.get().value;
+                    return (ValueItem) next._3.get()
+                            .getValue();
                 }
             }
             return curr;

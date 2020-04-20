@@ -18,10 +18,13 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
     /**
      * Predicate to filter out items that should not be in the output.
      */
-    private static Predicate<Structure> shouldAppearInOutput = (s -> {
+    private static final Predicate<Structure> shouldAppearInOutput = (s -> {
         if (s instanceof Pair) {
             final Pair p = (Pair) s;
-            return !p.key.startsWith("_") && !p.key.startsWith("*") && !p.key.equals("?");
+            return !p.getKey()
+                    .startsWith("_") && !p.getKey()
+                    .startsWith("*") && !p.getKey()
+                    .equals("?");
         }
         return true;
     });
@@ -40,7 +43,8 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
     @Override
     public JsonNode apply(final Modl modl) {
         this.result = null;// In case this object is being re-used
-        final Vector<Structure> filtered = modl.structures.filter(shouldAppearInOutput);
+        final Vector<Structure> filtered = modl.getStructures()
+                .filter(shouldAppearInOutput);
 
         switch (filtered.size()) {
             case 0:
@@ -51,7 +55,8 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                 if (structure instanceof Array) {
                     final ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
                     this.result = arrayNode;
-                    ((Array) structure).arrayItems.forEach(arrayItem -> accept(arrayNode, arrayItem));
+                    ((Array) structure).getArrayItems()
+                            .forEach(arrayItem -> accept(arrayNode, arrayItem));
                 } else {
                     final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
                     this.result = objectNode;
@@ -76,7 +81,8 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
             if (p instanceof Pair) {
 
                 final Pair pair = (Pair) p;
-                if (pair.key.startsWith("_")) {
+                if (pair.getKey()
+                        .startsWith("_")) {
                     return p;
                 }
                 final ObjectNode newNode = JsonNodeFactory.instance.objectNode();
@@ -112,7 +118,7 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                 } else if (pv instanceof NullPrimitive) {
                     node.add(JsonNodeFactory.instance.nullNode());
                 } else if (pv instanceof Primitive) {
-                    final Primitive prim = (Primitive) ((Pair) p).value;
+                    final Primitive prim = (Primitive) ((Pair) p).getValue();
                     node.add(JsonNodeFactory.instance.textNode(prim.toString()));
                 } else if (pv instanceof Array) {
                     // Arrays are added elsewhere
@@ -129,7 +135,8 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                 final Array arr = (Array) s;
                 final ArrayNode newNode = JsonNodeFactory.instance.arrayNode();
                 node.add(newNode);
-                arr.arrayItems.forEach(arrayItem -> accept(newNode, arrayItem));
+                arr.getArrayItems()
+                        .forEach(arrayItem -> accept(newNode, arrayItem));
 
             }
             return s;
@@ -177,17 +184,18 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
             if (s instanceof Map) {
 
                 final Map map = (Map) s;
-                map.mapItems.forEach(mapItem -> {
-                    if (mapItem instanceof Pair) {
-                        final Pair p = (Pair) mapItem;
-                        accept(node, p);
-                    } else if (mapItem instanceof MapConditional) {
-                        accept(node, (MapConditional) mapItem);
-                    } else {
-                        log.error("Cannot process object type: {}", mapItem.getClass()
-                                .getName());
-                    }
-                });
+                map.getMapItems()
+                        .forEach(mapItem -> {
+                            if (mapItem instanceof Pair) {
+                                final Pair p = (Pair) mapItem;
+                                accept(node, p);
+                            } else if (mapItem instanceof MapConditional) {
+                                accept(node, (MapConditional) mapItem);
+                            } else {
+                                log.error("Cannot process object type: {}", mapItem.getClass()
+                                        .getName());
+                            }
+                        });
 
             }
             return s;
@@ -202,7 +210,8 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
     private Function<Object, Object> addTopLevelConditionalToObjectNode(final ObjectNode node) {
         return s -> {
             if (s instanceof TopLevelConditional) {
-                ((TopLevelConditional) s).result.forEach(structure -> accept(node, structure));
+                ((TopLevelConditional) s).getResult()
+                        .forEach(structure -> accept(node, structure));
             }
             return s;
         };
@@ -211,7 +220,8 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
     private Function<Object, Object> addArrayConditionalToArrayNode(final ArrayNode node) {
         return s -> {
             if (s instanceof ArrayConditional) {
-                ((ArrayConditional) s).result.forEach(arrayItem -> accept(node, arrayItem));
+                ((ArrayConditional) s).getResult()
+                        .forEach(arrayItem -> accept(node, arrayItem));
             }
             return s;
         };
@@ -220,7 +230,8 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
     private Function<Object, Object> addMapConditionalToMapNode(final ObjectNode node) {
         return s -> {
             if (s instanceof MapConditional) {
-                ((MapConditional) s).result.forEach(mapItem -> accept(node, (ValueItem) mapItem));
+                ((MapConditional) s).getResult()
+                        .forEach(mapItem -> accept(node, (ValueItem) mapItem));
             }
             return s;
         };
@@ -235,61 +246,56 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
         return p -> {
             if (p instanceof Pair) {
                 final Pair pair = (Pair) p;
-                if (pair.key.startsWith("_")) {
+                if (pair.getKey()
+                        .startsWith("_")) {
                     return p;
                 }
-                if (pair.value instanceof StringPrimitive) {
-                    final Primitive prim = (Primitive) ((Pair) p).value;
-                    node.set(pair.key, JsonNodeFactory.instance.textNode(prim.toString()));
-                } else if (pair.value instanceof NumberPrimitive) {
-                    final NumberPrimitive prim = (NumberPrimitive) ((Pair) p).value;
+                if (pair.getValue() instanceof StringPrimitive) {
+                    final Primitive prim = (Primitive) ((Pair) p).getValue();
+                    node.set(pair.getKey(), JsonNodeFactory.instance.textNode(prim.toString()));
+                } else if (pair.getValue() instanceof NumberPrimitive) {
+                    final NumberPrimitive prim = (NumberPrimitive) ((Pair) p).getValue();
                     final Number n = prim.numericValue();
                     if (n instanceof Double) {
-                        node.set(pair.key, JsonNodeFactory.instance.numberNode(n.doubleValue()));
+                        node.set(pair.getKey(), JsonNodeFactory.instance.numberNode(n.doubleValue()));
                     } else if (n instanceof Float) {
-                        node.set(pair.key, JsonNodeFactory.instance.numberNode(n.floatValue()));
+                        node.set(pair.getKey(), JsonNodeFactory.instance.numberNode(n.floatValue()));
                     } else if (n instanceof Integer) {
-                        node.set(pair.key, JsonNodeFactory.instance.numberNode(n.intValue()));
+                        node.set(pair.getKey(), JsonNodeFactory.instance.numberNode(n.intValue()));
                     } else if (n instanceof Long) {
-                        node.set(pair.key, JsonNodeFactory.instance.numberNode(n.longValue()));
+                        node.set(pair.getKey(), JsonNodeFactory.instance.numberNode(n.longValue()));
                     }
-                } else if (pair.value instanceof TruePrimitive) {
-                    node.set(pair.key, JsonNodeFactory.instance.booleanNode(true));
-                } else if (pair.value instanceof FalsePrimitive) {
-                    node.set(pair.key, JsonNodeFactory.instance.booleanNode(false));
-                } else if (pair.value instanceof NullPrimitive) {
-                    node.set(pair.key, JsonNodeFactory.instance.nullNode());
-                } else if (pair.value instanceof Primitive) {
-                    final Primitive prim = (Primitive) ((Pair) p).value;
-                    node.set(pair.key, JsonNodeFactory.instance.textNode(prim.toString()));
-                } else if (pair.value instanceof Array) {
+                } else if (pair.getValue() instanceof TruePrimitive) {
+                    node.set(pair.getKey(), JsonNodeFactory.instance.booleanNode(true));
+                } else if (pair.getValue() instanceof FalsePrimitive) {
+                    node.set(pair.getKey(), JsonNodeFactory.instance.booleanNode(false));
+                } else if (pair.getValue() instanceof NullPrimitive) {
+                    node.set(pair.getKey(), JsonNodeFactory.instance.nullNode());
+                } else if (pair.getValue() instanceof Primitive) {
+                    final Primitive prim = (Primitive) ((Pair) p).getValue();
+                    node.set(pair.getKey(), JsonNodeFactory.instance.textNode(prim.toString()));
+                } else if (pair.getValue() instanceof Array) {
                     final ArrayNode newNode = JsonNodeFactory.instance.arrayNode();
-                    node.set(pair.key, newNode);
-                    ((Array) pair.value).arrayItems.forEach(ai -> {
-                        accept(newNode, ai);
-                    });
-                } else if (pair.value instanceof Map) {
+                    node.set(pair.getKey(), newNode);
+                    ((Array) pair.getValue()).getArrayItems()
+                            .forEach(ai -> {
+                                accept(newNode, ai);
+                            });
+                } else if (pair.getValue() instanceof Map) {
                     final ObjectNode newNode = JsonNodeFactory.instance.objectNode();
-                    node.set(pair.key, newNode);
-                    addMapToObjectNode(newNode).apply(pair.value);
-                } else if (pair.value instanceof ValueConditional) {
-                    final Vector<ValueItem> valueItems = ((ValueConditional) pair.value).result;
+                    node.set(pair.getKey(), newNode);
+                    addMapToObjectNode(newNode).apply(pair.getValue());
+                } else if (pair.getValue() instanceof ValueConditional) {
+                    final Vector<ValueItem> valueItems = ((ValueConditional) pair.getValue()).getResult();
                     if (valueItems.size() == 1) {
-                        accept(node, new Pair(pair.key, valueItems.get(0)));
+                        accept(node, new Pair(pair.getKey(), valueItems.get(0)));
                     } else {
-                        accept(node, new Pair(pair.key, new Array(valueItems.map(v -> (ArrayItem) v))));
+                        accept(node, new Pair(pair.getKey(), new Array(valueItems.map(v -> (ArrayItem) v))));
                     }
-                } else if (pair.value instanceof ArrayConditional) {
-                    final Vector<ArrayItem> arrayItems = ((ArrayConditional) pair.value).result;
-                    if (arrayItems.size() == 1) {
-                        accept(node, new Pair(pair.key, (ValueItem) arrayItems.get(0)));
-                    } else {
-                        accept(node, new Pair(pair.key, new Array(arrayItems)));
-                    }
-                } else if (pair.value instanceof ValueItem) {
+                } else if (pair.getValue() instanceof ValueItem) {
                     final ObjectNode newNode = JsonNodeFactory.instance.objectNode();
-                    node.set(pair.key, newNode);
-                    accept(newNode, (ValueItem) pair.value);
+                    node.set(pair.getKey(), newNode);
+                    accept(newNode, (ValueItem) pair.getValue());
                 }
             }
             return p;

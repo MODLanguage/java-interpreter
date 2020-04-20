@@ -26,22 +26,25 @@ public class ClassExpansionTransformTest1 {
 
         // Check the result
         Assert.assertNotNull(updatedPair);
-        Assert.assertEquals("test", updatedPair.key);
-        Assert.assertTrue(updatedPair.value instanceof Map);
+        Assert.assertEquals("test", updatedPair.getKey());
+        Assert.assertTrue(updatedPair.getValue() instanceof Map);
 
-        final Map m = (Map) updatedPair.value;
+        final Map m = (Map) updatedPair.getValue();
 
-        Assert.assertEquals(3, m.mapItems.size());
+        Assert.assertEquals(3, m.getMapItems()
+                .size());
 
         final List<String> expectedKeys = List.of("one", "two", "three");
         final List<String> expectedValues = List.of("1", "2", "3");
 
-        m.mapItems.forEach(mapItem -> {
-            Assert.assertTrue(mapItem instanceof Pair);
-            final Pair p = (Pair) mapItem;
-            Assert.assertTrue(expectedKeys.contains(p.key));
-            Assert.assertTrue(p.value instanceof StringPrimitive);
-            Assert.assertTrue(expectedValues.contains(p.value.toString()));
-        });
+        m.getMapItems()
+                .forEach(mapItem -> {
+                    Assert.assertTrue(mapItem instanceof Pair);
+                    final Pair p = (Pair) mapItem;
+                    Assert.assertTrue(expectedKeys.contains(p.getKey()));
+                    Assert.assertTrue(p.getValue() instanceof StringPrimitive);
+                    Assert.assertTrue(expectedValues.contains(p.getValue()
+                            .toString()));
+                });
     }
 }

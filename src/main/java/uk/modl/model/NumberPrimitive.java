@@ -1,16 +1,14 @@
 package uk.modl.model;
 
-import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.Value;
 import org.apache.commons.lang3.math.NumberUtils;
 import uk.modl.visitor.ModlVisitor;
 
-@EqualsAndHashCode
+@Value
 public class NumberPrimitive implements Primitive {
-    public final String value;
-
-    public NumberPrimitive(final String value) {
-        this.value = value;
-    }
+    @NonNull
+    String value;
 
     @Override
     public void visit(final ModlVisitor visitor) {

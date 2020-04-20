@@ -28,6 +28,14 @@ public class Util {
     public static final String GRAVE = "`";
     public static final String DOUBLEQUOTE = "\"";
     /**
+     * A Regex to match the parameters of a MODL replace method
+     */
+    private static final Pattern replacerPattern = Pattern.compile("^r<(.*),(.*)>$");
+    /**
+     * A Regex to match the parameters of a MODL trim method
+     */
+    private static final Pattern trimmerPattern = Pattern.compile("^t<(.*)>$");
+    /**
      * Map a filename to Either an Error or the file contents as a String
      */
     public static Function1<StarLoadExtractor.FileSpec, Tuple2<StarLoadExtractor.FileSpec, String>> getFileContents = (spec) -> {
@@ -44,7 +52,6 @@ public class Util {
             throw new RuntimeException("Could not interpret " + e.getMessage());
         }
     };
-
     /**
      * Map a PairValue to a list of Strings - for use as file names.
      * This is only applicable to *load MODL instructions
@@ -56,11 +63,11 @@ public class Util {
         }
         if (pairValue instanceof Array) {
             final Array a = (Array) pairValue;
-            return Vector.ofAll(a.arrayItems.map(Objects::toString));
+            return Vector.ofAll(a.getArrayItems()
+                    .map(Objects::toString));
         }
         return Vector.empty();
     };
-
     /**
      * Render a JSON Node to a String.
      */
@@ -71,16 +78,6 @@ public class Util {
             throw new RuntimeException(e);
         }
     });
-
-    /**
-     * A Regex to match the parameters of a MODL replace method
-     */
-    private static Pattern replacerPattern = Pattern.compile("^r<(.*),(.*)>$");
-
-    /**
-     * A Regex to match the parameters of a MODL trim method
-     */
-    private static Pattern trimmerPattern = Pattern.compile("^t<(.*)>$");
 
     /**
      * Remove single quotes from a String

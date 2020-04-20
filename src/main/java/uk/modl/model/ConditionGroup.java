@@ -2,20 +2,15 @@ package uk.modl.model;
 
 import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.NonNull;
+import lombok.Value;
 import uk.modl.visitor.ModlVisitor;
 
-@ToString
-@EqualsAndHashCode
+@Value
 public class ConditionGroup implements ConditionOrConditionGroupInterface {
-    public final Vector<Tuple2<ConditionTest, String>> subConditionList;
-    public final boolean shouldNegate;
-
-    public ConditionGroup(final Vector<Tuple2<ConditionTest, String>> subConditionList, final boolean shouldNegate) {
-        this.subConditionList = subConditionList;
-        this.shouldNegate = shouldNegate;
-    }
+    @NonNull
+    Vector<Tuple2<ConditionTest, String>> subConditionList;
+    boolean shouldNegate;
 
     @Override
     public void visit(final ModlVisitor visitor) {

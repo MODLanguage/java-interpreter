@@ -39,7 +39,7 @@ public class StarClassTransform implements Function1<Pair, Pair> {
      * @return the result of function application
      */
     public Pair apply(final Pair p) {
-        if (isClassInstruction(p.key)) {
+        if (isClassInstruction(p.getKey())) {
             accept(p);
             return null;
         }
@@ -56,39 +56,43 @@ public class StarClassTransform implements Function1<Pair, Pair> {
      * @param pair the Pair
      */
     private void accept(final Pair pair) {
-        if (pair.value instanceof Map) {
+        if (pair.getValue() instanceof Map) {
             String id = null;
             String name = null;
             String superclass = null;
             Vector<ArrayItem> assign = null;
             Vector<Pair> pairs = Vector.empty();
 
-            for (final MapItem mi : ((Map) pair.value).mapItems) {
+            for (final MapItem mi : ((Map) pair.getValue()).getMapItems()) {
                 if (mi instanceof Pair) {
                     final Pair p = (Pair) mi;
-                    switch (p.key) {
+                    switch (p.getKey()) {
                         case "*i":
                         case "*id":
-                            id = p.value.toString();
+                            id = p.getValue()
+                                    .toString();
                             break;
                         case "*n":
                         case "*name":
-                            name = p.value.toString();
+                            name = p.getValue()
+                                    .toString();
                             break;
                         case "*s":
                         case "*superclass":
-                            superclass = p.value.toString();
+                            superclass = p.getValue()
+                                    .toString();
                             break;
                         case "*a":
                         case "*assign":
-                            if (p.value instanceof Array) {
-                                assign = ((Array) p.value).arrayItems.map(ai -> {
-                                    if (ai instanceof Array) {
-                                        return ai;
-                                    } else {
-                                        throw new InterpreterError("*assign statement should be an Array of Arrays");
-                                    }
-                                });
+                            if (p.getValue() instanceof Array) {
+                                assign = ((Array) p.getValue()).getArrayItems()
+                                        .map(ai -> {
+                                            if (ai instanceof Array) {
+                                                return ai;
+                                            } else {
+                                                throw new InterpreterError("*assign statement should be an Array of Arrays");
+                                            }
+                                        });
                             } else {
                                 throw new InterpreterError("*assign statement should be an Array of Arrays");
                             }
@@ -107,7 +111,8 @@ public class StarClassTransform implements Function1<Pair, Pair> {
             final ClassInstruction c = new ClassInstruction(id, name, superclass, assign, pairs);
             ctx.addClassInstruction(c);
         } else {
-            throw new InterpreterError("Expected a map for " + pair.key + " but found a " + pair.value.getClass());
+            throw new InterpreterError("Expected a map for " + pair.getKey() + " but found a " + pair.getValue()
+                    .getClass());
         }
     }
 

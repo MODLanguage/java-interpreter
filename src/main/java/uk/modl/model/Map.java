@@ -1,19 +1,15 @@
 package uk.modl.model;
 
 import io.vavr.collection.Vector;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.NonNull;
+import lombok.Value;
 import uk.modl.parser.errors.InterpreterError;
 import uk.modl.visitor.ModlVisitor;
 
-@ToString
-@EqualsAndHashCode
+@Value
 public class Map implements PairValue, Structure, ValueItem, ArrayItem {
-    public final Vector<MapItem> mapItems;
-
-    public Map(final Vector<MapItem> mapItems) {
-        this.mapItems = mapItems;
-    }
+    @NonNull
+    Vector<MapItem> mapItems;
 
     @Override
     public void visit(final ModlVisitor visitor) {

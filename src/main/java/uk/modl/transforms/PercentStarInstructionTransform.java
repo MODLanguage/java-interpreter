@@ -23,7 +23,7 @@ public class PercentStarInstructionTransform implements Function1<Pair, Pair> {
      */
     public PairValue apply(final PairValue vi) {
         if (vi instanceof StringPrimitive) {
-            final String s = ((StringPrimitive) vi).value;
+            final String s = ((StringPrimitive) vi).getValue();
             if (s.startsWith("%*")) {
                 return instructionToReferencedItems(s);
             }
@@ -115,9 +115,9 @@ public class PercentStarInstructionTransform implements Function1<Pair, Pair> {
     @Override
     public Pair apply(final Pair pair) {
         if (pair != null) {
-            final PairValue newValue = apply(pair.value);
-            if (newValue != pair.value) {
-                return new Pair(pair.key, newValue);
+            final PairValue newValue = apply(pair.getValue());
+            if (newValue != pair.getValue()) {
+                return new Pair(pair.getKey(), newValue);
             }
         }
         return pair;

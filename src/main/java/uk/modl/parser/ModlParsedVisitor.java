@@ -79,7 +79,7 @@ public class ModlParsedVisitor {
                         .map(this::visitTopLevelConditionalReturn)) :
                 null;
 
-        return new TopLevelConditional(tests, returns);
+        return new TopLevelConditional(tests, returns, Vector.empty());
     }
 
     /**
@@ -102,7 +102,7 @@ public class ModlParsedVisitor {
                         .map(this::visitMapConditionalReturn)) :
                 null;
 
-        return new MapConditional(tests, returns);
+        return new MapConditional(tests, returns, Vector.empty());
     }
 
     /**
@@ -364,7 +364,7 @@ public class ModlParsedVisitor {
                         .map(this::visitArrayConditionalReturn))) :
                 null;
 
-        return new ArrayConditional(tests, returns);
+        return new ArrayConditional(tests, returns, Vector.empty());
     }
 
     /**
@@ -479,7 +479,7 @@ public class ModlParsedVisitor {
                         .map(this::visitValueConditionReturn)) :
                 null;
 
-        return new ValueConditional(tests, returns);
+        return new ValueConditional(tests, returns, Vector.empty());
     }
 
     /**

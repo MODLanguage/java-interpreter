@@ -24,25 +24,37 @@ public class ConditionalsTransform {
      * @return the result of function application
      */
     public TopLevelConditional apply(final TopLevelConditional tlc) {
-        if (tlc.tests.size() == 1) {
-            if (evaluate(tlc.tests.get(0))) {
-                final Vector<Structure> structures = tlc.returns.get(0).structures.map(this::handleNestedTopLevelConditionals);
+        if (tlc.getTests()
+                .size() == 1) {
+            if (evaluate(tlc.getTests()
+                    .get(0))) {
+                final Vector<Structure> structures = tlc.getReturns()
+                        .get(0)
+                        .getStructures()
+                        .map(this::handleNestedTopLevelConditionals);
 
-                return tlc.setResult(structures);
+                return tlc.withResult(structures);
             } else {
-                if (tlc.returns.size() > 1) {
-                    final Vector<Structure> structures = tlc.returns.get(1).structures.map(this::handleNestedTopLevelConditionals);
+                if (tlc.getReturns()
+                        .size() > 1) {
+                    final Vector<Structure> structures = tlc.getReturns()
+                            .get(1)
+                            .getStructures()
+                            .map(this::handleNestedTopLevelConditionals);
 
-                    return tlc.setResult(structures);
+                    return tlc.withResult(structures);
                 }
             }
         } else {
             int i = 0;
-            for (final ConditionTest test : tlc.tests) {
+            for (final ConditionTest test : tlc.getTests()) {
                 if (evaluate(test)) {
-                    final Vector<Structure> structures = tlc.returns.get(i).structures.map(this::handleNestedTopLevelConditionals);
+                    final Vector<Structure> structures = tlc.getReturns()
+                            .get(i)
+                            .getStructures()
+                            .map(this::handleNestedTopLevelConditionals);
 
-                    return tlc.setResult(structures);
+                    return tlc.withResult(structures);
                 }
                 i += 1;
             }
@@ -58,7 +70,8 @@ public class ConditionalsTransform {
     }
 
     private boolean evaluate(final ConditionTest test) {
-        final Vector<Tuple2<Boolean, String>> partial = test.conditions.map(this::evaluate);
+        final Vector<Tuple2<Boolean, String>> partial = test.getConditions()
+                .map(this::evaluate);
         return evaluate(partial);
     }
 
@@ -73,9 +86,10 @@ public class ConditionalsTransform {
 
     private boolean evaluate(final ConditionGroup cg) {
 
-        final Vector<Tuple2<Boolean, String>> partial = cg.subConditionList.map(sc -> Tuple.of(evaluate(sc._1), sc._2));
+        final Vector<Tuple2<Boolean, String>> partial = cg.getSubConditionList()
+                .map(sc -> Tuple.of(evaluate(sc._1), sc._2));
 
-        return (cg.shouldNegate) != evaluate(partial);
+        return (cg.isShouldNegate()) != evaluate(partial);
     }
 
     private boolean evaluate(final Vector<Tuple2<Boolean, String>> partial) {
@@ -104,37 +118,40 @@ public class ConditionalsTransform {
     }
 
     private boolean evaluate(final Condition c) {
-        if (c.op instanceof GreaterThanOperator) {
-            return (c.shouldNegate) != Util.greaterThanAll(c.lhs, c.values);
+        if (c.getOp() instanceof GreaterThanOperator) {
+            return (c.isShouldNegate()) != Util.greaterThanAll(c.getLhs(), c.getValues());
         }
-        if (c.op instanceof GreaterThanOrEqualsOperator) {
-            return (c.shouldNegate) != Util.greaterThanOrEqualToAll(c.lhs, c.values);
+        if (c.getOp() instanceof GreaterThanOrEqualsOperator) {
+            return (c.isShouldNegate()) != Util.greaterThanOrEqualToAll(c.getLhs(), c.getValues());
         }
-        if (c.op instanceof LessThanOperator) {
-            return (c.shouldNegate) != Util.lessThanAll(c.lhs, c.values);
+        if (c.getOp() instanceof LessThanOperator) {
+            return (c.isShouldNegate()) != Util.lessThanAll(c.getLhs(), c.getValues());
         }
-        if (c.op instanceof LessThanOrEqualsOperator) {
-            return (c.shouldNegate) != Util.lessThanOrEqualToAll(c.lhs, c.values);
+        if (c.getOp() instanceof LessThanOrEqualsOperator) {
+            return (c.isShouldNegate()) != Util.lessThanOrEqualToAll(c.getLhs(), c.getValues());
         }
 
         final int count = countMatches(c);
-        if (c.op instanceof EqualsOperator) {
-            return (c.shouldNegate) != (count > 0);
+        if (c.getOp() instanceof EqualsOperator) {
+            return (c.isShouldNegate()) != (count > 0);
         }
-        if (c.op instanceof NotEqualsOperator) {
-            return (c.shouldNegate) != (count == 0);
+        if (c.getOp() instanceof NotEqualsOperator) {
+            return (c.isShouldNegate()) != (count == 0);
         }
-        return c.shouldNegate;
+        return c.isShouldNegate();
     }
 
     private int countMatches(final Condition c) {
-        return c.values.map(Object::toString)
+        return c.getValues()
+                .map(Object::toString)
                 .count(v -> {
                     if (!v.contains("*")) {
-                        return v.equals(c.lhs.toString());
+                        return v.equals(c.getLhs()
+                                .toString());
                     } else {
                         final String regexStr = v.replaceAll("\\*", ".*");
-                        return c.lhs.toString()
+                        return c.getLhs()
+                                .toString()
                                 .matches(regexStr);
                     }
                 });
@@ -148,29 +165,42 @@ public class ConditionalsTransform {
     }
 
     public ValueConditional apply(final ValueConditional vc) {
-        if (vc.tests.size() == 1) {
-            if (evaluate(vc.tests.get(0))) {
-                if (vc.returns.size() == 0) {
-                    return vc.setResult(Vector.of(TruePrimitive.instance));
+        if (vc.getTests()
+                .size() == 1) {
+            if (evaluate(vc.getTests()
+                    .get(0))) {
+                if (vc.getReturns()
+                        .size() == 0) {
+                    return vc.withResult(Vector.of(TruePrimitive.instance));
                 }
-                final Vector<ValueItem> items = vc.returns.get(0).items.map(this::handleNestedValueConditionals);
+                final Vector<ValueItem> items = vc.getReturns()
+                        .get(0)
+                        .getItems()
+                        .map(this::handleNestedValueConditionals);
 
-                return vc.setResult(items);
+                return vc.withResult(items);
             } else {
-                if (vc.returns.size() == 0) {
-                    return vc.setResult(Vector.of(FalsePrimitive.instance));
+                if (vc.getReturns()
+                        .size() == 0) {
+                    return vc.withResult(Vector.of(FalsePrimitive.instance));
                 }
-                final Vector<ValueItem> items = vc.returns.get(1).items.map(this::handleNestedValueConditionals);
+                final Vector<ValueItem> items = vc.getReturns()
+                        .get(1)
+                        .getItems()
+                        .map(this::handleNestedValueConditionals);
 
-                return vc.setResult(items);
+                return vc.withResult(items);
             }
         } else {
             int i = 0;
-            for (final ConditionTest test : vc.tests) {
+            for (final ConditionTest test : vc.getTests()) {
                 if (evaluate(test)) {
-                    final Vector<ValueItem> items = vc.returns.get(i).items.map(this::handleNestedValueConditionals);
+                    final Vector<ValueItem> items = vc.getReturns()
+                            .get(i)
+                            .getItems()
+                            .map(this::handleNestedValueConditionals);
 
-                    return vc.setResult(items);
+                    return vc.withResult(items);
                 }
                 i += 1;
             }
@@ -200,29 +230,42 @@ public class ConditionalsTransform {
     }
 
     public ArrayConditional apply(final ArrayConditional ac) {
-        if (ac.tests.size() == 1) {
-            if (evaluate(ac.tests.get(0))) {
-                if (ac.returns.size() == 0) {
-                    return ac.setResult(Vector.of(TruePrimitive.instance));
+        if (ac.getTests()
+                .size() == 1) {
+            if (evaluate(ac.getTests()
+                    .get(0))) {
+                if (ac.getReturns()
+                        .size() == 0) {
+                    return ac.withResult(Vector.of(TruePrimitive.instance));
                 }
-                final Vector<ArrayItem> items = ac.returns.get(0).items.map(this::handleNestedArrayConditionals);
+                final Vector<ArrayItem> items = ac.getReturns()
+                        .get(0)
+                        .getItems()
+                        .map(this::handleNestedArrayConditionals);
 
-                return ac.setResult(items);
+                return ac.withResult(items);
             } else {
-                if (ac.returns.size() == 0) {
-                    return ac.setResult(Vector.of(FalsePrimitive.instance));
+                if (ac.getReturns()
+                        .size() == 0) {
+                    return ac.withResult(Vector.of(FalsePrimitive.instance));
                 }
-                final Vector<ArrayItem> items = ac.returns.get(1).items.map(this::handleNestedArrayConditionals);
+                final Vector<ArrayItem> items = ac.getReturns()
+                        .get(1)
+                        .getItems()
+                        .map(this::handleNestedArrayConditionals);
 
-                return ac.setResult(items);
+                return ac.withResult(items);
             }
         } else {
             int i = 0;
-            for (final ConditionTest test : ac.tests) {
+            for (final ConditionTest test : ac.getTests()) {
                 if (evaluate(test)) {
-                    final Vector<ArrayItem> items = ac.returns.get(i).items.map(this::handleNestedArrayConditionals);
+                    final Vector<ArrayItem> items = ac.getReturns()
+                            .get(i)
+                            .getItems()
+                            .map(this::handleNestedArrayConditionals);
 
-                    return ac.setResult(items);
+                    return ac.withResult(items);
                 }
                 i += 1;
             }
@@ -231,29 +274,42 @@ public class ConditionalsTransform {
     }
 
     public MapConditional apply(final MapConditional mc) {
-        if (mc.tests.size() == 1) {
-            if (evaluate(mc.tests.get(0))) {
-                if (mc.returns.size() == 0) {
-                    return mc.setResult(Vector.of((MapItem) TruePrimitive.instance));
+        if (mc.getTests()
+                .size() == 1) {
+            if (evaluate(mc.getTests()
+                    .get(0))) {
+                if (mc.getReturns()
+                        .size() == 0) {
+                    return mc.withResult(Vector.of((MapItem) TruePrimitive.instance));
                 }
-                final Vector<MapItem> items = mc.returns.get(0).items.map(this::handleNestedMapConditionals);
+                final Vector<MapItem> items = mc.getReturns()
+                        .get(0)
+                        .getItems()
+                        .map(this::handleNestedMapConditionals);
 
-                return mc.setResult(items);
+                return mc.withResult(items);
             } else {
-                if (mc.returns.size() == 0) {
-                    return mc.setResult(Vector.of((MapItem) FalsePrimitive.instance));
+                if (mc.getReturns()
+                        .size() == 0) {
+                    return mc.withResult(Vector.of((MapItem) FalsePrimitive.instance));
                 }
-                final Vector<MapItem> items = mc.returns.get(1).items.map(this::handleNestedMapConditionals);
+                final Vector<MapItem> items = mc.getReturns()
+                        .get(1)
+                        .getItems()
+                        .map(this::handleNestedMapConditionals);
 
-                return mc.setResult(items);
+                return mc.withResult(items);
             }
         } else {
             int i = 0;
-            for (final ConditionTest test : mc.tests) {
+            for (final ConditionTest test : mc.getTests()) {
                 if (evaluate(test)) {
-                    final Vector<MapItem> items = mc.returns.get(i).items.map(this::handleNestedMapConditionals);
+                    final Vector<MapItem> items = mc.getReturns()
+                            .get(i)
+                            .getItems()
+                            .map(this::handleNestedMapConditionals);
 
-                    return mc.setResult(items);
+                    return mc.withResult(items);
                 }
                 i += 1;
             }

@@ -1,20 +1,16 @@
 package uk.modl.model;
 
 import io.vavr.collection.Vector;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.NonNull;
+import lombok.Value;
 import uk.modl.visitor.ModlVisitable;
 import uk.modl.visitor.ModlVisitor;
 
 
-@ToString
-@EqualsAndHashCode
+@Value
 public class Modl implements ModlVisitable {
-    public final Vector<Structure> structures;
-
-    public Modl(final Vector<Structure> structures) {
-        this.structures = structures;
-    }
+    @NonNull
+    Vector<Structure> structures;
 
     @Override
     public void visit(final ModlVisitor visitor) {

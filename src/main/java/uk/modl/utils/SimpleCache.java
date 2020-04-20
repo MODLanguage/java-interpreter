@@ -20,7 +20,7 @@ public class SimpleCache<K, V> {
     /**
      * The actual cache is a HashMap of K,CacheEntry pairs.
      */
-    private Map<K, CacheEntry<V>> cache = new HashMap<>();
+    private final Map<K, CacheEntry<V>> cache = new HashMap<>();
 
     /**
      * Default Constructor
@@ -74,8 +74,8 @@ public class SimpleCache<K, V> {
      * @param <V> The class of the values to be cached.
      */
     private static class CacheEntry<V> {
-        private V value;
-        private long expiry;
+        private final V value;
+        private final long expiry;
 
         /**
          * Constructor.

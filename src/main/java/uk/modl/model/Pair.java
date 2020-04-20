@@ -1,19 +1,15 @@
 package uk.modl.model;
 
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.NonNull;
+import lombok.Value;
 import uk.modl.visitor.ModlVisitor;
 
-@ToString
-@EqualsAndHashCode
+@Value
 public class Pair implements Structure, MapItem, ValueItem, ArrayItem {
-    public final String key;
-    public final PairValue value;
-
-    public Pair(final String key, final PairValue value) {
-        this.key = key;
-        this.value = value;
-    }
+    @NonNull
+    String key;
+    @NonNull
+    PairValue value;
 
     @Override
     public void visit(final ModlVisitor visitor) {

@@ -1,20 +1,16 @@
 package uk.modl.model;
 
 import io.vavr.collection.Vector;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.NonNull;
+import lombok.Value;
 import uk.modl.parser.errors.InterpreterError;
 import uk.modl.visitor.ModlVisitor;
 
 
-@ToString
-@EqualsAndHashCode
+@Value
 public class Array implements PairValue, Structure, ValueItem, ArrayItem {
-    public final Vector<ArrayItem> arrayItems;
-
-    public Array(final Vector<ArrayItem> arrayItems) {
-        this.arrayItems = arrayItems;
-    }
+    @NonNull
+    Vector<ArrayItem> arrayItems;
 
     @Override
     public void visit(final ModlVisitor visitor) {

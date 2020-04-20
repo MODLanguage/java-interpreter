@@ -17,12 +17,13 @@ public class ClassExpansionTransformTest2 {
 
         final Pair updatedPair = transform.apply(new Pair("d", new Map(Vector.of(new Pair("test1", new StringPrimitive("test2"))))));
         Assert.assertNotNull(updatedPair);
-        Assert.assertEquals("delta", updatedPair.key);
-        Assert.assertTrue(updatedPair.value instanceof Map);
+        Assert.assertEquals("delta", updatedPair.getKey());
+        Assert.assertTrue(updatedPair.getValue() instanceof Map);
 
-        final Map m = (Map) updatedPair.value;
+        final Map m = (Map) updatedPair.getValue();
 
-        Assert.assertEquals(5, m.mapItems.size());
+        Assert.assertEquals(5, m.getMapItems()
+                .size());
     }
 
     private void addClasses(final TransformationContext ctx) {

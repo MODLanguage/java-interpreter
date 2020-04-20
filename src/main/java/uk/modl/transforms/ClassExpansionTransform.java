@@ -26,8 +26,9 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
      */
     @Override
     public Pair apply(final Pair p) {
-        if (p != null && !p.key.startsWith("*")) {
-            final Option<StarClassTransform.ClassInstruction> maybeClass = ctx.getClassByNameOrId(p.key);
+        if (p != null && !p.getKey()
+                .startsWith("*")) {
+            final Option<StarClassTransform.ClassInstruction> maybeClass = ctx.getClassByNameOrId(p.getKey());
             if (maybeClass.isDefined()) {
                 return accept(p, maybeClass.get());
             }
@@ -53,27 +54,29 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
         // TODO: ALL of this!
         switch (ci.superclass) {
             case "map":
-                if (p.value instanceof Array) {
-                    final Vector<MapItem> mapItems = toMapUsingAssign((Array) p.value, ci);
+                if (p.getValue() instanceof Array) {
+                    final Vector<MapItem> mapItems = toMapUsingAssign((Array) p.getValue(), ci);
                     pairValue = new Map(mapItems);
-                } else if (p.value instanceof Map) {
-                    pairValue = p.value;
+                } else if (p.getValue() instanceof Map) {
+                    pairValue = p.getValue();
                 }
                 break;
             case "arr":
                 pairValue = new Array(Vector.empty());
                 break;
             case "str":
-                pairValue = new StringPrimitive(p.value.toString());
+                pairValue = new StringPrimitive(p.getValue()
+                        .toString());
                 break;
             case "num":
-                pairValue = new NumberPrimitive(p.value.numericValue()
+                pairValue = new NumberPrimitive(p.getValue()
+                        .numericValue()
                         .toString());
                 break;
             default:
                 if (ctx.getClassByNameOrId(ci.superclass)
                         .isDefined()) {
-                    pairValue = inherit(ci.name, p.value);
+                    pairValue = inherit(ci.name, p.getValue());
                 } else {
                     return p;
                 }
@@ -83,16 +86,22 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
 
     private Vector<MapItem> toMapUsingAssign(final Array array, final StarClassTransform.ClassInstruction ci) {
         // Find the correct assign statement
-        final Option<ArrayItem> maybeAssignArray = ci.assign.find(arr -> ((Array) arr).arrayItems.size() == array.arrayItems.size());
-        final Array assignArray = (Array) maybeAssignArray.getOrElseThrow(() -> new InterpreterError("No matching *assign value of length: " + array.arrayItems.size()));
+        final Option<ArrayItem> maybeAssignArray = ci.assign.find(arr -> ((Array) arr).getArrayItems()
+                .size() == array.getArrayItems()
+                .size());
+        final Array assignArray = (Array) maybeAssignArray.getOrElseThrow(() -> new InterpreterError("No matching *assign value of length: " + array.getArrayItems()
+                .size()));
 
         // Convert the array items to pairs using the assign statement.
         Vector<MapItem> result = Vector.empty();
         int i = 0;
-        while (i < array.arrayItems.size()) {
-            final ArrayItem item = array.arrayItems.get(i);
+        while (i < array.getArrayItems()
+                .size()) {
+            final ArrayItem item = array.getArrayItems()
+                    .get(i);
             if (item instanceof PairValue) {
-                result = result.append(new Pair(assignArray.arrayItems.get(i)
+                result = result.append(new Pair(assignArray.getArrayItems()
+                        .get(i)
                         .toString(), (PairValue) item));
             }
             i++;
@@ -108,7 +117,7 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
             final Vector<MapItem> mapItems =
                     maybeClass.map(ci -> recurseAddPairs(ci, Vector.empty()))
                             .getOrElse(Vector.empty())
-                            .foldLeft(((Map) value).mapItems, Vector::append);
+                            .foldLeft(((Map) value).getMapItems(), Vector::append);
 
             return new Map(mapItems);
         }

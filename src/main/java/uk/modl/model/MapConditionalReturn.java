@@ -1,19 +1,15 @@
 package uk.modl.model;
 
 import io.vavr.collection.Vector;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.NonNull;
+import lombok.Value;
 import uk.modl.visitor.ModlVisitable;
 import uk.modl.visitor.ModlVisitor;
 
-@ToString
-@EqualsAndHashCode
+@Value
 public class MapConditionalReturn implements ModlVisitable {
-    public final Vector<MapItem> items;
-
-    public MapConditionalReturn(final Vector<MapItem> items) {
-        this.items = items;
-    }
+    @NonNull
+    Vector<MapItem> items;
 
     @Override
     public void visit(final ModlVisitor visitor) {
