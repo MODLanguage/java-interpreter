@@ -99,7 +99,7 @@ public class InterpreterBaseTests {
 
             }
         } catch (final Exception e) {
-            log.error("Test: " + testInput.id + " - exception: " + e);
+            log.error("Test: " + testInput.id + " - exception: " + e, e);
             errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : " + e.getMessage() + "\n");
         }
     }

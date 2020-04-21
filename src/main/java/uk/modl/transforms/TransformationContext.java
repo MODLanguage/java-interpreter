@@ -77,9 +77,9 @@ public class TransformationContext {
      */
     public void addClassInstruction(final StarClassTransform.ClassInstruction ci) {
         classes = classes.add(ci);
-        classesById = classesById.put(ci.id, ci);
-        if (StringUtils.isNotEmpty(ci.name)) {
-            classesByName = classesByName.put(ci.name, ci);
+        classesById = classesById.put(ci.getId(), ci);
+        if (StringUtils.isNotEmpty(ci.getName())) {
+            classesByName = classesByName.put(ci.getName(), ci);
         }
     }
 

@@ -18,7 +18,7 @@ public class ClassExpansionTransformTest1 {
         ctx.addClassInstruction(classInstruction);
 
         // Create the Pair to be transformed by the class
-        final Array pairValue = new Array(Vector.of(new StringPrimitive("1"), new StringPrimitive("2"), new StringPrimitive("3")));
+        final Map pairValue = new Map(Vector.of(new Pair("one", new StringPrimitive("1")), new Pair("two", new StringPrimitive("2")), new Pair("three", new StringPrimitive("3"))));
         final Pair testPair = new Pair("test", pairValue);
 
         // Transform the pair

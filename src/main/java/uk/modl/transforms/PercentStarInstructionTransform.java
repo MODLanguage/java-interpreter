@@ -78,26 +78,26 @@ public class PercentStarInstructionTransform implements Function1<Pair, Pair> {
 
         Vector<MapItem> clssItems = Vector.empty();
 
-        if (ci.name != null) {
-            final Pair p = new Pair("name", new StringPrimitive(ci.name));
+        if (ci.getName() != null) {
+            final Pair p = new Pair("name", new StringPrimitive(ci.getName()));
             clssItems = clssItems.append(p);
         }
 
         {
-            final Pair p = new Pair("superclass", new StringPrimitive(ci.superclass));
+            final Pair p = new Pair("superclass", new StringPrimitive(ci.getSuperclass()));
             clssItems = clssItems.append(p);
         }
 
-        if (ci.assign != null) {
-            final Pair p = new Pair("assign", new Array(ci.assign));
+        if (ci.getAssign() != null) {
+            final Pair p = new Pair("assign", new Array(ci.getAssign()));
             clssItems = clssItems.append(p);
         }
 
-        if (ci.pairs != null) {
-            clssItems = clssItems.appendAll(ci.pairs);
+        if (ci.getPairs() != null) {
+            clssItems = clssItems.appendAll(ci.getPairs());
         }
 
-        final MapItem clssMap = new Pair(ci.id, new uk.modl.model.Map(clssItems));
+        final MapItem clssMap = new Pair(ci.getId(), new uk.modl.model.Map(clssItems));
         final Vector<MapItem> clss = Vector.of(clssMap);
         return new uk.modl.model.Map(clss);
     }

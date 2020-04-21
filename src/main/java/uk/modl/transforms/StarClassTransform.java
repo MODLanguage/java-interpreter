@@ -2,10 +2,9 @@ package uk.modl.transforms;
 
 import io.vavr.Function1;
 import io.vavr.collection.Vector;
-import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import lombok.Value;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
 
@@ -105,9 +104,6 @@ public class StarClassTransform implements Function1<Pair, Pair> {
                 }
             }
 
-            if (superclass == null) {
-                superclass = "map";// TODO: implement superclass inference
-            }
             final ClassInstruction c = new ClassInstruction(id, name, superclass, assign, pairs);
             ctx.addClassInstruction(c);
         } else {
@@ -116,26 +112,20 @@ public class StarClassTransform implements Function1<Pair, Pair> {
         }
     }
 
-    @EqualsAndHashCode
-    @ToString
+    @Value
     static class ClassInstruction {
-        public final String id;
-        public final String name;
-        public final String superclass;
-        public final Vector<ArrayItem> assign;
-        public final Vector<Pair> pairs;
+        String id;
+        String name;
+        String superclass;
+        Vector<ArrayItem> assign;
+        Vector<Pair> pairs;
 
         ClassInstruction(final String id, final String name, final String superclass, final Vector<ArrayItem> assign, final Vector<Pair> pairs) {
             this.id = id;
             this.name = name;
-            if (superclass == null) {
-                this.superclass = "map"; // TODO: Use type inference to set this
-            } else {
-                this.superclass = superclass;
-            }
+            this.superclass = superclass;
             this.assign = assign;
             this.pairs = pairs;
         }
     }
-
 }

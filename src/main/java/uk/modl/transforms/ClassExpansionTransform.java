@@ -5,6 +5,7 @@ import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.var;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
@@ -48,16 +49,26 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
      * @return the expanded Pair
      */
     private Pair accept(final Pair p, final StarClassTransform.ClassInstruction ci) {
-        final String newKey = StringUtils.isEmpty(ci.name) ? ci.id : ci.name;
+        final String newKey = StringUtils.isEmpty(ci.getName()) ? ci.getId() : ci.getName();
         PairValue pairValue = null;
 
-        // TODO: ALL of this!
-        switch (ci.superclass) {
+        var superclass = (ci.getSuperclass() == null) ? inferSuperclass(p.getValue()) : ci.getSuperclass();
+        switch (superclass) {
             case "map":
                 if (p.getValue() instanceof Array) {
                     final Vector<MapItem> mapItems = toMapUsingAssign((Array) p.getValue(), ci);
                     pairValue = new Map(mapItems);
                 } else if (p.getValue() instanceof Map) {
+                    pairValue = p.getValue();
+                } else if (p.getValue() instanceof StringPrimitive) {
+                    pairValue = p.getValue();
+                } else if (p.getValue() instanceof NumberPrimitive) {
+                    pairValue = p.getValue();
+                } else if (p.getValue() instanceof TruePrimitive) {
+                    pairValue = p.getValue();
+                } else if (p.getValue() instanceof FalsePrimitive) {
+                    pairValue = p.getValue();
+                } else if (p.getValue() instanceof NullPrimitive) {
                     pairValue = p.getValue();
                 }
                 break;
@@ -74,9 +85,9 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
                         .toString());
                 break;
             default:
-                if (ctx.getClassByNameOrId(ci.superclass)
+                if (ctx.getClassByNameOrId(superclass)
                         .isDefined()) {
-                    pairValue = inherit(ci.name, p.getValue());
+                    pairValue = inherit(ci.getName(), p.getValue());
                 } else {
                     return p;
                 }
@@ -84,17 +95,52 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
         return new Pair(newKey, pairValue);
     }
 
+    private String inferSuperclass(final PairValue value) {
+        if (value instanceof NumberPrimitive) {
+            return "num";
+        }
+        if (value instanceof StringPrimitive) {
+            return "str";
+        }
+        if (value instanceof Array) {
+            return "arr";
+        }
+        if (value instanceof Map) {
+            return "map";
+        }
+        if (value instanceof TruePrimitive) {
+            return "str";
+        }
+        if (value instanceof FalsePrimitive) {
+            return "str";
+        }
+        if (value instanceof NullPrimitive) {
+            return "str";
+        }
+        return null;
+    }
+
     private Vector<MapItem> toMapUsingAssign(final Array array, final StarClassTransform.ClassInstruction ci) {
         // Find the correct assign statement
-        final Array assignArray = (Array) ci.assign.find(arr -> ((Array) arr).getArrayItems()
-                .size() == array.getArrayItems()
-                .size())
+        final Array assignArray = (Array) ci.getAssign()
+                .find(arr -> ((Array) arr).getArrayItems()
+                        .size() == array.getArrayItems()
+                        .size())
                 .getOrElseThrow(() -> new InterpreterError("No matching *assign value of length: " + array.getArrayItems()
                         .size()));
 
         // Convert the array items to pairs using the assign statement.
         return array.getArrayItems()
-                .zipWith(assignArray.getArrayItems(), (item, assign) -> new Pair(assign.toString(), (PairValue) item));
+                .zipWith(assignArray.getArrayItems(), (item, assign) -> {
+                    if (item instanceof PairValue) {
+                        return new Pair(assign.toString(), (PairValue) item);
+                    } else if (item instanceof ArrayConditional) {
+                        return new Pair(assign.toString(), new Array(((ArrayConditional) item).getResult()));
+                    } else {
+                        throw new NullPointerException("NEED TO HANDLE : " + item.getClass()
+                                .toString());// TODO: Fix this
+                    }
+                });
     }
 
     private PairValue inherit(final String superclass, final PairValue value) {
@@ -114,10 +160,11 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
 
     private Vector<Pair> recurseAddPairs(final StarClassTransform.ClassInstruction ci, final Vector<Pair> pairs) {
         Vector<Pair> items = Vector.empty();
-        final Option<StarClassTransform.ClassInstruction> superclass = ctx.getClassByNameOrId(ci.superclass);
+        final Option<StarClassTransform.ClassInstruction> superclass = ctx.getClassByNameOrId(ci.getSuperclass());
         if (superclass.isDefined()) {
             items = recurseAddPairs(superclass.get(), pairs);
         }
-        return ci.pairs.appendAll(items);
+        return ci.getPairs()
+                .appendAll(items);
     }
 }
