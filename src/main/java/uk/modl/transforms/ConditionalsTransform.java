@@ -5,6 +5,7 @@ import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
 import uk.modl.utils.Util;
@@ -15,6 +16,7 @@ public class ConditionalsTransform {
      * The context for this invocation of the interpreter
      */
     @NonNull
+    @Setter
     private TransformationContext ctx;
 
     /**
@@ -155,13 +157,6 @@ public class ConditionalsTransform {
                                 .matches(regexStr);
                     }
                 });
-    }
-
-    /**
-     * @param ctx the TransformationContext
-     */
-    public void setCtx(final TransformationContext ctx) {
-        this.ctx = ctx;
     }
 
     public ValueConditional apply(final ValueConditional vc) {

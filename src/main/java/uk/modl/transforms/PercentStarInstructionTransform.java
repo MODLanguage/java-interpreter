@@ -4,6 +4,7 @@ import io.vavr.Function1;
 import io.vavr.collection.Vector;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import uk.modl.model.*;
 
 @RequiredArgsConstructor
@@ -13,6 +14,7 @@ public class PercentStarInstructionTransform implements Function1<Pair, Pair> {
      * The context for this invocation of the interpreter
      */
     @NonNull
+    @Setter
     private TransformationContext ctx;
 
     /**
@@ -100,10 +102,6 @@ public class PercentStarInstructionTransform implements Function1<Pair, Pair> {
         final MapItem clssMap = new Pair(ci.getId(), new uk.modl.model.Map(clssItems));
         final Vector<MapItem> clss = Vector.of(clssMap);
         return new uk.modl.model.Map(clss);
-    }
-
-    public void setCtx(final TransformationContext ctx) {
-        this.ctx = ctx;
     }
 
     /**

@@ -6,10 +6,7 @@ import io.vavr.Tuple2;
 import io.vavr.Tuple3;
 import io.vavr.collection.Vector;
 import io.vavr.control.Option;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.interpreter.Interpreter;
 import uk.modl.model.Array;
@@ -36,6 +33,7 @@ public class StarLoadTransform implements Function1<Pair, Pair> {
      * The context for this invocation of the interpreter
      */
     @NonNull
+    @Setter
     private TransformationContext ctx;
 
     /**
@@ -110,10 +108,6 @@ public class StarLoadTransform implements Function1<Pair, Pair> {
             return starLoadMutator.getPair();
         }
         return p;
-    }
-
-    public void setCtx(final TransformationContext ctx) {
-        this.ctx = ctx;
     }
 
     /**

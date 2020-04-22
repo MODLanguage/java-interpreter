@@ -5,8 +5,10 @@ import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.var;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
 
@@ -17,6 +19,7 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
      * The context for this invocation of the interpreter
      */
     @NonNull
+    @Setter
     private TransformationContext ctx;
 
     /**
@@ -37,10 +40,6 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
         return p;
     }
 
-    public void setCtx(final TransformationContext ctx) {
-        this.ctx = ctx;
-    }
-
     /**
      * Expand a Pair if it matches a class
      *
@@ -52,7 +51,7 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
         final String newKey = StringUtils.isEmpty(ci.getName()) ? ci.getId() : ci.getName();
         PairValue pairValue = null;
 
-        var superclass = (ci.getSuperclass() == null) ? inferSuperclass(p.getValue()) : ci.getSuperclass();
+        var superclass = inferSuperclass(p.getValue(), ci);
         switch (superclass) {
             case "map":
                 if (p.getValue() instanceof Array) {
@@ -95,7 +94,11 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
         return new Pair(newKey, pairValue);
     }
 
-    private String inferSuperclass(final PairValue value) {
+    private @NotNull String inferSuperclass(final PairValue value, final StarClassTransform.@NotNull ClassInstruction ci) {
+        if (ci.getSuperclass() == null && ci.getAssign()
+                .length() > 0) {
+            return "map";
+        }
         if (value instanceof NumberPrimitive) {
             return "num";
         }
@@ -117,7 +120,7 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
         if (value instanceof NullPrimitive) {
             return "str";
         }
-        return null;
+        return "str";// Default to String
     }
 
     private Vector<MapItem> toMapUsingAssign(final Array array, final StarClassTransform.ClassInstruction ci) {
@@ -149,7 +152,7 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
 
         if (value instanceof Map) {
             final Vector<MapItem> mapItems =
-                    maybeClass.map(ci -> recurseAddPairs(ci, Vector.empty()))
+                    maybeClass.map(this::recurseAddPairs)
                             .getOrElse(Vector.empty())
                             .foldLeft(((Map) value).getMapItems(), Vector::append);
 
@@ -158,12 +161,9 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
         return value;
     }
 
-    private Vector<Pair> recurseAddPairs(final StarClassTransform.ClassInstruction ci, final Vector<Pair> pairs) {
-        Vector<Pair> items = Vector.empty();
+    private Vector<Pair> recurseAddPairs(final StarClassTransform.ClassInstruction ci) {
         final Option<StarClassTransform.ClassInstruction> superclass = ctx.getClassByNameOrId(ci.getSuperclass());
-        if (superclass.isDefined()) {
-            items = recurseAddPairs(superclass.get(), pairs);
-        }
+        final Vector<Pair> items = (superclass.isDefined()) ? recurseAddPairs(superclass.get()) : Vector.empty();
         return ci.getPairs()
                 .appendAll(items);
     }

@@ -84,16 +84,6 @@ public class TransformationContext {
     }
 
     /**
-     * Do we have a class with the given name or id?
-     *
-     * @param idOrName the name or id String
-     * @return true if we have a class with the supplied name or id
-     */
-    public boolean hasClass(final String idOrName) {
-        return classesById.containsKey(idOrName) || classesByName.containsKey(idOrName);
-    }
-
-    /**
      * Get a class by name or id if we have one.
      *
      * @param idOrName the id or name String

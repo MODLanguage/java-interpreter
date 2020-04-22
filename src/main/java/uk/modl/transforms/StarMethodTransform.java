@@ -3,6 +3,7 @@ package uk.modl.transforms;
 import io.vavr.Function1;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import uk.modl.model.Map;
 import uk.modl.model.MapItem;
 import uk.modl.model.Pair;
@@ -15,6 +16,7 @@ public class StarMethodTransform implements Function1<Pair, Pair> {
      * The context for this invocation of the interpreter
      */
     @NonNull
+    @Setter
     private TransformationContext ctx;
 
     /**
@@ -42,10 +44,6 @@ public class StarMethodTransform implements Function1<Pair, Pair> {
             return null;
         }
         return p;
-    }
-
-    public void setCtx(final TransformationContext ctx) {
-        this.ctx = ctx;
     }
 
     /**

@@ -9,6 +9,7 @@ import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
 import uk.modl.model.*;
@@ -31,6 +32,7 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
      * The context for this invocation of the interpreter
      */
     @NonNull
+    @Setter
     private TransformationContext ctx;
 
     /**
@@ -587,10 +589,6 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
             }
             return curr;
         };
-    }
-
-    public void setCtx(final TransformationContext ctx) {
-        this.ctx = ctx;
     }
 
     private enum ReferenceType {
