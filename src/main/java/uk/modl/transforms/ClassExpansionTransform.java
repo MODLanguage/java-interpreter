@@ -95,7 +95,10 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
     }
 
     private @NotNull String inferSuperclass(final PairValue value, final StarClassTransform.@NotNull ClassInstruction ci) {
-        if (ci.getSuperclass() == null && ci.getAssign()
+        if (ci.getSuperclass() != null) {
+            return ci.getSuperclass();
+        }
+        if (ci.getAssign() != null && ci.getAssign()
                 .length() > 0) {
             return "map";
         }
