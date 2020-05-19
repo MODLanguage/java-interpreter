@@ -6,6 +6,8 @@ import io.vavr.collection.Vector;
 import uk.modl.model.*;
 import uk.modl.transforms.*;
 
+import java.util.Objects;
+
 /**
  * Interpreter for a Modl object
  */
@@ -395,7 +397,8 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
     public Modl apply(final Modl modl) {
 
         final Vector<Structure> structures = Vector.ofAll(modl.getStructures()
-                .map(this::visitStructure));
+                .map(this::visitStructure))
+                .filter(Objects::nonNull);
 
         return new Modl(structures);
     }

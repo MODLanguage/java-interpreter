@@ -6,7 +6,10 @@ import io.vavr.Tuple2;
 import io.vavr.Tuple3;
 import io.vavr.collection.Vector;
 import io.vavr.control.Option;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.interpreter.Interpreter;
 import uk.modl.model.Array;
@@ -15,11 +18,12 @@ import uk.modl.model.Modl;
 import uk.modl.model.Pair;
 import uk.modl.utils.SimpleCache;
 import uk.modl.utils.Util;
-import uk.modl.visitor.ModlVisitorBase;
 
 @RequiredArgsConstructor
 public class StarLoadTransform implements Function1<Pair, Pair> {
+
     private static final SimpleCache<String, Modl> cache = new SimpleCache<>();
+
     /**
      * Function to extract filenames and pairs from a Modl object.
      */
@@ -103,9 +107,7 @@ public class StarLoadTransform implements Function1<Pair, Pair> {
             ctx.addFilesLoaded(loadedModlObjects.flatMap(tuple -> tuple._1));
 
 
-            final StarLoadMutator starLoadMutator = new StarLoadMutator(loadedModlObjects, p);
-            p.visit(starLoadMutator);
-            return starLoadMutator.getPair();
+            return new StarLoadMutator(loadedModlObjects).accept(p);
         }
         return p;
     }
@@ -114,20 +116,17 @@ public class StarLoadTransform implements Function1<Pair, Pair> {
      * Build a new copy of the Modl object with some pairs replaced
      */
     @AllArgsConstructor
-    private static class StarLoadMutator extends ModlVisitorBase {
+    private static class StarLoadMutator {
+
         private final Vector<Tuple3<Vector<String>, Vector<Modl>, Pair>> loadedModlObjects;
 
-        @Getter
-        private Pair pair;
-
-        @Override
-        public void accept(final Pair pair) {
+        public Pair accept(final Pair pair) {
             // Find the last matching loaded object (last because the earlier ones might be overridden by later ones)
             final Option<Tuple3<Vector<String>, Vector<Modl>, Pair>> maybeFoundPair = loadedModlObjects.findLast(tuple3 -> pair.equals(tuple3._3));
 
             // Create a new Modl object with the updated pair.
-            this.pair = maybeFoundPair.map(p -> replace(pair, p))
-                    .getOrElse(this.pair);
+            return maybeFoundPair.map(p -> replace(pair, p))
+                    .getOrElse(pair);
         }
 
         /**
@@ -143,13 +142,14 @@ public class StarLoadTransform implements Function1<Pair, Pair> {
 
                 final Vector<ArrayItem> arrayItems = replacement._2.flatMap(m -> m.getStructures()
                         .map(structure -> (ArrayItem) structure));
+
                 return new Pair(p.getKey(), new Array(arrayItems));
             } else {
                 return p;
             }
-
         }
 
     }
+
 }
 
