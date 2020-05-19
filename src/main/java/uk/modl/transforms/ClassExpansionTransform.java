@@ -75,7 +75,12 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
                 }
                 break;
             case "arr":
-                pairValue = new Array(Vector.empty());
+                if (p.getValue() instanceof Map) {
+                    final Vector<ArrayItem> arrayItems = mapItemsToArrayItems(((Map) p.getValue()).getMapItems());
+                    pairValue = new Array(arrayItems);
+                } else {
+                    pairValue = p.getValue();
+                }
                 break;
             case "str":
                 pairValue = new StringPrimitive(p.getValue()
@@ -90,6 +95,10 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
                 return p;
         }
         return new Pair(newKey, pairValue);
+    }
+
+    private Vector<ArrayItem> mapItemsToArrayItems(final Vector<MapItem> mapItems) {
+        return mapItems.map(mapItem -> (ArrayItem) mapItem);
     }
 
     private @NonNull String inferType(final PairValue value, final StarClassTransform.ClassInstruction ci) {
