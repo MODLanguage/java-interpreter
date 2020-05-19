@@ -52,7 +52,7 @@ public class StarClassTransform implements Function1<Pair, Pair> {
             String id = null;
             String name = null;
             String superclass = null;
-            Vector<ArrayItem> assign = null;
+            Vector<ArrayItem> assign = Vector.empty();
             var pairs = Vector.<Pair>empty();
 
             for (final MapItem mi : ((Map) pair.getValue()).getMapItems()) {
@@ -106,7 +106,7 @@ public class StarClassTransform implements Function1<Pair, Pair> {
     }
 
     @Value(staticConstructor = "of")
-    static class ClassInstruction {
+    public static class ClassInstruction {
 
         String id;
 

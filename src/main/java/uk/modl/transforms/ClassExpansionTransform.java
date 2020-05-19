@@ -10,6 +10,7 @@ import lombok.var;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
+import uk.modl.utils.SupertypeInference;
 
 @RequiredArgsConstructor
 public class ClassExpansionTransform implements Function1<Pair, Pair> {
@@ -50,46 +51,41 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
         final String newKey = StringUtils.isEmpty(ci.getName()) ? ci.getId() : ci.getName();
         PairValue pairValue = null;
 
-        var type = inferType(p.getValue(), ci);
+        var type = SupertypeInference.inferType(ctx, ci, p.getValue());
+
         switch (type) {
-            case "map":
-                if (p.getValue() instanceof Array) {
-                    final Vector<MapItem> mapItems = toMapUsingAssign((Array) p.getValue(), ci);
-                    pairValue = new Map(mapItems);
-                } else if (p.getValue() instanceof Map) {
-                    pairValue = p.getValue();
-                } else if (p.getValue() instanceof StringPrimitive) {
-                    pairValue = p.getValue();
-                } else if (p.getValue() instanceof NumberPrimitive) {
-                    pairValue = p.getValue();
-                } else if (p.getValue() instanceof TruePrimitive) {
-                    pairValue = p.getValue();
-                } else if (p.getValue() instanceof FalsePrimitive) {
-                    pairValue = p.getValue();
-                } else if (p.getValue() instanceof NullPrimitive) {
-                    pairValue = p.getValue();
-                }
-                if (ctx.getClassByNameOrId(ci.getSuperclass())
-                        .isDefined()) {
-                    pairValue = inherit(ci.getName(), pairValue);
-                }
+            case "str":
+                pairValue = new StringPrimitive(p.getValue()
+                        .toString());
+                break;
+            case "num":
+            case "bool":
+                pairValue = new NumberPrimitive(p.getValue()
+                        .numericValue()
+                        .toString());
                 break;
             case "arr":
-                if (p.getValue() instanceof Map) {
+                if (p.getValue() instanceof Array) {
+                    final Vector<ArrayItem> mapItems = toArrayUsingAssign((Array) p.getValue(), ci);
+                    pairValue = new Array(mapItems);
+                } else if (p.getValue() instanceof Map) {
                     final Vector<ArrayItem> arrayItems = mapItemsToArrayItems(((Map) p.getValue()).getMapItems());
                     pairValue = new Array(arrayItems);
                 } else {
                     pairValue = p.getValue();
                 }
                 break;
-            case "str":
-                pairValue = new StringPrimitive(p.getValue()
-                        .toString());
-                break;
-            case "num":
-                pairValue = new NumberPrimitive(p.getValue()
-                        .numericValue()
-                        .toString());
+            case "map":
+                if (p.getValue() instanceof Array) {
+                    final Vector<MapItem> mapItems = toMapUsingAssign((Array) p.getValue(), ci);
+                    pairValue = new Map(mapItems);
+                    pairValue = inherit(ci.getName(), pairValue);
+                } else if (p.getValue() instanceof Map) {
+                    pairValue = inherit(ci.getName(), p.getValue());
+                } else {
+                    pairValue = new Map(Vector.of(new Pair("value", p.getValue())));
+                    pairValue = inherit(ci.getName(), pairValue);
+                }
                 break;
             default:
                 return p;
@@ -107,23 +103,11 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
                 .isDefined()) {
             return inferType(value, maybeSuperclass.get());
         }
-        if (ci.getAssign() != null && ci.getAssign()
-                .length() > 0) {
-            return "map";
-        }
-        if (ci.getSuperclass() != null) {
-            return ci.getSuperclass();
-        }
-        if (value instanceof NumberPrimitive) {
-            return "num";
-        }
-        if (value instanceof Array) {
-            return "arr";
-        }
-        if (value instanceof Map) {
-            return "map";
-        }
-        return "str";// Default to String
+
+
+        //TODO
+        throw new NullPointerException("NOT IMPLEMENTED");
+
     }
 
     private Vector<MapItem> toMapUsingAssign(final Array array, final StarClassTransform.ClassInstruction ci) {
@@ -147,6 +131,30 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
                                 .toString());// TODO: Fix this
                     }
                 });
+    }
+
+    private Vector<ArrayItem> toArrayUsingAssign(final Array array, final StarClassTransform.ClassInstruction ci) {
+        // Find the correct assign statement
+        final Option<ArrayItem> maybeAssignArray = ci.getAssign()
+                .find(arr -> ((Array) arr).getArrayItems()
+                        .size() == array.getArrayItems()
+                        .size());
+
+        if (maybeAssignArray.isDefined()) {
+            final Array assignArray = (Array) maybeAssignArray.get();
+            return array.getArrayItems()
+                    .zipWith(assignArray.getArrayItems(), (item, assign) -> {
+                        if (item instanceof PairValue) {
+                            return new Pair(assign.toString(), (PairValue) item);
+                        } else if (item instanceof ArrayConditional) {
+                            return new Pair(assign.toString(), new Array(((ArrayConditional) item).getResult()));
+                        } else {
+                            throw new NullPointerException("NEED TO HANDLE : " + item.getClass()
+                                    .toString());// TODO: Fix this
+                        }
+                    });
+        }
+        return array.getArrayItems();
     }
 
     private PairValue inherit(final String superclass, final PairValue value) {

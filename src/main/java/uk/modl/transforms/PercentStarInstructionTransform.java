@@ -90,7 +90,8 @@ public class PercentStarInstructionTransform implements Function1<Pair, Pair> {
             clssItems = clssItems.append(p);
         }
 
-        if (ci.getAssign() != null) {
+        if (ci.getAssign()
+                .nonEmpty()) {
             final Pair p = new Pair("assign", new Array(ci.getAssign()));
             clssItems = clssItems.append(p);
         }
