@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 public class ReferencesTransform implements Function1<Pair, Pair> {
+
     private static final Pattern referencePattern = Pattern.compile("((%\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|(%` ?[\\w-]+`[\\w.<>,]*%?)|(%\\*?[\\w]+(\\.%?\\w*<?[\\w,]*>?)*%?))");
 
     /**
@@ -508,7 +509,12 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
                             .getArrayItems()
                             .get(next._3)
                             .toString();
-                    return new Pair(curr.getKey(), new StringPrimitive(s.replace(next._1, r)));
+                    final String indexReference = next._1;
+                    String tmpResult = s;
+                    if (!indexReference.endsWith("%")) {
+                        tmpResult = s.replace(indexReference + "%", r);
+                    }
+                    return new Pair(curr.getKey(), new StringPrimitive(tmpResult.replace(indexReference, r)));
                 }
                 // Otherwise replace the whole thing
                 return new Pair(curr.getKey(), (PairValue) ctx.getObjectIndex()
@@ -594,4 +600,5 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
     private enum ReferenceType {
         COMPLEX_REF, OBJECT_INDEX_REF, SIMPLE_REF
     }
+
 }

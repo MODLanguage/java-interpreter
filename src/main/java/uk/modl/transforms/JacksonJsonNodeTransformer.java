@@ -9,12 +9,14 @@ import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.extern.log4j.Log4j2;
 import uk.modl.model.*;
+import uk.modl.utils.StringEscapeReplacer;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 @Log4j2
 public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
+
     /**
      * Predicate to filter out items that should not be in the output.
      */
@@ -239,6 +241,7 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
 
     private void accept(final ObjectNode node, final Pair pair) {
         Option.of(pair)
+                .filter(shouldAppearInOutput)
                 .map(addPairToObjectNode(node));
     }
 
@@ -252,7 +255,8 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                 }
                 if (pair.getValue() instanceof StringPrimitive) {
                     final Primitive prim = (Primitive) ((Pair) p).getValue();
-                    node.set(pair.getKey(), JsonNodeFactory.instance.textNode(prim.toString()));
+                    final String text = StringEscapeReplacer.replace(prim.toString());
+                    node.set(pair.getKey(), JsonNodeFactory.instance.textNode(text));
                 } else if (pair.getValue() instanceof NumberPrimitive) {
                     final NumberPrimitive prim = (NumberPrimitive) ((Pair) p).getValue();
                     final Number n = prim.numericValue();
@@ -307,4 +311,5 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                 .map(addMapToObjectNode(node))
                 .map(addPairToObjectNode(node));
     }
+
 }
