@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.var;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
 
@@ -51,8 +50,8 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
         final String newKey = StringUtils.isEmpty(ci.getName()) ? ci.getId() : ci.getName();
         PairValue pairValue = null;
 
-        var superclass = inferSuperclass(p.getValue(), ci);
-        switch (superclass) {
+        var type = inferType(p.getValue(), ci);
+        switch (type) {
             case "map":
                 if (p.getValue() instanceof Array) {
                     final Vector<MapItem> mapItems = toMapUsingAssign((Array) p.getValue(), ci);
@@ -70,6 +69,10 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
                 } else if (p.getValue() instanceof NullPrimitive) {
                     pairValue = p.getValue();
                 }
+                if (ctx.getClassByNameOrId(ci.getSuperclass())
+                        .isDefined()) {
+                    pairValue = inherit(ci.getName(), pairValue);
+                }
                 break;
             case "arr":
                 pairValue = new Array(Vector.empty());
@@ -84,44 +87,32 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
                         .toString());
                 break;
             default:
-                if (ctx.getClassByNameOrId(superclass)
-                        .isDefined()) {
-                    pairValue = inherit(ci.getName(), p.getValue());
-                } else {
-                    return p;
-                }
+                return p;
         }
         return new Pair(newKey, pairValue);
     }
 
-    private @NotNull String inferSuperclass(final PairValue value, final StarClassTransform.@NotNull ClassInstruction ci) {
-        if (ci.getSuperclass() != null) {
-            return ci.getSuperclass();
+    private @NonNull String inferType(final PairValue value, final StarClassTransform.ClassInstruction ci) {
+        final Option<StarClassTransform.ClassInstruction> maybeSuperclass = ctx.getClassByNameOrId(ci.getSuperclass());
+        if (maybeSuperclass
+                .isDefined()) {
+            return inferType(value, maybeSuperclass.get());
         }
         if (ci.getAssign() != null && ci.getAssign()
                 .length() > 0) {
             return "map";
         }
+        if (ci.getSuperclass() != null) {
+            return ci.getSuperclass();
+        }
         if (value instanceof NumberPrimitive) {
             return "num";
-        }
-        if (value instanceof StringPrimitive) {
-            return "str";
         }
         if (value instanceof Array) {
             return "arr";
         }
         if (value instanceof Map) {
             return "map";
-        }
-        if (value instanceof TruePrimitive) {
-            return "str";
-        }
-        if (value instanceof FalsePrimitive) {
-            return "str";
-        }
-        if (value instanceof NullPrimitive) {
-            return "str";
         }
         return "str";// Default to String
     }
@@ -170,4 +161,5 @@ public class ClassExpansionTransform implements Function1<Pair, Pair> {
         return ci.getPairs()
                 .appendAll(items);
     }
+
 }

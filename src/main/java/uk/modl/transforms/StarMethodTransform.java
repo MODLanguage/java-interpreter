@@ -60,7 +60,8 @@ public class StarMethodTransform implements Function1<Pair, Pair> {
             for (final MapItem mi : ((Map) pair.getValue()).getMapItems()) {
                 if (mi instanceof Pair) {
                     final Pair p = (Pair) mi;
-                    switch (p.getKey()) {
+                    switch (p.getKey()
+                            .toLowerCase()) {
                         case "*i":
                         case "*id":
                             id = p.getValue()

@@ -4,7 +4,6 @@ import io.vavr.Function1;
 import io.vavr.collection.Vector;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
 
@@ -24,7 +23,7 @@ public class StarClassTransform implements Function1<Pair, Pair> {
      * @param key the String to check
      * @return true if the key represents a class instruction
      */
-    public static boolean isClassInstruction(final @NotNull String key) {
+    public static boolean isClassInstruction(final @NonNull String key) {
         return StringUtils.equalsAnyIgnoreCase(key, "*c", "*class");
     }
 
@@ -35,7 +34,7 @@ public class StarClassTransform implements Function1<Pair, Pair> {
      * @param p argument 1
      * @return the result of function application
      */
-    public Pair apply(final @NotNull Pair p) {
+    public Pair apply(final @NonNull Pair p) {
         if (isClassInstruction(p.getKey())) {
             accept(p);
             return null;
@@ -48,7 +47,7 @@ public class StarClassTransform implements Function1<Pair, Pair> {
      *
      * @param pair the Pair
      */
-    private void accept(final @NotNull Pair pair) {
+    private void accept(final @NonNull Pair pair) {
         if (pair.getValue() instanceof Map) {
             String id = null;
             String name = null;
@@ -59,7 +58,8 @@ public class StarClassTransform implements Function1<Pair, Pair> {
             for (final MapItem mi : ((Map) pair.getValue()).getMapItems()) {
                 if (mi instanceof Pair) {
                     final Pair p = (Pair) mi;
-                    switch (p.getKey()) {
+                    switch (p.getKey()
+                            .toLowerCase()) {
                         case "*i":
                         case "*id":
                             id = p.getValue()
@@ -107,10 +107,17 @@ public class StarClassTransform implements Function1<Pair, Pair> {
 
     @Value(staticConstructor = "of")
     static class ClassInstruction {
+
         String id;
+
         String name;
+
         String superclass;
+
         Vector<ArrayItem> assign;
+
         Vector<Pair> pairs;
+
     }
+
 }
