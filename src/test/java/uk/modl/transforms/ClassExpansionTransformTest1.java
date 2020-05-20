@@ -22,7 +22,7 @@ public class ClassExpansionTransformTest1 {
         final Pair testPair = new Pair("test", pairValue);
 
         // Transform the pair
-        final Pair updatedPair = transform.apply(testPair);
+        final Pair updatedPair = (Pair) transform.apply(testPair);
 
         // Check the result
         Assert.assertNotNull(updatedPair);

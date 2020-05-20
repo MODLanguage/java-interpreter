@@ -25,7 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
-public class ReferencesTransform implements Function1<Pair, Pair> {
+public class ReferencesTransform implements Function1<Structure, Structure> {
 
     private static final Pattern referencePattern = Pattern.compile("((%\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|(%` ?[\\w-]+`[\\w.<>,]*%?)|(%\\*?[\\w]+(\\.%?\\w*<?[\\w,]*>?)*%?))");
 
@@ -349,21 +349,25 @@ public class ReferencesTransform implements Function1<Pair, Pair> {
      * @param p a Pair with references
      * @return a Pair with the references resolved
      */
-    public Pair apply(final Pair p) {
+    public Structure apply(final Structure p) {
         if (p == null) {
             return null;
         }
 
-        if (p.getValue() instanceof ValueConditional) {
-            return p;
-        } else {
-            final Pair resolved = resolve(p);
-            accept(resolved);
+        if (p instanceof Pair) {
+            final Pair pair = (Pair) p;
+            if ((pair).getValue() instanceof ValueConditional) {
+                return p;
+            } else {
+                final Pair resolved = resolve(pair);
+                accept(resolved);
 
-            return ctx.getPairs()
-                    .get(p.getKey())
-                    .getOrElse(p);
+                return ctx.getPairs()
+                        .get((pair).getKey())
+                        .getOrElse(pair);
+            }
         }
+        return p;
     }
 
     /**

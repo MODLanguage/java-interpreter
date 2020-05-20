@@ -15,7 +15,7 @@ public class ClassExpansionTransformTest2 {
 
         final ClassExpansionTransform transform = new ClassExpansionTransform(ctx);
 
-        final Pair updatedPair = transform.apply(new Pair("d", new Map(Vector.of(new Pair("test1", new StringPrimitive("test2"))))));
+        final Pair updatedPair = (Pair) transform.apply(new Pair("d", new Map(Vector.of(new Pair("test1", new StringPrimitive("test2"))))));
         Assert.assertNotNull(updatedPair);
         Assert.assertEquals("delta", updatedPair.getKey());
         Assert.assertTrue(updatedPair.getValue() instanceof Map);

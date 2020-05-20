@@ -12,15 +12,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.interpreter.Interpreter;
-import uk.modl.model.Array;
-import uk.modl.model.ArrayItem;
-import uk.modl.model.Modl;
-import uk.modl.model.Pair;
+import uk.modl.model.*;
 import uk.modl.utils.SimpleCache;
 import uk.modl.utils.Util;
 
 @RequiredArgsConstructor
-public class StarLoadTransform implements Function1<Pair, Pair> {
+public class StarLoadTransform implements Function1<Structure, Structure> {
 
     private static final SimpleCache<String, Modl> cache = new SimpleCache<>();
 
@@ -92,24 +89,27 @@ public class StarLoadTransform implements Function1<Pair, Pair> {
     /**
      * Applies this function to one argument and returns the result.
      *
-     * @param p argument 1
+     * @param s argument 1
      * @return the result of function application
      */
-    public Pair apply(final Pair p) {
+    public Structure apply(final Structure s) {
 
-        if (StarLoadExtractor.isLoadInstruction(p.getKey())) {
-            // Each tuple in this list holds the original Pair with the `*load` statements and the set of Modl objects
-            // loaded using the filename[s] specified in the file list - there can be 1 or several.
-            final Vector<Tuple3<Vector<String>, Vector<Modl>, Pair>> loadedModlObjects = convertFilesToModlObjectsAndPairs(extractFilenamesAndPairs
-                    .apply(p));
+        if (s instanceof Pair) {
+            final Pair p = (Pair) s;
+            if (StarLoadExtractor.isLoadInstruction(p.getKey())) {
+                // Each tuple in this list holds the original Pair with the `*load` statements and the set of Modl objects
+                // loaded using the filename[s] specified in the file list - there can be 1 or several.
+                final Vector<Tuple3<Vector<String>, Vector<Modl>, Pair>> loadedModlObjects = convertFilesToModlObjectsAndPairs(extractFilenamesAndPairs
+                        .apply(p));
 
-            // Record which files were loaded - for use in a `%*load` reference
-            ctx.addFilesLoaded(loadedModlObjects.flatMap(tuple -> tuple._1));
+                // Record which files were loaded - for use in a `%*load` reference
+                ctx.addFilesLoaded(loadedModlObjects.flatMap(tuple -> tuple._1));
 
 
-            return new StarLoadMutator(loadedModlObjects).accept(p);
+                return new StarLoadMutator(loadedModlObjects).accept(p);
+            }
         }
-        return p;
+        return s;
     }
 
     /**

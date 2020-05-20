@@ -7,10 +7,11 @@ import lombok.Setter;
 import uk.modl.model.Map;
 import uk.modl.model.MapItem;
 import uk.modl.model.Pair;
+import uk.modl.model.Structure;
 import uk.modl.parser.errors.InterpreterError;
 
 @RequiredArgsConstructor
-public class StarMethodTransform implements Function1<Pair, Pair> {
+public class StarMethodTransform implements Function1<Structure, Structure> {
 
     /**
      * The context for this invocation of the interpreter
@@ -38,9 +39,9 @@ public class StarMethodTransform implements Function1<Pair, Pair> {
      * @param p argument 1
      * @return the result of function application
      */
-    public Pair apply(final Pair p) {
-        if (p != null && isMethodInstruction(p.getKey())) {
-            accept(p);
+    public Structure apply(final Structure p) {
+        if (p != null && p instanceof Pair && isMethodInstruction(((Pair) p).getKey())) {
+            accept((Pair) p);
             return null;
         }
         return p;

@@ -14,13 +14,20 @@ import java.util.Objects;
 public class InterpreterVisitor implements Function1<Modl, Modl> {
 
     private final StarLoadTransform starLoadTransform;
+
     private final StarClassTransform starClassTransform;
+
     private final StarMethodTransform starMethodTransform;
+
     private final ReferencesTransform referencesTransform;
+
     private final ConditionalsTransform conditionalsTransform;
+
     private final ClassExpansionTransform classExpansionTransform;
+
     private final PercentStarInstructionTransform percentStarInstructionTransform;
-    private final Function1<Pair, Pair> processPairs;
+
+    private final Function1<Structure, Structure> processPairs;
 
     /**
      * Constructor
@@ -35,8 +42,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
         classExpansionTransform = new ClassExpansionTransform(ctx);
         percentStarInstructionTransform = new PercentStarInstructionTransform(ctx);
 
-        processPairs = classExpansionTransform
-                .compose(referencesTransform)
+        processPairs = referencesTransform
                 .compose(starMethodTransform)
                 .compose(starClassTransform)
                 .compose(starLoadTransform);
@@ -212,7 +218,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
                 (ai instanceof Map) ?
                         visitMap((Map) ai) :
                         (ai instanceof Pair) ?
-                                visitPair((Pair) ai) :
+                                (ArrayItem) visitPair((Pair) ai) :
                                 (ai instanceof Primitive) ?
                                         visitPrimitive((Primitive) ai) : null;
     }
@@ -271,7 +277,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
     private MapItem visitMapItem(final MapItem mi) {
 
         return (mi instanceof Pair) ?
-                visitPair((Pair) mi) :
+                (MapItem) visitPair((Pair) mi) :
                 visitMapConditional((MapConditional) mi);
     }
 
@@ -281,14 +287,21 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param p the Pair
      * @return a Pair
      */
-    private Pair visitPair(final Pair p) {
+    private Structure visitPair(final Pair p) {
 
-        final Pair pair = processPairs.apply(p);
-        if (pair == null) {
+        final Structure st = processPairs.apply(p);
+        if (st == null) {
             return null;
         }
 
-        PairValue value = pair.getValue();
+        PairValue value;
+
+        if (st instanceof Pair) {
+            final Pair pair = (Pair) st;
+            value = pair.getValue();
+        } else {
+            value = (PairValue) st;
+        }
 
         value = (value instanceof Array) ?
                 visitArray((Array) value) :
@@ -298,8 +311,11 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
                                 visitValueItem((ValueItem) value) :
                                 value;
 
-        final Pair newPair = new Pair(pair.getKey(), value);
-        return percentStarInstructionTransform.apply(newPair);
+        if (st instanceof Pair) {
+            final Pair newPair = new Pair(((Pair) st).getKey(), value);
+            return percentStarInstructionTransform.apply((Structure) newPair);
+        }
+        return percentStarInstructionTransform.apply(st);
     }
 
     /**
@@ -317,7 +333,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
                         (vi instanceof Array) ?
                                 visitArray((Array) vi) :
                                 (vi instanceof Pair) ?
-                                        visitPair((Pair) vi) :
+                                        (ValueItem) visitPair((Pair) vi) :
                                         (vi instanceof Primitive) ?
                                                 visitPrimitive((Primitive) vi) :
                                                 vi;
@@ -373,7 +389,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
                 (vi instanceof Map) ?
                         visitMap((Map) vi) :
                         (vi instanceof Pair) ?
-                                visitPair((Pair) vi) :
+                                (ValueItem) visitPair((Pair) vi) :
                                 vi;
     }
 
@@ -398,6 +414,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
 
         final Vector<Structure> structures = Vector.ofAll(modl.getStructures()
                 .map(this::visitStructure))
+                .map(classExpansionTransform)
                 .filter(Objects::nonNull);
 
         return new Modl(structures);
@@ -412,4 +429,5 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
         classExpansionTransform.setCtx(ctx);
         percentStarInstructionTransform.setCtx(ctx);
     }
+
 }

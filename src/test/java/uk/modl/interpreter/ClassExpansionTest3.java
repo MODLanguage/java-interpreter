@@ -51,6 +51,7 @@ public class ClassExpansionTest3 {
                 .andThen(Util.jsonNodeToString);
 
         Assert.assertEquals(EXPECTED, f.apply(INPUT));
+
     }
 
 }

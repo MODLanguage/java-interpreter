@@ -8,7 +8,7 @@ import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
 
 @RequiredArgsConstructor
-public class StarClassTransform implements Function1<Pair, Pair> {
+public class StarClassTransform implements Function1<Structure, Structure> {
 
     /**
      * The context for this invocation of the interpreter
@@ -34,10 +34,13 @@ public class StarClassTransform implements Function1<Pair, Pair> {
      * @param p argument 1
      * @return the result of function application
      */
-    public Pair apply(final @NonNull Pair p) {
-        if (isClassInstruction(p.getKey())) {
-            accept(p);
-            return null;
+    public Structure apply(final @NonNull Structure p) {
+        if (p instanceof Pair) {
+            final Pair pair = (Pair) p;
+            if (isClassInstruction(pair.getKey())) {
+                accept(pair);
+                return null;
+            }
         }
         return p;
     }

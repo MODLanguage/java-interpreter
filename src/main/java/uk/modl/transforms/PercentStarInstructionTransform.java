@@ -8,7 +8,7 @@ import lombok.Setter;
 import uk.modl.model.*;
 
 @RequiredArgsConstructor
-public class PercentStarInstructionTransform implements Function1<Pair, Pair> {
+public class PercentStarInstructionTransform implements Function1<Structure, Structure> {
 
     /**
      * The context for this invocation of the interpreter
@@ -108,17 +108,19 @@ public class PercentStarInstructionTransform implements Function1<Pair, Pair> {
     /**
      * Applies this function to one argument and returns the result.
      *
-     * @param pair argument 1
+     * @param s argument 1
      * @return the result of function application
      */
     @Override
-    public Pair apply(final Pair pair) {
-        if (pair != null) {
+    public Structure apply(final Structure s) {
+        if (s instanceof Pair) {
+            final Pair pair = (Pair) s;
             final PairValue newValue = apply(pair.getValue());
             if (newValue != pair.getValue()) {
                 return new Pair(pair.getKey(), newValue);
             }
         }
-        return pair;
+        return s;
     }
+
 }
