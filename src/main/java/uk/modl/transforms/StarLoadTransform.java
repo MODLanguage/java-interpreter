@@ -141,6 +141,7 @@ public class StarLoadTransform implements Function1<Structure, Structure> {
             if (p.equals(replacement._3)) {
 
                 final Vector<ArrayItem> arrayItems = replacement._2.flatMap(m -> m.getStructures()
+                        .filter(structure -> structure instanceof ArrayItem)
                         .map(structure -> (ArrayItem) structure));
 
                 return new Pair(p.getKey(), new Array(arrayItems));

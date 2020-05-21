@@ -563,14 +563,18 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
             if (next._3.isDefined()) {
                 // If the item containing the reference is a StringPrimitive then do String substitution
                 final Pair p = next._3.get();
-                if (p.getValue() instanceof StringPrimitive) {
+                if (p.getValue() instanceof StringPrimitive && curr.getValue() instanceof StringPrimitive) {
                     final String s = ((StringPrimitive) curr.getValue()).getValue();
                     final String r = ((StringPrimitive) p.getValue()).getValue();
                     return new Pair(curr.getKey(), new StringPrimitive(s.replace(next._1, r)));
-                } else if (p.getValue() instanceof NumberPrimitive) {
+                } else if (p.getValue() instanceof NumberPrimitive && curr.getValue() instanceof StringPrimitive) {
                     final String s = ((StringPrimitive) curr.getValue()).getValue();
                     final String r = ((NumberPrimitive) p.getValue()).getValue();
-                    return new Pair(curr.getKey(), new NumberPrimitive(s.replace(next._1, r)));
+                    if (s.equals(next._1)) {
+                        return new Pair(curr.getKey(), new NumberPrimitive(s.replace(next._1, r)));
+                    } else {
+                        return new Pair(curr.getKey(), new StringPrimitive(s.replace(next._1, r)));
+                    }
                 }
                 // Otherwise replace the whole thing
                 return new Pair(curr.getKey(), p.getValue());
