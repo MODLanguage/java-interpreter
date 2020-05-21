@@ -1,15 +1,20 @@
 package uk.modl.transforms;
 
 import io.vavr.Function1;
+import io.vavr.collection.HashMap;
+import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.apache.commons.lang3.math.NumberUtils;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
 import uk.modl.utils.SupertypeInference;
 import uk.modl.utils.Util;
+
+import java.util.Objects;
 
 @RequiredArgsConstructor
 public class ClassExpansionTransform implements Function1<Structure, Structure> {
@@ -20,6 +25,8 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
     @NonNull
     @Setter
     private TransformationContext ctx;
+
+    private final io.vavr.collection.Map<String, ExpandedClass> cache = HashMap.empty();
 
     /**
      * Applies this function to one argument and returns the result.
@@ -44,26 +51,14 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
         return s;
     }
 
-    /**
-     * @param topLevelConditional
-     * @return
-     */
     private TopLevelConditional processTopLevelConditional(final TopLevelConditional topLevelConditional) {
         return topLevelConditional;
     }
 
-    /**
-     * @param pair
-     * @return
-     */
     private Structure processPair(final Pair pair) {
         return expandToClass(pair);
     }
 
-    /**
-     * @param pair
-     * @return
-     */
     private Structure expandToClass(final Pair pair) {
         final Option<StarClassTransform.ClassInstruction> maybeCi = ctx.getClassByNameOrId(pair.getKey());
         if (maybeCi.isDefined()) {
@@ -71,19 +66,29 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
 
             final String supertype = SupertypeInference.inferType(ctx, ci, pair.getValue());
 
+            final ExpandedClass expClass;
+            final Option<ExpandedClass> maybeExpandedClass = cache.get(ci.getId());
+            if (maybeExpandedClass.isDefined()) {
+                expClass = maybeExpandedClass.get();
+            } else {
+                expClass = ExpandedClass.of(ctx, ci, supertype);
+                cache.put(ci.getId(), expClass);
+            }
+
+
             switch (supertype) {
                 case "map":
-                    return convertPairToMap(pair, ci);
+                    return convertPairToMap(pair, expClass);
                 case "null":
-                    return convertPairToNull(pair, ci);
+                    return convertPairToNull(expClass);
                 case "arr":
-                    return convertPairToArray(pair, ci);
+                    return convertPairToArray(pair, expClass);
                 case "num":
-                    return convertPairToNumber(pair, ci);
+                    return convertPairToNumber(pair, expClass);
                 case "str":
-                    return convertPairToString(pair, ci);
+                    return convertPairToString(pair, expClass);
                 case "bool":
-                    return convertPairToBoolean(pair, ci);
+                    return convertPairToBoolean(pair, expClass);
                 default:
                     throw new InterpreterError("Unknown Supertype: " + supertype);
             }
@@ -91,97 +96,73 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
         return pair;
     }
 
-    /**
-     * @param pair
-     * @return
-     */
-    private Pair convertPairToMap(final Pair pair, final StarClassTransform.ClassInstruction ci) {
+    private Pair convertPairToMap(final Pair pair, final ExpandedClass expClass) {
+        @NonNull final PairValue pairValue = pair.getValue();
+
+        if (pairValue instanceof Array) {
+            final Map map = expClass.toMapUsingAssign((Array) pairValue);
+
+            final Structure structure = apply(map);
+            if (structure instanceof ValueItem) {
+                return new Pair(expClass.name, (PairValue) structure);
+            } else {
+                throw new InterpreterError("Cannot store this item in a Pair: " + structure.toString());
+            }
+        } else if (pairValue instanceof Map) {
+            final Structure structure = apply((Structure) pairValue);
+            if (structure instanceof ValueItem) {
+                return new Pair(expClass.name, (PairValue) structure);
+            } else {
+                throw new InterpreterError("Cannot store this item in a Pair: " + structure.toString());
+            }
+        }
+        return new Pair(expClass.name, pairValue);
+    }
+
+    private Pair convertPairToNull(final ExpandedClass expClass) {
+        return new Pair(expClass.name, NullPrimitive.instance);
+    }
+
+    private Pair convertPairToArray(final Pair pair, final ExpandedClass expClass) {
         @NonNull final PairValue pairValue = pair.getValue();
 
         if (pairValue instanceof Structure) {
             final Structure structure = apply((Structure) pairValue);
             if (structure instanceof ValueItem) {
-                return new Pair(ci.getNameOrId(), (PairValue) structure);
+                return new Pair(expClass.name, (PairValue) structure);
             } else {
                 throw new InterpreterError("Cannot store this item in a Pair: " + structure.toString());
             }
         }
 
-        return new Pair(ci.getNameOrId(), pairValue);
-    }
-
-    /**
-     * @param pair
-     * @return
-     */
-    private Pair convertPairToNull(final Pair pair, final StarClassTransform.ClassInstruction ci) {
-        return new Pair(ci.getNameOrId(), NullPrimitive.instance);
-    }
-
-    /**
-     * @param pair
-     * @return
-     */
-    private Pair convertPairToArray(final Pair pair, final StarClassTransform.ClassInstruction ci) {
-        @NonNull final PairValue pairValue = pair.getValue();
-
-        if (pairValue instanceof Structure) {
-            final Structure structure = apply((Structure) pairValue);
-            if (structure instanceof ValueItem) {
-                return new Pair(ci.getNameOrId(), (PairValue) structure);
-            } else {
-                throw new InterpreterError("Cannot store this item in a Pair: " + structure.toString());
-            }
-        }
-
-        return new Pair(ci.getNameOrId(), pairValue);
+        return new Pair(expClass.name, pairValue);
 
     }
 
-    /**
-     * @param pair
-     * @return
-     */
-    private Pair convertPairToNumber(final Pair pair, final StarClassTransform.ClassInstruction ci) {
-        return new Pair(ci.getNameOrId(), new NumberPrimitive(NumberUtils.createNumber(pair.getValue()
+    private Pair convertPairToNumber(final Pair pair, final ExpandedClass expClass) {
+        return new Pair(expClass.name, new NumberPrimitive(NumberUtils.createNumber(pair.getValue()
                 .toString())
                 .toString()));
     }
 
-    /**
-     * @param pair
-     * @return
-     */
-    private Pair convertPairToString(final Pair pair, final StarClassTransform.ClassInstruction ci) {
-        return new Pair(ci.getNameOrId(), new StringPrimitive(pair.getValue()
+    private Pair convertPairToString(final Pair pair, final ExpandedClass expClass) {
+        return new Pair(expClass.name, new StringPrimitive(pair.getValue()
                 .toString()));
     }
 
-    /**
-     * @param pair
-     * @return
-     */
-    private Pair convertPairToBoolean(final Pair pair, final StarClassTransform.ClassInstruction ci) {
+    private Pair convertPairToBoolean(final Pair pair, final ExpandedClass expClass) {
         @NonNull final PairValue value = pair.getValue();
         if (Util.truthy(value)) {
-            return new Pair(ci.getNameOrId(), TruePrimitive.instance);
+            return new Pair(expClass.name, TruePrimitive.instance);
         }
-        return new Pair(ci.getNameOrId(), FalsePrimitive.instance);
+        return new Pair(expClass.name, FalsePrimitive.instance);
     }
 
-    /**
-     * @param array
-     * @return
-     */
     private Array processArray(final Array array) {
         return new Array(array.getArrayItems()
                 .map(this::processArrayItem));
     }
 
-    /**
-     * @param arrayItem
-     * @return
-     */
     private ArrayItem processArrayItem(final ArrayItem arrayItem) {
         if (arrayItem instanceof Map) {
             return processMap((Map) arrayItem);
@@ -198,27 +179,15 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
         return arrayItem;
     }
 
-    /**
-     * @param primitive
-     * @return
-     */
     private Primitive processPrimitive(final Primitive primitive) {
         return primitive;
     }
 
-    /**
-     * @param map
-     * @return
-     */
     private Map processMap(final Map map) {
         return new Map(map.getMapItems()
                 .map(this::processMapItem));
     }
 
-    /**
-     * @param mapItem
-     * @return
-     */
     private MapItem processMapItem(final MapItem mapItem) {
         if (mapItem instanceof Pair) {
             return (MapItem) processPair((Pair) mapItem);
@@ -229,12 +198,85 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
         return mapItem;
     }
 
-    /**
-     * @param mapConditional
-     * @return
-     */
     private MapConditional processMapConditional(final MapConditional mapConditional) {
         return mapConditional;
+    }
+
+    /**
+     * Class that includes all inherited assigns, pairs, supertype, and defaults the name to the id if not present
+     */
+    @ToString
+    public static class ExpandedClass {
+
+
+        private final String id;
+
+        private final String name;
+
+        private final String superclass;
+
+        private final Vector<Vector<String>> assigns;
+
+        private final Vector<Pair> pairs;
+
+        public ExpandedClass(final String id, final String name, final String superclass, final Vector<Vector<String>> assigns, final Vector<Pair> pairs) {
+            this.id = id;
+            this.name = name;
+            this.superclass = superclass;
+            this.assigns = assigns;
+            this.pairs = pairs;
+        }
+
+        public static ExpandedClass of(final TransformationContext ctx, final StarClassTransform.ClassInstruction ci, final String supertype) {
+
+            final String id = ci.getId();
+
+            final String name = ci.getNameOrId();
+            final Vector<Vector<String>> assigns = getAllAssigns(ctx, ci);
+            final Vector<Pair> pairs = getAllPairs(ctx, ci);
+
+            return new ExpandedClass(id, name, supertype, assigns, pairs);
+        }
+
+        private static Vector<Pair> getAllPairs(final TransformationContext ctx, final StarClassTransform.ClassInstruction ci) {
+            final String superclass = ci.getSuperclass();
+            final Vector<Pair> pairs = ci.getPairs();
+            return pairs.appendAll(ctx.getClassByNameOrId(superclass)
+                    .map(superCi -> getAllPairs(ctx, superCi))
+                    .getOrElse(Vector.empty()));
+        }
+
+        private static Vector<Vector<String>> getAllAssigns(final TransformationContext ctx, final StarClassTransform.ClassInstruction ci) {
+
+            // Map to strings - they are keys for Pair objects
+            final Vector<Vector<String>> assign = ci.getAssign()
+                    .map(vectorOfArrayItems -> ((Array) vectorOfArrayItems).getArrayItems()
+                            .map(Objects::toString));
+
+            final String superclass = ci.getSuperclass();
+
+            return assign.appendAll(ctx.getClassByNameOrId(superclass)
+                    .map(superCi -> getAllAssigns(ctx, superCi))
+                    .getOrElse(Vector.empty()));
+        }
+
+        public Map toMapUsingAssign(final Array value) {
+            @NonNull final Vector<ArrayItem> valuesToAssign = value.getArrayItems();
+
+            final int assignListLength = valuesToAssign
+                    .size();
+
+            return assigns.find(l -> l.size() == assignListLength)
+                    .map(assignList -> {
+                        Vector<MapItem> items = Vector.empty();
+                        for (int i = 0; i < assignListLength; i++) {
+                            items = items.append(new Pair(assignList.get(i), (PairValue) valuesToAssign.get(i)));
+                        }
+                        return new Map(items);
+                    })
+                    .getOrElseThrow(() -> new InterpreterError("No assign list of length " + assignListLength + " in " + assigns));
+        }
+
     }
 
 }

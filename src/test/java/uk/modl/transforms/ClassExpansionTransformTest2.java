@@ -30,25 +30,25 @@ public class ClassExpansionTransformTest2 {
         {
             final Vector<Pair> pairs = Vector.of(new Pair("v", new StringPrimitive("victor")));
 
-            final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("a", "alpha", "map", null, pairs);
+            final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("a", "alpha", "map", Vector.empty(), pairs);
             ctx.addClassInstruction(classInstruction);
         }
         {
             final Vector<Pair> pairs = Vector.of(new Pair("w", new StringPrimitive("whisky")));
 
-            final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("b", "bravo", "alpha", null, pairs);
+            final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("b", "bravo", "alpha", Vector.empty(), pairs);
             ctx.addClassInstruction(classInstruction);
         }
         {
             final Vector<Pair> pairs = Vector.of(new Pair("x", new StringPrimitive("xray")));
 
-            final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("c", "charlie", "bravo", null, pairs);
+            final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("c", "charlie", "bravo", Vector.empty(), pairs);
             ctx.addClassInstruction(classInstruction);
         }
         {
             final Vector<Pair> pairs = Vector.of(new Pair("y", new StringPrimitive("yankee")));
 
-            final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("d", "delta", "charlie", null, pairs);
+            final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("d", "delta", "charlie", Vector.empty(), pairs);
             ctx.addClassInstruction(classInstruction);
         }
     }

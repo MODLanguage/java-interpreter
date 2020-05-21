@@ -111,14 +111,17 @@ public class StarClassTransform implements Function1<Structure, Structure> {
     @Value(staticConstructor = "of")
     public static class ClassInstruction {
 
+        @NonNull
         String id;
 
         String name;
 
         String superclass;
 
+        @NonNull
         Vector<ArrayItem> assign;
 
+        @NonNull
         Vector<Pair> pairs;
 
         final String getNameOrId() {

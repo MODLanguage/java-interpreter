@@ -18,9 +18,9 @@ public class SupertypeInference {
         if (tc == null) {
             if (hasAssignStatement(ctx, ci)) {
                 if (allAssignmentKeysAreClasses(ctx, ci)) {
-                    tc = "arr";
-                } else {
                     tc = "map";
+                } else {
+                    tc = "arr";
                 }
             } else {
                 if (hasInheritedPairs(ctx, ci, 0)) {
