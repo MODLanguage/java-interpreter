@@ -8,6 +8,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
@@ -293,16 +294,54 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
             final int assignListLength = valuesToAssign
                     .size();
 
-            return assigns.find(l -> l.size() == assignListLength)
+            // If there's a value ending with * in the list then we have a match
+            return assigns.find(l -> l.size() == assignListLength || l.count(s -> s.endsWith("*")) > 0)
                     .map(assignList -> {
                         Vector<MapItem> items = Vector.empty();
                         for (int i = 0; i < assignListLength; i++) {
-                            items = items.append(new Pair(assignList.get(i), (PairValue) valuesToAssign.get(i)));
+
+                            // Might need to expand wildcard assign lists
+                            final Vector<String> keys = (assignList.size() == assignListLength) ? assignList : extendAssignList(assignListLength, assignList);
+
+                            final String key = keys.get(i);
+                            final ArrayItem item = valuesToAssign.get(i);
+                            if (item instanceof PairValue) {
+                                items = items.append(new Pair(key, (PairValue) item));
+                            } else if (item instanceof ArrayConditional) {
+                                items = items.append(new Pair(key, (PairValue) ((ArrayConditional) item).getResult()
+                                        .get(0)));
+                            } else {
+                                // TODO
+                                System.out.println("TODO");
+                            }
                         }
                         items = items.appendAll(pairs);
                         return new Map(items);
                     })
                     .getOrElseThrow(() -> new InterpreterError("No assign list of length " + assignListLength + " in " + assigns));
+        }
+
+        private Vector<String> extendAssignList(final int len, final Vector<String> list) {
+
+            // Only one of the keys should be a wildcard, so continuing on the assumption that it is true
+            return list.find(s -> s.endsWith("*"))
+                    .map(wild -> StringUtils.removeEnd(wild, "*"))
+                    .map(s -> {
+                        final int numberOfNonWildcardKeys = list.size() - 1;
+                        final int numberOfAdditionalKeys = len - numberOfNonWildcardKeys;
+
+                        Vector<String> result = Vector.empty();
+                        for (int i = 0; i < list.size(); i++) {
+                            final String key = list.get(i);
+                            if (key.endsWith("*")) {
+                                result = result.appendAll(Vector.fill(numberOfAdditionalKeys, s));
+                            } else {
+                                result = result.append(key);
+                            }
+                        }
+                        return result;
+                    })
+                    .getOrElse(list);
         }
 
         public Map toMapUsingFromMap(final Map pairValue) {
