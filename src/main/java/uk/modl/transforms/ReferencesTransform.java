@@ -543,8 +543,15 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
                             .getArrayItems()
                             .get(next._3)
                             .toString();
-                    return new StringPrimitive(((StringPrimitive) curr).getValue()
-                            .replace(next._1, r));
+
+                    final String indexReference = next._1;
+                    final String s = ((StringPrimitive) curr).getValue();
+                    String tmpResult = s;
+                    if (!indexReference.endsWith("%")) {
+                        tmpResult = s.replace(indexReference + "%", r);
+                    }
+
+                    return new StringPrimitive(tmpResult.replace(next._1, r));
                 }
             }
             return curr;

@@ -400,7 +400,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @return a ValueItem
      */
     private Primitive visitPrimitive(final Primitive prim) {
-        return prim;
+        return (Primitive) referencesTransform.apply(prim);
     }
 
     /**

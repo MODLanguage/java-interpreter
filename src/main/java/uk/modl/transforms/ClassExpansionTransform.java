@@ -19,14 +19,14 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class ClassExpansionTransform implements Function1<Structure, Structure> {
 
+    private final io.vavr.collection.Map<String, ExpandedClass> cache = HashMap.empty();
+
     /**
      * The context for this invocation of the interpreter
      */
     @NonNull
     @Setter
     private TransformationContext ctx;
-
-    private final io.vavr.collection.Map<String, ExpandedClass> cache = HashMap.empty();
 
     /**
      * Applies this function to one argument and returns the result.
@@ -109,7 +109,8 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
                 throw new InterpreterError("Cannot store this item in a Pair: " + structure.toString());
             }
         } else if (pairValue instanceof Map) {
-            final Structure structure = apply((Structure) pairValue);
+            final Map map = expClass.toMapUsingFromMap((Map) pairValue);
+            final Structure structure = apply(map);
             if (structure instanceof ValueItem) {
                 return new Pair(expClass.name, (PairValue) structure);
             } else {
@@ -272,9 +273,15 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
                         for (int i = 0; i < assignListLength; i++) {
                             items = items.append(new Pair(assignList.get(i), (PairValue) valuesToAssign.get(i)));
                         }
+                        items.appendAll(pairs);
                         return new Map(items);
                     })
                     .getOrElseThrow(() -> new InterpreterError("No assign list of length " + assignListLength + " in " + assigns));
+        }
+
+        public Map toMapUsingFromMap(final Map pairValue) {
+            return new Map(pairValue.getMapItems()
+                    .appendAll(pairs));
         }
 
     }
