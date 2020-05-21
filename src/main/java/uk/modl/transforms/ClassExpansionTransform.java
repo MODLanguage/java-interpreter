@@ -127,8 +127,34 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
     private Pair convertPairToArray(final Pair pair, final ExpandedClass expClass) {
         @NonNull final PairValue pairValue = pair.getValue();
 
-        if (pairValue instanceof Structure) {
-            final Structure structure = apply((Structure) pairValue);
+        if (pairValue instanceof Array) {
+
+            @NonNull final Vector<ArrayItem> valuesToAssign = ((Array) pairValue).getArrayItems();
+
+            final int assignListLength = valuesToAssign
+                    .size();
+
+            final Array array = expClass.assigns.find(l -> l.size() == assignListLength)
+                    .map(assignList -> {
+                        Vector<ArrayItem> items = Vector.empty();
+                        for (int i = 0; i < assignListLength; i++) {
+                            final Pair p = new Pair(assignList.get(i), (PairValue) valuesToAssign.get(i));
+                            final Structure structure = expandToClass(p);
+                            if (structure instanceof Pair) {
+                                @NonNull final PairValue value = ((Pair) structure).getValue();
+                                if (value instanceof Map) {
+                                    final Map map = new Map(((Map) value).getMapItems()
+                                            .appendAll(expClass.pairs));
+                                    items = items.append(map);
+                                }
+                            }
+                        }
+                        return new Array(items);
+                    })
+                    .getOrElse(() -> (Array) pairValue);
+
+
+            final Structure structure = apply(array);
             if (structure instanceof ValueItem) {
                 return new Pair(expClass.name, (PairValue) structure);
             } else {
@@ -273,7 +299,7 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
                         for (int i = 0; i < assignListLength; i++) {
                             items = items.append(new Pair(assignList.get(i), (PairValue) valuesToAssign.get(i)));
                         }
-                        items.appendAll(pairs);
+                        items = items.appendAll(pairs);
                         return new Map(items);
                     })
                     .getOrElseThrow(() -> new InterpreterError("No assign list of length " + assignListLength + " in " + assigns));

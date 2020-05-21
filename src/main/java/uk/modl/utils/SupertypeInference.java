@@ -3,6 +3,7 @@ package uk.modl.utils;
 import io.vavr.Function2;
 import io.vavr.collection.List;
 import io.vavr.collection.Vector;
+import io.vavr.control.Option;
 import uk.modl.model.*;
 import uk.modl.transforms.StarClassTransform;
 import uk.modl.transforms.TransformationContext;
@@ -18,9 +19,9 @@ public class SupertypeInference {
         if (tc == null) {
             if (hasAssignStatement(ctx, ci)) {
                 if (allAssignmentKeysAreClasses(ctx, ci)) {
-                    tc = "map";
-                } else {
                     tc = "arr";
+                } else {
+                    tc = "map";
                 }
             } else {
                 if (hasInheritedPairs(ctx, ci, 0)) {
@@ -62,8 +63,23 @@ public class SupertypeInference {
 
     private static boolean allAssignmentKeysAreClasses(final TransformationContext ctx, final StarClassTransform.ClassInstruction ci) {
         // Count the keys that don't map to classes - if we have any then the result is false
-        return allInheritedAssignKeys(ctx, ci, 0).map(ctx::getClassByNameOrId)
+        final List<String> allInheritedAssignKeys = allInheritedAssignKeys(ctx, ci, 0);
+        boolean allHaveAssigns = allAssignClassesHaveAssigns(ctx, allInheritedAssignKeys);
+
+        final boolean allAssignKeysAreClasses = allInheritedAssignKeys.map(ctx::getClassByNameOrId)
                 .count(Objects::isNull) == 0;
+        return allHaveAssigns && allAssignKeysAreClasses;
+    }
+
+    private static boolean allAssignClassesHaveAssigns(final TransformationContext ctx, final List<String> allInheritedAssignKeys) {
+        final int expected = allInheritedAssignKeys.size();
+
+        return expected == allInheritedAssignKeys.count(key -> {
+            final Option<StarClassTransform.ClassInstruction> maybeClass = ctx.getClassByNameOrId(key);
+            return maybeClass.isDefined() && maybeClass.get()
+                    .getAssign()
+                    .nonEmpty();
+        });
     }
 
     private static boolean hasAssignStatement(final TransformationContext ctx, final StarClassTransform.ClassInstruction ci) {
