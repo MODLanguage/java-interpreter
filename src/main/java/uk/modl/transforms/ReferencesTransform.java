@@ -110,28 +110,6 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
         if (lhs instanceof StringPrimitive) {
             final String value = ((StringPrimitive) lhs).getValue();
 
-            if (op == null) {
-                newLhs = values.get(0);
-                newLhs = apply(newLhs);
-                if (!(newLhs instanceof TruePrimitive || newLhs instanceof FalsePrimitive)) {
-                    final String key = newLhs.toString();
-                    if (ctx.getPairs()
-                            .containsKey(key)) {
-                        newLhs = (ValueItem) ctx.getPairs()
-                                .get(key)
-                                .get()
-                                .getValue();
-                        values = Vector.of(newLhs);
-                        if (newLhs instanceof FalsePrimitive) {
-                            newLhs = TruePrimitive.instance;// Force a false match result
-                        }
-                    } else {
-                        newLhs = FalsePrimitive.instance;
-                    }
-                }
-                op = EqualsOperator.instance;
-            }
-
             if (value != null) {
                 if (value.contains("%")) {
                     newLhs = apply(newLhs);
@@ -162,27 +140,29 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
     public ValueItem apply(final ValueItem vi) {
         if (vi instanceof StringPrimitive) {
             final String s = ((StringPrimitive) vi).getValue();
-            final Map<ReferenceType, Vector<String>> groupedByType = getReferenceGroups(s);
+            if (s != null) {
+                final Map<ReferenceType, Vector<String>> groupedByType = getReferenceGroups(s);
 
-            // Process the OBJECT_INDEX_REF entries
-            ValueItem result = groupedByType.get(ReferenceType.OBJECT_INDEX_REF)
-                    .map(this::indexToReferencedObject)
-                    .map(replaceAllObjectIndexRefsInValueItem(vi))
-                    .getOrElse(vi);
+                // Process the OBJECT_INDEX_REF entries
+                ValueItem result = groupedByType.get(ReferenceType.OBJECT_INDEX_REF)
+                        .map(this::indexToReferencedObject)
+                        .map(replaceAllObjectIndexRefsInValueItem(vi))
+                        .getOrElse(vi);
 
-            // Process simple String references, e.g. %val% etc.
-            result = groupedByType.get(ReferenceType.SIMPLE_REF)
-                    .map(this::keyToReferencedObject)
-                    .map(replaceAllSimpleRefsInValueItem(result))
-                    .getOrElse(result);
+                // Process simple String references, e.g. %val% etc.
+                result = groupedByType.get(ReferenceType.SIMPLE_REF)
+                        .map(this::keyToReferencedObject)
+                        .map(replaceAllSimpleRefsInValueItem(result))
+                        .getOrElse(result);
 
-            // Process complex references
-            result = groupedByType.get(ReferenceType.COMPLEX_REF)
-                    .map(refList -> refList.map(this::complexRefToValueItem))
-                    .map(x -> x.get(0))
-                    .getOrElse(result);
+                // Process complex references
+                result = groupedByType.get(ReferenceType.COMPLEX_REF)
+                        .map(refList -> refList.map(this::complexRefToValueItem))
+                        .map(x -> x.get(0))
+                        .getOrElse(result);
 
-            return result;
+                return result;
+            }
         }
         return vi;
     }
@@ -539,6 +519,21 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
             if (next._4.isDefined()) {
                 // If the item containing the reference is a StringPrimitive then do String substitution
                 if (next._4.get() instanceof StringPrimitive && curr instanceof StringPrimitive) {
+                    final String r = ctx.getObjectIndex()
+                            .getArrayItems()
+                            .get(next._3)
+                            .toString();
+
+                    final String indexReference = next._1;
+                    final String s = ((StringPrimitive) curr).getValue();
+                    String tmpResult = s;
+                    if (!indexReference.endsWith("%")) {
+                        tmpResult = s.replace(indexReference + "%", r);
+                    }
+
+                    return new StringPrimitive(tmpResult.replace(next._1, r));
+                }
+                if (next._4.get() instanceof NumberPrimitive && curr instanceof StringPrimitive) {
                     final String r = ctx.getObjectIndex()
                             .getArrayItems()
                             .get(next._3)

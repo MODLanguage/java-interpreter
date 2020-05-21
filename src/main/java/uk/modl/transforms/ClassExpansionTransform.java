@@ -310,9 +310,6 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
                             } else if (item instanceof ArrayConditional) {
                                 items = items.append(new Pair(key, (PairValue) ((ArrayConditional) item).getResult()
                                         .get(0)));
-                            } else {
-                                // TODO
-                                System.out.println("TODO");
                             }
                         }
                         items = items.appendAll(pairs);

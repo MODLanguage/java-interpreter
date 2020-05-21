@@ -3,6 +3,7 @@ package uk.modl.interpreter;
 import io.vavr.Function1;
 import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
+import lombok.NonNull;
 import uk.modl.model.*;
 import uk.modl.transforms.*;
 
@@ -29,11 +30,13 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
 
     private final Function1<Structure, Structure> processPairs;
 
+    private TransformationContext ctx;
+
     /**
      * Constructor
      */
     public InterpreterVisitor() {
-        final TransformationContext ctx = new TransformationContext();
+        ctx = new TransformationContext();
         starLoadTransform = new StarLoadTransform(ctx);
         starClassTransform = new StarClassTransform(ctx);
         starMethodTransform = new StarMethodTransform(ctx);
@@ -312,7 +315,9 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
                                 value;
 
         if (st instanceof Pair) {
-            final Pair newPair = new Pair(((Pair) st).getKey(), value);
+            @NonNull final String key = ((Pair) st).getKey();
+            final Pair newPair = new Pair(key, value);
+            ctx.addPair(key, newPair);
             return percentStarInstructionTransform.apply((Structure) newPair);
         }
         return percentStarInstructionTransform.apply(st);
@@ -421,6 +426,7 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
     }
 
     public void setCtx(final TransformationContext ctx) {
+        this.ctx = ctx;
         starLoadTransform.setCtx(ctx);
         starClassTransform.setCtx(ctx);
         starMethodTransform.setCtx(ctx);

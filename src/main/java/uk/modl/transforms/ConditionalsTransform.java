@@ -12,6 +12,7 @@ import uk.modl.utils.Util;
 
 @RequiredArgsConstructor
 public class ConditionalsTransform {
+
     /**
      * The context for this invocation of the interpreter
      */
@@ -120,27 +121,80 @@ public class ConditionalsTransform {
     }
 
     private boolean evaluate(final Condition c) {
-        if (c.getOp() instanceof GreaterThanOperator) {
-            return (c.isShouldNegate()) != Util.greaterThanAll(c.getLhs(), c.getValues());
+        final Operator op = c.getOp();
+        final boolean shouldNegate = c.isShouldNegate();
+        final ValueItem lhs = c.getLhs();
+        @NonNull final Vector<ValueItem> values = c.getValues();
+
+        if (op == null && lhs == null || lhs.toString() == null) {
+            // Is the RHS true?
+            return shouldNegate != values.map(v -> {
+                if (v instanceof TruePrimitive) {
+                    return true;
+                }
+                if (v instanceof FalsePrimitive || v instanceof NullPrimitive) {
+                    return false;
+                }
+                final String key = v.toString();
+                final String hiddenKey = "_" + key;
+                if (v instanceof StringPrimitive && (ctx.getPairs()
+                        .containsKey(key) || ctx.getPairs()
+                        .containsKey(hiddenKey))) {
+
+                    final Pair pair = ctx.getPairs()
+                            .get(key)
+                            .getOrElse(() -> ctx.getPairs()
+                                    .get(hiddenKey)
+                                    .get());
+
+                    @NonNull final PairValue pairValue = pair.getValue();
+                    if (pairValue instanceof TruePrimitive) {
+                        return true;
+                    }
+                    if (pairValue instanceof FalsePrimitive || pairValue instanceof NullPrimitive) {
+                        return false;
+                    }
+                    if (pairValue instanceof ValueConditional) {
+                        final ValueConditional vc = (ValueConditional) pairValue;
+                        return vc.getResult()
+                                .map(vcResult -> {
+                                    if (vcResult instanceof TruePrimitive) {
+                                        return true;
+                                    }
+                                    if (vcResult instanceof FalsePrimitive || vcResult instanceof NullPrimitive) {
+                                        return false;
+                                    }
+                                    return false;
+                                })
+                                .getOrElse(false);
+                    }
+                    return true;
+                }
+                return false;
+            })
+                    .getOrElse(false);
         }
-        if (c.getOp() instanceof GreaterThanOrEqualsOperator) {
-            return (c.isShouldNegate()) != Util.greaterThanOrEqualToAll(c.getLhs(), c.getValues());
+        if (op instanceof GreaterThanOperator) {
+            return shouldNegate != Util.greaterThanAll(lhs, values);
         }
-        if (c.getOp() instanceof LessThanOperator) {
-            return (c.isShouldNegate()) != Util.lessThanAll(c.getLhs(), c.getValues());
+        if (op instanceof GreaterThanOrEqualsOperator) {
+            return shouldNegate != Util.greaterThanOrEqualToAll(lhs, values);
         }
-        if (c.getOp() instanceof LessThanOrEqualsOperator) {
-            return (c.isShouldNegate()) != Util.lessThanOrEqualToAll(c.getLhs(), c.getValues());
+        if (op instanceof LessThanOperator) {
+            return shouldNegate != Util.lessThanAll(lhs, values);
+        }
+        if (op instanceof LessThanOrEqualsOperator) {
+            return shouldNegate != Util.lessThanOrEqualToAll(lhs, values);
         }
 
         final int count = countMatches(c);
-        if (c.getOp() instanceof EqualsOperator) {
-            return (c.isShouldNegate()) != (count > 0);
+        if (op instanceof EqualsOperator) {
+            return shouldNegate != (count > 0);
         }
-        if (c.getOp() instanceof NotEqualsOperator) {
-            return (c.isShouldNegate()) != (count == 0);
+        if (op instanceof NotEqualsOperator) {
+            return shouldNegate != (count == 0);
         }
-        return c.isShouldNegate();
+        return shouldNegate;
     }
 
     private int countMatches(final Condition c) {
@@ -311,4 +365,5 @@ public class ConditionalsTransform {
         }
         return mc;
     }
+
 }
