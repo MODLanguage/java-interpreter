@@ -27,16 +27,21 @@ import java.util.regex.Pattern;
 
 @UtilityClass
 public class Util {
+
     public final String GRAVE = "`";
+
     public final String DOUBLEQUOTE = "\"";
+
     /**
      * A Regex to match the parameters of a MODL replace method
      */
     private final Pattern replacerPattern = Pattern.compile("^r<(.*),(.*)>$");
+
     /**
      * A Regex to match the parameters of a MODL trim method
      */
     private final Pattern trimmerPattern = Pattern.compile("^t<(.*)>$");
+
     /**
      * Map a filename to Either an Error or the file contents as a String
      */
@@ -55,6 +60,7 @@ public class Util {
             throw new RuntimeException("Could not interpret " + e.getMessage());
         }
     };
+
     /**
      * Map a PairValue to a list of Strings - for use as file names.
      * This is only applicable to *load MODL instructions
@@ -71,6 +77,7 @@ public class Util {
         }
         return Vector.empty();
     };
+
     /**
      * Render a JSON Node to a String.
      */
@@ -172,6 +179,14 @@ public class Util {
             return toDouble(lhs.toString()) > v2;
         })
                 .isDefined();
+    }
+
+    public boolean truthy(final PairValue value) {
+        if (value != null) {
+            final String s = value.toString();
+            return !s.equalsIgnoreCase("null") && !s.equalsIgnoreCase("000") && !s.equalsIgnoreCase("00") && !s.equalsIgnoreCase("false");
+        }
+        return false;
     }
 
 }

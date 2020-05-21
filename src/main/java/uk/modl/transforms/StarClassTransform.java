@@ -121,6 +121,10 @@ public class StarClassTransform implements Function1<Structure, Structure> {
 
         Vector<Pair> pairs;
 
+        final String getNameOrId() {
+            return (name == null) ? id : name;
+        }
+
     }
 
 }
