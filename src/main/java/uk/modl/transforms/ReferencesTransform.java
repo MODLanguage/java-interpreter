@@ -8,15 +8,12 @@ import io.vavr.collection.Map;
 import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
 import uk.modl.utils.Util;
 
-import java.net.IDN;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.function.BiFunction;
@@ -24,17 +21,22 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@RequiredArgsConstructor
 public class ReferencesTransform implements Function1<Structure, Structure> {
 
     private static final Pattern referencePattern = Pattern.compile("((%\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|(%` ?[\\w-]+`[\\w.<>,]*%?)|(%\\*?[\\w]+(\\.%?\\w*<?[\\w,]*>?)*%?))");
+
+    private final MethodsTransform methodsTransform;
 
     /**
      * The context for this invocation of the interpreter
      */
     @NonNull
-    @Setter
     private TransformationContext ctx;
+
+    public ReferencesTransform(@NonNull final TransformationContext ctx) {
+        this.methodsTransform = new MethodsTransform(ctx);
+        this.ctx = ctx;
+    }
 
     /**
      * Determine the ReferenceType for a reference String
@@ -60,6 +62,11 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
      */
     private static String stripLeadingAndTrailingPercents(final String ref) {
         return StringUtils.removeEnd(StringUtils.removeStart(ref, "%"), "%");
+    }
+
+    public void setCtx(final TransformationContext ctx) {
+        this.ctx = ctx;
+        methodsTransform.setCtx(ctx);
     }
 
     /**
@@ -168,8 +175,12 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
     }
 
     private ValueItem complexRefToValueItem(final String ref) {
-        final String[] refList = ref.split("\\.");
-        Vector<Tuple3<String, String, Option<Pair>>> referencedObject = keyToReferencedObject(Vector.of(refList[0]));
+        final String chainedMethods = StringUtils.substringAfter(ref, ".");
+        final String reference = StringUtils.substringBefore(ref, ".");
+
+        final Vector<String> methods = Util.toMethodList(chainedMethods);
+        final String[] refList = methods.toJavaArray(String[]::new);
+        Vector<Tuple3<String, String, Option<Pair>>> referencedObject = keyToReferencedObject(Vector.of(reference));
 
         final Vector<ValueItem> valueItems = referencedObject.flatMap(t -> {
             if (t._3.isDefined()) {
@@ -183,7 +194,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
                 return Option.of(new StringPrimitive(t._2));
             }
         })
-                .map(pair -> followNestedRef(pair, refList, 1));
+                .map(pair -> followNestedRef(pair, refList, 0));
 
         if (valueItems.size() > 0) {
             // TODO
@@ -277,7 +288,7 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
             if (pathComponent.length() == 1) {
                 switch (pathComponent) {
                     case "p":
-                        valueStr = replacePunycode(Util.unquote(valueStr));
+                        valueStr = Util.replacePunycode(Util.unquote(valueStr));
                         break;
                     case "u":
                         valueStr = Util.unquote(valueStr)
@@ -308,19 +319,17 @@ public class ReferencesTransform implements Function1<Structure, Structure> {
             } else if (pathComponent.startsWith("t<")) {
                 valueStr = Util.trimmer(pathComponent, valueStr);
             } else {
-                valueStr += "." + pathComponent;
+                final String updated = methodsTransform.apply(pathComponent, valueStr);
+
+                // If unchanged then assume no method was run and just append the path component.
+                if (updated.equals(valueStr)) {
+                    valueStr += "." + pathComponent;
+                } else {
+                    valueStr = updated;
+                }
             }
         }
         return valueStr;
-    }
-
-    private String replacePunycode(final String s) {
-        // Prefix it with xn-- (the letters xn and two dashes) and decode using punycode / IDN library. Replace the full part (including graves) with the decoded value.
-        if (s == null) {
-            return null;
-        }
-
-        return IDN.toUnicode("xn--" + s);
     }
 
     /**

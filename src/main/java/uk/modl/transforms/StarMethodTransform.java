@@ -4,6 +4,7 @@ import io.vavr.Function1;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.Value;
 import uk.modl.model.Map;
 import uk.modl.model.MapItem;
 import uk.modl.model.Pair;
@@ -40,7 +41,7 @@ public class StarMethodTransform implements Function1<Structure, Structure> {
      * @return the result of function application
      */
     public Structure apply(final Structure p) {
-        if (p != null && p instanceof Pair && isMethodInstruction(((Pair) p).getKey())) {
+        if (p instanceof Pair && isMethodInstruction(((Pair) p).getKey())) {
             accept((Pair) p);
             return null;
         }
@@ -84,7 +85,7 @@ public class StarMethodTransform implements Function1<Structure, Structure> {
                 }
             }
 
-            final MethodInstruction m = new MethodInstruction(id, name, transform);
+            final MethodInstruction m = MethodInstruction.of(id, name, transform);
             ctx.addMethodInstruction(m);
         } else {
             throw new InterpreterError("Expected a map for " + pair.getKey() + " but found a " + pair.getValue()
@@ -92,11 +93,21 @@ public class StarMethodTransform implements Function1<Structure, Structure> {
         }
     }
 
-    @RequiredArgsConstructor
-    static class MethodInstruction {
-        public final String id;
-        public final String name;
-        public final String transform;
+    @Value(staticConstructor = "of")
+    public static class MethodInstruction {
+
+        @NonNull
+        String id;
+
+        String name;
+
+        @NonNull
+        String transform;
+
+        final String getNameOrId() {
+            return (name == null) ? id : name;
+        }
+
     }
 
 }

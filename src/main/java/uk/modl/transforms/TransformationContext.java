@@ -16,6 +16,7 @@ public class TransformationContext {
      */
     @Getter
     private Map<String, Pair> pairs = HashMap.empty();
+
     /**
      * The Modl Object Index
      */
@@ -33,6 +34,18 @@ public class TransformationContext {
      */
     @Getter
     private Set<StarMethodTransform.MethodInstruction> methods = LinkedHashSet.empty();
+
+    /**
+     * Methods indexed by *id
+     */
+    @Getter
+    private Map<String, StarMethodTransform.MethodInstruction> methodsById = HashMap.empty();
+
+    /**
+     * Methods indexed by *name
+     */
+    @Getter
+    private Map<String, StarMethodTransform.MethodInstruction> methodsByName = HashMap.empty();
 
     /**
      * Classes defined by a *class instruction
@@ -68,6 +81,10 @@ public class TransformationContext {
      */
     public void addMethodInstruction(final StarMethodTransform.MethodInstruction mi) {
         methods = methods.add(mi);
+        methodsById = methodsById.put(mi.getId(), mi);
+        if (StringUtils.isNotEmpty(mi.getName())) {
+            methodsByName = methodsByName.put(mi.getName(), mi);
+        }
     }
 
     /**
@@ -101,4 +118,10 @@ public class TransformationContext {
     public void addPair(final String key, final Pair p) {
         pairs = pairs.put(key, p);
     }
+
+    public Option<StarMethodTransform.MethodInstruction> getMethodByNameOrId(final String idOrName) {
+        return methodsById.get(idOrName)
+                .orElse(methodsByName.get(idOrName));
+    }
+
 }

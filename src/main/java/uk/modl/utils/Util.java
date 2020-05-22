@@ -9,6 +9,7 @@ import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.WordUtils;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.model.Array;
 import uk.modl.model.PairValue;
@@ -16,7 +17,9 @@ import uk.modl.model.Primitive;
 import uk.modl.model.ValueItem;
 import uk.modl.parser.errors.InterpreterError;
 
+import java.net.IDN;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -33,14 +36,19 @@ public class Util {
     public final String DOUBLEQUOTE = "\"";
 
     /**
+     * A pattern used for splitting method lists correctly.
+     */
+    private final Pattern METHODS_PATTERN = Pattern.compile("replace<[^.]*>|r<[^.]*>|t<[^<>]+>|trim<[^<>]+>|initcap|[^.]\\w+|\\w|u|e|p|s|i|d|[^%.][0-9]+");
+
+    /**
      * A Regex to match the parameters of a MODL replace method
      */
-    private final Pattern replacerPattern = Pattern.compile("^r<(.*),(.*)>$");
+    private final Pattern replacerPattern = Pattern.compile("^replace<(.*),(.*)>$|^r<(.*),(.*)>$");
 
     /**
      * A Regex to match the parameters of a MODL trim method
      */
-    private final Pattern trimmerPattern = Pattern.compile("^t<(.*)>$");
+    private final Pattern trimmerPattern = Pattern.compile("^trim<(.*)>$|^t<(.*)>$");
 
     /**
      * Map a filename to Either an Error or the file contents as a String
@@ -110,8 +118,9 @@ public class Util {
         final Matcher matcher = replacerPattern.matcher(spec);
 
         if (matcher.find()) {
-            final String text = matcher.group(1);
-            final String newText = Util.unquote(matcher.group(2));
+            final String text = (matcher.group(1) != null) ? matcher.group(1) : matcher.group(3);
+            final String rep = (matcher.group(2) != null) ? matcher.group(2) : matcher.group(4);
+            final String newText = Util.unquote(rep);
 
             return s.replace(text, newText);
         } else {
@@ -130,7 +139,7 @@ public class Util {
         final Matcher matcher = trimmerPattern.matcher(spec);
 
         if (matcher.find()) {
-            final String text = matcher.group(1);
+            final String text = (matcher.group(1) != null) ? matcher.group(1) : matcher.group(2);
             final int i = s.indexOf(text);
             if (i > -1) {
                 return s.substring(0, i);
@@ -187,6 +196,72 @@ public class Util {
             return !s.equalsIgnoreCase("null") && !s.equalsIgnoreCase("000") && !s.equalsIgnoreCase("00") && !s.equalsIgnoreCase("false");
         }
         return false;
+    }
+
+    public String handleMethodsAndTrailingPathComponents(final String[] refList, String
+            valueStr) {
+        for (final String pathComponent : refList) {
+            switch (pathComponent) {
+                case "p":
+                case "punydecode":
+                    valueStr = replacePunycode(Util.unquote(valueStr));
+                    break;
+                case "u":
+                case "upcase":
+                    valueStr = Util.unquote(valueStr)
+                            .toUpperCase();
+                    break;
+                case "d":
+                case "downcase":
+                    valueStr = Util.unquote(valueStr)
+                            .toLowerCase();
+                    break;
+                case "i":
+                case "initcap":
+                    valueStr = WordUtils.capitalize(Util.unquote(valueStr));
+                    break;
+                case "s":
+                case "sentence":
+                    valueStr = StringUtils.capitalize(Util.unquote(valueStr));
+                    break;
+                case "e":
+                case "urlencode":
+                    try {
+                        valueStr = URLEncoder.encode(valueStr, StandardCharsets.UTF_8.toString());
+                    } catch (final Exception e) {
+                        throw new InterpreterError("Error processing URL encoding instruction: " + e.getMessage());
+                    }
+                    break;
+                default:
+                    if (pathComponent.startsWith("r<") || pathComponent.startsWith("replace<")) {
+                        valueStr = Util.replacer(pathComponent, valueStr);
+                    } else if (pathComponent.startsWith("t<") || pathComponent.startsWith("trim<")) {
+                        valueStr = Util.trimmer(pathComponent, valueStr);
+                    }
+                    break;
+            }
+        }
+        return valueStr;
+    }
+
+    public String replacePunycode(final String s) {
+        // Prefix it with xn-- (the letters xn and two dashes) and decode using punycode / IDN library. Replace the full part (including graves) with the decoded value.
+        if (s == null) {
+            return null;
+        }
+
+        return IDN.toUnicode("xn--" + s);
+    }
+
+
+    public Vector<String> toMethodList(final String chainedMethods) {
+        final Matcher matcher = METHODS_PATTERN.matcher(chainedMethods);
+        Vector<String> methods = Vector.empty();
+        while (matcher.find()) {
+            final String match = matcher.group(0);
+            methods = methods.append(match);
+        }
+        return methods;
     }
 
 }

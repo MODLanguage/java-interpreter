@@ -57,15 +57,15 @@ public class PercentStarInstructionTransform implements Function1<Structure, Str
      */
     private ArrayItem methodInstructionToArrayItem(final StarMethodTransform.MethodInstruction m) {
         Vector<MapItem> mthdItems = Vector.empty();
-        final Pair transformPair = new Pair("transform", new StringPrimitive(m.transform));
-        if (m.name != null) {
-            final Pair namePair = new Pair("name", new StringPrimitive(m.name));
+        final Pair transformPair = new Pair("transform", new StringPrimitive(m.getTransform()));
+        if (m.getName() != null) {
+            final Pair namePair = new Pair("name", new StringPrimitive(m.getName()));
             mthdItems = mthdItems.append(namePair);
         }
         mthdItems = mthdItems.append(transformPair);
 
 
-        final MapItem mthdMap = new Pair(m.id, new uk.modl.model.Map(mthdItems));
+        final MapItem mthdMap = new Pair(m.getId(), new uk.modl.model.Map(mthdItems));
         final Vector<MapItem> mthd = Vector.of(mthdMap);
         return new uk.modl.model.Map(mthd);
     }
