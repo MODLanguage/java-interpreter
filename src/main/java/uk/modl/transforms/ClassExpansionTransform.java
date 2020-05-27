@@ -110,12 +110,28 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
                 throw new InterpreterError("Cannot store this item in a Pair: " + structure.toString());
             }
         } else if (pairValue instanceof Map) {
-            final Map map = expClass.toMapUsingFromMap((Map) pairValue);
+            final Map map = expClass.toMapFromMap((Map) pairValue);
             final Structure structure = apply(map);
             if (structure instanceof ValueItem) {
                 return new Pair(expClass.name, (PairValue) structure);
             } else {
                 throw new InterpreterError("Cannot store this item in a Pair: " + structure.toString());
+            }
+        } else if (pairValue instanceof Primitive) {
+            if (expClass.hasSingleValueAssign()) {
+                final Map map = expClass.toMapUsingAssign(new Array(Vector.of((ArrayItem) pairValue)));
+
+                final Structure structure = apply(map);
+                if (structure instanceof ValueItem) {
+                    return new Pair(expClass.name, (PairValue) structure);
+                } else {
+                    throw new InterpreterError("Cannot store this item in a Pair: " + structure.toString());
+                }
+            } else if (expClass.assigns.isEmpty()) {
+                final Map map = expClass.toMapFromMap(new Map(Vector.of(new Pair("value", pairValue))));
+
+                final Structure structure = apply(map);
+                return new Pair(expClass.name, (PairValue) structure);
             }
         }
         return new Pair(expClass.name, pairValue);
@@ -161,6 +177,8 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
             } else {
                 throw new InterpreterError("Cannot store this item in a Pair: " + structure.toString());
             }
+        } else if (pairValue instanceof Primitive) {
+            return new Pair(expClass.name, new Array(Vector.of((ArrayItem) pairValue)));
         }
 
         return new Pair(expClass.name, pairValue);
@@ -174,6 +192,16 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
     }
 
     private Pair convertPairToString(final Pair pair, final ExpandedClass expClass) {
+        @NonNull final PairValue pairValue = pair.getValue();
+
+        if (pairValue instanceof TruePrimitive) {
+            return new Pair(expClass.name, new StringPrimitive("true"));
+        }
+
+        if (pairValue instanceof FalsePrimitive) {
+            return new Pair(expClass.name, new StringPrimitive("false"));
+        }
+
         return new Pair(expClass.name, new StringPrimitive(pair.getValue()
                 .toString()));
     }
@@ -341,9 +369,13 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
                     .getOrElse(list);
         }
 
-        public Map toMapUsingFromMap(final Map pairValue) {
+        public Map toMapFromMap(final Map pairValue) {
             return new Map(pairValue.getMapItems()
                     .appendAll(pairs));
+        }
+
+        public boolean hasSingleValueAssign() {
+            return assigns.count(v -> v.size() == 1) > 0;
         }
 
     }
