@@ -36,6 +36,8 @@ public class ConditionalsTransform {
                         .getStructures()
                         .map(this::handleNestedTopLevelConditionals);
 
+                saveResultInContext(structures);
+
                 return tlc.withResult(structures);
             } else {
                 if (tlc.getReturns()
@@ -44,6 +46,8 @@ public class ConditionalsTransform {
                             .get(1)
                             .getStructures()
                             .map(this::handleNestedTopLevelConditionals);
+
+                    saveResultInContext(structures);
 
                     return tlc.withResult(structures);
                 }
@@ -57,12 +61,28 @@ public class ConditionalsTransform {
                             .getStructures()
                             .map(this::handleNestedTopLevelConditionals);
 
+                    saveResultInContext(structures);
+
                     return tlc.withResult(structures);
                 }
                 i += 1;
             }
         }
         return tlc;
+    }
+
+    private void saveResultInContext(final Vector<Structure> structures) {
+        structures.forEach(structure -> {
+            if (structure instanceof Pair) {
+                final Pair pair = (Pair) structure;
+                @NonNull final String key = pair.getKey();
+                ctx.addPair(key, pair);
+
+                if (key.startsWith("_")) {
+                    ctx.addPair(key.substring(1), pair);
+                }
+            }
+        });
     }
 
     private Structure handleNestedTopLevelConditionals(final Structure structure) {
@@ -79,7 +99,6 @@ public class ConditionalsTransform {
     }
 
     private Tuple2<Boolean, String> evaluate(final Tuple2<ConditionOrConditionGroupInterface, String> tuple) {
-        // TODO
         if (tuple._1 instanceof Condition) {
             return Tuple.of(evaluate((Condition) tuple._1), tuple._2);
         } else {
