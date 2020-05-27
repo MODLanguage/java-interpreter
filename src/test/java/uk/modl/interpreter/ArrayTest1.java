@@ -6,9 +6,10 @@ import org.junit.Test;
 import uk.modl.transforms.JacksonJsonNodeTransformer;
 import uk.modl.utils.Util;
 
-public class ArrayTest {
+public class ArrayTest1 {
 
     public static final String EXPECTED = "[\"one\",\"two\",\"three\"]";
+
     public static final String INPUT = "[one;two;three]";
 
     @Test

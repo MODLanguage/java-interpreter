@@ -285,12 +285,25 @@ public class ModlParsedVisitor {
     private Array visitArray(final MODLParser.Modl_arrayContext ctx) {
         log.trace("visitArray()");
 
-        final Vector<ArrayItem> items = Vector.ofAll(ctx.modl_array_item()
-                .stream()
-                .map(this::visitArrayItem))
-                .appendAll(Vector.ofAll(ctx.modl_nb_array()
-                        .stream()
-                        .map(this::visitNbArray)));
+        Vector<ArrayItem> items = Vector.empty();
+        String prev = "";
+
+        for (ParseTree child : ctx.children) {
+            if (child instanceof MODLParser.Modl_array_itemContext) {
+                items = items.append(visitArrayItem((MODLParser.Modl_array_itemContext) child));
+            }
+            if (child instanceof MODLParser.Modl_nb_arrayContext) {
+                items = items.append(visitNbArray((MODLParser.Modl_nb_arrayContext) child));
+
+            }
+            if (prev.equals(child.getText())) {
+                // Add a null node
+                items = items.append(NullPrimitive.instance);
+            }
+            prev = child.getText();
+
+        }
+
 
         return new Array(items);
     }
@@ -304,9 +317,22 @@ public class ModlParsedVisitor {
     private Array visitNbArray(final MODLParser.Modl_nb_arrayContext ctx) {
         log.trace("visitNbArray()");
 
-        final Vector<ArrayItem> items = Vector.ofAll(ctx.modl_array_item()
-                .stream()
-                .map(this::visitArrayItem));
+        Vector<ArrayItem> items = Vector.empty();
+        String prev = "";
+
+        for (ParseTree child : ctx.children) {
+            if (child instanceof MODLParser.Modl_array_itemContext) {
+                items = items.append(visitArrayItem((MODLParser.Modl_array_itemContext) child));
+            }
+            if (child instanceof MODLParser.Modl_arrayContext) {
+                items = items.append(visitArray((MODLParser.Modl_arrayContext) child));
+            }
+            if (prev.equals(child.getText())) {
+                // Add a null node
+                items = items.append(NullPrimitive.instance);
+            }
+            prev = child.getText();
+        }
 
         return new Array(items);
     }
@@ -322,9 +348,7 @@ public class ModlParsedVisitor {
 
         return (ctx.modl_array_conditional() != null) ?
                 visitArrayConditional(ctx.modl_array_conditional()) :
-                (ctx.modl_array_value_item() != null) ?
-                        visitArrayValueItem(ctx.modl_array_value_item()) :
-                        null;
+                visitArrayValueItem(ctx.modl_array_value_item());
     }
 
     /**
@@ -341,9 +365,7 @@ public class ModlParsedVisitor {
                 (ctx.modl_map() != null) ?
                         visitMap(ctx.modl_map()) :
                         (ctx.modl_pair() != null) ?
-                                visitPair(ctx.modl_pair()) :
-                                (ctx.modl_primitive() != null) ?
-                                        (ArrayItem) visitPrimitive(ctx.modl_primitive()) : null;
+                                visitPair(ctx.modl_pair()) : (ArrayItem) visitPrimitive(ctx.modl_primitive());
     }
 
     /**
