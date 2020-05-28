@@ -19,7 +19,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class ClassExpansionTransform implements Function2<TransformationContext, Structure, Structure> {
 
-    private final io.vavr.collection.Map<String, ExpandedClass> cache = HashMap.empty();
+    private final ExpandedClassCache cache = new ExpandedClassCache();
 
     /**
      * Applies this function to one argument and returns the result.
@@ -59,15 +59,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
 
             final String supertype = SupertypeInference.inferType(ctx, ci, pair.getValue());
 
-            final ExpandedClass expClass;
-            final Option<ExpandedClass> maybeExpandedClass = cache.get(ci.getId());
-            if (maybeExpandedClass.isDefined()) {
-                expClass = maybeExpandedClass.get();
-            } else {
-                expClass = ExpandedClass.of(ctx, ci, supertype);
-                cache.put(ci.getId(), expClass);
-            }
-
+            final ExpandedClass expClass = cache.getExpandedClass(ctx, ci, supertype);
 
             switch (supertype) {
                 case "map":
@@ -93,9 +85,9 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
         @NonNull final PairValue pairValue = pair.getValue();
 
         if (pairValue instanceof Array) {
-            final Map map = expClass.toMapUsingAssign((Array) pairValue);
+            final Structure s = expClass.toStructureUsingAssign(ctx, cache, (Array) pairValue);
 
-            final Structure structure = apply(ctx, map);
+            final Structure structure = apply(ctx, s);
             if (structure instanceof ValueItem) {
                 return new Pair(expClass.name, (PairValue) structure);
             } else {
@@ -111,9 +103,9 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
             }
         } else if (pairValue instanceof Primitive) {
             if (expClass.hasSingleValueAssign()) {
-                final Map map = expClass.toMapUsingAssign(new Array(Vector.of((ArrayItem) pairValue)));
+                final Structure s = expClass.toStructureUsingAssign(ctx, cache, new Array(Vector.of((ArrayItem) pairValue)));
 
-                final Structure structure = apply(ctx, map);
+                final Structure structure = apply(ctx, s);
                 if (structure instanceof ValueItem) {
                     return new Pair(expClass.name, (PairValue) structure);
                 } else {
@@ -250,6 +242,24 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
         return mapConditional;
     }
 
+    private static class ExpandedClassCache {
+
+        private final io.vavr.collection.Map<String, ExpandedClass> cache = HashMap.empty();
+
+        public ExpandedClass getExpandedClass(final TransformationContext ctx, final StarClassTransform.ClassInstruction ci, final String supertype) {
+            final ExpandedClass expClass;
+            final Option<ExpandedClass> maybeExpandedClass = cache.get(ci.getId());
+            if (maybeExpandedClass.isDefined()) {
+                expClass = maybeExpandedClass.get();
+            } else {
+                expClass = ExpandedClass.of(ctx, ci, supertype);
+                cache.put(ci.getId(), expClass);
+            }
+            return expClass;
+        }
+
+    }
+
     /**
      * Class that includes all inherited assigns, pairs, supertype, and defaults the name to the id if not present
      */
@@ -308,7 +318,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                     .getOrElse(Vector.empty()));
         }
 
-        public Map toMapUsingAssign(final Array value) {
+        public Structure toStructureUsingAssign(final TransformationContext ctx, final ExpandedClassCache cache, final Array value) {
             @NonNull final Vector<ArrayItem> valuesToAssign = value.getArrayItems();
 
             final int assignListLength = valuesToAssign
@@ -317,7 +327,33 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
             // If there's a value ending with * in the list then we have a match
             return assigns.find(l -> l.size() == assignListLength || l.count(s -> s.endsWith("*")) > 0)
                     .map(assignList -> {
-                        Vector<MapItem> items = Vector.empty();
+                        Vector<ArrayItem> arrayItems = Vector.empty();
+
+
+                        if (assignList.length() == 1 && assignList.get(0)
+                                .endsWith("*")) {
+                            final Option<StarClassTransform.ClassInstruction> maybeClassByNameOrId = ctx.getClassByNameOrId(StringUtils.removeEnd(assignList.get(0), "*"));
+
+                            if (maybeClassByNameOrId
+                                    .isDefined() && maybeClassByNameOrId.get()
+                                    .getAssign()
+                                    .nonEmpty()) {
+                                final StarClassTransform.ClassInstruction classs = maybeClassByNameOrId.get();
+                                final ExpandedClass expandedClass = cache.getExpandedClass(ctx, classs, classs.getSuperclass());
+
+                                for (int i = 0; i < assignListLength; i++) {
+                                    final ArrayItem item = valuesToAssign.get(i);
+
+                                    final Structure s = expandedClass.toStructureUsingAssign(ctx, cache, (Array) item);
+                                    arrayItems = arrayItems.append((ArrayItem) s);
+                                }
+                                arrayItems = arrayItems.appendAll(pairs);
+                                return new Array(arrayItems);
+                            }
+                        }
+
+                        Vector<MapItem> mapItems = Vector.empty();
+
                         for (int i = 0; i < assignListLength; i++) {
 
                             // Might need to expand wildcard assign lists
@@ -325,15 +361,18 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
 
                             final String key = keys.get(i);
                             final ArrayItem item = valuesToAssign.get(i);
+
                             if (item instanceof PairValue) {
-                                items = items.append(new Pair(key, (PairValue) item));
+                                mapItems = mapItems.append(new Pair(key, (PairValue) item));
                             } else if (item instanceof ArrayConditional) {
-                                items = items.append(new Pair(key, (PairValue) ((ArrayConditional) item).getResult()
+                                mapItems = mapItems.append(new Pair(key, (PairValue) ((ArrayConditional) item).getResult()
                                         .get(0)));
                             }
                         }
-                        items = items.appendAll(pairs);
-                        return new Map(items);
+
+
+                        mapItems = mapItems.appendAll(pairs);
+                        return new Map(mapItems);
                     })
                     .getOrElseThrow(() -> new InterpreterError("No assign list of length " + assignListLength + " in " + assigns));
         }
