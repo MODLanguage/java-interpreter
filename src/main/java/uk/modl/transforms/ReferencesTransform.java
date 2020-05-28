@@ -148,9 +148,15 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                         .getOrElse(result);
 
                 // Process complex references
+                final ValueItem finalResult = result;
                 result = groupedByType.get(ReferenceType.COMPLEX_REF)
                         .map(refList -> refList.map(cr -> complexRefToValueItem(ctx, cr)))
-                        .map(x -> x.get(0))
+                        .map(tuples -> tuples.get(0))
+                        .map(tuple -> {
+                            final Pair pair = new Pair("", tuple._2);
+                            final Vector<Tuple3<String, String, Option<Pair>>> vector = Vector.of(Tuple.of(tuple._1, tuple._1, Option.of(pair)));
+                            return replaceAllSimpleRefsInValueItem(finalResult).apply(vector);
+                        })
                         .getOrElse(result);
 
                 return result;
@@ -159,7 +165,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
         return vi;
     }
 
-    private ValueItem complexRefToValueItem(final TransformationContext ctx, final String complexRef) {
+    private Tuple2<String, ValueItem> complexRefToValueItem(final TransformationContext ctx, final String complexRef) {
         final String ref = stripLeadingAndTrailingPercents(complexRef);
         final String chainedMethods = StringUtils.substringAfter(ref, ".");
 
@@ -189,7 +195,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 .map(pair -> followNestedRef(ctx, pair, refList, 0));
 
         if (valueItems.size() > 0) {
-            return valueItems.get(0);
+            return Tuple.of(complexRef, valueItems.get(0));
         } else {
             // TODO
             throw new InterpreterError("UNHANDLED CODE PATH");
@@ -387,7 +393,10 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
     }
 
     private Vector<Tuple3<String, String, Option<Pair>>> complexRefToReferencedItems(final TransformationContext ctx, final Pair p, final Vector<String> refList) {
-        return refList.map(ref -> Tuple.of(ref, p.getKey(), Option.of(new Pair(p.getKey(), complexRefToValueItem(ctx, ref)))));
+        return refList.map(ref -> {
+            final Tuple2<String, ValueItem> result = complexRefToValueItem(ctx, ref);
+            return Tuple.of(ref, p.getKey(), Option.of(new Pair(p.getKey(), result._2)));
+        });
     }
 
     /**

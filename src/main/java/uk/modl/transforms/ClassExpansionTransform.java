@@ -139,7 +139,16 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                     .map(assignList -> {
                         Vector<ArrayItem> items = Vector.empty();
                         for (int i = 0; i < assignListLength; i++) {
-                            final Pair p = new Pair(assignList.get(i), (PairValue) valuesToAssign.get(i));
+                            final String maybeWildcardKey = assignList.get(i);
+                            final String key;
+
+                            if (maybeWildcardKey.endsWith("*")) {
+                                key = StringUtils.removeEnd(maybeWildcardKey, "*");
+                            } else {
+                                key = maybeWildcardKey;
+                            }
+
+                            final Pair p = new Pair(key, (PairValue) valuesToAssign.get(i));
                             final Structure structure = expandToClass(ctx, p);
                             if (structure instanceof Pair) {
                                 @NonNull final PairValue value = ((Pair) structure).getValue();
@@ -147,6 +156,17 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                                     final Map map = new Map(((Map) value).getMapItems()
                                             .appendAll(expClass.pairs));
                                     items = items.append(map);
+                                } else if (value instanceof Array) {
+                                    final Option<StarClassTransform.ClassInstruction> maybeClass = ctx.getClassByNameOrId(key);
+                                    if (maybeClass.isDefined()) {
+                                        final StarClassTransform.ClassInstruction classs = maybeClass.get();
+                                        final ExpandedClass expandedClass = cache.getExpandedClass(ctx, classs, classs.getSuperclass());
+
+                                        final Structure expandedObject = expandedClass.toStructureUsingAssign(ctx, cache, (Structure) value);
+                                        items = items.append((ArrayItem) expandedObject);
+                                    } else {
+                                        items = items.appendAll(((Array) value).getArrayItems());
+                                    }
                                 }
                             }
                         }
@@ -318,8 +338,16 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                     .getOrElse(Vector.empty()));
         }
 
-        public Structure toStructureUsingAssign(final TransformationContext ctx, final ExpandedClassCache cache, final Array value) {
-            @NonNull final Vector<ArrayItem> valuesToAssign = value.getArrayItems();
+        public Structure toStructureUsingAssign(final TransformationContext ctx, final ExpandedClassCache cache, final Structure value) {
+            Vector<ArrayItem> tmpValuesToAssign = Vector.empty();
+            if (value instanceof Array) {
+                tmpValuesToAssign = ((Array) value).getArrayItems();
+            } else if (value instanceof Map) {
+                tmpValuesToAssign = ((Map) value).getMapItems()
+                        .map(mi -> (ArrayItem) mi);
+            }
+
+            final Vector<ArrayItem> valuesToAssign = tmpValuesToAssign;
 
             final int assignListLength = valuesToAssign
                     .size();
@@ -344,7 +372,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                                 for (int i = 0; i < assignListLength; i++) {
                                     final ArrayItem item = valuesToAssign.get(i);
 
-                                    final Structure s = expandedClass.toStructureUsingAssign(ctx, cache, (Array) item);
+                                    final Structure s = expandedClass.toStructureUsingAssign(ctx, cache, (Structure) item);
                                     arrayItems = arrayItems.append((ArrayItem) s);
                                 }
                                 arrayItems = arrayItems.appendAll(pairs);
@@ -362,7 +390,9 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                             final String key = keys.get(i);
                             final ArrayItem item = valuesToAssign.get(i);
 
-                            if (item instanceof PairValue) {
+                            if (item instanceof Pair) {
+                                mapItems = mapItems.append((MapItem) item);
+                            } else if (item instanceof PairValue) {
                                 mapItems = mapItems.append(new Pair(key, (PairValue) item));
                             } else if (item instanceof ArrayConditional) {
                                 mapItems = mapItems.append(new Pair(key, (PairValue) ((ArrayConditional) item).getResult()

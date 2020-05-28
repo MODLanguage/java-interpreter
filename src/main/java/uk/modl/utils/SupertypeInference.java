@@ -39,6 +39,8 @@ public class SupertypeInference {
                         tc = "arr";
                     } else if (pv instanceof Map) {
                         tc = "map";
+                    } else if (pv instanceof Pair) {
+                        tc = "map";
                     } else {
                         throw new NullPointerException("Unknown object type: " + pv.getClass());
                     }
