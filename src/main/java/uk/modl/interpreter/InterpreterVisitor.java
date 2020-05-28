@@ -1,6 +1,7 @@
 package uk.modl.interpreter;
 
-import io.vavr.Function1;
+import io.vavr.Function2;
+import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
 import lombok.NonNull;
@@ -12,7 +13,7 @@ import java.util.Objects;
 /**
  * Interpreter for a Modl object
  */
-public class InterpreterVisitor implements Function1<Modl, Modl> {
+public class InterpreterVisitor implements Function2<TransformationContext, Modl, Tuple2<TransformationContext, Modl>> {
 
     private final StarLoadTransform starLoadTransform;
 
@@ -28,27 +29,18 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
 
     private final PercentStarInstructionTransform percentStarInstructionTransform;
 
-    private final Function1<Structure, Structure> processPairs;
-
-    private TransformationContext ctx;
 
     /**
      * Constructor
      */
     public InterpreterVisitor() {
-        ctx = new TransformationContext();
-        starLoadTransform = new StarLoadTransform(ctx);
-        starClassTransform = new StarClassTransform(ctx);
-        starMethodTransform = new StarMethodTransform(ctx);
-        referencesTransform = new ReferencesTransform(ctx);
-        conditionalsTransform = new ConditionalsTransform(ctx);
-        classExpansionTransform = new ClassExpansionTransform(ctx);
-        percentStarInstructionTransform = new PercentStarInstructionTransform(ctx);
-
-        processPairs = referencesTransform
-                .compose(starMethodTransform)
-                .compose(starClassTransform)
-                .compose(starLoadTransform);
+        starLoadTransform = new StarLoadTransform();
+        starClassTransform = new StarClassTransform();
+        starMethodTransform = new StarMethodTransform();
+        referencesTransform = new ReferencesTransform();
+        conditionalsTransform = new ConditionalsTransform();
+        classExpansionTransform = new ClassExpansionTransform();
+        percentStarInstructionTransform = new PercentStarInstructionTransform();
     }
 
     /**
@@ -57,17 +49,21 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param s a Structure
      * @return a Structure
      */
-    private Structure visitStructure(final Structure s) {
+    private Tuple2<TransformationContext, Structure> visitStructure(final TransformationContext ctx, final Structure s) {
 
-        return (s instanceof Map) ?
-                visitMap((Map) s) :
-                (s instanceof Array) ?
-                        visitArray((Array) s) :
-                        (s instanceof Pair) ?
-                                visitPair((Pair) s) :
-                                (s instanceof TopLevelConditional) ?
-                                        visitTopLevelConditional((TopLevelConditional) s) :
-                                        s;
+        if (s instanceof Map) {
+            return visitMap(ctx, (Map) s);
+        }
+        if (s instanceof Array) {
+            return visitArray(ctx, (Array) s);
+        }
+        if (s instanceof Pair) {
+            return visitPair(ctx, (Pair) s);
+        }
+        if (s instanceof TopLevelConditional) {
+            return visitTopLevelConditional(ctx, (TopLevelConditional) s);
+        }
+        return Tuple.of(ctx, s);
     }
 
     /**
@@ -76,17 +72,28 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param tlc the TopLevelConditional
      * @return a TopLevelConditional
      */
-    private TopLevelConditional visitTopLevelConditional(final TopLevelConditional tlc) {
+    private Tuple2<TransformationContext, Structure> visitTopLevelConditional(final TransformationContext ctx, final TopLevelConditional tlc) {
 
-        final Vector<ConditionTest> tests = tlc.getTests()
-                .map(this::visitConditionTest);
+        TransformationContext newCtx = ctx;
+        Vector<ConditionTest> tests = Vector.empty();
 
-        final Vector<TopLevelConditionalReturn> returns = tlc.getReturns()
-                .map(this::visitTopLevelConditionalReturn);
+        for (final ConditionTest test : tlc.getTests()) {
+            final Tuple2<TransformationContext, ConditionTest> result = visitConditionTest(newCtx, test);
+            newCtx = result._1;
+            tests = tests.append(result._2);
+        }
+
+        Vector<TopLevelConditionalReturn> returns = Vector.empty();
+
+        for (final TopLevelConditionalReturn aReturn : tlc.getReturns()) {
+            final Tuple2<TransformationContext, TopLevelConditionalReturn> result = visitTopLevelConditionalReturn(newCtx, aReturn);
+            newCtx = result._1;
+            returns = returns.append(result._2);
+        }
 
         final TopLevelConditional newTlc = new TopLevelConditional(tests, returns, Vector.empty());
 
-        return conditionalsTransform.apply(newTlc);
+        return conditionalsTransform.apply(newCtx, newTlc);
     }
 
     /**
@@ -95,16 +102,27 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param mc the MapConditional
      * @return a MapConditional
      */
-    private MapConditional visitMapConditional(final MapConditional mc) {
+    private Tuple2<TransformationContext, MapConditional> visitMapConditional(final TransformationContext ctx, final MapConditional mc) {
 
-        final Vector<ConditionTest> tests = mc.getTests()
-                .map(this::visitConditionTest);
+        TransformationContext newCtx = ctx;
+        Vector<ConditionTest> tests = Vector.empty();
 
-        final Vector<MapConditionalReturn> returns = mc.getReturns()
-                .map(this::visitMapConditionalReturn);
+        for (final ConditionTest test : mc.getTests()) {
+            final Tuple2<TransformationContext, ConditionTest> result = visitConditionTest(newCtx, test);
+            newCtx = result._1;
+            tests = tests.append(result._2);
+        }
+
+        Vector<MapConditionalReturn> returns = Vector.empty();
+
+        for (final MapConditionalReturn aReturn : mc.getReturns()) {
+            final Tuple2<TransformationContext, MapConditionalReturn> result = visitMapConditionalReturn(newCtx, aReturn);
+            newCtx = result._1;
+            returns = returns.append(result._2);
+        }
 
         final MapConditional mapConditional = new MapConditional(tests, returns, Vector.empty());
-        return conditionalsTransform.apply(mapConditional);
+        return Tuple.of(newCtx, conditionalsTransform.apply(newCtx, mapConditional));
 
     }
 
@@ -114,11 +132,18 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param mcr the MapConditionalReturn
      * @return a MapConditionalReturn
      */
-    private MapConditionalReturn visitMapConditionalReturn(final MapConditionalReturn mcr) {
+    private Tuple2<TransformationContext, MapConditionalReturn> visitMapConditionalReturn(final TransformationContext ctx, final MapConditionalReturn mcr) {
 
-        final Vector<MapItem> items = mcr.getItems()
-                .map(this::visitMapItem);
-        return new MapConditionalReturn(items);
+        TransformationContext newCtx = ctx;
+        Vector<MapItem> items = Vector.empty();
+
+        for (final MapItem item : mcr.getItems()) {
+            final Tuple2<TransformationContext, MapItem> result = visitMapItem(newCtx, item);
+            newCtx = result._1;
+            items = items.append(result._2);
+        }
+
+        return Tuple.of(newCtx, new MapConditionalReturn(items));
     }
 
     /**
@@ -127,12 +152,18 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param tlcr the TopLevelConditionalReturn
      * @return a TopLevelConditionalReturn
      */
-    private TopLevelConditionalReturn visitTopLevelConditionalReturn(final TopLevelConditionalReturn tlcr) {
+    private Tuple2<TransformationContext, TopLevelConditionalReturn> visitTopLevelConditionalReturn(final TransformationContext ctx, final TopLevelConditionalReturn tlcr) {
 
-        final Vector<Structure> structures = tlcr.getStructures()
-                .map(this::visitStructure);
+        TransformationContext newCtx = ctx;
+        Vector<Structure> structures = Vector.empty();
 
-        return new TopLevelConditionalReturn(structures);
+        for (final Structure structure : tlcr.getStructures()) {
+            final Tuple2<TransformationContext, Structure> result = visitStructure(newCtx, structure);
+            newCtx = result._1;
+            structures = structures.append(result._2);
+        }
+
+        return Tuple.of(newCtx, new TopLevelConditionalReturn(structures));
     }
 
     /**
@@ -141,16 +172,23 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param ct the ConditionTest
      * @return a ConditionTest
      */
-    private ConditionTest visitConditionTest(final ConditionTest ct) {
-        final Vector<Tuple2<ConditionOrConditionGroupInterface, String>> newConditions = ct.getConditions()
-                .map(c -> {
-                    if (c._1 instanceof Condition) {
-                        return c.update1(visitCondition((Condition) c._1));
-                    } else {
-                        return c.update1(visitConditionGroup((ConditionGroup) c._1));
-                    }
-                });
-        return new ConditionTest(newConditions);
+    private Tuple2<TransformationContext, ConditionTest> visitConditionTest(final TransformationContext ctx, final ConditionTest ct) {
+        TransformationContext newCtx = ctx;
+        Vector<Tuple2<ConditionOrConditionGroupInterface, String>> newConditions = Vector.empty();
+
+        for (final Tuple2<ConditionOrConditionGroupInterface, String> c : ct.getConditions()) {
+            if (c._1 instanceof Condition) {
+                final Tuple2<TransformationContext, Condition> result = visitCondition(newCtx, (Condition) c._1);
+                newCtx = result._1;
+                newConditions = newConditions.append(c.update1(result._2));
+            } else {
+                final Tuple2<TransformationContext, ConditionGroup> result = visitConditionGroup(newCtx, (ConditionGroup) c._1);
+                newCtx = result._1;
+                newConditions = newConditions.append(c.update1(result._2));
+            }
+        }
+
+        return Tuple.of(newCtx, new ConditionTest(newConditions));
     }
 
     /**
@@ -159,10 +197,18 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param cg the ConditionGroup
      * @return a ConditionGroup
      */
-    private ConditionGroup visitConditionGroup(final ConditionGroup cg) {
-        final Vector<Tuple2<ConditionTest, String>> subConditionList = cg.getSubConditionList()
-                .map(t -> t.update1(visitConditionTest(t._1)));
-        return new ConditionGroup(subConditionList, cg.isShouldNegate());
+    private Tuple2<TransformationContext, ConditionGroup> visitConditionGroup(final TransformationContext ctx, final ConditionGroup cg) {
+
+        TransformationContext newCtx = ctx;
+        Vector<Tuple2<ConditionTest, String>> subConditionList = Vector.empty();
+
+        for (final Tuple2<ConditionTest, String> subCond : cg.getSubConditionList()) {
+            final Tuple2<TransformationContext, ConditionTest> result = visitConditionTest(newCtx, subCond._1);
+            newCtx = result._1;
+            subConditionList = subConditionList.append(subCond.update1(result._2));
+        }
+
+        return Tuple.of(newCtx, new ConditionGroup(subConditionList, cg.isShouldNegate()));
     }
 
     /**
@@ -171,14 +217,24 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param c the Condition
      * @return a Condition
      */
-    private Condition visitCondition(final Condition c) {
-        final Condition c2 = referencesTransform.apply(c);
+    private Tuple2<TransformationContext, Condition> visitCondition(final TransformationContext ctx, final Condition c) {
+        final Condition c2 = referencesTransform.apply(ctx, c);
 
-        final ValueItem newLhs = visitValue(c2.getLhs());
-        final Vector<ValueItem> values = c2.getValues()
-                .map(this::visitValue);
+        TransformationContext newCtx = ctx;
 
-        return new Condition(newLhs, c2.getOp(), values, c2.isShouldNegate());
+        final Tuple2<TransformationContext, ValueItem> result = visitValue(newCtx, c2.getLhs());
+        newCtx = result._1;
+        final ValueItem newLhs = result._2;
+
+        Vector<ValueItem> values = Vector.empty();
+
+        for (final ValueItem value : c2.getValues()) {
+            final Tuple2<TransformationContext, ValueItem> valueResult = visitValue(newCtx, value);
+            newCtx = valueResult._1;
+            values = values.append(valueResult._2);
+        }
+
+        return Tuple.of(newCtx, new Condition(newLhs, c2.getOp(), values, c2.isShouldNegate()));
     }
 
     /**
@@ -187,12 +243,18 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param arr the Array
      * @return a list of ArrayItems
      */
-    private Array visitArray(final Array arr) {
+    private Tuple2<TransformationContext, Structure> visitArray(final TransformationContext ctx, final Array arr) {
 
-        final Vector<ArrayItem> items = arr.getArrayItems()
-                .map(this::visitArrayItem);
+        TransformationContext newCtx = ctx;
+        Vector<ArrayItem> items = Vector.empty();
 
-        return new Array(items);
+        for (final ArrayItem arrayItem : arr.getArrayItems()) {
+            final Tuple2<TransformationContext, ArrayItem> result = visitArrayItem(newCtx, arrayItem);
+            newCtx = result._1;
+            items = items.append(result._2);
+        }
+
+        return Tuple.of(newCtx, new Array(items));
     }
 
     /**
@@ -201,11 +263,13 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param ai the ArrayItem
      * @return a list of ArrayItems
      */
-    private ArrayItem visitArrayItem(final ArrayItem ai) {
+    private Tuple2<TransformationContext, ArrayItem> visitArrayItem(final TransformationContext ctx, final ArrayItem ai) {
 
-        return (ai instanceof ArrayConditional) ?
-                visitArrayConditional((ArrayConditional) ai) :
-                visitArrayValueItem(ai);
+        if (ai instanceof ArrayConditional) {
+            final Tuple2<TransformationContext, ArrayConditional> result = visitArrayConditional(ctx, (ArrayConditional) ai);
+            return Tuple.of(result._1, result._2);
+        }
+        return visitArrayValueItem(ctx, ai);
     }
 
     /**
@@ -214,16 +278,24 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param ai the ArrayItem
      * @return an ArrayItem
      */
-    private ArrayItem visitArrayValueItem(final ArrayItem ai) {
+    private Tuple2<TransformationContext, ArrayItem> visitArrayValueItem(final TransformationContext ctx, final ArrayItem ai) {
 
-        return (ai instanceof Array) ?
-                visitArray((Array) ai) :
-                (ai instanceof Map) ?
-                        visitMap((Map) ai) :
-                        (ai instanceof Pair) ?
-                                (ArrayItem) visitPair((Pair) ai) :
-                                (ai instanceof Primitive) ?
-                                        visitPrimitive((Primitive) ai) : null;
+        if (ai instanceof Array) {
+            final Tuple2<TransformationContext, Structure> result = visitArray(ctx, (Array) ai);
+            return Tuple.of(result._1, (ArrayItem) result._2);
+        }
+        if (ai instanceof Map) {
+            final Tuple2<TransformationContext, Structure> result = visitMap(ctx, (Map) ai);
+            return Tuple.of(result._1, (ArrayItem) result._2);
+        }
+        if (ai instanceof Pair) {
+            final Tuple2<TransformationContext, Structure> result = visitPair(ctx, (Pair) ai);
+            return Tuple.of(result._1, (ArrayItem) result._2);
+        }
+        if (ai instanceof Primitive) {
+            return Tuple.of(ctx, visitPrimitive(ctx, (Primitive) ai));
+        }
+        return null;
     }
 
     /**
@@ -232,16 +304,28 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param ac the ArrayConditional
      * @return an ArrayItem
      */
-    private ArrayConditional visitArrayConditional(final ArrayConditional ac) {
+    private Tuple2<TransformationContext, ArrayConditional> visitArrayConditional(final TransformationContext ctx, final ArrayConditional ac) {
 
-        final Vector<ConditionTest> tests = ac.getTests()
-                .map(this::visitConditionTest);
+        TransformationContext newCtx = ctx;
+        Vector<ConditionTest> tests = Vector.empty();
 
-        final Vector<ArrayConditionalReturn> returns = ac.getReturns()
-                .map(this::visitArrayConditionalReturn);
+        for (final ConditionTest test : ac.getTests()) {
+            final Tuple2<TransformationContext, ConditionTest> result = visitConditionTest(newCtx, test);
+            newCtx = result._1;
+            tests = tests.append(result._2);
+        }
+
+        Vector<ArrayConditionalReturn> returns = Vector.empty();
+
+        for (final ArrayConditionalReturn aReturn : ac.getReturns()) {
+            final Tuple2<TransformationContext, ArrayConditionalReturn> result = visitArrayConditionalReturn(newCtx, aReturn);
+            newCtx = result._1;
+            returns = returns.append(result._2);
+        }
 
         final ArrayConditional arrayConditional = new ArrayConditional(tests, returns, Vector.empty());
-        return conditionalsTransform.apply(arrayConditional);
+        final ArrayConditional result = conditionalsTransform.apply(newCtx, arrayConditional);
+        return Tuple.of(newCtx, result);
     }
 
     /**
@@ -250,11 +334,17 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param acr the ArrayConditionalReturn
      * @return an ArrayConditionalReturn
      */
-    private ArrayConditionalReturn visitArrayConditionalReturn(final ArrayConditionalReturn acr) {
+    private Tuple2<TransformationContext, ArrayConditionalReturn> visitArrayConditionalReturn(final TransformationContext ctx, final ArrayConditionalReturn acr) {
 
-        final Vector<ArrayItem> items = acr.getItems()
-                .map(this::visitArrayItem);
-        return new ArrayConditionalReturn(items);
+        TransformationContext newCtx = ctx;
+        Vector<ArrayItem> items = Vector.empty();
+        for (final ArrayItem item : acr.getItems()) {
+            final Tuple2<TransformationContext, ArrayItem> result = visitArrayItem(newCtx, item);
+            newCtx = result._1;
+            items = items.append(result._2);
+        }
+
+        return Tuple.of(newCtx, new ArrayConditionalReturn(items));
     }
 
     /**
@@ -263,12 +353,17 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param map the Map
      * @return a Map
      */
-    private Map visitMap(final Map map) {
+    private Tuple2<TransformationContext, Structure> visitMap(final TransformationContext ctx, final Map map) {
 
-        final Vector<MapItem> items = map.getMapItems()
-                .map(this::visitMapItem);
+        Vector<MapItem> items = Vector.empty();
+        TransformationContext newCtx = ctx;
+        for (final MapItem mapItem : map.getMapItems()) {
+            final Tuple2<TransformationContext, MapItem> result = visitMapItem(newCtx, mapItem);
+            items = items.append(result._2);
+            newCtx = result._1;
+        }
 
-        return new Map(items);
+        return Tuple.of(newCtx, new Map(items));
     }
 
     /**
@@ -277,11 +372,15 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param mi the MapItem
      * @return a MapItem
      */
-    private MapItem visitMapItem(final MapItem mi) {
+    private Tuple2<TransformationContext, MapItem> visitMapItem(final TransformationContext ctx, final MapItem mi) {
 
-        return (mi instanceof Pair) ?
-                (MapItem) visitPair((Pair) mi) :
-                visitMapConditional((MapConditional) mi);
+        if (mi instanceof Pair) {
+            final Tuple2<TransformationContext, Structure> result = visitPair(ctx, (Pair) mi);
+            return Tuple.of(result._1, (MapItem) result._2);
+        } else {
+            final Tuple2<TransformationContext, MapConditional> mapConditional = visitMapConditional(ctx, (MapConditional) mi);
+            return Tuple.of(mapConditional._1, mapConditional._2);
+        }
     }
 
     /**
@@ -290,11 +389,18 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param p the Pair
      * @return a Pair
      */
-    private Structure visitPair(final Pair p) {
+    private Tuple2<TransformationContext, Structure> visitPair(final TransformationContext ctx, final Pair p) {
 
-        final Structure st = processPairs.apply(p);
+        final Tuple2<TransformationContext, Structure> structureWithLoadedFiles = starLoadTransform.apply(ctx, p);
+        final Tuple2<TransformationContext, Structure> structureWithExpandedClasses = starClassTransform.apply(structureWithLoadedFiles._1, structureWithLoadedFiles._2);
+        final Tuple2<TransformationContext, Structure> structureWithAppliedMethods = starMethodTransform.apply(structureWithExpandedClasses._1, structureWithExpandedClasses._2);
+        final Tuple2<TransformationContext, Structure> contextAndStructure = referencesTransform.apply(structureWithAppliedMethods._1, structureWithAppliedMethods._2);
+
+        TransformationContext newCtx = contextAndStructure._1;
+
+        final Structure st = contextAndStructure._2;
         if (st == null) {
-            return null;
+            return Tuple.of(newCtx, null);
         }
 
         PairValue value;
@@ -306,21 +412,27 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
             value = (PairValue) st;
         }
 
-        value = (value instanceof Array) ?
-                visitArray((Array) value) :
-                (value instanceof Map) ?
-                        visitMap((Map) value) :
-                        (value instanceof ValueItem) ?
-                                visitValueItem((ValueItem) value) :
-                                value;
+        if (value instanceof Array) {
+            final Tuple2<TransformationContext, Structure> result = visitArray(newCtx, (Array) value);
+            newCtx = result._1;
+            value = (PairValue) result._2;
+        } else if (value instanceof Map) {
+            final Tuple2<TransformationContext, Structure> result = visitMap(newCtx, (Map) value);
+            newCtx = result._1;
+            value = (PairValue) result._2;
+        } else if (value instanceof ValueItem) {
+            final Tuple2<TransformationContext, ValueItem> result = visitValueItem(newCtx, (ValueItem) value);
+            newCtx = result._1;
+            value = result._2;
+        }
 
         if (st instanceof Pair) {
             @NonNull final String key = ((Pair) st).getKey();
             final Pair newPair = new Pair(key, value);
-            ctx.addPair(key, newPair);
-            return percentStarInstructionTransform.apply((Structure) newPair);
+            final TransformationContext updatedNewCtx = newCtx.addPair(key, newPair);
+            return Tuple.of(updatedNewCtx, percentStarInstructionTransform.apply(updatedNewCtx, (Structure) newPair));
         }
-        return percentStarInstructionTransform.apply(st);
+        return Tuple.of(newCtx, percentStarInstructionTransform.apply(newCtx, st));
     }
 
     /**
@@ -329,19 +441,29 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param vi the ValueItem
      * @return a ValueItem
      */
-    private ValueItem visitValueItem(final ValueItem vi) {
+    private Tuple2<TransformationContext, ValueItem> visitValueItem(final TransformationContext ctx, final ValueItem vi) {
 
-        return (vi instanceof ValueConditional) ?
-                visitValueConditional((ValueConditional) vi) :
-                (vi instanceof Map) ?
-                        visitMap((Map) vi) :
-                        (vi instanceof Array) ?
-                                visitArray((Array) vi) :
-                                (vi instanceof Pair) ?
-                                        (ValueItem) visitPair((Pair) vi) :
-                                        (vi instanceof Primitive) ?
-                                                visitPrimitive((Primitive) vi) :
-                                                vi;
+        if (vi instanceof ValueConditional) {
+            final Tuple2<TransformationContext, ValueConditional> result = visitValueConditional(ctx, (ValueConditional) vi);
+            return Tuple.of(result._1, result._2);
+        }
+        if (vi instanceof Map) {
+            final Tuple2<TransformationContext, Structure> result = visitMap(ctx, (Map) vi);
+            return Tuple.of(result._1, (ValueItem) result._2);
+        }
+        if (vi instanceof Array) {
+            final Tuple2<TransformationContext, Structure> result = visitArray(ctx, (Array) vi);
+            return Tuple.of(result._1, (ValueItem) result._2);
+        }
+        if (vi instanceof Pair) {
+            final Tuple2<TransformationContext, Structure> result = visitPair(ctx, (Pair) vi);
+            return Tuple.of(result._1, (ValueItem) result._2);
+        }
+        if (vi instanceof Primitive) {
+            final Primitive primitive = visitPrimitive(ctx, (Primitive) vi);
+            return Tuple.of(ctx, primitive);
+        }
+        return Tuple.of(ctx, vi);
     }
 
     /**
@@ -350,16 +472,28 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param vc the ValueConditional
      * @return a ValueItem
      */
-    private ValueConditional visitValueConditional(final ValueConditional vc) {
+    private Tuple2<TransformationContext, ValueConditional> visitValueConditional(final TransformationContext ctx, final ValueConditional vc) {
 
-        final Vector<ConditionTest> tests = vc.getTests()
-                .map(this::visitConditionTest);
+        TransformationContext newCtx = ctx;
+        Vector<ConditionTest> tests = Vector.empty();
 
-        final Vector<ValueConditionalReturn> returns = vc.getReturns()
-                .map(this::visitValueConditionReturn);
+        for (final ConditionTest test : vc.getTests()) {
+            final Tuple2<TransformationContext, ConditionTest> result = visitConditionTest(newCtx, test);
+            newCtx = result._1;
+            tests = tests.append(result._2);
+        }
+
+        Vector<ValueConditionalReturn> returns = Vector.empty();
+
+        for (final ValueConditionalReturn aReturn : vc.getReturns()) {
+            final Tuple2<TransformationContext, ValueConditionalReturn> result = visitValueConditionReturn(newCtx, aReturn);
+            returns = returns.append(result._2);
+            newCtx = result._1;
+        }
 
         final ValueConditional valueConditional = new ValueConditional(tests, returns, Vector.empty());
-        return conditionalsTransform.apply(valueConditional);
+        final ValueConditional transformedConditionals = conditionalsTransform.apply(newCtx, valueConditional);
+        return Tuple.of(newCtx, transformedConditionals);
     }
 
     /**
@@ -368,12 +502,18 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param vcr the ValueConditionalReturn
      * @return a ValueConditionalReturn
      */
-    private ValueConditionalReturn visitValueConditionReturn(final ValueConditionalReturn vcr) {
+    private Tuple2<TransformationContext, ValueConditionalReturn> visitValueConditionReturn(final TransformationContext ctx, final ValueConditionalReturn vcr) {
 
-        final Vector<ValueItem> items = vcr.getItems()
-                .map(this::visitValueItem);
+        TransformationContext newCtx = ctx;
+        Vector<ValueItem> items = Vector.empty();
 
-        return new ValueConditionalReturn(items);
+        for (final ValueItem item : vcr.getItems()) {
+            final Tuple2<TransformationContext, ValueItem> result = visitValueItem(newCtx, item);
+            newCtx = result._1;
+            items = items.append(result._2);
+        }
+
+        return Tuple.of(newCtx, new ValueConditionalReturn(items));
     }
 
     /**
@@ -382,20 +522,26 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param vi the ValueItem
      * @return a Value
      */
-    private ValueItem visitValue(final ValueItem vi) {
+    private Tuple2<TransformationContext, ValueItem> visitValue(final TransformationContext ctx, final ValueItem vi) {
 
         if (vi instanceof StringPrimitive) {
-            final ValueItem newValueItem = referencesTransform.apply(vi);
-            return visitValueItem(newValueItem);
+            final ValueItem newValueItem = referencesTransform.apply(ctx, vi);
+            return visitValueItem(ctx, newValueItem);
         }
 
-        return (vi instanceof Array) ?
-                visitArray((Array) vi) :
-                (vi instanceof Map) ?
-                        visitMap((Map) vi) :
-                        (vi instanceof Pair) ?
-                                (ValueItem) visitPair((Pair) vi) :
-                                vi;
+        if (vi instanceof Array) {
+            final Tuple2<TransformationContext, Structure> result = visitArray(ctx, (Array) vi);
+            return Tuple.of(result._1, (ValueItem) result._2);
+        }
+        if (vi instanceof Map) {
+            final Tuple2<TransformationContext, Structure> result = visitMap(ctx, (Map) vi);
+            return Tuple.of(result._1, (ValueItem) result._2);
+        }
+        if (vi instanceof Pair) {
+            final Tuple2<TransformationContext, Structure> result = visitPair(ctx, (Pair) vi);
+            return Tuple.of(result._1, (ValueItem) result._2);
+        }
+        return Tuple.of(ctx, vi);
     }
 
     /**
@@ -404,8 +550,8 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @param prim the Primitive
      * @return a ValueItem
      */
-    private Primitive visitPrimitive(final Primitive prim) {
-        return (Primitive) referencesTransform.apply(prim);
+    private Primitive visitPrimitive(final TransformationContext ctx, final Primitive prim) {
+        return (Primitive) referencesTransform.apply(ctx, prim);
     }
 
     /**
@@ -415,25 +561,23 @@ public class InterpreterVisitor implements Function1<Modl, Modl> {
      * @return the result of function application
      */
     @Override
-    public Modl apply(final Modl modl) {
+    public Tuple2<TransformationContext, Modl> apply(final TransformationContext ctx, final Modl modl) {
 
-        final Vector<Structure> structures = Vector.ofAll(modl.getStructures()
-                .map(this::visitStructure))
-                .map(classExpansionTransform)
-                .filter(Objects::nonNull);
+        Vector<Structure> visitedStructures = Vector.empty();
+        TransformationContext newCtx = ctx;
+        {
+            for (final Structure structure : modl.getStructures()) {
+                final Tuple2<TransformationContext, Structure> result = visitStructure(newCtx, structure);
+                newCtx = result._1;
+                visitedStructures = visitedStructures.append(result._2);
+            }
+        }
 
-        return new Modl(structures);
-    }
+        final TransformationContext finalNewCtx = newCtx;
 
-    public void setCtx(final TransformationContext ctx) {
-        this.ctx = ctx;
-        starLoadTransform.setCtx(ctx);
-        starClassTransform.setCtx(ctx);
-        starMethodTransform.setCtx(ctx);
-        referencesTransform.setCtx(ctx);
-        conditionalsTransform.setCtx(ctx);
-        classExpansionTransform.setCtx(ctx);
-        percentStarInstructionTransform.setCtx(ctx);
+        Vector<Structure> resultStructures = visitedStructures.map(structure -> classExpansionTransform.apply(finalNewCtx, structure));
+
+        return Tuple.of(finalNewCtx, new Modl(resultStructures.filter(Objects::nonNull)));
     }
 
 }

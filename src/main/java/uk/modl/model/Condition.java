@@ -7,10 +7,14 @@ import uk.modl.visitor.ModlVisitor;
 
 @Value
 public class Condition implements ConditionOrConditionGroupInterface {
+
     ValueItem lhs;
+
     Operator op;
+
     @NonNull
     Vector<ValueItem> values;
+
     boolean shouldNegate;
 
     @Override

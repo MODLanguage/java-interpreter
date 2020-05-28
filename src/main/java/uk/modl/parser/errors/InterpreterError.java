@@ -1,6 +1,7 @@
 package uk.modl.parser.errors;
 
 public class InterpreterError extends RuntimeException {
+
     public InterpreterError() {
     }
 
@@ -19,4 +20,5 @@ public class InterpreterError extends RuntimeException {
     public InterpreterError(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
+
 }

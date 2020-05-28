@@ -6,8 +6,10 @@ import uk.modl.visitor.ModlVisitor;
 
 @Value
 public class Pair implements Structure, MapItem, ValueItem, ArrayItem {
+
     @NonNull
     String key;
+
     @NonNull
     PairValue value;
 
@@ -20,4 +22,5 @@ public class Pair implements Structure, MapItem, ValueItem, ArrayItem {
     public Number numericValue() {
         return value.numericValue();
     }
+
 }

@@ -15,11 +15,13 @@ import java.util.List;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class MODLParser extends Parser {
+
     public static final int
             WS = 1, NULL = 2, TRUE = 3, FALSE = 4, COLON = 5, EQUALS = 6, STRUCT_SEP = 7, ARR_SEP = 8,
             LBRAC = 9, RBRAC = 10, LSBRAC = 11, RSBRAC = 12, NUMBER = 13, COMMENT = 14, QUOTED = 15,
             STRING = 16, HASH_PREFIX = 17, LCBRAC = 18, CWS = 19, QMARK = 20, FSLASH = 21, GTHAN = 22,
             LTHAN = 23, ASTERISK = 24, AMP = 25, PIPE = 26, EXCLAM = 27, CCOMMENT = 28, RCBRAC = 29;
+
     public static final int
             RULE_modl = 0, RULE_modl_structure = 1, RULE_modl_map = 2, RULE_modl_array = 3,
             RULE_modl_nb_array = 4, RULE_modl_pair = 5, RULE_modl_value_item = 6,
@@ -30,12 +32,15 @@ public class MODLParser extends Parser {
             RULE_modl_condition_test = 17, RULE_modl_operator = 18, RULE_modl_condition = 19,
             RULE_modl_condition_group = 20, RULE_modl_value = 21, RULE_modl_array_value_item = 22,
             RULE_modl_primitive = 23;
+
     public static final String[] ruleNames = makeRuleNames();
+
     /**
      * @deprecated Use {@link #VOCABULARY} instead.
      */
     @Deprecated
     public static final String[] tokenNames;
+
     public static final String _serializedATN =
             "\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\37\u0147\4\2\t\2" +
                     "\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13" +
@@ -155,13 +160,19 @@ public class MODLParser extends Parser {
                     "\u009a\u00a0\u00aa\u00b3\u00b9\u00c1\u00c5\u00cd\u00d3\u00db\u00df\u00ec" +
                     "\u00f3\u00fc\u0100\u0104\u0108\u010c\u0110\u011c\u011f\u0122\u0129\u0132" +
                     "\u013c\u0142";
+
     public static final ATN _ATN =
             new ATNDeserializer().deserialize(_serializedATN.toCharArray());
+
     protected static final DFA[] _decisionToDFA;
+
     protected static final PredictionContextCache _sharedContextCache =
             new PredictionContextCache();
+
     private static final String[] _LITERAL_NAMES = makeLiteralNames();
+
     private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
+
     public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
     static {
@@ -1526,6 +1537,7 @@ public class MODLParser extends Parser {
     }
 
     public static class ModlContext extends ParserRuleContext {
+
         public ModlContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -1570,9 +1582,11 @@ public class MODLParser extends Parser {
             if (visitor instanceof MODLParserVisitor) return ((MODLParserVisitor<? extends T>) visitor).visitModl(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_structureContext extends ParserRuleContext {
+
         public Modl_structureContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -1614,9 +1628,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_structure(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_mapContext extends ParserRuleContext {
+
         public Modl_mapContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -1666,9 +1682,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_map(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_arrayContext extends ParserRuleContext {
+
         public Modl_arrayContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -1726,9 +1744,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_array(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_nb_arrayContext extends ParserRuleContext {
+
         public Modl_nb_arrayContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -1770,9 +1790,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_nb_array(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_pairContext extends ParserRuleContext {
+
         public Modl_pairContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -1822,9 +1844,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_pair(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_value_itemContext extends ParserRuleContext {
+
         public Modl_value_itemContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -1858,9 +1882,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_value_item(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_top_level_conditionalContext extends ParserRuleContext {
+
         public Modl_top_level_conditionalContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -1928,9 +1954,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_top_level_conditional(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_map_conditionalContext extends ParserRuleContext {
+
         public Modl_map_conditionalContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -1996,9 +2024,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_map_conditional(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_map_conditional_returnContext extends ParserRuleContext {
+
         public Modl_map_conditional_returnContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -2034,9 +2064,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_map_conditional_return(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_map_itemContext extends ParserRuleContext {
+
         public Modl_map_itemContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -2070,9 +2102,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_map_item(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_array_conditionalContext extends ParserRuleContext {
+
         public Modl_array_conditionalContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -2140,9 +2174,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_array_conditional(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_array_conditional_returnContext extends ParserRuleContext {
+
         public Modl_array_conditional_returnContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -2178,9 +2214,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_array_conditional_return(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_array_itemContext extends ParserRuleContext {
+
         public Modl_array_itemContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -2214,9 +2252,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_array_item(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_value_conditionalContext extends ParserRuleContext {
+
         public Modl_value_conditionalContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -2284,9 +2324,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_value_conditional(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_value_conditional_returnContext extends ParserRuleContext {
+
         public Modl_value_conditional_returnContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -2330,9 +2372,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_value_conditional_return(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_condition_testContext extends ParserRuleContext {
+
         public Modl_condition_testContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -2398,9 +2442,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_condition_test(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_operatorContext extends ParserRuleContext {
+
         public Modl_operatorContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -2442,9 +2488,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_operator(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_conditionContext extends ParserRuleContext {
+
         public Modl_conditionContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -2494,9 +2542,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_condition(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_condition_groupContext extends ParserRuleContext {
+
         public Modl_condition_groupContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -2554,9 +2604,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_condition_group(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_valueContext extends ParserRuleContext {
+
         public Modl_valueContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -2602,9 +2654,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_value(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_array_value_itemContext extends ParserRuleContext {
+
         public Modl_array_value_itemContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -2647,9 +2701,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_array_value_item(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_primitiveContext extends ParserRuleContext {
+
         public Modl_primitiveContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -2699,9 +2755,11 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_primitive(this);
             else return visitor.visitChildren(this);
         }
+
     }
 
     public static class Modl_top_level_conditional_returnContext extends ParserRuleContext {
+
         public Modl_top_level_conditional_returnContext(ParserRuleContext parent, int invokingState) {
             super(parent, invokingState);
         }
@@ -2745,5 +2803,7 @@ public class MODLParser extends Parser {
                 return ((MODLParserVisitor<? extends T>) visitor).visitModl_top_level_conditional_return(this);
             else return visitor.visitChildren(this);
         }
+
     }
+
 }

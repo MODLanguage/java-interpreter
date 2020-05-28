@@ -5,6 +5,7 @@ import uk.modl.visitor.ModlVisitor;
 
 @EqualsAndHashCode
 public class FalsePrimitive implements Primitive {
+
     public static final FalsePrimitive instance = new FalsePrimitive();
 
     private FalsePrimitive() {
@@ -25,4 +26,5 @@ public class FalsePrimitive implements Primitive {
     public Number numericValue() {
         return 0;
     }
+
 }

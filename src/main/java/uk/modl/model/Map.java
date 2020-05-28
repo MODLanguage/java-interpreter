@@ -8,6 +8,7 @@ import uk.modl.visitor.ModlVisitor;
 
 @Value
 public class Map implements PairValue, Structure, ValueItem, ArrayItem {
+
     @NonNull
     Vector<MapItem> mapItems;
 
@@ -21,4 +22,5 @@ public class Map implements PairValue, Structure, ValueItem, ArrayItem {
     public Number numericValue() {
         throw new InterpreterError("Cannot convert a map to a numeric value.");
     }
+
 }

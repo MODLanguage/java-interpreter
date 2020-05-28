@@ -1,10 +1,7 @@
 package uk.modl.interpreter;
 
-import lombok.val;
-import org.junit.Assert;
 import org.junit.Test;
-import uk.modl.transforms.JacksonJsonNodeTransformer;
-import uk.modl.utils.Util;
+import uk.modl.utils.TestUtils;
 
 public class SimpleReferenceTest1 {
 
@@ -13,10 +10,7 @@ public class SimpleReferenceTest1 {
 
     @Test
     public void parseOk() {
-        val f = new Interpreter().andThen(new JacksonJsonNodeTransformer())
-                .andThen(Util.jsonNodeToString);
-
-        Assert.assertEquals(EXPECTED, f.apply(INPUT));
+        TestUtils.runTest(INPUT, EXPECTED);
     }
 
 }

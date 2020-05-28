@@ -9,6 +9,7 @@ import uk.modl.visitor.ModlVisitor;
 
 @Value
 public class Array implements PairValue, Structure, ValueItem, ArrayItem {
+
     @NonNull
     Vector<ArrayItem> arrayItems;
 
@@ -22,4 +23,5 @@ public class Array implements PairValue, Structure, ValueItem, ArrayItem {
     public Number numericValue() {
         throw new InterpreterError("Cannot convert an array to a numeric value.");
     }
+
 }

@@ -10,12 +10,12 @@ import uk.modl.model.StringPrimitive;
 public class ClassExpansionTransformTest2 {
     @Test
     public void testAssigns() {
-        final TransformationContext ctx = new TransformationContext();
+        final TransformationContext ctx = TransformationContext.emptyCtx();
         addClasses(ctx);
 
-        final ClassExpansionTransform transform = new ClassExpansionTransform(ctx);
+        final ClassExpansionTransform transform = new ClassExpansionTransform();
 
-        final Pair updatedPair = (Pair) transform.apply(new Pair("d", new Map(Vector.of(new Pair("test1", new StringPrimitive("test2"))))));
+        final Pair updatedPair = (Pair) transform.apply(ctx, new Pair("d", new Map(Vector.of(new Pair("test1", new StringPrimitive("test2"))))));
         Assert.assertNotNull(updatedPair);
         Assert.assertEquals("delta", updatedPair.getKey());
         Assert.assertTrue(updatedPair.getValue() instanceof Map);

@@ -3,6 +3,7 @@ package uk.modl.visitor;
 import uk.modl.model.*;
 
 public interface ModlVisitor {
+
     void accept(final Modl modl);
 
     void accept(final Pair pair);
@@ -42,4 +43,5 @@ public interface ModlVisitor {
     void accept(final NumberPrimitive numberPrimitive);
 
     void accept(final StringPrimitive stringPrimitive);
+
 }

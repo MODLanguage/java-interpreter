@@ -6,8 +6,10 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 public class GreaterThanOperator implements Operator {
+
     public static GreaterThanOperator instance = new GreaterThanOperator();
 
     private GreaterThanOperator() {
     }
+
 }

@@ -1,21 +1,12 @@
 package uk.modl.transforms;
 
-import io.vavr.Function1;
+import io.vavr.Function2;
 import io.vavr.collection.Vector;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import uk.modl.model.*;
 
 @RequiredArgsConstructor
-public class PercentStarInstructionTransform implements Function1<Structure, Structure> {
-
-    /**
-     * The context for this invocation of the interpreter
-     */
-    @NonNull
-    @Setter
-    private TransformationContext ctx;
+public class PercentStarInstructionTransform implements Function2<TransformationContext, Structure, Structure> {
 
     /**
      * Replace if necessary
@@ -23,17 +14,17 @@ public class PercentStarInstructionTransform implements Function1<Structure, Str
      * @param vi a ValueItem
      * @return a ValueItem
      */
-    public PairValue apply(final PairValue vi) {
+    public PairValue apply(final TransformationContext ctx, final PairValue vi) {
         if (vi instanceof StringPrimitive) {
             final String s = ((StringPrimitive) vi).getValue();
             if (s.startsWith("%*")) {
-                return instructionToReferencedItems(s);
+                return instructionToReferencedItems(ctx, s);
             }
         }
         return vi;
     }
 
-    private Array instructionToReferencedItems(final String ir) {
+    private Array instructionToReferencedItems(final TransformationContext ctx, final String ir) {
         if ("%*load".equals(ir)) {
             return new Array(ctx.getFilesLoaded()
                     .map(f -> (ArrayItem) new StringPrimitive(f)));
@@ -112,10 +103,10 @@ public class PercentStarInstructionTransform implements Function1<Structure, Str
      * @return the result of function application
      */
     @Override
-    public Structure apply(final Structure s) {
+    public Structure apply(final TransformationContext ctx, final Structure s) {
         if (s instanceof Pair) {
             final Pair pair = (Pair) s;
-            final PairValue newValue = apply(pair.getValue());
+            final PairValue newValue = apply(ctx, pair.getValue());
             if (newValue != pair.getValue()) {
                 return new Pair(pair.getKey(), newValue);
             }

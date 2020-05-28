@@ -8,6 +8,7 @@ import uk.modl.visitor.ModlVisitor;
 
 @Value
 public class ArrayConditionalReturn implements ModlVisitable {
+
     @NonNull
     Vector<ArrayItem> items;
 

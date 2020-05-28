@@ -39,7 +39,7 @@ public class ExpandedClassTest {
         );
         final StarClassTransform.ClassInstruction superclass = of("super", "super", "str", assign2, pairs2);
 
-        final TransformationContext ctx = new TransformationContext();
+        final TransformationContext ctx = TransformationContext.emptyCtx();
 
         ctx.addClassInstruction(superclass);
 
@@ -55,7 +55,7 @@ public class ExpandedClassTest {
         final StarClassTransform.ClassInstruction ci = of("test2", null, null, assign, pairs);
 
 
-        final TransformationContext ctx = new TransformationContext();
+        final TransformationContext ctx = TransformationContext.emptyCtx();
 
         final ExpandedClass expandedClass = ExpandedClass.of(ctx, ci, null);
         assertEquals("ClassExpansionTransform.ExpandedClass(id=test2, name=test2, superclass=null, assigns=Vector(), pairs=Vector())", expandedClass.toString());

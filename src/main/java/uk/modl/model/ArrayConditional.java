@@ -9,10 +9,13 @@ import uk.modl.visitor.ModlVisitor;
 @Value
 @With
 public class ArrayConditional implements ArrayItem {
+
     @NonNull
     Vector<ConditionTest> tests;
+
     @NonNull
     Vector<ArrayConditionalReturn> returns;
+
     @NonNull
     Vector<ArrayItem> result;
 
@@ -22,4 +25,5 @@ public class ArrayConditional implements ArrayItem {
         tests.forEach(s -> s.visit(visitor));
         returns.forEach(s -> s.visit(visitor));
     }
+
 }

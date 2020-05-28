@@ -7,6 +7,7 @@ import uk.modl.visitor.ModlVisitor;
 
 @Value
 public class NumberPrimitive implements Primitive {
+
     @NonNull
     String value;
 

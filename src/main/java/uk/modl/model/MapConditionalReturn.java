@@ -8,6 +8,7 @@ import uk.modl.visitor.ModlVisitor;
 
 @Value
 public class MapConditionalReturn implements ModlVisitable {
+
     @NonNull
     Vector<MapItem> items;
 
@@ -16,4 +17,5 @@ public class MapConditionalReturn implements ModlVisitable {
         visitor.accept(this);
         items.forEach(s -> s.visit(visitor));
     }
+
 }

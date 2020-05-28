@@ -9,6 +9,7 @@ import uk.modl.visitor.ModlVisitor;
 
 @Value
 public class ConditionTest implements ModlVisitable {
+
     // The String in the immutable pair is an optional operator: & or |
     @NonNull
     Vector<Tuple2<ConditionOrConditionGroupInterface, String>> conditions;

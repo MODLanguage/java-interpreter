@@ -2,76 +2,75 @@ package uk.modl.transforms;
 
 import io.vavr.collection.*;
 import io.vavr.control.Option;
-import lombok.Getter;
+import lombok.Value;
+import lombok.With;
 import org.apache.commons.lang3.StringUtils;
+import uk.modl.model.Array;
 import uk.modl.model.Pair;
 
 /**
  * Stores context needed by other parts of the interpreter
  */
+@Value
+@With
 public class TransformationContext {
 
     /**
      * Possible targets of references
      */
-    @Getter
-    private Map<String, Pair> pairs = HashMap.empty();
+    Map<String, Pair> pairs;
 
     /**
      * The Modl Object Index
      */
-    @Getter
-    private uk.modl.model.Array objectIndex;
+    uk.modl.model.Array objectIndex;
 
     /**
      * Files loaded by a *load instruction
      */
-    @Getter
-    private Vector<String> filesLoaded = Vector.empty();
+    Vector<String> filesLoaded;
 
     /**
      * Methods defined by a *method instruction
      */
-    @Getter
-    private Set<StarMethodTransform.MethodInstruction> methods = LinkedHashSet.empty();
+    Set<StarMethodTransform.MethodInstruction> methods;
 
     /**
      * Methods indexed by *id
      */
-    @Getter
-    private Map<String, StarMethodTransform.MethodInstruction> methodsById = HashMap.empty();
+    Map<String, StarMethodTransform.MethodInstruction> methodsById;
 
     /**
      * Methods indexed by *name
      */
-    @Getter
-    private Map<String, StarMethodTransform.MethodInstruction> methodsByName = HashMap.empty();
+    Map<String, StarMethodTransform.MethodInstruction> methodsByName;
 
     /**
      * Classes defined by a *class instruction
      */
-    @Getter
-    private Set<StarClassTransform.ClassInstruction> classes = LinkedHashSet.empty();
+    Set<StarClassTransform.ClassInstruction> classes;
 
     /**
      * Classes indexed by *id
      */
-    @Getter
-    private Map<String, StarClassTransform.ClassInstruction> classesById = HashMap.empty();
+    Map<String, StarClassTransform.ClassInstruction> classesById;
 
     /**
      * Classes indexed by *name
      */
-    @Getter
-    private Map<String, StarClassTransform.ClassInstruction> classesByName = HashMap.empty();
+    Map<String, StarClassTransform.ClassInstruction> classesByName;
+
+    public static TransformationContext emptyCtx() {
+        return new TransformationContext(LinkedHashMap.empty(), new Array(Vector.empty()), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
+    }
 
     /**
      * Add files loaded by a *load instruction
      *
      * @param filenames a List of String filenames
      */
-    public void addFilesLoaded(final Vector<String> filenames) {
-        filesLoaded = filenames.appendAll(filesLoaded);
+    public TransformationContext addFilesLoaded(final Vector<String> filenames) {
+        return this.withFilesLoaded(filenames.appendAll(filesLoaded));
     }
 
     /**
@@ -79,12 +78,15 @@ public class TransformationContext {
      *
      * @param mi a StarMethodTransform.MethodInstruction
      */
-    public void addMethodInstruction(final StarMethodTransform.MethodInstruction mi) {
-        methods = methods.add(mi);
-        methodsById = methodsById.put(mi.getId(), mi);
-        if (StringUtils.isNotEmpty(mi.getName())) {
-            methodsByName = methodsByName.put(mi.getName(), mi);
-        }
+    public TransformationContext addMethodInstruction(final StarMethodTransform.MethodInstruction mi) {
+        final Set<StarMethodTransform.MethodInstruction> updatedMethods = methods.add(mi);
+        final Map<String, StarMethodTransform.MethodInstruction> updatedMethodsById = methodsById.put(mi.getId(), mi);
+
+        final Map<String, StarMethodTransform.MethodInstruction> updatedMethodsByName = (StringUtils.isNotEmpty(mi.getName())) ? methodsByName.put(mi.getName(), mi) : methodsByName;
+
+        return this.withMethods(updatedMethods)
+                .withMethodsById(updatedMethodsById)
+                .withMethodsByName(updatedMethodsByName);
     }
 
     /**
@@ -92,12 +94,15 @@ public class TransformationContext {
      *
      * @param ci a StarClassTransform.ClassInstruction
      */
-    public void addClassInstruction(final StarClassTransform.ClassInstruction ci) {
-        classes = classes.add(ci);
-        classesById = classesById.put(ci.getId(), ci);
-        if (StringUtils.isNotEmpty(ci.getName())) {
-            classesByName = classesByName.put(ci.getName(), ci);
-        }
+    public TransformationContext addClassInstruction(final StarClassTransform.ClassInstruction ci) {
+        final Set<StarClassTransform.ClassInstruction> updatedClasses = classes.add(ci);
+        final Map<String, StarClassTransform.ClassInstruction> updatedClassesById = classesById.put(ci.getId(), ci);
+
+        final Map<String, StarClassTransform.ClassInstruction> updatedClassesByName = (StringUtils.isNotEmpty(ci.getName())) ? classesByName.put(ci.getName(), ci) : classesByName;
+
+        return this.withClasses(updatedClasses)
+                .withClassesById(updatedClassesById)
+                .withClassesByName(updatedClassesByName);
     }
 
     /**
@@ -111,12 +116,8 @@ public class TransformationContext {
                 .orElse(classesByName.get(idOrName));
     }
 
-    public void setObjectIndex(final uk.modl.model.Array objectIndex) {
-        this.objectIndex = objectIndex;
-    }
-
-    public void addPair(final String key, final Pair p) {
-        pairs = pairs.put(key, p);
+    public TransformationContext addPair(final String key, final Pair p) {
+        return this.withPairs(pairs.put(key, p));
     }
 
     public Option<StarMethodTransform.MethodInstruction> getMethodByNameOrId(final String idOrName) {

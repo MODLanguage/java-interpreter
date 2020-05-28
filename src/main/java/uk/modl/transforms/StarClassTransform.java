@@ -1,21 +1,19 @@
 package uk.modl.transforms;
 
-import io.vavr.Function1;
+import io.vavr.Function2;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
-import lombok.*;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import lombok.var;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
 
 @RequiredArgsConstructor
-public class StarClassTransform implements Function1<Structure, Structure> {
-
-    /**
-     * The context for this invocation of the interpreter
-     */
-    @NonNull
-    @Setter
-    private TransformationContext ctx;
+public class StarClassTransform implements Function2<TransformationContext, Structure, Tuple2<TransformationContext, Structure>> {
 
     /**
      * Check whether the key represents a *class instruction
@@ -34,23 +32,24 @@ public class StarClassTransform implements Function1<Structure, Structure> {
      * @param p argument 1
      * @return the result of function application
      */
-    public Structure apply(final @NonNull Structure p) {
+    public Tuple2<TransformationContext, Structure> apply(final TransformationContext ctx, final @NonNull Structure p) {
         if (p instanceof Pair) {
             final Pair pair = (Pair) p;
             if (isClassInstruction(pair.getKey())) {
-                accept(pair);
-                return null;
+                final TransformationContext updatedContext = accept(ctx, pair);
+                return Tuple.of(updatedContext, null);
             }
         }
-        return p;
+        return Tuple.of(ctx, p);
     }
 
     /**
      * Extract a Class instruction from a Pair
      *
      * @param pair the Pair
+     * @return
      */
-    private void accept(final @NonNull Pair pair) {
+    private TransformationContext accept(final TransformationContext ctx, final @NonNull Pair pair) {
         if (pair.getValue() instanceof Map) {
             String id = null;
             String name = null;
@@ -101,7 +100,7 @@ public class StarClassTransform implements Function1<Structure, Structure> {
                 }
             }
 
-            ctx.addClassInstruction(ClassInstruction.of(id, name, superclass, assign, pairs));
+            return ctx.addClassInstruction(ClassInstruction.of(id, name, superclass, assign, pairs));
         } else {
             throw new InterpreterError("Expected a map for " + pair.getKey() + " but found a " + pair.getValue()
                     .getClass());

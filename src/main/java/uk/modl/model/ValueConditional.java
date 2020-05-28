@@ -10,10 +10,13 @@ import uk.modl.visitor.ModlVisitor;
 @Value
 @With
 public class ValueConditional implements ValueItem {
+
     @NonNull
     Vector<ConditionTest> tests;
+
     @NonNull
     Vector<ValueConditionalReturn> returns;
+
     @NonNull
     Vector<ValueItem> result;
 

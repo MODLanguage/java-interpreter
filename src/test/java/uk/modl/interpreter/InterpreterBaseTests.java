@@ -3,11 +3,13 @@ package uk.modl.interpreter;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vavr.Tuple2;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Test;
 import uk.modl.model.Modl;
 import uk.modl.transforms.JacksonJsonNodeTransformer;
+import uk.modl.transforms.TransformationContext;
 import uk.modl.utils.Util;
 
 import java.io.FileInputStream;
@@ -19,7 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 @Log4j2
 public class InterpreterBaseTests {
@@ -64,9 +66,9 @@ public class InterpreterBaseTests {
 
     private void checkValidTestInput(final TestInput testInput) {
         try {
-            final Modl modl = new Interpreter().apply(testInput.input);
-            if (modl != null) {
-                final JsonNode jsonResult = jsonTransformer.apply(modl);
+            final Tuple2<TransformationContext, Modl> interpreted = new Interpreter().apply(TransformationContext.emptyCtx(), testInput.input);
+            if (interpreted._2 != null) {
+                final JsonNode jsonResult = jsonTransformer.apply(interpreted._2);
 
                 final String output = Util.jsonNodeToString.apply(jsonResult);
                 if (output != null) {
@@ -129,7 +131,7 @@ public class InterpreterBaseTests {
     private void checkInValidTestInput(final TestInput testInput) {
         log.info("Failing Input : " + testInput.input);
         try {
-            new Interpreter().apply(testInput.input);
+            new Interpreter().apply(TransformationContext.emptyCtx(), testInput.input);
             fail("Expected error");
         } catch (Exception e) {
             if (!testInput.expected_output.equals(e.getMessage())) {

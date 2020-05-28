@@ -105,4 +105,5 @@ public abstract class ModlVisitorBase implements ModlVisitor {
     public void accept(final StringPrimitive stringPrimitive) {
 
     }
+
 }

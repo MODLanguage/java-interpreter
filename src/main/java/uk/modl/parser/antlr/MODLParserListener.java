@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.tree.ParseTreeListener;
  * {@link MODLParser}.
  */
 public interface MODLParserListener extends ParseTreeListener {
+
     /**
      * Enter a parse tree produced by {@link MODLParser#modl}.
      *
@@ -343,4 +344,5 @@ public interface MODLParserListener extends ParseTreeListener {
      * @param ctx the parse tree
      */
     void exitModl_primitive(MODLParser.Modl_primitiveContext ctx);
+
 }

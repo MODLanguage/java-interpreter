@@ -9,10 +9,13 @@ import uk.modl.visitor.ModlVisitor;
 @Value
 @With
 public class TopLevelConditional implements Structure {
+
     @NonNull
     Vector<ConditionTest> tests;
+
     @NonNull
     Vector<TopLevelConditionalReturn> returns;
+
     @NonNull
     Vector<Structure> result;
 

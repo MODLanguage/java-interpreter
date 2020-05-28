@@ -5,6 +5,7 @@ import uk.modl.visitor.ModlVisitor;
 
 @EqualsAndHashCode
 public class TruePrimitive implements Primitive {
+
     public static final TruePrimitive instance = new TruePrimitive();
 
     private TruePrimitive() {
@@ -25,4 +26,5 @@ public class TruePrimitive implements Primitive {
     public Number numericValue() {
         return 1;
     }
+
 }

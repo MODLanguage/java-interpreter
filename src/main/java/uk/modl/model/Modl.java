@@ -9,6 +9,7 @@ import uk.modl.visitor.ModlVisitor;
 
 @Value
 public class Modl implements ModlVisitable {
+
     @NonNull
     Vector<Structure> structures;
 
@@ -17,4 +18,5 @@ public class Modl implements ModlVisitable {
         visitor.accept(this);
         structures.forEach(s -> s.visit(visitor));
     }
+
 }

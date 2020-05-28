@@ -1,6 +1,7 @@
 package uk.modl.parser.errors;
 
 public class InvalidObjectReferenceException extends RuntimeException {
+
     public InvalidObjectReferenceException() {
     }
 
@@ -19,4 +20,5 @@ public class InvalidObjectReferenceException extends RuntimeException {
     public InvalidObjectReferenceException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
+
 }

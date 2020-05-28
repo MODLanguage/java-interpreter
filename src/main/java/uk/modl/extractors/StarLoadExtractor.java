@@ -14,6 +14,7 @@ import uk.modl.visitor.ModlVisitorBase;
 public class StarLoadExtractor extends ModlVisitorBase {
 
     private Vector<LoadSet> loadSets = Vector.empty();
+
     private boolean immutable = false;
 
     /**
@@ -93,8 +94,11 @@ public class StarLoadExtractor extends ModlVisitorBase {
      */
     @Value
     public static class LoadSet {
+
         Pair pair;
+
         Vector<FileSpec> fileSet;
+
     }
 
     /**
@@ -102,7 +106,11 @@ public class StarLoadExtractor extends ModlVisitorBase {
      */
     @Value
     public static class FileSpec {
+
         String filename;
+
         boolean forceLoad;
+
     }
+
 }

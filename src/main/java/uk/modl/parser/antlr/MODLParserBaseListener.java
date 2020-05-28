@@ -11,6 +11,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  * of the available methods.
  */
 public class MODLParserBaseListener implements MODLParserListener {
+
     /**
      * {@inheritDoc}
      *
@@ -478,4 +479,5 @@ public class MODLParserBaseListener implements MODLParserListener {
     @Override
     public void visitErrorNode(ErrorNode node) {
     }
+
 }

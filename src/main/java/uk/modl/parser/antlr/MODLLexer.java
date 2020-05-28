@@ -10,19 +10,24 @@ import org.antlr.v4.runtime.dfa.DFA;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class MODLLexer extends Lexer {
+
     public static final int
             WS = 1, NULL = 2, TRUE = 3, FALSE = 4, COLON = 5, EQUALS = 6, STRUCT_SEP = 7, ARR_SEP = 8,
             LBRAC = 9, RBRAC = 10, LSBRAC = 11, RSBRAC = 12, NUMBER = 13, COMMENT = 14, QUOTED = 15,
             STRING = 16, HASH_PREFIX = 17, LCBRAC = 18, CWS = 19, QMARK = 20, FSLASH = 21, GTHAN = 22,
             LTHAN = 23, ASTERISK = 24, AMP = 25, PIPE = 26, EXCLAM = 27, CCOMMENT = 28, RCBRAC = 29;
+
     public static final int
             CONDITIONAL = 1;
+
     public static final String[] ruleNames = makeRuleNames();
+
     /**
      * @deprecated Use {@link #VOCABULARY} instead.
      */
     @Deprecated
     public static final String[] tokenNames;
+
     public static final String _serializedATN =
             "\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\2\37\u01f6\b\1\b\1" +
                     "\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t" +
@@ -212,17 +217,25 @@ public class MODLLexer extends Lexer {
                     "\u0197\u01b6\u01b8\u01c0\u01c6\u01c8\u01cd\u01d1\u01d3\u01d7\u01e3\u01e9" +
                     "\23\b\2\2\7\3\2\t\4\2\t\5\2\t\6\2\t\7\2\t\b\2\t\t\2\t\13\2\t\f\2\t\r\2" +
                     "\t\16\2\t\17\2\t\24\2\t\21\2\t\22\2\6\2\2";
+
     public static final ATN _ATN =
             new ATNDeserializer().deserialize(_serializedATN.toCharArray());
+
     protected static final DFA[] _decisionToDFA;
+
     protected static final PredictionContextCache _sharedContextCache =
             new PredictionContextCache();
+
     private static final String[] _LITERAL_NAMES = makeLiteralNames();
+
     private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
+
     public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
+
     public static String[] channelNames = {
             "DEFAULT_TOKEN_CHANNEL", "HIDDEN"
     };
+
     public static String[] modeNames = {
             "DEFAULT_MODE", "CONDITIONAL"
     };
@@ -329,4 +342,5 @@ public class MODLLexer extends Lexer {
     public ATN getATN() {
         return _ATN;
     }
+
 }

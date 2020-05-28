@@ -9,10 +9,13 @@ import uk.modl.visitor.ModlVisitor;
 @Value
 @With
 public class MapConditional implements MapItem {
+
     @NonNull
     Vector<ConditionTest> tests;
+
     @NonNull
     Vector<MapConditionalReturn> returns;
+
     @NonNull
     Vector<MapItem> result;
 
@@ -22,4 +25,5 @@ public class MapConditional implements MapItem {
         tests.forEach(s -> s.visit(visitor));
         returns.forEach(s -> s.visit(visitor));
     }
+
 }

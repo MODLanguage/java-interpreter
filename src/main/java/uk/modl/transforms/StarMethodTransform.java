@@ -1,9 +1,10 @@
 package uk.modl.transforms;
 
-import io.vavr.Function1;
+import io.vavr.Function2;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.Value;
 import uk.modl.model.Map;
 import uk.modl.model.MapItem;
@@ -12,14 +13,7 @@ import uk.modl.model.Structure;
 import uk.modl.parser.errors.InterpreterError;
 
 @RequiredArgsConstructor
-public class StarMethodTransform implements Function1<Structure, Structure> {
-
-    /**
-     * The context for this invocation of the interpreter
-     */
-    @NonNull
-    @Setter
-    private TransformationContext ctx;
+public class StarMethodTransform implements Function2<TransformationContext, Structure, Tuple2<TransformationContext, Structure>> {
 
     /**
      * Check whether the key represents a *method instruction
@@ -40,20 +34,21 @@ public class StarMethodTransform implements Function1<Structure, Structure> {
      * @param p argument 1
      * @return the result of function application
      */
-    public Structure apply(final Structure p) {
+    public Tuple2<TransformationContext, Structure> apply(final TransformationContext ctx, final Structure p) {
         if (p instanceof Pair && isMethodInstruction(((Pair) p).getKey())) {
-            accept((Pair) p);
-            return null;
+            final TransformationContext updatedContext = accept(ctx, (Pair) p);
+            return Tuple.of(updatedContext, null);
         }
-        return p;
+        return Tuple.of(ctx, p);
     }
 
     /**
      * Extract a Method instruction from a Pair
      *
      * @param pair the Pair
+     * @return
      */
-    private void accept(final Pair pair) {
+    private TransformationContext accept(final TransformationContext ctx, final Pair pair) {
         if (pair.getValue() instanceof Map) {
             String name = null;
             String id = null;
@@ -86,7 +81,7 @@ public class StarMethodTransform implements Function1<Structure, Structure> {
             }
 
             final MethodInstruction m = MethodInstruction.of(id, name, transform);
-            ctx.addMethodInstruction(m);
+            return ctx.addMethodInstruction(m);
         } else {
             throw new InterpreterError("Expected a map for " + pair.getKey() + " but found a " + pair.getValue()
                     .getClass());

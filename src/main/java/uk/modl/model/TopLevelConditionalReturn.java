@@ -9,6 +9,7 @@ import uk.modl.visitor.ModlVisitor;
 
 @Value
 public class TopLevelConditionalReturn implements ModlVisitable, Structure {
+
     @NonNull
     Vector<Structure> structures;
 
@@ -17,4 +18,5 @@ public class TopLevelConditionalReturn implements ModlVisitable, Structure {
         visitor.accept(this);
         structures.forEach(s -> s.visit(visitor));
     }
+
 }

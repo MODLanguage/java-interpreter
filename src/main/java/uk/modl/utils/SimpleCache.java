@@ -74,7 +74,9 @@ public class SimpleCache<K, V> {
      * @param <V> The class of the values to be cached.
      */
     private static class CacheEntry<V> {
+
         private final V value;
+
         private final long expiry;
 
         /**
@@ -87,5 +89,7 @@ public class SimpleCache<K, V> {
             this.value = value;
             this.expiry = expiry;
         }
+
     }
+
 }

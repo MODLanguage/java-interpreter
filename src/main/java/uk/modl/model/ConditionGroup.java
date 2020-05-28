@@ -8,8 +8,10 @@ import uk.modl.visitor.ModlVisitor;
 
 @Value
 public class ConditionGroup implements ConditionOrConditionGroupInterface {
+
     @NonNull
     Vector<Tuple2<ConditionTest, String>> subConditionList;
+
     boolean shouldNegate;
 
     @Override

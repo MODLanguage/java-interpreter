@@ -5,7 +5,6 @@ import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
 import uk.modl.utils.Util;
@@ -14,102 +13,125 @@ import uk.modl.utils.Util;
 public class ConditionalsTransform {
 
     /**
-     * The context for this invocation of the interpreter
-     */
-    @NonNull
-    @Setter
-    private TransformationContext ctx;
-
-    /**
      * Applies this function to one argument and returns the result.
      *
      * @param tlc argument 1
      * @return the result of function application
      */
-    public TopLevelConditional apply(final TopLevelConditional tlc) {
+    public Tuple2<TransformationContext, Structure> apply(final TransformationContext ctx, final TopLevelConditional tlc) {
         if (tlc.getTests()
                 .size() == 1) {
-            if (evaluate(tlc.getTests()
+            if (evaluate(ctx, tlc.getTests()
                     .get(0))) {
-                final Vector<Structure> structures = tlc.getReturns()
+                @NonNull final Vector<Structure> vector = tlc.getReturns()
                         .get(0)
-                        .getStructures()
-                        .map(this::handleNestedTopLevelConditionals);
+                        .getStructures();
 
-                saveResultInContext(structures);
+                TransformationContext newCtx = ctx;
+                Vector<Structure> structures = Vector.empty();
 
-                return tlc.withResult(structures);
+                for (final Structure structure : vector) {
+                    final Tuple2<TransformationContext, Structure> result = handleNestedTopLevelConditionals(newCtx, structure);
+                    newCtx = result._1;
+                    structures = structures.append(result._2);
+                }
+
+                newCtx = saveResultInContext(ctx, structures);
+
+                return Tuple.of(newCtx, tlc.withResult(structures));
             } else {
                 if (tlc.getReturns()
                         .size() > 1) {
-                    final Vector<Structure> structures = tlc.getReturns()
+                    @NonNull final Vector<Structure> vector = tlc.getReturns()
                             .get(1)
-                            .getStructures()
-                            .map(this::handleNestedTopLevelConditionals);
+                            .getStructures();
 
-                    saveResultInContext(structures);
+                    TransformationContext newCtx = ctx;
+                    Vector<Structure> structures = Vector.empty();
 
-                    return tlc.withResult(structures);
+                    for (final Structure structure : vector) {
+                        final Tuple2<TransformationContext, Structure> result = handleNestedTopLevelConditionals(newCtx, structure);
+                        newCtx = result._1;
+                        structures = structures.append(result._2);
+                    }
+
+                    newCtx = saveResultInContext(ctx, structures);
+
+                    return Tuple.of(newCtx, tlc.withResult(structures));
                 }
             }
         } else {
             int i = 0;
+            TransformationContext newCtx = ctx;
+            Vector<Structure> structures = Vector.empty();
+
             for (final ConditionTest test : tlc.getTests()) {
-                if (evaluate(test)) {
-                    final Vector<Structure> structures = tlc.getReturns()
+                if (evaluate(ctx, test)) {
+
+                    @NonNull final Vector<Structure> vector = tlc.getReturns()
                             .get(i)
-                            .getStructures()
-                            .map(this::handleNestedTopLevelConditionals);
+                            .getStructures();
 
-                    saveResultInContext(structures);
+                    for (final Structure structure : vector) {
+                        final Tuple2<TransformationContext, Structure> result = handleNestedTopLevelConditionals(newCtx, structure);
+                        newCtx = result._1;
+                        structures = structures.append(result._2);
+                    }
 
-                    return tlc.withResult(structures);
+                    newCtx = saveResultInContext(ctx, structures);
+
                 }
                 i += 1;
             }
+            return Tuple.of(newCtx, tlc.withResult(structures));
         }
-        return tlc;
+        return Tuple.of(ctx, tlc);
     }
 
-    private void saveResultInContext(final Vector<Structure> structures) {
-        structures.forEach(structure -> {
+    private TransformationContext saveResultInContext(final TransformationContext ctx, final Vector<Structure> structures) {
+
+        TransformationContext newCtx = ctx;
+        for (final Structure structure : structures) {
             if (structure instanceof Pair) {
                 final Pair pair = (Pair) structure;
                 @NonNull final String key = pair.getKey();
-                ctx.addPair(key, pair);
+                newCtx = ctx.addPair(key, pair);
 
                 if (key.startsWith("_")) {
-                    ctx.addPair(key.substring(1), pair);
+                    newCtx = newCtx.addPair(key.substring(1), pair);
                 }
             }
-        });
-    }
-
-    private Structure handleNestedTopLevelConditionals(final Structure structure) {
-        if (structure instanceof TopLevelConditional) {
-            return apply((TopLevelConditional) structure);
         }
-        return structure;
+
+        return newCtx;
+
     }
 
-    private boolean evaluate(final ConditionTest test) {
+    private Tuple2<TransformationContext, Structure> handleNestedTopLevelConditionals(final TransformationContext ctx, final Structure structure) {
+        if (structure instanceof TopLevelConditional) {
+            return apply(ctx, (TopLevelConditional) structure);
+        }
+        return Tuple.of(ctx, structure);
+    }
+
+    private boolean evaluate(final TransformationContext ctx, final ConditionTest test) {
         final Vector<Tuple2<Boolean, String>> partial = test.getConditions()
-                .map(this::evaluate);
+                .map(cond -> evaluate(ctx, cond));
         return evaluate(partial);
     }
 
-    private Tuple2<Boolean, String> evaluate(final Tuple2<ConditionOrConditionGroupInterface, String> tuple) {
+    private Tuple2<Boolean, String> evaluate(final TransformationContext ctx, final Tuple2<ConditionOrConditionGroupInterface, String> tuple) {
         if (tuple._1 instanceof Condition) {
-            return Tuple.of(evaluate((Condition) tuple._1), tuple._2);
+            return Tuple.of(evaluate(ctx, (Condition) tuple._1), tuple._2);
         } else {
-            return Tuple.of(evaluate((ConditionGroup) tuple._1), tuple._2);
+            return Tuple.of(evaluate(ctx, (ConditionGroup) tuple._1), tuple._2);
         }
     }
 
-    private boolean evaluate(final ConditionGroup cg) {
+    private boolean evaluate(final TransformationContext ctx, final ConditionGroup cg) {
 
         final Vector<Tuple2<Boolean, String>> partial = cg.getSubConditionList()
-                .map(sc -> Tuple.of(evaluate(sc._1), sc._2));
+                .map(sc -> Tuple.of(evaluate(ctx, sc._1), sc._2));
 
         return (cg.isShouldNegate()) != evaluate(partial);
     }
@@ -139,7 +161,7 @@ public class ConditionalsTransform {
         return result;
     }
 
-    private boolean evaluate(final Condition c) {
+    private boolean evaluate(final TransformationContext ctx, final Condition c) {
         final Operator op = c.getOp();
         final boolean shouldNegate = c.isShouldNegate();
         final ValueItem lhs = c.getLhs();
@@ -232,10 +254,10 @@ public class ConditionalsTransform {
                 });
     }
 
-    public ValueConditional apply(final ValueConditional vc) {
+    public ValueConditional apply(final TransformationContext ctx, final ValueConditional vc) {
         if (vc.getTests()
                 .size() == 1) {
-            if (evaluate(vc.getTests()
+            if (evaluate(ctx, vc.getTests()
                     .get(0))) {
                 if (vc.getReturns()
                         .size() == 0) {
@@ -244,7 +266,7 @@ public class ConditionalsTransform {
                 final Vector<ValueItem> items = vc.getReturns()
                         .get(0)
                         .getItems()
-                        .map(this::handleNestedValueConditionals);
+                        .map(nested -> handleNestedValueConditionals(ctx, nested));
 
                 return vc.withResult(items);
             } else {
@@ -255,18 +277,18 @@ public class ConditionalsTransform {
                 final Vector<ValueItem> items = vc.getReturns()
                         .get(1)
                         .getItems()
-                        .map(this::handleNestedValueConditionals);
+                        .map(nested -> handleNestedValueConditionals(ctx, nested));
 
                 return vc.withResult(items);
             }
         } else {
             int i = 0;
             for (final ConditionTest test : vc.getTests()) {
-                if (evaluate(test)) {
+                if (evaluate(ctx, test)) {
                     final Vector<ValueItem> items = vc.getReturns()
                             .get(i)
                             .getItems()
-                            .map(this::handleNestedValueConditionals);
+                            .map(nested -> handleNestedValueConditionals(ctx, nested));
 
                     return vc.withResult(items);
                 }
@@ -276,31 +298,31 @@ public class ConditionalsTransform {
         return vc;
     }
 
-    private ValueItem handleNestedValueConditionals(final ValueItem vi) {
+    private ValueItem handleNestedValueConditionals(final TransformationContext ctx, final ValueItem vi) {
         if (vi instanceof ValueConditional) {
-            return apply((ValueConditional) vi);
+            return apply(ctx, (ValueConditional) vi);
         }
         return vi;
     }
 
-    private ArrayItem handleNestedArrayConditionals(final ArrayItem vi) {
+    private ArrayItem handleNestedArrayConditionals(final TransformationContext ctx, final ArrayItem vi) {
         if (vi instanceof ArrayConditional) {
-            return apply((ArrayConditional) vi);
+            return apply(ctx, (ArrayConditional) vi);
         }
         return vi;
     }
 
-    private MapItem handleNestedMapConditionals(final MapItem vi) {
+    private MapItem handleNestedMapConditionals(final TransformationContext ctx, final MapItem vi) {
         if (vi instanceof MapConditional) {
-            return apply((MapConditional) vi);
+            return apply(ctx, (MapConditional) vi);
         }
         return vi;
     }
 
-    public ArrayConditional apply(final ArrayConditional ac) {
+    public ArrayConditional apply(final TransformationContext ctx, final ArrayConditional ac) {
         if (ac.getTests()
                 .size() == 1) {
-            if (evaluate(ac.getTests()
+            if (evaluate(ctx, ac.getTests()
                     .get(0))) {
                 if (ac.getReturns()
                         .size() == 0) {
@@ -309,7 +331,7 @@ public class ConditionalsTransform {
                 final Vector<ArrayItem> items = ac.getReturns()
                         .get(0)
                         .getItems()
-                        .map(this::handleNestedArrayConditionals);
+                        .map(nested -> handleNestedArrayConditionals(ctx, nested));
 
                 return ac.withResult(items);
             } else {
@@ -320,18 +342,18 @@ public class ConditionalsTransform {
                 final Vector<ArrayItem> items = ac.getReturns()
                         .get(1)
                         .getItems()
-                        .map(this::handleNestedArrayConditionals);
+                        .map(nested -> handleNestedArrayConditionals(ctx, nested));
 
                 return ac.withResult(items);
             }
         } else {
             int i = 0;
             for (final ConditionTest test : ac.getTests()) {
-                if (evaluate(test)) {
+                if (evaluate(ctx, test)) {
                     final Vector<ArrayItem> items = ac.getReturns()
                             .get(i)
                             .getItems()
-                            .map(this::handleNestedArrayConditionals);
+                            .map(nested -> handleNestedArrayConditionals(ctx, nested));
 
                     return ac.withResult(items);
                 }
@@ -341,10 +363,10 @@ public class ConditionalsTransform {
         return ac;
     }
 
-    public MapConditional apply(final MapConditional mc) {
+    public MapConditional apply(final TransformationContext ctx, final MapConditional mc) {
         if (mc.getTests()
                 .size() == 1) {
-            if (evaluate(mc.getTests()
+            if (evaluate(ctx, mc.getTests()
                     .get(0))) {
                 if (mc.getReturns()
                         .size() == 0) {
@@ -353,7 +375,7 @@ public class ConditionalsTransform {
                 final Vector<MapItem> items = mc.getReturns()
                         .get(0)
                         .getItems()
-                        .map(this::handleNestedMapConditionals);
+                        .map(nested -> handleNestedMapConditionals(ctx, nested));
 
                 return mc.withResult(items);
             } else {
@@ -364,18 +386,18 @@ public class ConditionalsTransform {
                 final Vector<MapItem> items = mc.getReturns()
                         .get(1)
                         .getItems()
-                        .map(this::handleNestedMapConditionals);
+                        .map(nested -> handleNestedMapConditionals(ctx, nested));
 
                 return mc.withResult(items);
             }
         } else {
             int i = 0;
             for (final ConditionTest test : mc.getTests()) {
-                if (evaluate(test)) {
+                if (evaluate(ctx, test)) {
                     final Vector<MapItem> items = mc.getReturns()
                             .get(i)
                             .getItems()
-                            .map(this::handleNestedMapConditionals);
+                            .map(nested -> handleNestedMapConditionals(ctx, nested));
 
                     return mc.withResult(items);
                 }

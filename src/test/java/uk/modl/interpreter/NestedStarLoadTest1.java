@@ -1,10 +1,7 @@
 package uk.modl.interpreter;
 
-import lombok.val;
-import org.junit.Assert;
 import org.junit.Test;
-import uk.modl.transforms.JacksonJsonNodeTransformer;
-import uk.modl.utils.Util;
+import uk.modl.utils.TestUtils;
 
 public class NestedStarLoadTest1 {
 
@@ -15,17 +12,11 @@ public class NestedStarLoadTest1 {
 
     @Test
     public void test1() {
-        val f = new Interpreter().andThen(new JacksonJsonNodeTransformer())
-                .andThen(Util.jsonNodeToString);
-
-        Assert.assertEquals(EXPECTED1, f.apply(INPUT1));
+        TestUtils.runTest(INPUT1, EXPECTED1);
     }
 
     @Test
     public void test2() {
-        val f = new Interpreter().andThen(new JacksonJsonNodeTransformer())
-                .andThen(Util.jsonNodeToString);
-
-        Assert.assertEquals(EXPECTED2, f.apply(INPUT2));
+        TestUtils.runTest(INPUT2, EXPECTED2);
     }
 }

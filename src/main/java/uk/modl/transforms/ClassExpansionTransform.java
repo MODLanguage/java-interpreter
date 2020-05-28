@@ -1,12 +1,11 @@
 package uk.modl.transforms;
 
-import io.vavr.Function1;
+import io.vavr.Function2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -18,16 +17,9 @@ import uk.modl.utils.Util;
 import java.util.Objects;
 
 @RequiredArgsConstructor
-public class ClassExpansionTransform implements Function1<Structure, Structure> {
+public class ClassExpansionTransform implements Function2<TransformationContext, Structure, Structure> {
 
     private final io.vavr.collection.Map<String, ExpandedClass> cache = HashMap.empty();
-
-    /**
-     * The context for this invocation of the interpreter
-     */
-    @NonNull
-    @Setter
-    private TransformationContext ctx;
 
     /**
      * Applies this function to one argument and returns the result.
@@ -36,15 +28,15 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
      * @return the result of function application
      */
     @Override
-    public Structure apply(final Structure s) {
+    public Structure apply(final TransformationContext ctx, final Structure s) {
         if (s instanceof Map) {
-            return processMap((Map) s);
+            return processMap(ctx, (Map) s);
         }
         if (s instanceof Array) {
-            return processArray((Array) s);
+            return processArray(ctx, (Array) s);
         }
         if (s instanceof Pair) {
-            return processPair((Pair) s);
+            return processPair(ctx, (Pair) s);
         }
         if (s instanceof TopLevelConditional) {
             return processTopLevelConditional((TopLevelConditional) s);
@@ -56,11 +48,11 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
         return topLevelConditional;
     }
 
-    private Structure processPair(final Pair pair) {
-        return expandToClass(pair);
+    private Structure processPair(final TransformationContext ctx, final Pair pair) {
+        return expandToClass(ctx, pair);
     }
 
-    private Structure expandToClass(final Pair pair) {
+    private Structure expandToClass(final TransformationContext ctx, final Pair pair) {
         final Option<StarClassTransform.ClassInstruction> maybeCi = ctx.getClassByNameOrId(pair.getKey());
         if (maybeCi.isDefined()) {
             final StarClassTransform.ClassInstruction ci = maybeCi.get();
@@ -79,11 +71,11 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
 
             switch (supertype) {
                 case "map":
-                    return convertPairToMap(pair, expClass);
+                    return convertPairToMap(ctx, pair, expClass);
                 case "null":
                     return convertPairToNull(expClass);
                 case "arr":
-                    return convertPairToArray(pair, expClass);
+                    return convertPairToArray(ctx, pair, expClass);
                 case "num":
                     return convertPairToNumber(pair, expClass);
                 case "str":
@@ -97,13 +89,13 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
         return pair;
     }
 
-    private Pair convertPairToMap(final Pair pair, final ExpandedClass expClass) {
+    private Pair convertPairToMap(final TransformationContext ctx, final Pair pair, final ExpandedClass expClass) {
         @NonNull final PairValue pairValue = pair.getValue();
 
         if (pairValue instanceof Array) {
             final Map map = expClass.toMapUsingAssign((Array) pairValue);
 
-            final Structure structure = apply(map);
+            final Structure structure = apply(ctx, map);
             if (structure instanceof ValueItem) {
                 return new Pair(expClass.name, (PairValue) structure);
             } else {
@@ -111,7 +103,7 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
             }
         } else if (pairValue instanceof Map) {
             final Map map = expClass.toMapFromMap((Map) pairValue);
-            final Structure structure = apply(map);
+            final Structure structure = apply(ctx, map);
             if (structure instanceof ValueItem) {
                 return new Pair(expClass.name, (PairValue) structure);
             } else {
@@ -121,7 +113,7 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
             if (expClass.hasSingleValueAssign()) {
                 final Map map = expClass.toMapUsingAssign(new Array(Vector.of((ArrayItem) pairValue)));
 
-                final Structure structure = apply(map);
+                final Structure structure = apply(ctx, map);
                 if (structure instanceof ValueItem) {
                     return new Pair(expClass.name, (PairValue) structure);
                 } else {
@@ -130,7 +122,7 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
             } else if (expClass.assigns.isEmpty()) {
                 final Map map = expClass.toMapFromMap(new Map(Vector.of(new Pair("value", pairValue))));
 
-                final Structure structure = apply(map);
+                final Structure structure = apply(ctx, map);
                 return new Pair(expClass.name, (PairValue) structure);
             }
         }
@@ -141,7 +133,7 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
         return new Pair(expClass.name, NullPrimitive.instance);
     }
 
-    private Pair convertPairToArray(final Pair pair, final ExpandedClass expClass) {
+    private Pair convertPairToArray(final TransformationContext ctx, final Pair pair, final ExpandedClass expClass) {
         @NonNull final PairValue pairValue = pair.getValue();
 
         if (pairValue instanceof Array) {
@@ -156,7 +148,7 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
                         Vector<ArrayItem> items = Vector.empty();
                         for (int i = 0; i < assignListLength; i++) {
                             final Pair p = new Pair(assignList.get(i), (PairValue) valuesToAssign.get(i));
-                            final Structure structure = expandToClass(p);
+                            final Structure structure = expandToClass(ctx, p);
                             if (structure instanceof Pair) {
                                 @NonNull final PairValue value = ((Pair) structure).getValue();
                                 if (value instanceof Map) {
@@ -171,7 +163,7 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
                     .getOrElse(() -> (Array) pairValue);
 
 
-            final Structure structure = apply(array);
+            final Structure structure = apply(ctx, array);
             if (structure instanceof ValueItem) {
                 return new Pair(expClass.name, (PairValue) structure);
             } else {
@@ -214,20 +206,20 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
         return new Pair(expClass.name, FalsePrimitive.instance);
     }
 
-    private Array processArray(final Array array) {
+    private Array processArray(final TransformationContext ctx, final Array array) {
         return new Array(array.getArrayItems()
-                .map(this::processArrayItem));
+                .map(ai -> processArrayItem(ctx, ai)));
     }
 
-    private ArrayItem processArrayItem(final ArrayItem arrayItem) {
+    private ArrayItem processArrayItem(final TransformationContext ctx, final ArrayItem arrayItem) {
         if (arrayItem instanceof Map) {
-            return processMap((Map) arrayItem);
+            return processMap(ctx, (Map) arrayItem);
         }
         if (arrayItem instanceof Pair) {
-            return (ArrayItem) processPair((Pair) arrayItem);
+            return (ArrayItem) processPair(ctx, (Pair) arrayItem);
         }
         if (arrayItem instanceof Array) {
-            return processArray((Array) arrayItem);
+            return processArray(ctx, (Array) arrayItem);
         }
         if (arrayItem instanceof Primitive) {
             return processPrimitive((Primitive) arrayItem);
@@ -239,14 +231,14 @@ public class ClassExpansionTransform implements Function1<Structure, Structure> 
         return primitive;
     }
 
-    private Map processMap(final Map map) {
+    private Map processMap(final TransformationContext ctx, final Map map) {
         return new Map(map.getMapItems()
-                .map(this::processMapItem));
+                .map(mi -> processMapItem(ctx, mi)));
     }
 
-    private MapItem processMapItem(final MapItem mapItem) {
+    private MapItem processMapItem(final TransformationContext ctx, final MapItem mapItem) {
         if (mapItem instanceof Pair) {
-            return (MapItem) processPair((Pair) mapItem);
+            return (MapItem) processPair(ctx, (Pair) mapItem);
         }
         if (mapItem instanceof MapConditional) {
             return processMapConditional((MapConditional) mapItem);

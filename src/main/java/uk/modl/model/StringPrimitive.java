@@ -6,6 +6,7 @@ import uk.modl.visitor.ModlVisitor;
 
 @Value
 public class StringPrimitive implements Primitive {
+
     String value;
 
     @Override
@@ -22,4 +23,5 @@ public class StringPrimitive implements Primitive {
     public Number numericValue() {
         return NumberUtils.createNumber(value);
     }
+
 }

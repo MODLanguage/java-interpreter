@@ -11,6 +11,7 @@ import org.antlr.v4.runtime.tree.ParseTreeVisitor;
  *            operations with no return type.
  */
 public interface MODLParserVisitor<T> extends ParseTreeVisitor<T> {
+
     /**
      * Visit a parse tree produced by {@link MODLParser#modl}.
      *
@@ -202,4 +203,5 @@ public interface MODLParserVisitor<T> extends ParseTreeVisitor<T> {
      * @return the visitor result
      */
     T visitModl_primitive(MODLParser.Modl_primitiveContext ctx);
+
 }

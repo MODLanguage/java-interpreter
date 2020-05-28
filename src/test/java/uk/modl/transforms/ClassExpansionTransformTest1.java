@@ -9,8 +9,8 @@ import uk.modl.model.*;
 public class ClassExpansionTransformTest1 {
     @Test
     public void test() {
-        final TransformationContext ctx = new TransformationContext();
-        final ClassExpansionTransform transform = new ClassExpansionTransform(ctx);
+        final TransformationContext ctx = TransformationContext.emptyCtx();
+        final ClassExpansionTransform transform = new ClassExpansionTransform();
 
         // Create the class
         final Vector<ArrayItem> assign = Vector.of(new Array(Vector.of(new StringPrimitive("one"), new StringPrimitive("two"), new StringPrimitive("three"))));
@@ -22,7 +22,7 @@ public class ClassExpansionTransformTest1 {
         final Pair testPair = new Pair("test", pairValue);
 
         // Transform the pair
-        final Pair updatedPair = (Pair) transform.apply(testPair);
+        final Pair updatedPair = (Pair) transform.apply(ctx, testPair);
 
         // Check the result
         Assert.assertNotNull(updatedPair);

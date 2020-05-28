@@ -12,6 +12,7 @@ import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
  *            operations with no return type.
  */
 public class MODLParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements MODLParserVisitor<T> {
+
     /**
      * {@inheritDoc}
      *
@@ -275,4 +276,5 @@ public class MODLParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> implem
     public T visitModl_primitive(MODLParser.Modl_primitiveContext ctx) {
         return visitChildren(ctx);
     }
+
 }

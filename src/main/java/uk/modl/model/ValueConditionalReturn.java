@@ -8,6 +8,7 @@ import uk.modl.visitor.ModlVisitor;
 
 @Value
 public class ValueConditionalReturn implements ModlVisitable {
+
     @NonNull
     Vector<ValueItem> items;
 
@@ -16,4 +17,5 @@ public class ValueConditionalReturn implements ModlVisitable {
         visitor.accept(this);
         items.forEach(s -> s.visit(visitor));
     }
+
 }

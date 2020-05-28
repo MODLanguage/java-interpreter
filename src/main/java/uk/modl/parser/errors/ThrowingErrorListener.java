@@ -38,4 +38,5 @@ public class ThrowingErrorListener extends BaseErrorListener {
             throws ParseCancellationException {
         throw new ParseCancellationException("line " + line + ":" + charPositionInLine + " " + msg);
     }
+
 }
