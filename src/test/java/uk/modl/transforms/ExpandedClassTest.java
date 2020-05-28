@@ -39,16 +39,15 @@ public class ExpandedClassTest {
         );
         final StarClassTransform.ClassInstruction superclass = of("super", "super", "str", assign2, pairs2);
 
-        final TransformationContext ctx = TransformationContext.emptyCtx();
-
-        ctx.addClassInstruction(superclass);
+        final TransformationContext ctx = TransformationContext.emptyCtx()
+                .addClassInstruction(superclass);
 
         final ExpandedClass expandedClass = ExpandedClass.of(ctx, ci, "str");
         assertEquals("ClassExpansionTransform.ExpandedClass(id=test1, name=name, superclass=str, assigns=Vector(Vector(a, b), Vector(a, b, c), Vector(d, e), Vector(d, e, f)), pairs=Vector(Pair(key=p1, value=p1_value), Pair(key=p2, value=p2_value), Pair(key=p3, value=p3_value), Pair(key=p4, value=p4_value), Pair(key=p5, value=p5_value), Pair(key=p6, value=p6_value)))", expandedClass.toString());
     }
 
     @Test
-    public void testMinimalClassInstrcution() {
+    public void testMinimalClassInstruction() {
         final Vector<ArrayItem> assign = Vector.empty();
 
         final Vector<Pair> pairs = Vector.empty();

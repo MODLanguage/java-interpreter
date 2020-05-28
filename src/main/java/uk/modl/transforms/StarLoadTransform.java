@@ -48,7 +48,7 @@ public class StarLoadTransform implements Function2<TransformationContext, Struc
                     final Tuple2<StarLoadExtractor.FileSpec, Modl> cachedModl = Tuple.of(spec, cache.get(spec.getFilename()));
 
                     // Re-interpret the cached Modl objects to extract classes, methods etc. for the current context
-                    final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(ctx, cachedModl._2);
+                    final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(newCtx, cachedModl._2);
                     newCtx = interpreted._1;
 
                     result = result.append(Tuple.of(Vector.of(cachedModl._1.getFilename()), Vector.of(cachedModl._2), loadSet.getPair()));
@@ -60,7 +60,7 @@ public class StarLoadTransform implements Function2<TransformationContext, Struc
                     // Map the filenames to the contents of the files, or Error
                     final Tuple2<StarLoadExtractor.FileSpec, String> contents = Util.getFileContents.apply(spec);
                     if (contents != null) {
-                        final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(ctx, contents._2);
+                        final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(newCtx, contents._2);
                         newCtx = interpreted._1;
 
                         result = result.append(Tuple.of(Vector.of(contents._1.getFilename()), Vector.of(interpreted._2), loadSet.getPair()));

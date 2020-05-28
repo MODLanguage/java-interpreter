@@ -8,9 +8,10 @@ import uk.modl.model.Pair;
 import uk.modl.model.StringPrimitive;
 
 public class ClassExpansionTransformTest2 {
+
     @Test
     public void testAssigns() {
-        final TransformationContext ctx = TransformationContext.emptyCtx();
+        final TransformationContext ctx = addClasses(TransformationContext.emptyCtx());
         addClasses(ctx);
 
         final ClassExpansionTransform transform = new ClassExpansionTransform();
@@ -26,30 +27,32 @@ public class ClassExpansionTransformTest2 {
                 .size());
     }
 
-    private void addClasses(final TransformationContext ctx) {
+    private TransformationContext addClasses(TransformationContext ctx) {
         {
             final Vector<Pair> pairs = Vector.of(new Pair("v", new StringPrimitive("victor")));
 
             final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("a", "alpha", "map", Vector.empty(), pairs);
-            ctx.addClassInstruction(classInstruction);
+            ctx = ctx.addClassInstruction(classInstruction);
         }
         {
             final Vector<Pair> pairs = Vector.of(new Pair("w", new StringPrimitive("whisky")));
 
             final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("b", "bravo", "alpha", Vector.empty(), pairs);
-            ctx.addClassInstruction(classInstruction);
+            ctx = ctx.addClassInstruction(classInstruction);
         }
         {
             final Vector<Pair> pairs = Vector.of(new Pair("x", new StringPrimitive("xray")));
 
             final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("c", "charlie", "bravo", Vector.empty(), pairs);
-            ctx.addClassInstruction(classInstruction);
+            ctx = ctx.addClassInstruction(classInstruction);
         }
         {
             final Vector<Pair> pairs = Vector.of(new Pair("y", new StringPrimitive("yankee")));
 
             final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("d", "delta", "charlie", Vector.empty(), pairs);
-            ctx.addClassInstruction(classInstruction);
+            ctx = ctx.addClassInstruction(classInstruction);
         }
+        return ctx;
     }
+
 }
