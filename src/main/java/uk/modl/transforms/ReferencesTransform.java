@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 
 public class ReferencesTransform implements Function2<TransformationContext, Structure, Tuple2<TransformationContext, Structure>> {
 
-    private static final Pattern referencePattern = Pattern.compile("((%\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|(%` ?[\\w-]+`[\\w.<>,]*%?)|(%\\*?[\\w]+(\\.%?\\w*<?[\\w,]*>?)*%?))");
+    private static final Pattern referencePattern = Pattern.compile("(((\\\\%|~%|%)\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|((\\\\%|~%|%)` ?[\\w-]+`[\\w.<>,]*%?)|((\\\\%|~%|%)\\*?[\\w]+(\\.%?\\w*<?[\\w,]*>?)*%?))");
 
     private final MethodsTransform methodsTransform;
 
@@ -159,15 +159,22 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
         return vi;
     }
 
-    private ValueItem complexRefToValueItem(final TransformationContext ctx, final String ref) {
+    private ValueItem complexRefToValueItem(final TransformationContext ctx, final String complexRef) {
+        final String ref = stripLeadingAndTrailingPercents(complexRef);
         final String chainedMethods = StringUtils.substringAfter(ref, ".");
-        final String reference = StringUtils.substringBefore(ref, ".");
+
+        final String head = StringUtils.substringBefore(ref, ".");
+        final boolean wasQuoted = head.startsWith("`") && head.endsWith("`");
+        final String reference = Util.unquote(head);
 
         final Vector<String> methods = Util.toMethodList(chainedMethods);
         final String[] refList = methods.toJavaArray(String[]::new);
         Vector<Tuple3<String, String, Option<Pair>>> referencedObject = keyToReferencedObject(ctx, Vector.of(reference));
 
         final Vector<ValueItem> valueItems = referencedObject.flatMap(t -> {
+            if (wasQuoted) {
+                return Option.of(new StringPrimitive(t._2));
+            }
             if (t._3.isDefined()) {
                 return t._3;
             }
@@ -250,7 +257,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                         return followNestedRef(ctx, (ValueItem) value, refList, refIndex);
                     }
                 }
-                if (((Pair) vi).getKey()
+                if (refIndex == (refList.length - 1) && ((Pair) vi).getKey()
                         .equals(ref)) {
                     return (ValueItem) value;
                 }
@@ -299,9 +306,9 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                     default:
                         break;
                 }
-            } else if (pathComponent.startsWith("r<")) {
+            } else if (pathComponent.startsWith("r<") || pathComponent.startsWith("replace<")) {
                 valueStr = Util.replacer(pathComponent, valueStr);
-            } else if (pathComponent.startsWith("t<")) {
+            } else if (pathComponent.startsWith("t<") || pathComponent.startsWith("trim<")) {
                 valueStr = Util.trimmer(pathComponent, valueStr);
             } else {
                 final String updated = methodsTransform.apply(ctx, pathComponent, valueStr);

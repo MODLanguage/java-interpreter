@@ -57,7 +57,8 @@ public class Util {
         try {
             if (spec.getFilename()
                     .startsWith("http")) {
-                final URL url = new URL(spec.getFilename());
+                final URL url = new URL(spec.getFilename()
+                        .replace("~://", "://"));
                 return Tuple.of(spec, new Scanner(url.openStream(), StandardCharsets.UTF_8.name()).useDelimiter("\\A")
                         .next());
             } else if (Files.exists(Paths.get(spec.getFilename()))) {
@@ -104,7 +105,14 @@ public class Util {
      * @return an unquoted String
      */
     public String unquote(final String text) {
-        return StringUtils.removeEnd(StringUtils.removeStart(StringUtils.removeEnd(StringUtils.removeStart(text, GRAVE), GRAVE), DOUBLEQUOTE), DOUBLEQUOTE);
+        if (text == null) {
+            return null;
+        }
+
+        if (text.startsWith("`") && text.endsWith("`")) {
+            return StringUtils.unwrap(text, "`");
+        }
+        return StringUtils.unwrap(text, "\"");
     }
 
     /**
@@ -121,8 +129,8 @@ public class Util {
             final String text = (matcher.group(1) != null) ? matcher.group(1) : matcher.group(3);
             final String rep = (matcher.group(2) != null) ? matcher.group(2) : matcher.group(4);
             final String newText = Util.unquote(rep);
-
-            return s.replace(text, newText);
+            final String oldtext = Util.unquote(text);
+            return s.replace(oldtext, newText);
         } else {
             throw new InterpreterError("Invalid method: " + spec);
         }

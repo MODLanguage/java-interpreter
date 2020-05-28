@@ -557,8 +557,8 @@ public class ModlParsedVisitor {
                 (ctx.TRUE() != null) ?
                         TruePrimitive.instance :
                         (ctx.STRING() != null) ?
-                                new StringPrimitive(ctx.STRING()
-                                        .getText()) :
+                                new StringPrimitive(Util.unquote(ctx.STRING()
+                                        .getText())) :
                                 (ctx.NULL() != null) ?
                                         NullPrimitive.instance :
                                         (ctx.NUMBER() != null) ?
