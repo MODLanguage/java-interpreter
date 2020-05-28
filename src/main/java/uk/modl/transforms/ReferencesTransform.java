@@ -194,11 +194,12 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
         })
                 .map(pair -> followNestedRef(ctx, pair, refList, 0));
 
-        if (valueItems.size() > 0) {
+        if (valueItems.size() == 1) {
             return Tuple.of(complexRef, valueItems.get(0));
+        } else if (valueItems.size() > 1) {
+            throw new InterpreterError("Expected 1 ValueItem but found: " + valueItems.size());
         } else {
-            // TODO
-            throw new InterpreterError("UNHANDLED CODE PATH");
+            throw new InterpreterError("Expected 1 ValueItem but found none. ");
         }
     }
 

@@ -31,10 +31,6 @@ import java.util.regex.Pattern;
 @UtilityClass
 public class Util {
 
-    public final String GRAVE = "`";
-
-    public final String DOUBLEQUOTE = "\"";
-
     /**
      * A pattern used for splitting method lists correctly.
      */
@@ -57,8 +53,7 @@ public class Util {
         try {
             if (spec.getFilename()
                     .startsWith("http")) {
-                final URL url = new URL(spec.getFilename()
-                        .replace("~://", "://"));
+                final URL url = new URL(spec.getFilename());
                 return Tuple.of(spec, new Scanner(url.openStream(), StandardCharsets.UTF_8.name()).useDelimiter("\\A")
                         .next());
             } else if (Files.exists(Paths.get(spec.getFilename()))) {

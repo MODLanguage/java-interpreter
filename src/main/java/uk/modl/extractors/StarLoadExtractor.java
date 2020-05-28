@@ -67,24 +67,23 @@ public class StarLoadExtractor extends ModlVisitorBase {
 
         if (normalized.length() > 1 && normalized.startsWith("`") && normalized.endsWith("`")) {
             // Remove graves
-            normalized = normalized.substring(1, normalized.length() - 1);
+            normalized = StringUtils.unwrap(normalized, "`");
         }
 
         if (normalized.length() > 1 && normalized.startsWith("\"") && normalized.endsWith("\"")) {
             // Remove quotes
-            normalized = normalized.substring(1, normalized.length() - 1);
+            normalized = StringUtils.unwrap(normalized, "\"");
         }
 
         final boolean forceLoad = (normalized.endsWith("!"));
-        if (forceLoad) {
-            // Remove the trailing ! character
-            normalized = normalized.substring(0, normalized.length() - 1);
-        }
+        normalized = StringUtils.removeEnd(normalized, "!");
 
         if (!normalized.endsWith(".modl") && !normalized.endsWith(".txt")) {
             // Add a file extension
             normalized += ".modl";
         }
+
+        normalized = normalized.replace("~://", "://");
 
         return new FileSpec(normalized, forceLoad);
     }

@@ -27,18 +27,7 @@ public class ConditionalsTransform {
                         .get(0)
                         .getStructures();
 
-                TransformationContext newCtx = ctx;
-                Vector<Structure> structures = Vector.empty();
-
-                for (final Structure structure : vector) {
-                    final Tuple2<TransformationContext, Structure> result = handleNestedTopLevelConditionals(newCtx, structure);
-                    newCtx = result._1;
-                    structures = structures.append(result._2);
-                }
-
-                newCtx = saveResultInContext(ctx, structures);
-
-                return Tuple.of(newCtx, tlc.withResult(structures));
+                return getTransformationContextStructureTuple2(ctx, tlc, vector);
             } else {
                 if (tlc.getReturns()
                         .size() > 1) {
@@ -46,18 +35,7 @@ public class ConditionalsTransform {
                             .get(1)
                             .getStructures();
 
-                    TransformationContext newCtx = ctx;
-                    Vector<Structure> structures = Vector.empty();
-
-                    for (final Structure structure : vector) {
-                        final Tuple2<TransformationContext, Structure> result = handleNestedTopLevelConditionals(newCtx, structure);
-                        newCtx = result._1;
-                        structures = structures.append(result._2);
-                    }
-
-                    newCtx = saveResultInContext(ctx, structures);
-
-                    return Tuple.of(newCtx, tlc.withResult(structures));
+                    return getTransformationContextStructureTuple2(ctx, tlc, vector);
                 }
             }
         } else {
@@ -86,6 +64,21 @@ public class ConditionalsTransform {
             return Tuple.of(newCtx, tlc.withResult(structures));
         }
         return Tuple.of(ctx, tlc);
+    }
+
+    private Tuple2<TransformationContext, Structure> getTransformationContextStructureTuple2(final TransformationContext ctx, final TopLevelConditional tlc, final @NonNull Vector<Structure> vector) {
+        TransformationContext newCtx = ctx;
+        Vector<Structure> structures = Vector.empty();
+
+        for (final Structure structure : vector) {
+            final Tuple2<TransformationContext, Structure> result = handleNestedTopLevelConditionals(newCtx, structure);
+            newCtx = result._1;
+            structures = structures.append(result._2);
+        }
+
+        newCtx = saveResultInContext(ctx, structures);
+
+        return Tuple.of(newCtx, tlc.withResult(structures));
     }
 
     private TransformationContext saveResultInContext(final TransformationContext ctx, final Vector<Structure> structures) {

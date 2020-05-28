@@ -32,11 +32,6 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
     });
 
     /**
-     * The result of converting a Modl object to a JsonNode
-     */
-    private JsonNode result;
-
-    /**
      * Applies this function to one argument and returns the result.
      *
      * @param modl argument 1
@@ -44,7 +39,7 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
      */
     @Override
     public JsonNode apply(final Modl modl) {
-        this.result = null;// In case this object is being re-used
+        JsonNode result = null;// In case this object is being re-used
         final Vector<Structure> filtered = modl.getStructures()
                 .filter(shouldAppearInOutput);
 
@@ -56,19 +51,19 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                 final Structure structure = filtered.get(0);
                 if (structure instanceof Array) {
                     final ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
-                    this.result = arrayNode;
+                    result = arrayNode;
                     ((Array) structure).getArrayItems()
                             .forEach(arrayItem -> accept(arrayNode, arrayItem));
                 } else {
                     final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
-                    this.result = objectNode;
+                    result = objectNode;
                     accept(objectNode, structure);
                 }
                 break;
             default:
                 // For multiple items make the result an ObjectNode and assume all the values are Pairs
                 final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
-                this.result = objectNode;
+                result = objectNode;
                 filtered.forEach(s -> accept(objectNode, s));
         }
         if (result != null && !result.elements()
@@ -119,11 +114,6 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                     node.add(JsonNodeFactory.instance.booleanNode(false));
                 } else if (pv instanceof NullPrimitive) {
                     node.add(JsonNodeFactory.instance.nullNode());
-                } else if (pv instanceof Primitive) {
-                    final Primitive prim = (Primitive) ((Pair) p).getValue();
-                    node.add(JsonNodeFactory.instance.textNode(prim.toString()));
-                } else if (pv instanceof Array) {
-                    // Arrays are added elsewhere
                 }
             }
             return p;
@@ -284,9 +274,7 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                     final ArrayNode newNode = JsonNodeFactory.instance.arrayNode();
                     node.set(key, newNode);
                     ((Array) pair.getValue()).getArrayItems()
-                            .forEach(ai -> {
-                                accept(newNode, ai);
-                            });
+                            .forEach(ai -> accept(newNode, ai));
                 } else if (pair.getValue() instanceof Map) {
                     final ObjectNode newNode = JsonNodeFactory.instance.objectNode();
                     node.set(key, newNode);

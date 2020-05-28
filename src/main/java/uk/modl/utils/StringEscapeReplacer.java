@@ -26,27 +26,10 @@ public class StringEscapeReplacer {
 
     private static final Map<String, String> replacements = new LinkedHashMap<>();
 
-    public static String replace(final String stringToTransform) {
-        String result = stringToTransform;
-        if (stringToTransform != null) {
-            result = UnicodeEscapeReplacer.convertUnicodeSequences(stringToTransform);
-            // String-replacement.text to replace escaped characters
-            if (replacements.isEmpty()) {
-                loadReplacements();
-            }
-            for (Map.Entry<String, String> replacement : replacements.entrySet()) {
-                if (stringToTransform.contains(replacement.getKey())) {
-                    result = result.replace(replacement.getKey(), replacement.getValue());
-                }
-            }
-        }
-        return result;
-    }
-
     /**
      * Synchronized since two quick successive requests in the java-interpreter-server can clash.
      */
-    private static synchronized void loadReplacements() {
+    static {
         replacements.put("\\%", "%");
         replacements.put("~%", "%");
         replacements.put("~\\", "\\");
@@ -102,6 +85,20 @@ public class StringEscapeReplacer {
         replacements.put("\\b", "\b");
         replacements.put("\\f", "\f");
         replacements.put("\\r", "\r");
+    }
+
+    public static String replace(final String stringToTransform) {
+        String result = stringToTransform;
+        if (stringToTransform != null) {
+            result = UnicodeEscapeReplacer.convertUnicodeSequences(stringToTransform);
+
+            for (Map.Entry<String, String> replacement : replacements.entrySet()) {
+                if (stringToTransform.contains(replacement.getKey())) {
+                    result = result.replace(replacement.getKey(), replacement.getValue());
+                }
+            }
+        }
+        return result;
     }
 
 }
