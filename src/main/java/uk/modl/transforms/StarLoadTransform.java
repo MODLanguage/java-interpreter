@@ -95,22 +95,28 @@ public class StarLoadTransform implements Function2<TransformationContext, Struc
      */
     public Tuple2<TransformationContext, Structure> apply(final TransformationContext ctx, final Structure s) {
 
+        TransformationContext newCtx = ctx;
+
         if (s instanceof Pair) {
-            final Pair p = (Pair) s;
-            if (StarLoadExtractor.isLoadInstruction(p.getKey())) {
+            final Pair rawPair = (Pair) s;
+            if (StarLoadExtractor.isLoadInstruction(rawPair.getKey())) {
+                final Tuple2<TransformationContext, Structure> refsResult = new ReferencesTransform().apply(newCtx, (Structure) rawPair);
+                newCtx = refsResult._1;
+                final Pair p = (Pair) refsResult._2;
+
                 // Each tuple in this list holds the original Pair with the `*load` statements and the set of Modl objects
                 // loaded using the filename[s] specified in the file list - there can be 1 or several.
-                final Tuple2<TransformationContext, Vector<Tuple3<Vector<String>, Vector<Modl>, Pair>>> result = convertFilesToModlObjectsAndPairs(ctx, extractFilenamesAndPairs
+                final Tuple2<TransformationContext, Vector<Tuple3<Vector<String>, Vector<Modl>, Pair>>> result = convertFilesToModlObjectsAndPairs(newCtx, extractFilenamesAndPairs
                         .apply(p));
 
                 // Record which files were loaded - for use in a `%*load` reference
-                final TransformationContext updatedContext = result._1.addFilesLoaded(result._2.flatMap(tuple -> tuple._1));
+                newCtx = result._1.addFilesLoaded(result._2.flatMap(tuple -> tuple._1));
 
 
-                return Tuple.of(updatedContext, new StarLoadMutator(result._2).accept(p));
+                return Tuple.of(newCtx, new StarLoadMutator(result._2).accept(p));
             }
         }
-        return Tuple.of(ctx, s);
+        return Tuple.of(newCtx, s);
     }
 
     /**

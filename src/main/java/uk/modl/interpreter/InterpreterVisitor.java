@@ -39,7 +39,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
         starClassTransform = new StarClassTransform();
         starMethodTransform = new StarMethodTransform();
         referencesTransform = new ReferencesTransform();
-        conditionalsTransform = new ConditionalsTransform();
+        conditionalsTransform = new ConditionalsTransform(starLoadTransform, referencesTransform);
         classExpansionTransform = new ClassExpansionTransform();
         percentStarInstructionTransform = new PercentStarInstructionTransform();
     }
@@ -92,9 +92,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             returns = returns.append(result._2);
         }
 
-        final TopLevelConditional newTlc = new TopLevelConditional(tests, returns, Vector.empty());
-
-        return conditionalsTransform.apply(newCtx, newTlc);
+        return conditionalsTransform.apply(newCtx, new TopLevelConditional(tests, returns, Vector.empty()));
     }
 
     /**
@@ -123,7 +121,8 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
         }
 
         final MapConditional mapConditional = new MapConditional(tests, returns, Vector.empty());
-        return Tuple.of(newCtx, conditionalsTransform.apply(newCtx, mapConditional));
+        final MapConditional evaluated = conditionalsTransform.apply(newCtx, mapConditional);
+        return Tuple.of(newCtx, evaluated);
 
     }
 
@@ -139,9 +138,14 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
         Vector<MapItem> items = Vector.empty();
 
         for (final MapItem item : mcr.getItems()) {
-            final Tuple2<TransformationContext, MapItem> result = visitMapItem(newCtx, item);
-            newCtx = result._1;
-            items = items.append(result._2);
+            if (item instanceof Pair && StarLoadExtractor.isLoadInstruction(((Pair) item).getKey())) {
+                final ValueItem refsResult = referencesTransform.apply(newCtx, (ValueItem) item);
+                items = items.append((MapItem) refsResult);
+            } else {
+                final Tuple2<TransformationContext, MapItem> result = visitMapItem(newCtx, item);
+                newCtx = result._1;
+                items = items.append(result._2);
+            }
         }
 
         return Tuple.of(newCtx, new MapConditionalReturn(items));
@@ -159,9 +163,15 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
         Vector<Structure> structures = Vector.empty();
 
         for (final Structure structure : tlcr.getStructures()) {
-            final Tuple2<TransformationContext, Structure> result = visitStructure(newCtx, structure);
-            newCtx = result._1;
-            structures = structures.append(result._2);
+            if (structure instanceof Pair && StarLoadExtractor.isLoadInstruction(((Pair) structure).getKey())) {
+                final Tuple2<TransformationContext, Structure> refsResult = referencesTransform.apply(newCtx, structure);
+                structures = structures.append(refsResult._2);
+                newCtx = refsResult._1;
+            } else {
+                final Tuple2<TransformationContext, Structure> result = visitStructure(newCtx, structure);
+                newCtx = result._1;
+                structures = structures.append(result._2);
+            }
         }
 
         return Tuple.of(newCtx, new TopLevelConditionalReturn(structures));
@@ -325,8 +335,8 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
         }
 
         final ArrayConditional arrayConditional = new ArrayConditional(tests, returns, Vector.empty());
-        final ArrayConditional result = conditionalsTransform.apply(newCtx, arrayConditional);
-        return Tuple.of(newCtx, result);
+        final ArrayConditional evaluated = conditionalsTransform.apply(newCtx, arrayConditional);
+        return Tuple.of(newCtx, evaluated);
     }
 
     /**
@@ -340,9 +350,14 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
         TransformationContext newCtx = ctx;
         Vector<ArrayItem> items = Vector.empty();
         for (final ArrayItem item : acr.getItems()) {
-            final Tuple2<TransformationContext, ArrayItem> result = visitArrayItem(newCtx, item);
-            newCtx = result._1;
-            items = items.append(result._2);
+            if (item instanceof Pair && StarLoadExtractor.isLoadInstruction(((Pair) item).getKey())) {
+                final ValueItem refsResult = referencesTransform.apply(newCtx, (ValueItem) item);
+                items = items.append((ArrayItem) refsResult);
+            } else {
+                final Tuple2<TransformationContext, ArrayItem> result = visitArrayItem(newCtx, item);
+                newCtx = result._1;
+                items = items.append(result._2);
+            }
         }
 
         return Tuple.of(newCtx, new ArrayConditionalReturn(items));
@@ -499,8 +514,8 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
         }
 
         final ValueConditional valueConditional = new ValueConditional(tests, returns, Vector.empty());
-        final ValueConditional transformedConditionals = conditionalsTransform.apply(newCtx, valueConditional);
-        return Tuple.of(newCtx, transformedConditionals);
+        final ValueConditional evaluated = conditionalsTransform.apply(newCtx, valueConditional);
+        return Tuple.of(newCtx, evaluated);
     }
 
     /**
@@ -515,9 +530,14 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
         Vector<ValueItem> items = Vector.empty();
 
         for (final ValueItem item : vcr.getItems()) {
-            final Tuple2<TransformationContext, ValueItem> result = visitValueItem(newCtx, item);
-            newCtx = result._1;
-            items = items.append(result._2);
+            if (item instanceof Pair && StarLoadExtractor.isLoadInstruction(((Pair) item).getKey())) {
+                final ValueItem refsResult = referencesTransform.apply(newCtx, item);
+                items = items.append(refsResult);
+            } else {
+                final Tuple2<TransformationContext, ValueItem> result = visitValueItem(newCtx, item);
+                newCtx = result._1;
+                items = items.append(result._2);
+            }
         }
 
         return Tuple.of(newCtx, new ValueConditionalReturn(items));

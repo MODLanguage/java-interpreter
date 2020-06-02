@@ -12,6 +12,10 @@ import uk.modl.utils.Util;
 @RequiredArgsConstructor
 public class ConditionalsTransform {
 
+    private final StarLoadTransform starLoadTransform;
+
+    private final ReferencesTransform referencesTransform;
+
     /**
      * Applies this function to one argument and returns the result.
      *
@@ -27,7 +31,7 @@ public class ConditionalsTransform {
                         .get(0)
                         .getStructures();
 
-                return getTransformationContextStructureTuple2(ctx, tlc, vector);
+                return getToplevelConditionalResult(ctx, tlc, vector);
             } else {
                 if (tlc.getReturns()
                         .size() > 1) {
@@ -35,7 +39,7 @@ public class ConditionalsTransform {
                             .get(1)
                             .getStructures();
 
-                    return getTransformationContextStructureTuple2(ctx, tlc, vector);
+                    return getToplevelConditionalResult(ctx, tlc, vector);
                 }
             }
         } else {
@@ -66,7 +70,7 @@ public class ConditionalsTransform {
         return Tuple.of(ctx, tlc);
     }
 
-    private Tuple2<TransformationContext, Structure> getTransformationContextStructureTuple2(final TransformationContext ctx, final TopLevelConditional tlc, final @NonNull Vector<Structure> vector) {
+    private Tuple2<TransformationContext, Structure> getToplevelConditionalResult(final TransformationContext ctx, final TopLevelConditional tlc, final @NonNull Vector<Structure> vector) {
         TransformationContext newCtx = ctx;
         Vector<Structure> structures = Vector.empty();
 
@@ -85,10 +89,18 @@ public class ConditionalsTransform {
 
         TransformationContext newCtx = ctx;
         for (final Structure structure : structures) {
-            if (structure instanceof Pair) {
-                final Pair pair = (Pair) structure;
+
+            final Tuple2<TransformationContext, Structure> loadResult = starLoadTransform.apply(newCtx, structure);
+            newCtx = loadResult._1;
+            final Structure newStructure = loadResult._2;
+
+            if (newStructure instanceof Pair) {
+                final Tuple2<TransformationContext, Structure> refsResult = referencesTransform.apply(newCtx, newStructure);
+                newCtx = refsResult._1;
+
+                final Pair pair = (Pair) refsResult._2;
                 @NonNull final String key = pair.getKey();
-                newCtx = ctx.addPair(key, pair);
+                newCtx = newCtx.addPair(key, pair);
 
                 if (key.startsWith("_")) {
                     newCtx = newCtx.addPair(key.substring(1), pair);
@@ -103,6 +115,17 @@ public class ConditionalsTransform {
     private Tuple2<TransformationContext, Structure> handleNestedTopLevelConditionals(final TransformationContext ctx, final Structure structure) {
         if (structure instanceof TopLevelConditional) {
             return apply(ctx, (TopLevelConditional) structure);
+        }
+        if (structure instanceof Pair) {
+            final Pair p = (Pair) structure;
+            @NonNull final PairValue value = p.getValue();
+
+            if (value instanceof ValueConditional) {
+                final ValueConditional result = apply(ctx, (ValueConditional) value);
+                final Pair resultPair = new Pair(p.getKey(), result);
+                final TransformationContext newCtx = saveResultInContext(ctx, Vector.of(resultPair));
+                return Tuple.of(newCtx, resultPair);
+            }
         }
         return Tuple.of(ctx, structure);
     }
@@ -157,7 +180,9 @@ public class ConditionalsTransform {
     private boolean evaluate(final TransformationContext ctx, final Condition c) {
         final Operator op = c.getOp();
         final boolean shouldNegate = c.isShouldNegate();
+
         final ValueItem lhs = c.getLhs();
+
         @NonNull final Vector<ValueItem> values = c.getValues();
 
         if (op == null && lhs == null || lhs.toString() == null) {
@@ -221,7 +246,7 @@ public class ConditionalsTransform {
             return shouldNegate != Util.lessThanOrEqualToAll(lhs, values);
         }
 
-        final int count = countMatches(c);
+        final int count = countMatches(c, lhs);
         if (op instanceof EqualsOperator) {
             return shouldNegate != (count > 0);
         }
@@ -231,15 +256,15 @@ public class ConditionalsTransform {
         return shouldNegate;
     }
 
-    private int countMatches(final Condition c) {
+    private int countMatches(final Condition c, final ValueItem lhs) {
         return c.getValues()
-                .map(Object::toString)
                 .count(v -> {
-                    if (!v.contains("*")) {
-                        return v.equals(c.getLhs()
-                                .toString());
+                    if (!v.toString()
+                            .contains("*")) {
+                        return v.equals(lhs);
                     } else {
-                        final String regexStr = v.replaceAll("\\*", ".*");
+                        final String regexStr = v.toString()
+                                .replaceAll("\\*", ".*");
                         return c.getLhs()
                                 .toString()
                                 .matches(regexStr);
