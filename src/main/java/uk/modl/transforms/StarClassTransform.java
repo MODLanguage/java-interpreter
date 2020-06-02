@@ -109,11 +109,25 @@ public class StarClassTransform implements Function2<TransformationContext, Stru
                 }
             }
 
+            validateAssign(assign);
             return ctx.addClassInstruction(ClassInstruction.of(id, name, superclass, assign, pairs));
         } else {
             throw new InterpreterError("Expected a map for " + pair.getKey() + " but found a " + pair.getValue()
                     .getClass());
         }
+    }
+
+    private void validateAssign(final Vector<ArrayItem> assigns) {
+        int lastLen = 0;
+        for (final ArrayItem assign : assigns) {
+            final Array array = (Array) assign;
+            @NonNull final Vector<ArrayItem> arrayItems = array.getArrayItems();
+            if (arrayItems.size() <= lastLen) {
+                throw new InterpreterError("Error: Key lists in *assign are not in ascending order of list length: " + arrayItems);
+            }
+            lastLen = arrayItems.size();
+        }
+
     }
 
     @Value(staticConstructor = "of")

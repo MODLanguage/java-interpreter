@@ -13,7 +13,6 @@ public class ClassExpansionTransformTest2 {
     @Test
     public void testAssigns() {
         final TransformationContext ctx = addClasses(TransformationContext.emptyCtx());
-        addClasses(ctx);
 
         final ClassExpansionTransform transform = new ClassExpansionTransform();
 

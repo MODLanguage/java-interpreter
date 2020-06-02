@@ -114,7 +114,6 @@ public class InterpreterBaseTests {
         final int startFromTestNumber = 0;// Use this to skip tests manually to make it easier for debugging a specific test.
         for (final TestInput testInput : list) {
             if (testNumber >= startFromTestNumber) {
-                log.info("Running test number: " + testNumber);
                 checkInValidTestInput(testInput);
             }
             testNumber++;
@@ -129,11 +128,42 @@ public class InterpreterBaseTests {
     }
 
     private void checkInValidTestInput(final TestInput testInput) {
-        log.info("Failing Input : " + testInput.input);
         try {
-            new Interpreter().apply(TransformationContext.emptyCtx(), testInput.input);
+            final Tuple2<TransformationContext, Modl> interpreted = new Interpreter().apply(TransformationContext.emptyCtx(), testInput.input);
+            if (interpreted._2 != null) {
+                final JsonNode jsonResult = jsonTransformer.apply(interpreted._2);
+
+                final String output = Util.jsonNodeToString.apply(jsonResult);
+                if (output != null) {
+
+                    final String expected = testInput.expected_output.replace(" ", "")
+                            .replace("\n", "")
+                            .replace("\r", "");
+                    final String actual = output.replace(" ", "")
+                            .replace("\n", "")
+                            .replace("\r", "");
+
+                    if (!expected.equals(actual)) {
+                        log.info("Running test number: " + testInput.id);
+                        log.info("Input : " + testInput.input);
+                        log.info("Minimised : " + testInput.minimised_modl);
+                        log.info("Expected : " + testInput.expected_output);
+
+                        errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : " + output + "\n");
+                    } else {
+                        log.info("Test: " + testInput.id + " - no errors\n");
+                    }
+
+                } else {
+                    errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : null\n");
+                }
+
+            } else {
+                log.error("Test: " + testInput.id + " - no result\n");
+
+            }
             fail("Expected error");
-        } catch (Exception e) {
+        } catch (final Throwable e) {
             if (!testInput.expected_output.equals(e.getMessage())) {
                 errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : " + e.getMessage() + "\n");
             }

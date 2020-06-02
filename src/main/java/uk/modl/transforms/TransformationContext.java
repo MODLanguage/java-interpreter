@@ -7,6 +7,7 @@ import lombok.With;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.model.Array;
 import uk.modl.model.Pair;
+import uk.modl.parser.errors.InterpreterError;
 
 /**
  * Stores context needed by other parts of the interpreter
@@ -14,6 +15,13 @@ import uk.modl.model.Pair;
 @Value
 @With
 public class TransformationContext {
+
+    public static final String INVALID_CHARS = "!$@-+'#^*£&";
+
+    /**
+     * StarLoadImmutable
+     */
+    boolean starLoadImmutable;
 
     /**
      * Possible targets of references
@@ -61,7 +69,22 @@ public class TransformationContext {
     Map<String, StarClassTransform.ClassInstruction> classesByName;
 
     public static TransformationContext emptyCtx() {
-        return new TransformationContext(LinkedHashMap.empty(), new Array(Vector.empty()), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
+        return new TransformationContext(false, LinkedHashMap.empty(), new Array(Vector.empty()), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
+    }
+
+    private static void validatePairKey(final String newKey) {
+        final String k = (newKey.startsWith("_") || newKey.startsWith("*")) ? newKey.substring(1) : newKey;// Strip any leading underscore or asterisk
+
+        final int badCharIndex = StringUtils.indexOfAny(k, INVALID_CHARS);
+        if (badCharIndex > -1) {
+            throw new RuntimeException("Interpreter Error: Invalid key - \"" +
+                    newKey.charAt(badCharIndex) +
+                    "\" character not allowed: " +
+                    newKey);
+        }
+        if (StringUtils.isNumeric(k)) {
+            throw new RuntimeException("Interpreter Error: Invalid key - \"" + k + "\" - entirely numeric keys are not allowed: " + newKey);
+        }
     }
 
     /**
@@ -79,6 +102,10 @@ public class TransformationContext {
      * @param mi a StarMethodTransform.MethodInstruction
      */
     public TransformationContext addMethodInstruction(final StarMethodTransform.MethodInstruction mi) {
+        if (methodsById.containsKey(mi.getId()) || methodsByName.containsKey(mi.getId()) || methodsById.containsKey(mi.getName()) || methodsByName.containsKey(mi.getName())) {
+            throw new InterpreterError("Interpreter Error: Duplicate method name or id: " + mi.getNameOrId());
+        }
+
         final Set<StarMethodTransform.MethodInstruction> updatedMethods = methods.add(mi);
         final Map<String, StarMethodTransform.MethodInstruction> updatedMethodsById = methodsById.put(mi.getId(), mi);
 
@@ -95,6 +122,10 @@ public class TransformationContext {
      * @param ci a StarClassTransform.ClassInstruction
      */
     public TransformationContext addClassInstruction(final StarClassTransform.ClassInstruction ci) {
+        if (classesById.containsKey(ci.getId()) || classesByName.containsKey(ci.getId()) || classesById.containsKey(ci.getName()) || classesByName.containsKey(ci.getName())) {
+            throw new InterpreterError("Interpreter Error: Duplicate method name or id: " + ci.getNameOrId());
+        }
+
         final Set<StarClassTransform.ClassInstruction> updatedClasses = classes.add(ci);
         final Map<String, StarClassTransform.ClassInstruction> updatedClassesById = classesById.put(ci.getId(), ci);
 
@@ -117,6 +148,7 @@ public class TransformationContext {
     }
 
     public TransformationContext addPair(final String key, final Pair p) {
+        validatePairKey(key);
         return this.withPairs(pairs.put(key, p));
     }
 
