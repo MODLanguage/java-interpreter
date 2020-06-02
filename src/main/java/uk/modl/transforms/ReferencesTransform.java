@@ -226,6 +226,12 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 final ValueItem valueItem = (ValueItem) ((Array) ((Pair) vi).getValue()).getArrayItems()
                         .get(refNum);
                 return followNestedRef(ctx, valueItem, refList, refIndex + 1);
+            } else {
+                if (refIndex < (refList.length - 1)) {
+                    throw new DeepReferenceException("Invalid reference.");
+                } else {
+                    throw new RuntimeException("Found a map when expecting an array");
+                }
             }
         } else {
             // If we have a Map then try to get a Pair from within it and recurse.

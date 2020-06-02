@@ -14,6 +14,15 @@ import uk.modl.model.*;
 @RequiredArgsConstructor
 public class StarClassTransform implements Function2<TransformationContext, Structure, Tuple2<TransformationContext, Structure>> {
 
+    private static final Vector<String> RESERVED_CLASS_NAMES = Vector.of(
+            "arr",
+            "map",
+            "str",
+            "num",
+            "bool",
+            "null"
+    );
+
     private final ReferencesTransform referencesTransform = new ReferencesTransform();
 
     /**
@@ -110,6 +119,12 @@ public class StarClassTransform implements Function2<TransformationContext, Stru
 
             validateAssign(assign);
 
+            if (id != null && RESERVED_CLASS_NAMES.contains(id.toLowerCase())) {
+                throw new RuntimeException("Reserved class id - cannot redefine: " + id);
+            }
+            if (name != null && RESERVED_CLASS_NAMES.contains(name.toLowerCase())) {
+                throw new RuntimeException("Reserved class name - cannot redefine: " + name);
+            }
             TransformationContext newCtx = ctx.addClassInstruction(ClassInstruction.of(id, name, superclass, assign, pairs));
             if (pair.getKey()
                     .startsWith("*C")) {
