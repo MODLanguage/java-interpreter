@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.model.*;
-import uk.modl.parser.errors.InterpreterError;
 
 @RequiredArgsConstructor
 public class StarClassTransform implements Function2<TransformationContext, Structure, Tuple2<TransformationContext, Structure>> {
@@ -87,11 +86,11 @@ public class StarClassTransform implements Function2<TransformationContext, Stru
                                             if (ai instanceof Array) {
                                                 return ai;
                                             } else {
-                                                throw new InterpreterError("*assign statement should be an Array of Arrays");
+                                                throw new RuntimeException("*assign statement should be an Array of Arrays");
                                             }
                                         });
                             } else {
-                                throw new InterpreterError("*assign statement should be an Array of Arrays");
+                                throw new RuntimeException("*assign statement should be an Array of Arrays");
                             }
                             break;
                         default:
@@ -105,14 +104,20 @@ public class StarClassTransform implements Function2<TransformationContext, Stru
                             }
                     }
                 } else {
-                    throw new InterpreterError("Expected a Pair but found a " + mi.getClass());
+                    throw new RuntimeException("Expected a Pair but found a " + mi.getClass());
                 }
             }
 
             validateAssign(assign);
-            return ctx.addClassInstruction(ClassInstruction.of(id, name, superclass, assign, pairs));
+
+            TransformationContext newCtx = ctx.addClassInstruction(ClassInstruction.of(id, name, superclass, assign, pairs));
+            if (pair.getKey()
+                    .startsWith("*C")) {
+                newCtx = newCtx.withStarClassImmutable(true);
+            }
+            return newCtx;
         } else {
-            throw new InterpreterError("Expected a map for " + pair.getKey() + " but found a " + pair.getValue()
+            throw new RuntimeException("Expected a map for " + pair.getKey() + " but found a " + pair.getValue()
                     .getClass());
         }
     }
@@ -123,7 +128,9 @@ public class StarClassTransform implements Function2<TransformationContext, Stru
             final Array array = (Array) assign;
             @NonNull final Vector<ArrayItem> arrayItems = array.getArrayItems();
             if (arrayItems.size() <= lastLen) {
-                throw new InterpreterError("Error: Key lists in *assign are not in ascending order of list length: " + arrayItems);
+                final Vector<String> strings = arrayItems.map(ai -> "\"" + ai.toString() + "\"");
+                final String arrayStr = strings.foldLeft("[", (l, r) -> l + r) + "]";
+                throw new RuntimeException("Error: Key lists in *assign are not in ascending order of list length: " + arrayStr);
             }
             lastLen = arrayItems.size();
         }

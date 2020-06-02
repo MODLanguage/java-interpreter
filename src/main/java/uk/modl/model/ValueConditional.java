@@ -4,7 +4,6 @@ import io.vavr.collection.Vector;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
-import uk.modl.parser.errors.InterpreterError;
 import uk.modl.visitor.ModlVisitor;
 
 @Value
@@ -29,7 +28,7 @@ public class ValueConditional implements ValueItem {
 
     @Override
     public Number numericValue() {
-        throw new InterpreterError("Cannot convert a conditional to a numeric value.");
+        throw new RuntimeException("Cannot convert a conditional to a numeric value.");
     }
 
 }

@@ -42,7 +42,7 @@ public class StarLoadExtractor extends ModlVisitorBase {
         final String key = pair.getKey();
 
         if (loadSets.size() > 0 && immutable) {
-            throw new RuntimeException("Interpreter Error: Cannot load multiple files after *LOAD instruction");
+            throw new RuntimeException("Cannot load multiple files after *LOAD instruction");
         }
 
         if (isLoadInstruction(key)) {

@@ -7,6 +7,7 @@ import io.vavr.collection.Vector;
 import lombok.NonNull;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.model.*;
+import uk.modl.parser.errors.InterpreterError;
 import uk.modl.transforms.*;
 
 import java.util.Objects;
@@ -407,18 +408,26 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
      */
     private Tuple2<TransformationContext, Structure> visitPair(final TransformationContext ctx, final Pair p) {
 
+        TransformationContext newCtx = ctx;
+        if (p.getKey()
+                .equals("*VERSION") || p.getKey()
+                .equals("*V")) {
+            newCtx = newCtx.withVersion(p.getValue()
+                    .numericValue()
+                    .intValue());
+        }
         // Special handling for *load instructions.
         if (StarLoadExtractor.isLoadInstruction(p.getKey())) {
-            final ValueItem result = referencesTransform.apply(ctx, (ValueItem) p.getValue());
-            final Tuple2<TransformationContext, Structure> structureWithLoadedFiles = starLoadTransform.apply(ctx, new Pair(p.getKey(), result));
+            final ValueItem result = referencesTransform.apply(newCtx, (ValueItem) p.getValue());
+            final Tuple2<TransformationContext, Structure> structureWithLoadedFiles = starLoadTransform.apply(newCtx, new Pair(p.getKey(), result));
             return Tuple.of(structureWithLoadedFiles._1, structureWithLoadedFiles._2);
         }
 
-        final Tuple2<TransformationContext, Structure> structureWithExpandedClasses = starClassTransform.apply(ctx, p);
+        final Tuple2<TransformationContext, Structure> structureWithExpandedClasses = starClassTransform.apply(newCtx, p);
         final Tuple2<TransformationContext, Structure> structureWithAppliedMethods = starMethodTransform.apply(structureWithExpandedClasses._1, structureWithExpandedClasses._2);
         final Tuple2<TransformationContext, Structure> contextAndStructure = referencesTransform.apply(structureWithAppliedMethods._1, structureWithAppliedMethods._2);
 
-        TransformationContext newCtx = contextAndStructure._1;
+        newCtx = contextAndStructure._1;
 
         final Structure st = contextAndStructure._2;
         if (st == null) {
@@ -590,21 +599,29 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
     @Override
     public Tuple2<TransformationContext, Modl> apply(final TransformationContext ctx, final Modl modl) {
 
-        Vector<Structure> visitedStructures = Vector.empty();
         TransformationContext newCtx = ctx;
-        {
-            for (final Structure structure : modl.getStructures()) {
-                final Tuple2<TransformationContext, Structure> result = visitStructure(newCtx, structure);
-                newCtx = result._1;
-                visitedStructures = visitedStructures.append(result._2);
+
+        try {
+            Vector<Structure> visitedStructures = Vector.empty();
+            {
+                for (final Structure structure : modl.getStructures()) {
+                    final Tuple2<TransformationContext, Structure> result = visitStructure(newCtx, structure);
+                    newCtx = result._1;
+                    visitedStructures = visitedStructures.append(result._2);
+                }
             }
+
+            final TransformationContext finalNewCtx = newCtx;
+
+            Vector<Structure> resultStructures = visitedStructures.map(structure -> classExpansionTransform.apply(finalNewCtx, structure));
+
+            return Tuple.of(finalNewCtx, new Modl(resultStructures.filter(Objects::nonNull)));
+        } catch (final RuntimeException e) {
+            if (newCtx.getVersion() > 1) {
+                throw new InterpreterError("Interpreter Error: " + e.getMessage() + " - MODL Version 1 interpreter cannot process this MODL Version " + newCtx.getVersion() + " file.");
+            }
+            throw new InterpreterError("Interpreter Error: " + e.getMessage());
         }
-
-        final TransformationContext finalNewCtx = newCtx;
-
-        Vector<Structure> resultStructures = visitedStructures.map(structure -> classExpansionTransform.apply(finalNewCtx, structure));
-
-        return Tuple.of(finalNewCtx, new Modl(resultStructures.filter(Objects::nonNull)));
     }
 
 }

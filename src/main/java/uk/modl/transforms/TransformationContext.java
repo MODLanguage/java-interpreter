@@ -7,7 +7,6 @@ import lombok.With;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.model.Array;
 import uk.modl.model.Pair;
-import uk.modl.parser.errors.InterpreterError;
 
 /**
  * Stores context needed by other parts of the interpreter
@@ -18,10 +17,26 @@ public class TransformationContext {
 
     public static final String INVALID_CHARS = "!$@-+'#^*£&";
 
+    public static final int VERSION = 1;
+
+    public static final boolean STAR_LOAD_IMMUTABLE = false;
+
+    public static final boolean STAR_CLASS_IMMUTABLE = false;
+
+    /**
+     * Interpreter version
+     */
+    int version;
+
     /**
      * StarLoadImmutable
      */
     boolean starLoadImmutable;
+
+    /**
+     * StarClassImmutable
+     */
+    boolean starClassImmutable;
 
     /**
      * Possible targets of references
@@ -69,7 +84,7 @@ public class TransformationContext {
     Map<String, StarClassTransform.ClassInstruction> classesByName;
 
     public static TransformationContext emptyCtx() {
-        return new TransformationContext(false, LinkedHashMap.empty(), new Array(Vector.empty()), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
+        return new TransformationContext(VERSION, STAR_LOAD_IMMUTABLE, STAR_CLASS_IMMUTABLE, LinkedHashMap.empty(), new Array(Vector.empty()), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
     }
 
     private static void validatePairKey(final String newKey) {
@@ -77,13 +92,13 @@ public class TransformationContext {
 
         final int badCharIndex = StringUtils.indexOfAny(k, INVALID_CHARS);
         if (badCharIndex > -1) {
-            throw new RuntimeException("Interpreter Error: Invalid key - \"" +
+            throw new RuntimeException("Invalid key - \"" +
                     newKey.charAt(badCharIndex) +
                     "\" character not allowed: " +
                     newKey);
         }
         if (StringUtils.isNumeric(k)) {
-            throw new RuntimeException("Interpreter Error: Invalid key - \"" + k + "\" - entirely numeric keys are not allowed: " + newKey);
+            throw new RuntimeException("Invalid key - \"" + k + "\" - entirely numeric keys are not allowed: " + newKey);
         }
     }
 
@@ -102,8 +117,12 @@ public class TransformationContext {
      * @param mi a StarMethodTransform.MethodInstruction
      */
     public TransformationContext addMethodInstruction(final StarMethodTransform.MethodInstruction mi) {
-        if (methodsById.containsKey(mi.getId()) || methodsByName.containsKey(mi.getId()) || methodsById.containsKey(mi.getName()) || methodsByName.containsKey(mi.getName())) {
-            throw new InterpreterError("Interpreter Error: Duplicate method name or id: " + mi.getNameOrId());
+        if (methodsById.containsKey(mi.getId()) || methodsByName.containsKey(mi.getId())) {
+            throw new RuntimeException("Duplicate method name or id: " + mi.getId());
+        }
+
+        if (methodsById.containsKey(mi.getName()) || methodsByName.containsKey(mi.getName())) {
+            throw new RuntimeException("Duplicate method name or id: " + mi.getName());
         }
 
         final Set<StarMethodTransform.MethodInstruction> updatedMethods = methods.add(mi);
@@ -122,8 +141,11 @@ public class TransformationContext {
      * @param ci a StarClassTransform.ClassInstruction
      */
     public TransformationContext addClassInstruction(final StarClassTransform.ClassInstruction ci) {
+        if (starClassImmutable) {
+            throw new RuntimeException("Already defined *class as final.");
+        }
         if (classesById.containsKey(ci.getId()) || classesByName.containsKey(ci.getId()) || classesById.containsKey(ci.getName()) || classesByName.containsKey(ci.getName())) {
-            throw new InterpreterError("Interpreter Error: Duplicate method name or id: " + ci.getNameOrId());
+            throw new RuntimeException("Class name or id already defined - cannot redefine: " + ci.getId() + ", " + ci.getName());
         }
 
         final Set<StarClassTransform.ClassInstruction> updatedClasses = classes.add(ci);

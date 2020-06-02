@@ -23,8 +23,10 @@ import io.vavr.Function2;
 import io.vavr.Tuple2;
 import io.vavr.control.Option;
 import lombok.NonNull;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import uk.modl.model.Modl;
 import uk.modl.parser.Parser;
+import uk.modl.parser.errors.InterpreterError;
 import uk.modl.transforms.TransformationContext;
 
 /**
@@ -46,11 +48,15 @@ public class Interpreter implements Function2<TransformationContext, String, Tup
      */
     @Override
     public Tuple2<TransformationContext, Modl> apply(final TransformationContext ctx, @NonNull final String input) {
-        // Apply the function and return the result.
-        return Option.of(input)
-                .map(parser)
-                .map(modl -> apply(ctx, modl))
-                .get();
+        try {
+            // Apply the function and return the result.
+            return Option.of(input)
+                    .map(parser)
+                    .map(modl -> apply(ctx, modl))
+                    .get();
+        } catch (final ParseCancellationException e) {
+            throw new InterpreterError("Parser Error: " + e.getMessage());
+        }
     }
 
     /**

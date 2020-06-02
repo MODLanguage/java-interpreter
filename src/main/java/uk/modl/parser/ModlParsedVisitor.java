@@ -8,7 +8,6 @@ import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.tree.ParseTree;
 import uk.modl.model.*;
 import uk.modl.parser.antlr.MODLParser;
-import uk.modl.parser.errors.InterpreterError;
 import uk.modl.utils.Util;
 
 /**
@@ -450,7 +449,7 @@ public class ModlParsedVisitor {
                 .getText() : null);
 
         if (inConditional == 0 && key != null && (key.contains("%") || key.contains(" "))) {
-            throw new InterpreterError("Invalid key - spaces and % characters are not allowed: " + key);
+            throw new RuntimeException("Invalid key - spaces and % characters are not allowed: " + key);
         }
 
         final PairValue value;

@@ -23,6 +23,7 @@ import io.vavr.Function1;
 import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import uk.modl.model.Modl;
 import uk.modl.parser.antlr.MODLLexer;
 import uk.modl.parser.antlr.MODLParser;
@@ -60,6 +61,9 @@ public class Parser implements Function1<String, Modl> {
 
             // The String has been parsed by Antlr, now its our turn
             return new ModlParsedVisitor(modlCtx).getModl();
+        } catch (final ParseCancellationException e) {
+            log.error(e);
+            throw e;
         } catch (final Exception e) {
             log.error(e);
             throw new RuntimeException(e);

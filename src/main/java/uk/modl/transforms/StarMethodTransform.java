@@ -10,7 +10,6 @@ import uk.modl.model.Map;
 import uk.modl.model.MapItem;
 import uk.modl.model.Pair;
 import uk.modl.model.Structure;
-import uk.modl.parser.errors.InterpreterError;
 
 @RequiredArgsConstructor
 public class StarMethodTransform implements Function2<TransformationContext, Structure, Tuple2<TransformationContext, Structure>> {
@@ -76,14 +75,14 @@ public class StarMethodTransform implements Function2<TransformationContext, Str
                             break;
                     }
                 } else {
-                    throw new InterpreterError("Expected a Pair but found a " + mi.getClass());
+                    throw new RuntimeException("Expected a Pair but found a " + mi.getClass());
                 }
             }
 
             final MethodInstruction m = MethodInstruction.of(id, name, transform);
             return ctx.addMethodInstruction(m);
         } else {
-            throw new InterpreterError("Expected a map for " + pair.getKey() + " but found a " + pair.getValue()
+            throw new RuntimeException("Expected a map for " + pair.getKey() + " but found a " + pair.getValue()
                     .getClass());
         }
     }

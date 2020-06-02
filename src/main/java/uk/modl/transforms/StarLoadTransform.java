@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.interpreter.Interpreter;
 import uk.modl.model.*;
-import uk.modl.parser.errors.InterpreterError;
 import uk.modl.utils.SimpleCache;
 import uk.modl.utils.Util;
 
@@ -38,7 +37,7 @@ public class StarLoadTransform implements Function2<TransformationContext, Struc
         for (final StarLoadExtractor.LoadSet loadSet : list) {
 
             if (newCtx.isStarLoadImmutable()) {
-                throw new InterpreterError("Cannot load multiple files after *LOAD instruction");
+                throw new RuntimeException("Cannot load multiple files after *LOAD instruction");
             }
             if (loadSet.getPair()
                     .getKey()

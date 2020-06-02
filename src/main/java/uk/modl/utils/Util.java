@@ -15,7 +15,6 @@ import uk.modl.model.Array;
 import uk.modl.model.PairValue;
 import uk.modl.model.Primitive;
 import uk.modl.model.ValueItem;
-import uk.modl.parser.errors.InterpreterError;
 
 import java.net.IDN;
 import java.net.URL;
@@ -127,7 +126,7 @@ public class Util {
             final String oldtext = Util.unquote(text);
             return s.replace(oldtext, newText);
         } else {
-            throw new InterpreterError("Invalid method: " + spec);
+            throw new RuntimeException("Invalid method: " + spec);
         }
     }
 
@@ -148,7 +147,7 @@ public class Util {
                 return s.substring(0, i);
             }
         } else {
-            throw new InterpreterError("Invalid method: " + spec);
+            throw new RuntimeException("Invalid method: " + spec);
         }
         return s;
     }
@@ -165,7 +164,7 @@ public class Util {
         try {
             return Double.parseDouble(s);
         } catch (NumberFormatException e) {
-            throw new InterpreterError("Invalid numeric value: " + e.getMessage());
+            throw new RuntimeException("Invalid numeric value: " + e.getMessage());
         }
     }
 
@@ -232,7 +231,7 @@ public class Util {
                     try {
                         valueStr = URLEncoder.encode(valueStr, StandardCharsets.UTF_8.toString());
                     } catch (final Exception e) {
-                        throw new InterpreterError("Error processing URL encoding instruction: " + e.getMessage());
+                        throw new RuntimeException("Error processing URL encoding instruction: " + e.getMessage());
                     }
                     break;
                 default:

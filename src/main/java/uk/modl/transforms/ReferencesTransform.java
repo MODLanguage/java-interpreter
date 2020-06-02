@@ -7,7 +7,7 @@ import io.vavr.control.Option;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
 import uk.modl.model.*;
-import uk.modl.parser.errors.InterpreterError;
+import uk.modl.parser.errors.DeepReferenceException;
 import uk.modl.utils.Util;
 
 import java.net.URLEncoder;
@@ -177,29 +177,33 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
         final String[] refList = methods.toJavaArray(String[]::new);
         Vector<Tuple3<String, String, Option<Pair>>> referencedObject = keyToReferencedObject(ctx, Vector.of(reference));
 
-        final Vector<ValueItem> valueItems = referencedObject.flatMap(t -> {
-            if (wasQuoted) {
-                return Option.of(new StringPrimitive(t._2));
-            }
-            if (t._3.isDefined()) {
-                return t._3;
-            }
-            if (StringUtils.isNumeric(t._2)) {
-                return Option.of((ValueItem) ctx.getObjectIndex()
-                        .getArrayItems()
-                        .get(Integer.parseInt(t._2)));
-            } else {
-                return Option.of(new StringPrimitive(t._2));
-            }
-        })
-                .map(pair -> followNestedRef(ctx, pair, refList, 0));
+        try {
+            final Vector<ValueItem> valueItems = referencedObject.flatMap(t -> {
+                if (wasQuoted) {
+                    return Option.of(new StringPrimitive(t._2));
+                }
+                if (t._3.isDefined()) {
+                    return t._3;
+                }
+                if (StringUtils.isNumeric(t._2)) {
+                    return Option.of((ValueItem) ctx.getObjectIndex()
+                            .getArrayItems()
+                            .get(Integer.parseInt(t._2)));
+                } else {
+                    return Option.of(new StringPrimitive(t._2));
+                }
+            })
+                    .map(pair -> followNestedRef(ctx, pair, refList, 0));
 
-        if (valueItems.size() == 1) {
-            return Tuple.of(complexRef, valueItems.get(0));
-        } else if (valueItems.size() > 1) {
-            throw new InterpreterError("Expected 1 ValueItem but found: " + valueItems.size());
-        } else {
-            throw new InterpreterError("Expected 1 ValueItem but found none. ");
+            if (valueItems.size() == 1) {
+                return Tuple.of(complexRef, valueItems.get(0));
+            } else if (valueItems.size() > 1) {
+                throw new RuntimeException("Expected 1 ValueItem but found: " + valueItems.size());
+            } else {
+                throw new RuntimeException("Expected 1 ValueItem but found none. ");
+            }
+        } catch (final DeepReferenceException dre) {
+            throw new RuntimeException("Invalid object reference: \"" + complexRef + "\"");
         }
     }
 
@@ -247,7 +251,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 if (matchingMapItem.isDefined()) {
                     return followNestedRef(ctx, (ValueItem) matchingMapItem.get(), refList, refIndex);
                 } else {
-                    throw new InterpreterError("No entry '" + ref + "' in Map '" + vi + "'");
+                    throw new DeepReferenceException("No entry '" + ref + "' in Map '" + vi + "'");
                 }
             }
             // If we have a Pair then take the pair value and recurse if possible
@@ -307,7 +311,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                         try {
                             valueStr = URLEncoder.encode(valueStr, StandardCharsets.UTF_8.toString());
                         } catch (final Exception e) {
-                            throw new InterpreterError("Error processing URL encoding instruction: " + e.getMessage());
+                            throw new RuntimeException("Error processing URL encoding instruction: " + e.getMessage());
                         }
                         break;
                     default:

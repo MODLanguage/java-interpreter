@@ -27,14 +27,18 @@ import static org.junit.Assert.*;
 public class InterpreterBaseTests {
 
     private static final JacksonJsonNodeTransformer jsonTransformer = new JacksonJsonNodeTransformer();
+
     private final List<String> errors = new ArrayList<>();
+
     private final ObjectMapper mapper = new ObjectMapper();
+
     /**
      * Read a set of tests from a file
      */
     private final Function<String, List<TestInput>> load = (filename) -> {
         try (final InputStream fileStream = new FileInputStream(filename)) {
             return mapper.readValue(fileStream, new TypeReference<LinkedList<TestInput>>() {
+
             });
         } catch (IOException e) {
             log.error("Error accessing file: {}", filename, e);
@@ -114,7 +118,7 @@ public class InterpreterBaseTests {
         final int startFromTestNumber = 0;// Use this to skip tests manually to make it easier for debugging a specific test.
         for (final TestInput testInput : list) {
             if (testNumber >= startFromTestNumber) {
-                checkInValidTestInput(testInput);
+                checkInvalidTestInput(testInput);
             }
             testNumber++;
         }
@@ -127,7 +131,7 @@ public class InterpreterBaseTests {
         }
     }
 
-    private void checkInValidTestInput(final TestInput testInput) {
+    private void checkInvalidTestInput(final TestInput testInput) {
         try {
             final Tuple2<TransformationContext, Modl> interpreted = new Interpreter().apply(TransformationContext.emptyCtx(), testInput.input);
             if (interpreted._2 != null) {
@@ -172,10 +176,17 @@ public class InterpreterBaseTests {
 
     @Data
     public static class TestInput {
+
         public String input;
+
         public String minimised_modl;
+
         public String expected_output;
+
         public String[] tested_features;
+
         public int id;
+
     }
+
 }

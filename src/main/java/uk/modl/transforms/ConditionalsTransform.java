@@ -6,7 +6,6 @@ import io.vavr.collection.Vector;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import uk.modl.model.*;
-import uk.modl.parser.errors.InterpreterError;
 import uk.modl.utils.Util;
 
 @RequiredArgsConstructor
@@ -169,7 +168,7 @@ public class ConditionalsTransform {
                         result = result || partialItem._1;
                         break;
                     default:
-                        throw new InterpreterError("Invalid operation in conditional: " + lastOp);
+                        throw new RuntimeException("Invalid operation in conditional: " + lastOp);
                 }
             }
             lastOp = partialItem._2;

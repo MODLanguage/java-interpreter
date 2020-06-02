@@ -10,7 +10,6 @@ import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import uk.modl.model.*;
-import uk.modl.parser.errors.InterpreterError;
 import uk.modl.utils.SupertypeInference;
 import uk.modl.utils.Util;
 
@@ -75,7 +74,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                 case "bool":
                     return convertPairToBoolean(pair, expClass);
                 default:
-                    throw new InterpreterError("Unknown Supertype: " + supertype);
+                    throw new RuntimeException("Invalid superclass: " + supertype);
             }
         }
         return pair;
@@ -91,7 +90,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
             if (structure instanceof ValueItem) {
                 return new Pair(expClass.name, (PairValue) structure);
             } else {
-                throw new InterpreterError("Cannot store this item in a Pair: " + structure.toString());
+                throw new RuntimeException("Cannot store this item in a Pair: " + structure.toString());
             }
         } else if (pairValue instanceof Map) {
             final Map map = expClass.toMapFromMap((Map) pairValue);
@@ -99,7 +98,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
             if (structure instanceof ValueItem) {
                 return new Pair(expClass.name, (PairValue) structure);
             } else {
-                throw new InterpreterError("Cannot store this item in a Pair: " + structure.toString());
+                throw new RuntimeException("Cannot store this item in a Pair: " + structure.toString());
             }
         } else if (pairValue instanceof Primitive) {
             if (expClass.hasSingleValueAssign()) {
@@ -109,7 +108,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                 if (structure instanceof ValueItem) {
                     return new Pair(expClass.name, (PairValue) structure);
                 } else {
-                    throw new InterpreterError("Cannot store this item in a Pair: " + structure.toString());
+                    throw new RuntimeException("Cannot store this item in a Pair: " + structure.toString());
                 }
             } else if (expClass.assigns.isEmpty()) {
                 final Map map = expClass.toMapFromMap(new Map(Vector.of(new Pair("value", pairValue))));
@@ -179,7 +178,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
             if (structure instanceof ValueItem) {
                 return new Pair(expClass.name, (PairValue) structure);
             } else {
-                throw new InterpreterError("Cannot store this item in a Pair: " + structure.toString());
+                throw new RuntimeException("Cannot store this item in a Pair: " + structure.toString());
             }
         } else if (pairValue instanceof Primitive) {
             return new Pair(expClass.name, new Array(Vector.of((ArrayItem) pairValue)));
@@ -190,9 +189,14 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
     }
 
     private Pair convertPairToNumber(final Pair pair, final ExpandedClass expClass) {
-        return new Pair(expClass.name, new NumberPrimitive(NumberUtils.createNumber(pair.getValue()
-                .toString())
-                .toString()));
+        try {
+            return new Pair(expClass.name, new NumberPrimitive(NumberUtils.createNumber(pair.getValue()
+                    .toString())
+                    .toString()));
+        } catch (final NumberFormatException e) {
+            throw new RuntimeException("Superclass of \"" + expClass.id + "\" is num - cannot assign value \"" + pair.getValue()
+                    .toString() + "\"");
+        }
     }
 
     private Pair convertPairToString(final Pair pair, final ExpandedClass expClass) {
@@ -410,7 +414,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                         mapItems = mapItems.appendAll(pairs);
                         return new Map(mapItems);
                     })
-                    .getOrElseThrow(() -> new InterpreterError("No assign list of length " + assignListLength + " in " + assigns));
+                    .getOrElseThrow(() -> new RuntimeException("No key list of the correct length in class " + id + " - looking for one of length " + assignListLength));
         }
 
         private Vector<String> extendAssignList(final int len, final Vector<String> list) {
