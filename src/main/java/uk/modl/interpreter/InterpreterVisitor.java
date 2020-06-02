@@ -17,6 +17,25 @@ import java.util.Objects;
  */
 public class InterpreterVisitor implements Function2<TransformationContext, Modl, Tuple2<TransformationContext, Modl>> {
 
+    public static final Vector<String> VALID_INSTRUCTIONS = Vector.of(
+            "*class",
+            "*c",
+            "*method",
+            "*m",
+            "*version",
+            "*v",
+            "*id",
+            "*i",
+            "*name",
+            "*n",
+            "*assign",
+            "*a",
+            "*superclass",
+            "*s",
+            "*load",
+            "*l"
+    );
+
     private final StarLoadTransform starLoadTransform;
 
     private final StarClassTransform starClassTransform;
@@ -408,6 +427,12 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
      */
     private Tuple2<TransformationContext, Structure> visitPair(final TransformationContext ctx, final Pair p) {
 
+        if (p.getKey()
+                .startsWith("*") && !VALID_INSTRUCTIONS
+                .contains(p.getKey()
+                        .toLowerCase())) {
+            throw new RuntimeException("Invalid keyword: " + p.getKey());
+        }
         TransformationContext newCtx = ctx;
         if (p.getKey()
                 .equals("*VERSION") || p.getKey()

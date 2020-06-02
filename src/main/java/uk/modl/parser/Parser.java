@@ -30,6 +30,7 @@ import uk.modl.parser.antlr.MODLParser;
 import uk.modl.parser.errors.ThrowingErrorListener;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
@@ -62,10 +63,8 @@ public class Parser implements Function1<String, Modl> {
             // The String has been parsed by Antlr, now its our turn
             return new ModlParsedVisitor(modlCtx).getModl();
         } catch (final ParseCancellationException e) {
-            log.error(e);
             throw e;
-        } catch (final Exception e) {
-            log.error(e);
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }

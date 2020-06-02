@@ -48,15 +48,19 @@ public class Interpreter implements Function2<TransformationContext, String, Tup
      */
     @Override
     public Tuple2<TransformationContext, Modl> apply(final TransformationContext ctx, @NonNull final String input) {
-        try {
-            // Apply the function and return the result.
-            return Option.of(input)
-                    .map(parser)
-                    .map(modl -> apply(ctx, modl))
-                    .get();
-        } catch (final ParseCancellationException e) {
-            throw new InterpreterError("Parser Error: " + e.getMessage());
-        }
+        // Apply the function and return the result.
+        return Option.of(input)
+                .map(s -> {
+                    try {
+                        return parser.apply(s);
+                    } catch (final ParseCancellationException e) {
+                        throw new InterpreterError("Parser Error: " + e.getMessage());
+                    } catch (final RuntimeException e) {
+                        throw new InterpreterError("Interpreter Error: " + e.getMessage());
+                    }
+                })
+                .map(modl -> apply(ctx, modl))
+                .get();
     }
 
     /**

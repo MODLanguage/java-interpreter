@@ -93,7 +93,7 @@ public class TransformationContext {
         final int badCharIndex = StringUtils.indexOfAny(k, INVALID_CHARS);
         if (badCharIndex > -1) {
             throw new RuntimeException("Invalid key - \"" +
-                    newKey.charAt(badCharIndex) +
+                    k.charAt(badCharIndex) +
                     "\" character not allowed: " +
                     newKey);
         }
