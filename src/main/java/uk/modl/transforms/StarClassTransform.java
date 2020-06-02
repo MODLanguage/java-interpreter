@@ -3,17 +3,19 @@ package uk.modl.transforms;
 import io.vavr.Function2;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import io.vavr.collection.LinkedHashMap;
 import io.vavr.collection.Vector;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import lombok.var;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
 
 @RequiredArgsConstructor
 public class StarClassTransform implements Function2<TransformationContext, Structure, Tuple2<TransformationContext, Structure>> {
+
+    private final ReferencesTransform referencesTransform = new ReferencesTransform();
 
     /**
      * Check whether the key represents a *class instruction
@@ -47,7 +49,7 @@ public class StarClassTransform implements Function2<TransformationContext, Stru
      * Extract a Class instruction from a Pair
      *
      * @param pair the Pair
-     * @return
+     * @return TransformationContext
      */
     private TransformationContext accept(final TransformationContext ctx, final @NonNull Pair pair) {
         if (pair.getValue() instanceof Map) {
@@ -55,7 +57,7 @@ public class StarClassTransform implements Function2<TransformationContext, Stru
             String name = null;
             String superclass = null;
             Vector<ArrayItem> assign = Vector.empty();
-            var pairs = Vector.<Pair>empty();
+            io.vavr.collection.Map<String, Pair> pairs = LinkedHashMap.empty();
 
             for (final MapItem mi : ((Map) pair.getValue()).getMapItems()) {
                 if (mi instanceof Pair) {
@@ -93,7 +95,14 @@ public class StarClassTransform implements Function2<TransformationContext, Stru
                             }
                             break;
                         default:
-                            pairs = pairs.append(p);
+                            if (p.getValue()
+                                    .toString()
+                                    .contains("%")) {
+                                final Tuple2<TransformationContext, Structure> result = referencesTransform.apply(ctx, (Structure) p);
+                                pairs = pairs.put(p.getKey(), (Pair) result._2);
+                            } else {
+                                pairs = pairs.put(p.getKey(), p);
+                            }
                     }
                 } else {
                     throw new InterpreterError("Expected a Pair but found a " + mi.getClass());
@@ -121,7 +130,7 @@ public class StarClassTransform implements Function2<TransformationContext, Stru
         Vector<ArrayItem> assign;
 
         @NonNull
-        Vector<Pair> pairs;
+        io.vavr.collection.Map<String, Pair> pairs;
 
         final String getNameOrId() {
             return (name == null) ? id : name;

@@ -166,6 +166,7 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
 
     private void accept(final ObjectNode node, final Structure structure) {
         Option.of(structure)
+                .filter(shouldAppearInOutput)
                 .map(addMapToObjectNode(node))
                 .map(addTopLevelConditionalToObjectNode(node))
                 .map(addPairToObjectNode(node));

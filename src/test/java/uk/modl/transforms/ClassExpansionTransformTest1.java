@@ -1,5 +1,6 @@
 package uk.modl.transforms;
 
+import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Vector;
 import org.junit.Assert;
@@ -14,7 +15,7 @@ public class ClassExpansionTransformTest1 {
 
         // Create the class
         final Vector<ArrayItem> assign = Vector.of(new Array(Vector.of(new StringPrimitive("one"), new StringPrimitive("two"), new StringPrimitive("three"))));
-        final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("test", null, null, assign, Vector.empty());
+        final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("test", null, null, assign, HashMap.empty());
         ctx.addClassInstruction(classInstruction);
 
         // Create the Pair to be transformed by the class

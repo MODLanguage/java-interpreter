@@ -1,5 +1,6 @@
 package uk.modl.transforms;
 
+import io.vavr.collection.HashMap;
 import io.vavr.collection.Vector;
 import org.junit.Test;
 import uk.modl.model.Array;
@@ -20,10 +21,10 @@ public class ExpandedClassTest {
                 new Array(Vector.of(new StringPrimitive("a"), new StringPrimitive("b"), new StringPrimitive("c")))
         );
 
-        final Vector<Pair> pairs = Vector.of(
-                new Pair("p1", new StringPrimitive("p1_value")),
-                new Pair("p2", new StringPrimitive("p2_value")),
-                new Pair("p3", new StringPrimitive("p3_value"))
+        final HashMap<String, Pair> pairs = HashMap.of(
+                "p1", new Pair("p1", new StringPrimitive("p1_value")),
+                "p2", new Pair("p2", new StringPrimitive("p2_value")),
+                "p3", new Pair("p3", new StringPrimitive("p3_value"))
         );
         final StarClassTransform.ClassInstruction ci = of("test1", "name", "super", assign, pairs);
 
@@ -32,10 +33,10 @@ public class ExpandedClassTest {
                 new Array(Vector.of(new StringPrimitive("d"), new StringPrimitive("e"), new StringPrimitive("f")))
         );
 
-        final Vector<Pair> pairs2 = Vector.of(
-                new Pair("p4", new StringPrimitive("p4_value")),
-                new Pair("p5", new StringPrimitive("p5_value")),
-                new Pair("p6", new StringPrimitive("p6_value"))
+        final HashMap<String, Pair> pairs2 = HashMap.of(
+                "p4", new Pair("p4", new StringPrimitive("p4_value")),
+                "p5", new Pair("p5", new StringPrimitive("p5_value")),
+                "p6", new Pair("p6", new StringPrimitive("p6_value"))
         );
         final StarClassTransform.ClassInstruction superclass = of("super", "super", "str", assign2, pairs2);
 
@@ -50,7 +51,7 @@ public class ExpandedClassTest {
     public void testMinimalClassInstruction() {
         final Vector<ArrayItem> assign = Vector.empty();
 
-        final Vector<Pair> pairs = Vector.empty();
+        final HashMap<String, Pair> pairs = HashMap.empty();
         final StarClassTransform.ClassInstruction ci = of("test2", null, null, assign, pairs);
 
 

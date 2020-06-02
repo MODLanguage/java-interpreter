@@ -5,6 +5,7 @@ import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
 import lombok.NonNull;
+import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.model.*;
 import uk.modl.transforms.*;
 
@@ -391,8 +392,14 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
      */
     private Tuple2<TransformationContext, Structure> visitPair(final TransformationContext ctx, final Pair p) {
 
-        final Tuple2<TransformationContext, Structure> structureWithLoadedFiles = starLoadTransform.apply(ctx, p);
-        final Tuple2<TransformationContext, Structure> structureWithExpandedClasses = starClassTransform.apply(structureWithLoadedFiles._1, structureWithLoadedFiles._2);
+        // Special handling for *load instructions.
+        if (StarLoadExtractor.isLoadInstruction(p.getKey())) {
+            final ValueItem result = referencesTransform.apply(ctx, (ValueItem) p.getValue());
+            final Tuple2<TransformationContext, Structure> structureWithLoadedFiles = starLoadTransform.apply(ctx, new Pair(p.getKey(), result));
+            return Tuple.of(structureWithLoadedFiles._1, structureWithLoadedFiles._2);
+        }
+
+        final Tuple2<TransformationContext, Structure> structureWithExpandedClasses = starClassTransform.apply(ctx, p);
         final Tuple2<TransformationContext, Structure> structureWithAppliedMethods = starMethodTransform.apply(structureWithExpandedClasses._1, structureWithExpandedClasses._2);
         final Tuple2<TransformationContext, Structure> contextAndStructure = referencesTransform.apply(structureWithAppliedMethods._1, structureWithAppliedMethods._2);
 

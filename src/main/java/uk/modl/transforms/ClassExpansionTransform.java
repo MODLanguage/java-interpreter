@@ -311,17 +311,23 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
 
             final String name = ci.getNameOrId();
             final Vector<Vector<String>> assigns = getAllAssigns(ctx, ci);
-            final Vector<Pair> pairs = getAllPairs(ctx, ci);
+            final io.vavr.collection.Map<String, Pair> pairs = getAllPairs(ctx, ci);
 
-            return new ExpandedClass(id, name, supertype, assigns, pairs);
+            return new ExpandedClass(id, name, supertype, assigns, pairs.values()
+                    .toVector());
         }
 
-        private static Vector<Pair> getAllPairs(final TransformationContext ctx, final StarClassTransform.ClassInstruction ci) {
+        private static io.vavr.collection.Map<String, Pair> getAllPairs(final TransformationContext ctx, final StarClassTransform.ClassInstruction ci) {
             final String superclass = ci.getSuperclass();
-            final Vector<Pair> pairs = ci.getPairs();
-            return pairs.appendAll(ctx.getClassByNameOrId(superclass)
+            final io.vavr.collection.Map<String, Pair> pairs = ci.getPairs();
+
+            // Append pairs from superclasses if they are not already in the set of pairs. I.e. Pairs from superclasses do not override pairs from subclasses.
+
+            final io.vavr.collection.Map<String, Pair> pairsFromSuperclasses = ctx.getClassByNameOrId(superclass)
                     .map(superCi -> getAllPairs(ctx, superCi))
-                    .getOrElse(Vector.empty()));
+                    .getOrElse(HashMap.empty());
+
+            return pairs.merge(pairsFromSuperclasses);
         }
 
         private static Vector<Vector<String>> getAllAssigns(final TransformationContext ctx, final StarClassTransform.ClassInstruction ci) {

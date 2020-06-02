@@ -1,5 +1,6 @@
 package uk.modl.transforms;
 
+import io.vavr.collection.HashMap;
 import io.vavr.collection.Vector;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,25 +30,25 @@ public class ClassExpansionTransformTest2 {
 
     private TransformationContext addClasses(TransformationContext ctx) {
         {
-            final Vector<Pair> pairs = Vector.of(new Pair("v", new StringPrimitive("victor")));
+            final io.vavr.collection.Map<String, Pair> pairs = HashMap.of("v", new Pair("v", new StringPrimitive("victor")));
 
             final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("a", "alpha", "map", Vector.empty(), pairs);
             ctx = ctx.addClassInstruction(classInstruction);
         }
         {
-            final Vector<Pair> pairs = Vector.of(new Pair("w", new StringPrimitive("whisky")));
+            final io.vavr.collection.Map<String, Pair> pairs = HashMap.of("w", new Pair("w", new StringPrimitive("whisky")));
 
             final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("b", "bravo", "alpha", Vector.empty(), pairs);
             ctx = ctx.addClassInstruction(classInstruction);
         }
         {
-            final Vector<Pair> pairs = Vector.of(new Pair("x", new StringPrimitive("xray")));
+            final io.vavr.collection.Map<String, Pair> pairs = HashMap.of("x", new Pair("x", new StringPrimitive("xray")));
 
             final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("c", "charlie", "bravo", Vector.empty(), pairs);
             ctx = ctx.addClassInstruction(classInstruction);
         }
         {
-            final Vector<Pair> pairs = Vector.of(new Pair("y", new StringPrimitive("yankee")));
+            final io.vavr.collection.Map<String, Pair> pairs = HashMap.of("y", new Pair("y", new StringPrimitive("yankee")));
 
             final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("d", "delta", "charlie", Vector.empty(), pairs);
             ctx = ctx.addClassInstruction(classInstruction);

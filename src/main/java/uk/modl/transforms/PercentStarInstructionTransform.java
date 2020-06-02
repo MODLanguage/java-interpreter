@@ -88,7 +88,8 @@ public class PercentStarInstructionTransform implements Function2<Transformation
         }
 
         if (ci.getPairs() != null) {
-            clssItems = clssItems.appendAll(ci.getPairs());
+            clssItems = clssItems.appendAll(ci.getPairs()
+                    .values());
         }
 
         final MapItem clssMap = new Pair(ci.getId(), new uk.modl.model.Map(clssItems));
