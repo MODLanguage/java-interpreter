@@ -89,6 +89,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
     /**
      * Replace if necessary
      *
+     * @param ctx       TransformationContext
      * @param condition a Condition
      * @return a Condition
      */
@@ -126,6 +127,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
     /**
      * Replace if necessary
      *
+     * @param ctx TransformationContext
      * @param vi a ValueItem
      * @return a ValueItem
      */

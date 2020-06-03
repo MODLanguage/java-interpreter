@@ -449,9 +449,24 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
         if (p.getKey()
                 .equals("*VERSION") || p.getKey()
                 .equals("*V")) {
-            newCtx = newCtx.withVersion(p.getValue()
-                    .numericValue()
-                    .intValue());
+            try {
+                final int version = p.getValue()
+                        .numericValue()
+                        .intValue();
+
+                if (version <= 0) {
+                    throw new RuntimeException("Invalid MODL version: " + p.getValue()
+                            .toString());
+                }
+                if (ctx.getPairs()
+                        .nonEmpty()) {
+                    throw new RuntimeException("MODL version should be on the first line if specified.");
+                }
+                newCtx = newCtx.withVersion(version);
+            } catch (final NumberFormatException e) {
+                throw new RuntimeException("Invalid MODL version: " + p.getValue()
+                        .toString());
+            }
         }
         // Special handling for *load instructions.
         if (StarLoadExtractor.isLoadInstruction(p.getKey())) {
@@ -655,6 +670,8 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             Vector<Structure> resultStructures = visitedStructures.map(structure -> classExpansionTransform.apply(finalNewCtx, structure));
 
             return Tuple.of(finalNewCtx, new Modl(resultStructures.filter(Objects::nonNull)));
+        } catch (final InterpreterError e) {
+            throw e;
         } catch (final RuntimeException e) {
             if (newCtx.getVersion() > 1) {
                 throw new InterpreterError("Interpreter Error: " + e.getMessage() + " - MODL Version 1 interpreter cannot process this MODL Version " + newCtx.getVersion() + " file.");

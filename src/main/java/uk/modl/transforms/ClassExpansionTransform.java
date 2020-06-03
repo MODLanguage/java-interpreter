@@ -182,6 +182,8 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
             }
         } else if (pairValue instanceof Primitive) {
             return new Pair(expClass.name, new Array(Vector.of((ArrayItem) pairValue)));
+        } else if (pairValue instanceof Map) {
+            throw new RuntimeException("Cannot convert map to array: " + pairValue);
         }
 
         return new Pair(expClass.name, pairValue);
@@ -190,6 +192,16 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
 
     private Pair convertPairToNumber(final Pair pair, final ExpandedClass expClass) {
         try {
+            if (pair.getValue() instanceof NullPrimitive) {
+                throw new RuntimeException("Superclass of \"" + expClass.id + "\" is num - cannot assign value \"" + pair.getValue()
+                        .toString() + "\"");
+            }
+
+            if (pair.getValue() instanceof StringPrimitive) {
+                throw new RuntimeException("Superclass of \"" + expClass.id + "\" is num - cannot assign value \"" + pair.getValue()
+                        .toString() + "\"");
+            }
+
             return new Pair(expClass.name, new NumberPrimitive(NumberUtils.createNumber(pair.getValue()
                     .toString())
                     .toString()));
@@ -201,6 +213,10 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
 
     private Pair convertPairToString(final Pair pair, final ExpandedClass expClass) {
         @NonNull final PairValue pairValue = pair.getValue();
+
+        if (pairValue instanceof NullPrimitive) {
+            throw new RuntimeException("Cannot convert null value to string.");
+        }
 
         if (pairValue instanceof TruePrimitive) {
             return new Pair(expClass.name, new StringPrimitive("true"));
@@ -352,6 +368,12 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
             Vector<ArrayItem> tmpValuesToAssign = Vector.empty();
             if (value instanceof Array) {
                 tmpValuesToAssign = ((Array) value).getArrayItems();
+                if (assigns.isEmpty()) {
+                    final Vector<String> strings = tmpValuesToAssign.map(Object::toString)
+                            .intersperse(", ");
+                    final String arrayStr = strings.foldLeft("[", (l, r) -> l + r) + "]";
+                    throw new RuntimeException("Cannot convert array to map: " + arrayStr);
+                }
             } else if (value instanceof Map) {
                 tmpValuesToAssign = ((Map) value).getMapItems()
                         .map(mi -> (ArrayItem) mi);

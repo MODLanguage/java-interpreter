@@ -143,7 +143,8 @@ public class StarClassTransform implements Function2<TransformationContext, Stru
             final Array array = (Array) assign;
             @NonNull final Vector<ArrayItem> arrayItems = array.getArrayItems();
             if (arrayItems.size() <= lastLen) {
-                final Vector<String> strings = arrayItems.map(ai -> "\"" + ai.toString() + "\"");
+                final Vector<String> strings = arrayItems.map(ai -> "\"" + ai.toString() + "\"")
+                        .intersperse(", ");
                 final String arrayStr = strings.foldLeft("[", (l, r) -> l + r) + "]";
                 throw new RuntimeException("Error: Key lists in *assign are not in ascending order of list length: " + arrayStr);
             }

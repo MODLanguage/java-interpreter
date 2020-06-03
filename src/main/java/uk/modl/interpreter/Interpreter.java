@@ -43,6 +43,7 @@ public class Interpreter implements Function2<TransformationContext, String, Tup
     /**
      * Interpreter entry point
      *
+     * @param ctx   TransformationContext
      * @param input a String, which should be a MODL String, but could be any value.
      * @return Either an Error or a Modl object.
      */
@@ -66,6 +67,7 @@ public class Interpreter implements Function2<TransformationContext, String, Tup
     /**
      * Interpreter entry point2 - reprocessing of Modl objects that were cached
      *
+     * @param ctx TransformationContext
      * @param modl a Modl object.
      * @return Either an Error or a Modl object.
      */

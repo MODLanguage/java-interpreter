@@ -106,6 +106,7 @@ public class TransformationContext {
      * Add files loaded by a *load instruction
      *
      * @param filenames a List of String filenames
+     * @return TransformationContext
      */
     public TransformationContext addFilesLoaded(final Vector<String> filenames) {
         return this.withFilesLoaded(filenames.appendAll(filesLoaded));
@@ -115,6 +116,7 @@ public class TransformationContext {
      * Add a Method defined by a *method instruction
      *
      * @param mi a StarMethodTransform.MethodInstruction
+     * @return TransformationContext
      */
     public TransformationContext addMethodInstruction(final StarMethodTransform.MethodInstruction mi) {
         if (methodsById.containsKey(mi.getId()) || methodsByName.containsKey(mi.getId())) {
@@ -139,6 +141,7 @@ public class TransformationContext {
      * Add a class defined by a *class instruction
      *
      * @param ci a StarClassTransform.ClassInstruction
+     * @return TransformationContext
      */
     public TransformationContext addClassInstruction(final StarClassTransform.ClassInstruction ci) {
         if (starClassImmutable) {
