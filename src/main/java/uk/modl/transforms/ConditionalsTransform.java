@@ -78,7 +78,7 @@ public class ConditionalsTransform {
                         structures = structures.append(refsResult._2);
                     }
 
-                    newCtx = saveResultInContext(newCtx, structures);
+                    newCtx = conditionalFileLoading(newCtx, structures);
 
                 }
                 i += 1;
@@ -98,32 +98,17 @@ public class ConditionalsTransform {
             structures = structures.append(result._2);
         }
 
-        newCtx = saveResultInContext(newCtx, structures);
+        newCtx = conditionalFileLoading(newCtx, structures);
 
         return Tuple.of(newCtx, tlc.withResult(structures));
     }
 
-    private TransformationContext saveResultInContext(final TransformationContext ctx, final Vector<Structure> structures) {
+    private TransformationContext conditionalFileLoading(final TransformationContext ctx, final Vector<Structure> structures) {
 
         TransformationContext newCtx = ctx;
         for (final Structure structure : structures) {
-
             final Tuple2<TransformationContext, Structure> loadResult = starLoadTransform.apply(newCtx, structure);
             newCtx = loadResult._1;
-            final Structure newStructure = loadResult._2;
-
-            if (newStructure instanceof Pair) {
-                final Tuple2<TransformationContext, Structure> refsResult = referencesTransform.apply(newCtx, newStructure);
-                newCtx = refsResult._1;
-
-                final Pair pair = (Pair) refsResult._2;
-                @NonNull final String key = pair.getKey();
-                newCtx = newCtx.addPair(key, pair);
-
-                if (key.startsWith("_")) {
-                    newCtx = newCtx.addPair(key.substring(1), pair);
-                }
-            }
         }
 
         return newCtx;
@@ -141,8 +126,7 @@ public class ConditionalsTransform {
             if (value instanceof ValueConditional) {
                 final ValueConditional result = apply(ctx, (ValueConditional) value);
                 final Pair resultPair = new Pair(p.getKey(), result);
-                final TransformationContext newCtx = saveResultInContext(ctx, Vector.of(resultPair));
-                return Tuple.of(newCtx, resultPair);
+                return Tuple.of(ctx, resultPair);
             }
         }
         return Tuple.of(ctx, structure);
