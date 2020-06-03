@@ -15,7 +15,7 @@ import uk.modl.model.Pair;
 @With
 public class TransformationContext {
 
-    public static final String INVALID_CHARS = "!$@-+'#^*£&";
+    public static final String INVALID_CHARS = "!$-+'#^*£&";
 
     public static final int VERSION = 1;
 

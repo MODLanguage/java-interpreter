@@ -26,11 +26,14 @@ public class MethodsTransform implements Function3<TransformationContext, String
 
     private String runMethods(final TransformationContext ctx, final String method, final String s) {
         final Option<StarMethodTransform.MethodInstruction> maybeMethod = ctx.getMethodByNameOrId(method);
+
         if (maybeMethod.isDefined()) {
             final StarMethodTransform.MethodInstruction mi = maybeMethod.get();
 
             final Vector<String> methods = Util.toMethodList(mi.getTransform());
+
             final String[] refList = methods.toJavaArray(String[]::new);
+
             return Util.handleMethodsAndTrailingPathComponents(refList, s);
         }
         return s;

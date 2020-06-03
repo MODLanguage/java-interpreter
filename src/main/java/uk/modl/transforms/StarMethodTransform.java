@@ -45,7 +45,7 @@ public class StarMethodTransform implements Function2<TransformationContext, Str
      * Extract a Method instruction from a Pair
      *
      * @param pair the Pair
-     * @return
+     * @return TransformationContext
      */
     private TransformationContext accept(final TransformationContext ctx, final Pair pair) {
         if (pair.getValue() instanceof Map) {
@@ -97,10 +97,6 @@ public class StarMethodTransform implements Function2<TransformationContext, Str
 
         @NonNull
         String transform;
-
-        final String getNameOrId() {
-            return (name == null) ? id : name;
-        }
 
     }
 

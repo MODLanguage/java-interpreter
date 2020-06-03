@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.interpreter.Interpreter;
 import uk.modl.model.*;
+import uk.modl.parser.errors.StarLoadException;
 import uk.modl.utils.SimpleCache;
 import uk.modl.utils.Util;
 
@@ -51,36 +52,46 @@ public class StarLoadTransform implements Function2<TransformationContext, Struc
             for (final StarLoadExtractor.FileSpec spec : filenames) {
                 // Interpret each MODL string from each file
                 final Interpreter interpreter = new Interpreter();
+                try {
 
-                if (cache.contains(spec.getFilename()) && !spec.isForceLoad()) {
-                    // Its cached and not force-loaded
-                    final Tuple2<StarLoadExtractor.FileSpec, Modl> cachedModl = Tuple.of(spec, cache.get(spec.getFilename()));
+                    if (cache.contains(spec.getFilename()) && !spec.isForceLoad()) {
+                        // Its cached and not force-loaded
+                        final Tuple2<StarLoadExtractor.FileSpec, Modl> cachedModl = Tuple.of(spec, cache.get(spec.getFilename()));
 
-                    // Re-interpret the cached Modl objects to extract classes, methods etc. for the current context
-                    final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(newCtx, cachedModl._2);
-                    newCtx = interpreted._1;
-
-                    result = result.append(Tuple.of(Vector.of(cachedModl._1.getFilename()), Vector.of(cachedModl._2), loadSet.getPair()));
-
-                    // Add the cache misses to the cache for next time
-                    cache.put(cachedModl._1.getFilename(), cachedModl._2);
-                } else {
-                    // Its either not cached or not force-loaded
-                    // Map the filenames to the contents of the files, or Error
-                    final Tuple2<StarLoadExtractor.FileSpec, String> contents = Util.getFileContents.apply(spec);
-                    if (contents != null) {
-                        final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(newCtx, contents._2);
+                        // Re-interpret the cached Modl objects to extract classes, methods etc. for the current context
+                        final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(newCtx, cachedModl._2);
                         newCtx = interpreted._1;
 
-                        result = result.append(Tuple.of(Vector.of(contents._1.getFilename()), Vector.of(interpreted._2), loadSet.getPair()));
+                        result = result.append(Tuple.of(Vector.of(cachedModl._1.getFilename()), Vector.of(cachedModl._2), loadSet.getPair()));
+
+                        // Add the cache misses to the cache for next time
+                        cache.put(cachedModl._1.getFilename(), cachedModl._2);
+                    } else {
+                        // Its either not cached or not force-loaded
+                        // Map the filenames to the contents of the files, or Error
+                        final Tuple2<StarLoadExtractor.FileSpec, String> contents = Util.getFileContents.apply(spec);
+                        if (contents != null) {
+                            final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(newCtx, contents._2);
+                            newCtx = interpreted._1;
+
+                            result = result.append(Tuple.of(Vector.of(contents._1.getFilename()), Vector.of(interpreted._2), loadSet.getPair()));
+                        }
+                    }
+                } catch (final StarLoadException e) {
+                    //
+                    // If any load returns an error AND we have a cached copy then use the cached copy for up to 7 days.
+                    //
+                    if (cache.contains(spec.getFilename())) {
+                        final Tuple2<StarLoadExtractor.FileSpec, Modl> cachedModl = Tuple.of(spec, cache.get(spec.getFilename()));
+
+                        // Re-interpret the cached Modl objects to extract classes, methods etc. for the current context
+                        final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(newCtx, cachedModl._2);
+                        newCtx = interpreted._1;
+
+                        result = result.append(Tuple.of(Vector.of(cachedModl._1.getFilename()), Vector.of(cachedModl._2), loadSet.getPair()));
                     }
                 }
             }
-
-            //
-            // TODO: If any load returns an error AND we have a cached copy then use the cached copy for up to 7 days.
-            //
-
         }
 
         return Tuple.of(newCtx, result);

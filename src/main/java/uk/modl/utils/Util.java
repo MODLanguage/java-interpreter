@@ -15,6 +15,7 @@ import uk.modl.model.Array;
 import uk.modl.model.PairValue;
 import uk.modl.model.Primitive;
 import uk.modl.model.ValueItem;
+import uk.modl.parser.errors.StarLoadException;
 
 import java.net.IDN;
 import java.net.URL;
@@ -58,10 +59,10 @@ public class Util {
             } else if (Files.exists(Paths.get(spec.getFilename()))) {
                 return Tuple.of(spec, String.join("", Files.readAllLines(Paths.get(spec.getFilename()))));
             }
-            return null;
         } catch (final Exception e) {
-            throw new RuntimeException("Could not interpret " + e.getMessage());
+            throw new StarLoadException("Could not load resource: " + e.getMessage());
         }
+        throw new StarLoadException("Could not load resource: " + spec.getFilename());
     };
 
     /**
