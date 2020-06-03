@@ -89,6 +89,8 @@ public class StarLoadTransform implements Function2<TransformationContext, Struc
                         newCtx = interpreted._1;
 
                         result = result.append(Tuple.of(Vector.of(cachedModl._1.getFilename()), Vector.of(cachedModl._2), loadSet.getPair()));
+                    } else {
+                        throw e;
                     }
                 }
             }

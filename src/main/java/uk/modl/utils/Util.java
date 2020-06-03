@@ -53,10 +53,14 @@ public class Util {
         try {
             if (spec.getFilename()
                     .startsWith("http")) {
+
+                // Load over the net
                 final URL url = new URL(spec.getFilename());
                 return Tuple.of(spec, new Scanner(url.openStream(), StandardCharsets.UTF_8.name()).useDelimiter("\\A")
                         .next());
             } else if (Files.exists(Paths.get(spec.getFilename()))) {
+
+                // Load local file
                 return Tuple.of(spec, String.join("", Files.readAllLines(Paths.get(spec.getFilename()))));
             }
         } catch (final Exception e) {
