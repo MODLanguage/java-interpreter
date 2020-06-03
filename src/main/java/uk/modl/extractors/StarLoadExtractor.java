@@ -2,7 +2,6 @@ package uk.modl.extractors;
 
 import io.vavr.collection.Vector;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Value;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
@@ -31,42 +30,10 @@ public class StarLoadExtractor extends ModlVisitorBase {
         if (isLoadInstruction(key)) {
 
             val specs = Util.getFilenames.apply(pair.getValue())
-                    .map(this::normalize);
+                    .map(Util::normalize);
 
             loadSets = loadSets.append(new LoadSet(pair, specs));
         }
-    }
-
-    /**
-     * Remove graves etc.
-     *
-     * @param text the String to be normalized
-     * @return the normalized String
-     */
-    private FileSpec normalize(@NonNull final String text) {
-        String normalized = text;
-
-        if (normalized.length() > 1 && normalized.startsWith("`") && normalized.endsWith("`")) {
-            // Remove graves
-            normalized = StringUtils.unwrap(normalized, "`");
-        }
-
-        if (normalized.length() > 1 && normalized.startsWith("\"") && normalized.endsWith("\"")) {
-            // Remove quotes
-            normalized = StringUtils.unwrap(normalized, "\"");
-        }
-
-        final boolean forceLoad = (normalized.endsWith("!"));
-        normalized = StringUtils.removeEnd(normalized, "!");
-
-        if (!normalized.endsWith(".modl") && !normalized.endsWith(".txt")) {
-            // Add a file extension
-            normalized += ".modl";
-        }
-
-        normalized = normalized.replace("~://", "://");
-
-        return new FileSpec(normalized, forceLoad);
     }
 
     /**

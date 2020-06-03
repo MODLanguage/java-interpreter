@@ -84,7 +84,19 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
         @NonNull final PairValue pairValue = pair.getValue();
 
         if (pairValue instanceof Array) {
-            final Structure s = expClass.toStructureUsingAssign(ctx, cache, (Array) pairValue);
+            return getPairFromArray(ctx, expClass, (Array) pairValue);
+        } else if (pairValue instanceof Map) {
+            return getPairFromMap(ctx, expClass, (Map) pairValue);
+        } else if (pairValue instanceof Primitive) {
+            final Pair structure = getPairFromPrimitive(ctx, expClass, pairValue);
+            if (structure != null) return structure;
+        }
+        return new Pair(expClass.name, pairValue);
+    }
+
+    private Pair getPairFromPrimitive(final TransformationContext ctx, final ExpandedClass expClass, final @NonNull PairValue pairValue) {
+        if (expClass.hasSingleValueAssign()) {
+            final Structure s = expClass.toStructureUsingAssign(ctx, cache, new Array(Vector.of((ArrayItem) pairValue)));
 
             final Structure structure = apply(ctx, s);
             if (structure instanceof ValueItem) {
@@ -92,32 +104,34 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
             } else {
                 throw new RuntimeException("Cannot store this item in a Pair: " + structure.toString());
             }
-        } else if (pairValue instanceof Map) {
-            final Map map = expClass.toMapFromMap((Map) pairValue);
+        } else if (expClass.assigns.isEmpty()) {
+            final Map map = expClass.toMapFromMap(new Map(Vector.of(new Pair("value", pairValue))));
+
             final Structure structure = apply(ctx, map);
-            if (structure instanceof ValueItem) {
-                return new Pair(expClass.name, (PairValue) structure);
-            } else {
-                throw new RuntimeException("Cannot store this item in a Pair: " + structure.toString());
-            }
-        } else if (pairValue instanceof Primitive) {
-            if (expClass.hasSingleValueAssign()) {
-                final Structure s = expClass.toStructureUsingAssign(ctx, cache, new Array(Vector.of((ArrayItem) pairValue)));
-
-                final Structure structure = apply(ctx, s);
-                if (structure instanceof ValueItem) {
-                    return new Pair(expClass.name, (PairValue) structure);
-                } else {
-                    throw new RuntimeException("Cannot store this item in a Pair: " + structure.toString());
-                }
-            } else if (expClass.assigns.isEmpty()) {
-                final Map map = expClass.toMapFromMap(new Map(Vector.of(new Pair("value", pairValue))));
-
-                final Structure structure = apply(ctx, map);
-                return new Pair(expClass.name, (PairValue) structure);
-            }
+            return new Pair(expClass.name, (PairValue) structure);
         }
-        return new Pair(expClass.name, pairValue);
+        return null;
+    }
+
+    private Pair getPairFromMap(final TransformationContext ctx, final ExpandedClass expClass, final Map pairValue) {
+        final Map map = expClass.toMapFromMap(pairValue);
+        final Structure structure = apply(ctx, map);
+        if (structure instanceof ValueItem) {
+            return new Pair(expClass.name, (PairValue) structure);
+        } else {
+            throw new RuntimeException("Cannot store this item in a Pair: " + structure.toString());
+        }
+    }
+
+    private Pair getPairFromArray(final TransformationContext ctx, final ExpandedClass expClass, final Array pairValue) {
+        final Structure s = expClass.toStructureUsingAssign(ctx, cache, pairValue);
+
+        final Structure structure = apply(ctx, s);
+        if (structure instanceof ValueItem) {
+            return new Pair(expClass.name, (PairValue) structure);
+        } else {
+            throw new RuntimeException("Cannot store this item in a Pair: " + structure.toString());
+        }
     }
 
     private Pair convertPairToNull(final ExpandedClass expClass) {

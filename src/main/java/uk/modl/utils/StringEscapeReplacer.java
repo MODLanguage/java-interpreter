@@ -26,8 +26,8 @@ public class StringEscapeReplacer {
 
     private static final Map<String, String> replacements = new LinkedHashMap<>();
 
-    /**
-     * Synchronized since two quick successive requests in the java-interpreter-server can clash.
+    /*
+      Synchronized since two quick successive requests in the java-interpreter-server can clash.
      */
     static {
         replacements.put("\\%", "%");
