@@ -143,7 +143,6 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
         final MapConditional mapConditional = new MapConditional(tests, returns, Vector.empty());
         final MapConditional evaluated = conditionalsTransform.apply(newCtx, mapConditional);
         return Tuple.of(newCtx, evaluated);
-
     }
 
     /**
@@ -188,9 +187,22 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
                 structures = structures.append(refsResult._2);
                 newCtx = refsResult._1;
             } else {
-                final Tuple2<TransformationContext, Structure> result = visitStructure(newCtx, structure);
-                newCtx = result._1;
-                structures = structures.append(result._2);
+                if (structure instanceof TopLevelConditional) {
+                    final Tuple2<TransformationContext, Structure> visitResult = visitTopLevelConditional(newCtx, (TopLevelConditional) structure);
+                    newCtx = visitResult._1;
+
+                    structures = structures.append(visitResult._2);
+                } else if (structure instanceof Pair && ((Pair) structure).getValue() instanceof ValueConditional) {
+                    final Pair p = (Pair) structure;
+
+                    final Tuple2<TransformationContext, ValueConditional> visitResult = visitValueConditional(newCtx, (ValueConditional) p.getValue());
+                    newCtx = visitResult._1;
+
+
+                    structures = structures.append(new Pair(p.getKey(), visitResult._2));
+                } else {
+                    structures = structures.append(structure);
+                }
             }
         }
 
@@ -451,21 +463,21 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
         final Tuple2<TransformationContext, Structure> structureWithExpandedClasses = starClassTransform.apply(newCtx, p);
         final Tuple2<TransformationContext, Structure> structureWithAppliedMethods = starMethodTransform.apply(structureWithExpandedClasses._1, structureWithExpandedClasses._2);
         final Tuple2<TransformationContext, Structure> contextAndStructure = referencesTransform.apply(structureWithAppliedMethods._1, structureWithAppliedMethods._2);
+        final Structure structure = percentStarInstructionTransform.apply(contextAndStructure._1, contextAndStructure._2);
 
         newCtx = contextAndStructure._1;
 
-        final Structure st = contextAndStructure._2;
-        if (st == null) {
+        if (structure == null) {
             return Tuple.of(newCtx, null);
         }
 
         PairValue value;
 
-        if (st instanceof Pair) {
-            final Pair pair = (Pair) st;
+        if (structure instanceof Pair) {
+            final Pair pair = (Pair) structure;
             value = pair.getValue();
         } else {
-            value = (PairValue) st;
+            value = (PairValue) structure;
         }
 
         if (value instanceof Array) {
@@ -482,13 +494,15 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             value = result._2;
         }
 
-        if (st instanceof Pair) {
-            @NonNull final String key = ((Pair) st).getKey();
+        if (structure instanceof Pair) {
+            @NonNull final String key = ((Pair) structure).getKey();
             final Pair newPair = new Pair(key, value);
-            final TransformationContext updatedNewCtx = newCtx.addPair(key, newPair);
-            return Tuple.of(updatedNewCtx, percentStarInstructionTransform.apply(updatedNewCtx, (Structure) newPair));
+            if (value instanceof ValueConditional) {
+                newCtx = newCtx.addPair(key, newPair);
+            }
+            return Tuple.of(newCtx, newPair);
         }
-        return Tuple.of(newCtx, percentStarInstructionTransform.apply(newCtx, st));
+        return Tuple.of(newCtx, structure);
     }
 
     /**

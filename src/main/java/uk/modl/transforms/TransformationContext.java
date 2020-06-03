@@ -171,6 +171,9 @@ public class TransformationContext {
 
     public TransformationContext addPair(final String key, final Pair p) {
         validatePairKey(key);
+        if (pairs.containsKey(key) && StringUtils.isAllUpperCase(key)) {
+            throw new RuntimeException("Already defined " + key + " as final.");
+        }
         return this.withPairs(pairs.put(key, p));
     }
 
