@@ -4,6 +4,7 @@ import io.vavr.*;
 import io.vavr.collection.Map;
 import io.vavr.collection.Vector;
 import io.vavr.control.Option;
+import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
 import uk.modl.model.*;
@@ -73,13 +74,19 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
             return ctx.withObjectIndex(objectIndex);
         } else {
             // Keep a map of pairs indexed by their key...
-            final TransformationContext updatedContext = ctx.addPair(pair.getKey(), pair);
+            TransformationContext updatedContext = ctx.addPair(pair.getKey(), pair);
 
             // ...and by their key without the underscore prefix if there is one.
             if (pair.getKey()
                     .startsWith("_")) {
-                return updatedContext.addPair(pair.getKey()
+                updatedContext = updatedContext.addPair(pair.getKey()
                         .substring(1), pair);
+            }
+
+            // ...and by the key with the underscore prefix if this doesn't have one, but we already have one with an underscore
+            if (updatedContext.getPairs()
+                    .containsKey("_" + pair.getKey())) {
+                updatedContext = updatedContext.addPair("_" + pair.getKey(), pair);
             }
             return updatedContext;
         }
@@ -368,21 +375,61 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
             return Tuple.of(ctx, null);
         }
 
+        TransformationContext newCtx = ctx;
+
         if (p instanceof Pair) {
             final Pair pair = (Pair) p;
             if ((pair).getValue() instanceof ValueConditional) {
                 return Tuple.of(ctx, p);
             } else {
-                final Pair resolved = resolve(ctx, pair);
+                final Tuple2<TransformationContext, Pair> resolved = resolve(newCtx, pair);
+                newCtx = resolved._1;
 
-                final TransformationContext updatedContext = accept(ctx, resolved);
+                newCtx = accept(newCtx, resolved._2);
 
-                final Pair transformedPair = updatedContext.getPairs()
+                final Pair transformedPair = newCtx.getPairs()
                         .get((pair).getKey())
                         .getOrElse(pair);
 
-                return Tuple.of(updatedContext, transformedPair);
+                return Tuple.of(newCtx, transformedPair);
             }
+        }
+        if (p instanceof Array) {
+            final @NonNull Vector<ArrayItem> items = ((Array) p).getArrayItems();
+
+            Vector<ArrayItem> newItems = Vector.empty();
+
+            for (final ArrayItem item : items) {
+                if (item instanceof Structure) {
+                    final Tuple2<TransformationContext, Structure> applyResult = apply(ctx, (Structure) item);
+                    newItems = newItems.append((ArrayItem) applyResult._2);
+                    newCtx = applyResult._1;
+                } else {
+                    final ValueItem applyResult = apply(ctx, (ValueItem) item);
+                    newItems = newItems.append((ArrayItem) applyResult);
+                }
+            }
+
+            return Tuple.of(newCtx, new uk.modl.model.Array(newItems));
+        }
+        if (p instanceof uk.modl.model.Map) {
+            @NonNull final Vector<MapItem> items = ((uk.modl.model.Map) p).getMapItems();
+
+            Vector<MapItem> newItems = Vector.empty();
+
+            for (final MapItem item : items) {
+                if (item instanceof Structure) {
+                    final Tuple2<TransformationContext, Structure> applyResult = apply(newCtx, (Structure) item);
+                    newItems = newItems.append((MapItem) applyResult._2);
+                    newCtx = applyResult._1;
+                } else {
+                    final ValueItem applyResult = apply(ctx, (ValueItem) item);
+                    newItems = newItems.append((MapItem) applyResult);
+                }
+            }
+
+            return Tuple.of(newCtx, new uk.modl.model.Map(newItems));
+
         }
         return Tuple.of(ctx, p);
     }
@@ -390,7 +437,9 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
     /**
      * Update the pairKeysWithReferences to new values with the references replaced by actual values
      */
-    private Pair resolve(final TransformationContext ctx, final Pair p) {
+    private Tuple2<TransformationContext, Pair> resolve(final TransformationContext ctx, final Pair p) {
+        TransformationContext newCtx = ctx;
+
         if (p.getValue() instanceof StringPrimitive) {
             final Map<ReferenceType, Vector<String>> groupedByType = getReferenceGroups(p.getValue()
                     .toString());
@@ -414,9 +463,43 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                     .map(replaceAllSimpleRefs(result))
                     .getOrElse(result);
 
-            return result;
+            return Tuple.of(newCtx, result);
         }
-        return p;
+        if (p.getValue() instanceof uk.modl.model.Map) {
+            @NonNull final Vector<MapItem> items = ((uk.modl.model.Map) p.getValue()).getMapItems();
+
+            Vector<MapItem> newItems = Vector.empty();
+
+            for (final MapItem item : items) {
+                if (item instanceof Structure) {
+                    final Tuple2<TransformationContext, Structure> applyResult = apply(newCtx, (Structure) item);
+                    newItems = newItems.append((MapItem) applyResult._2);
+                    newCtx = applyResult._1;
+                } else {
+                    newItems = newItems.append(item);
+                }
+            }
+
+            return Tuple.of(newCtx, new Pair(p.getKey(), new uk.modl.model.Map(newItems)));
+        }
+        if (p.getValue() instanceof Array) {
+            final @NonNull Vector<ArrayItem> items = ((Array) p.getValue()).getArrayItems();
+
+            Vector<ArrayItem> newItems = Vector.empty();
+
+            for (final ArrayItem item : items) {
+                if (item instanceof Structure) {
+                    final Tuple2<TransformationContext, Structure> applyResult = apply(ctx, (Structure) item);
+                    newItems = newItems.append((ArrayItem) applyResult._2);
+                    newCtx = applyResult._1;
+                } else {
+                    newItems = newItems.append(item);
+                }
+            }
+
+            return Tuple.of(newCtx, new Pair(p.getKey(), new uk.modl.model.Array(newItems)));
+        }
+        return Tuple.of(newCtx, p);
     }
 
     private Vector<Tuple3<String, String, Option<Pair>>> complexRefToReferencedItems(final TransformationContext ctx, final Pair p, final Vector<String> refList) {
