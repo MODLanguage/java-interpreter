@@ -336,7 +336,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             return Tuple.of(result._1, (ArrayItem) result._2);
         }
         if (ai instanceof Primitive) {
-            return Tuple.of(ctx, visitPrimitive(ctx, (Primitive) ai));
+            return Tuple.of(ctx, (ArrayItem) visitPrimitive(ctx, (Primitive) ai));
         }
         return null;
     }
@@ -545,7 +545,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             return Tuple.of(result._1, (ValueItem) result._2);
         }
         if (vi instanceof Primitive) {
-            final Primitive primitive = visitPrimitive(ctx, (Primitive) vi);
+            final Primitive primitive = (Primitive) visitPrimitive(ctx, (Primitive) vi);
             return Tuple.of(ctx, primitive);
         }
         return Tuple.of(ctx, vi);
@@ -640,8 +640,8 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
      * @param prim the Primitive
      * @return a ValueItem
      */
-    private Primitive visitPrimitive(final TransformationContext ctx, final Primitive prim) {
-        return (Primitive) referencesTransform.apply(ctx, prim);
+    private ValueItem visitPrimitive(final TransformationContext ctx, final Primitive prim) {
+        return referencesTransform.apply(ctx, prim);
     }
 
     /**
