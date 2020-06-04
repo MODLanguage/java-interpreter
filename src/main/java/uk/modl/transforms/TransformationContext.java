@@ -7,6 +7,7 @@ import lombok.With;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.model.Array;
 import uk.modl.model.Pair;
+import uk.modl.utils.Util;
 
 /**
  * Stores context needed by other parts of the interpreter
@@ -14,8 +15,6 @@ import uk.modl.model.Pair;
 @Value
 @With
 public class TransformationContext {
-
-    public static final String INVALID_CHARS = "!$-+'#^*£&";
 
     public static final int VERSION = 1;
 
@@ -90,7 +89,7 @@ public class TransformationContext {
     private static void validatePairKey(final String newKey) {
         final String k = (newKey.startsWith("_") || newKey.startsWith("*")) ? newKey.substring(1) : newKey;// Strip any leading underscore or asterisk
 
-        final int badCharIndex = StringUtils.indexOfAny(k, INVALID_CHARS);
+        final int badCharIndex = StringUtils.indexOfAny(k, Util.INVALID_CHARS);
         if (badCharIndex > -1) {
             throw new RuntimeException("Invalid key - \"" +
                     k.charAt(badCharIndex) +

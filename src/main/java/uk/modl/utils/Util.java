@@ -33,6 +33,11 @@ import java.util.regex.Pattern;
 public class Util {
 
     /**
+     * The disallowed characters for a pair key.
+     */
+    public final String INVALID_CHARS = "!$-+'#^*£&";
+
+    /**
      * A pattern used for splitting method lists correctly.
      */
     private final Pattern METHODS_PATTERN = Pattern.compile("replace<[^.]*>|r<[^.]*>|t<[^<>]+>|trim<[^<>]+>|initcap|[^.]\\w+|\\w|u|e|p|s|i|d|[^%.][0-9]+");

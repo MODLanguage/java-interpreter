@@ -107,12 +107,18 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 if (value.contains("%")) {
                     newLhs = apply(ctx, newLhs);
                 } else {
-                    if (ctx.getPairs()
-                            .containsKey(value)) {
-                        newLhs = (ValueItem) ctx.getPairs()
-                                .get(value)
-                                .get()
-                                .getValue();
+                    final String hiddenKey = (value.startsWith("_")) ? value : "_" + value;
+                    final String unhiddenKey = (value.startsWith("_")) ? value.substring(1) : value;
+
+                    final Pair pair = ctx.getPairs()
+                            .get(unhiddenKey)
+                            .getOrElse(() -> ctx.getPairs()
+                                    .get(hiddenKey)
+                                    .getOrElse((Pair) null));
+
+
+                    if (pair != null) {
+                        newLhs = (ValueItem) pair.getValue();
                     }
                 }
             }
@@ -128,7 +134,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
      * Replace if necessary
      *
      * @param ctx TransformationContext
-     * @param vi a ValueItem
+     * @param vi  a ValueItem
      * @return a ValueItem
      */
     public ValueItem apply(final TransformationContext ctx, final ValueItem vi) {
@@ -500,8 +506,20 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
      */
     private Vector<Tuple3<String, String, Option<Pair>>> keyToReferencedObject(final TransformationContext ctx, final Vector<String> list) {
         return list.map(s -> Tuple.of(s, stripLeadingAndTrailingPercents(s)))// E.g. ("%var%","var")
-                .map(t -> t.append(ctx.getPairs()
-                        .get(t._2)));// E.g. ("%var%","var", Option(Pair))
+                .map(t -> {
+
+
+                    final String hiddenKey = (t._2.startsWith("_")) ? t._2 : "_" + t._2;
+                    final String unhiddenKey = (t._2.startsWith("_")) ? t._2.substring(1) : t._2;
+
+                    final Option<Pair> unhiddenPair = ctx.getPairs()
+                            .get(unhiddenKey);
+
+                    final Option<Pair> pair = (unhiddenPair.isDefined()) ? unhiddenPair : ctx.getPairs()
+                            .get(hiddenKey);
+
+                    return t.append(pair);
+                });// E.g. ("%var%","var", Option(Pair))
     }
 
     /**

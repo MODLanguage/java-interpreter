@@ -236,6 +236,13 @@ public class ModlParsedVisitor {
         final String lhs = (ctx.STRING() != null) ? ctx.STRING()
                 .getText() : null;
 
+        // A crude check for quoted values on the LHS
+        if (ctx.getText()
+                .startsWith("\"") || ctx.getText()
+                .startsWith("`")) {
+            throw new RuntimeException("Invalid Left Hand Side for conditional: " + ctx.getText());
+        }
+
         inConditional--;
         return new Condition(new StringPrimitive(lhs), op, values, shouldNegate);
     }
