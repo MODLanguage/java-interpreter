@@ -267,7 +267,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
 
         final Tuple2<TransformationContext, ValueItem> result = visitValue(newCtx, c2.getLhs());
         newCtx = result._1;
-        final ValueItem newLhs = result._2;
+        final StringPrimitive newLhs = (StringPrimitive) result._2;
 
         Vector<ValueItem> values = Vector.empty();
 

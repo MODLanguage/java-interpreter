@@ -183,7 +183,7 @@ public class ConditionalsTransform {
         final Operator op = c.getOp();
         final boolean shouldNegate = c.isShouldNegate();
 
-        final ValueItem lhs = c.getLhs();
+        final StringPrimitive lhs = c.getLhs();
 
         @NonNull final Vector<ValueItem> values = c.getValues();
 
@@ -263,7 +263,8 @@ public class ConditionalsTransform {
                 .count(v -> {
                     if (!v.toString()
                             .contains("*")) {
-                        return v.equals(lhs);
+                        return v.toString()
+                                .equals(lhs.toString());
                     } else {
                         final String regexStr = v.toString()
                                 .replaceAll("\\*", ".*");

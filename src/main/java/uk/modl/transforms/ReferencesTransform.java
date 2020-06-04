@@ -94,37 +94,45 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
      * @return a Condition
      */
     public Condition apply(final TransformationContext ctx, final Condition condition) {
-        final ValueItem lhs = condition.getLhs();
 
-        ValueItem newLhs = lhs;
+        StringPrimitive newLhs = condition.getLhs();
         Operator op = condition.getOp();
         Vector<ValueItem> values = condition.getValues();
 
-        if (lhs instanceof StringPrimitive) {
-            final String value = ((StringPrimitive) lhs).getValue();
+        final String value = newLhs.getValue();
 
-            if (value != null) {
-                if (value.contains("%")) {
-                    newLhs = apply(ctx, newLhs);
+        if (value != null) {
+            if (value.contains("%")) {
+                final ValueItem applyResult = apply(ctx, newLhs);
+                if (applyResult instanceof StringPrimitive) {
+                    newLhs = (StringPrimitive) applyResult;
                 } else {
-                    final String hiddenKey = (value.startsWith("_")) ? value : "_" + value;
-                    final String unhiddenKey = (value.startsWith("_")) ? value.substring(1) : value;
+                    newLhs = new StringPrimitive(applyResult.toString());
+                }
+            } else {
+                final String hiddenKey = (value.startsWith("_")) ? value : "_" + value;
+                final String unhiddenKey = (value.startsWith("_")) ? value.substring(1) : value;
 
-                    final Pair pair = ctx.getPairs()
-                            .get(unhiddenKey)
-                            .getOrElse(() -> ctx.getPairs()
-                                    .get(hiddenKey)
-                                    .getOrElse((Pair) null));
+                final Pair pair = ctx.getPairs()
+                        .get(unhiddenKey)
+                        .getOrElse(() -> ctx.getPairs()
+                                .get(hiddenKey)
+                                .getOrElse((Pair) null));
 
 
-                    if (pair != null) {
-                        newLhs = (ValueItem) pair.getValue();
+                if (pair != null) {
+                    if (pair.getValue() instanceof StringPrimitive) {
+                        newLhs = (StringPrimitive) pair.getValue();
+                    } else {
+                        newLhs = new StringPrimitive(pair.getValue()
+                                .toString());
                     }
                 }
             }
         }
 
-        if (!(lhs != null && lhs.equals(newLhs))) {
+        if (!condition.getLhs()
+                .equals(newLhs)) {
             return new Condition(newLhs, op, values, condition.isShouldNegate());
         }
         return condition;

@@ -8,7 +8,7 @@ import uk.modl.visitor.ModlVisitor;
 @Value
 public class Condition implements ConditionOrConditionGroupInterface {
 
-    ValueItem lhs;
+    StringPrimitive lhs;
 
     Operator op;
 
