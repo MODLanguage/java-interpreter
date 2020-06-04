@@ -61,10 +61,17 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                 }
                 break;
             default:
-                // For multiple items make the result an ObjectNode and assume all the values are Pairs
-                final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
-                result = objectNode;
-                filtered.forEach(s -> accept(objectNode, s));
+                // If there are no top level pairs, make the top level an array, otherwise make it a map.
+                if (filtered.count(s -> s instanceof Pair) > 0) {
+                    final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+                    result = objectNode;
+                    filtered.forEach(s -> accept(objectNode, s));
+                } else {
+                    final ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode(filtered.size());
+                    result = arrayNode;
+                    filtered.forEach(s -> accept(arrayNode, (ArrayItem) s));
+
+                }
         }
         if (result != null && !result.elements()
                 .hasNext()) {
