@@ -20,7 +20,10 @@ import java.util.regex.Pattern;
 
 public class ReferencesTransform implements Function2<TransformationContext, Structure, Tuple2<TransformationContext, Structure>> {
 
-    private static final Pattern referencePattern = Pattern.compile("(((\\\\%|~%|%)\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|((\\\\%|~%|%)` ?[\\w-]+`[\\w.<>,]*%?)|((\\\\%|~%|%)\\*?[\\w]+(\\.%?\\w*<?[\\w,]*>?)*%?))");
+    public static final Pattern literalsPattern = Pattern.compile("(%`%\\w+`)|(%`\\w+%`)");
+
+    private static final Pattern referencePattern = Pattern.compile("(" + literalsPattern + "|((\\\\%|~%|%)\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|((\\\\%|~%|%)` ?[\\w-]+`[\\w.<>,]*%?)|((\\\\%|~%|%)\\*?[\\w]+(\\.%?\\w*<?[\\w,]*>?)*%?))");
+
 
     private final MethodsTransform methodsTransform;
 
@@ -40,6 +43,9 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
         final String refKey = stripLeadingAndTrailingPercents(s);
         if (StringUtils.isNumeric(refKey)) {
             return ReferenceType.OBJECT_INDEX_REF;
+        }
+        if (s.startsWith("%`")) {
+            return ReferenceType.LITERAL_REF;
         }
         return ReferenceType.SIMPLE_REF;
     }
@@ -181,6 +187,8 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                             return replaceAllSimpleRefsInValueItem(finalResult).apply(vector);
                         })
                         .getOrElse(result);
+
+                // Ignore literals as they are handled separately.
 
                 return result;
             }
@@ -463,6 +471,8 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                     .map(replaceAllSimpleRefs(result))
                     .getOrElse(result);
 
+            // Ignore literals as they are handled separately.
+
             return Tuple.of(newCtx, result);
         }
         if (p.getValue() instanceof uk.modl.model.Map) {
@@ -728,7 +738,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
     }
 
     private enum ReferenceType {
-        COMPLEX_REF, OBJECT_INDEX_REF, SIMPLE_REF
+        COMPLEX_REF, OBJECT_INDEX_REF, LITERAL_REF, SIMPLE_REF
     }
 
 }

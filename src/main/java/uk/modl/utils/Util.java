@@ -307,5 +307,19 @@ public class Util {
         return new StarLoadExtractor.FileSpec(normalized, forceLoad);
     }
 
+    /**
+     * Convert literals of the form %`%abc` to %abc
+     * Convert literals of the form %`abc%` to abc%
+     * Convert literals of the form %`%abc%` to %abc%
+     *
+     * @param literal String
+     * @return String
+     */
+    public String unwrapLiteral(final String literal) {
+        if (literal == null || !literal.startsWith("%`")) {
+            return literal;
+        }
+        return StringUtils.unwrap(literal.substring(1), "`");
+    }
 
 }

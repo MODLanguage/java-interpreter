@@ -641,7 +641,12 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
      * @return a ValueItem
      */
     private ValueItem visitPrimitive(final TransformationContext ctx, final Primitive prim) {
-        return referencesTransform.apply(ctx, prim);
+        final ValueItem dereferenced = referencesTransform.apply(ctx, prim);
+        if (dereferenced instanceof StringPrimitive) {
+            final StringPrimitive stringPrimitive = (StringPrimitive) dereferenced;
+            return LiteralsTransform.replacellLiteralRefs(stringPrimitive.getValue());
+        }
+        return dereferenced;
     }
 
     /**

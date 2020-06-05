@@ -39,4 +39,19 @@ public class UtilTest {
         assertEquals("a string including a quote from Winston: \"We'll fight them on the beaches\"", result);
     }
 
+    @Test
+    public void testUnwrapLiteral_1() {
+        assertNull(Util.unwrapLiteral(null));
+        assertEquals("", Util.unwrapLiteral(""));
+        assertEquals("test", Util.unwrapLiteral("test"));
+        assertEquals("%test", Util.unwrapLiteral("%test"));
+        assertEquals("`%test", Util.unwrapLiteral("`%test"));
+        assertEquals("`%test", Util.unwrapLiteral("%`%test"));
+        assertEquals("%test", Util.unwrapLiteral("%`%test`"));
+
+        assertEquals("%test%", Util.unwrapLiteral("%`%test%`"));
+        assertEquals("test%", Util.unwrapLiteral("%`test%`"));
+        assertEquals("%hello %test world", Util.unwrapLiteral("%`%hello %test world`"));
+    }
+
 }
