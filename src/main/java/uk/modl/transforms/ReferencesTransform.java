@@ -20,9 +20,7 @@ import java.util.regex.Pattern;
 
 public class ReferencesTransform implements Function2<TransformationContext, Structure, Tuple2<TransformationContext, Structure>> {
 
-    public static final Pattern literalsPattern = Pattern.compile("(%`%\\w+`)|(%`\\w+%`)");
-
-    private static final Pattern referencePattern = Pattern.compile("(" + literalsPattern + "|((\\\\%|~%|%)\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|((\\\\%|~%|%)` ?[\\w-]+`[\\w.<>,]*%?)|((\\\\%|~%|%)\\*?[\\w]+(\\.%?\\w*<?[\\w,]*>?)*%?))");
+    private static final Pattern referencePattern = Pattern.compile("(" + LiteralsTransform.literalsPattern + "|((\\\\%|~%|%)\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|((\\\\%|~%|%)` ?[\\w-]+`[\\w.<>,]*%?)|((\\\\%|~%|%)\\*?[\\w]+(\\.%?\\w*<?[\\w,]*>?)*%?))");
 
 
     private final MethodsTransform methodsTransform;

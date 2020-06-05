@@ -5,14 +5,17 @@ import uk.modl.model.ValueItem;
 import uk.modl.utils.Util;
 
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LiteralsTransform {
+
+    public static final Pattern literalsPattern = Pattern.compile("(%`%[ %\\w]+`)|(%`[ %\\w]+%`)");
 
     public static ValueItem replacellLiteralRefs(final String s) {
         if (s == null) {
             return null;
         }
-        final Matcher matcher = ReferencesTransform.literalsPattern.matcher(s);
+        final Matcher matcher = literalsPattern.matcher(s);
 
         // Gather the match groups into a list of references
         String result = s;
