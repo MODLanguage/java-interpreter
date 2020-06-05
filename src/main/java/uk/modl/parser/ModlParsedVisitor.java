@@ -4,6 +4,7 @@ import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.tree.ParseTree;
 import uk.modl.model.*;
@@ -35,6 +36,21 @@ public class ModlParsedVisitor {
         final Vector<Structure> structures = Vector.ofAll(ctx.modl_structure()
                 .stream()
                 .map(this::visitStructure));
+
+        // Look for a *V or *VERSION that isn't in the first position of the file.
+        int i = 0;
+        for (final Structure structure : structures) {
+            if (i > 0) {
+                if (structure instanceof Pair) {
+                    final Pair first = (Pair) structure;
+                    @NonNull final String key = first.getKey();
+                    if (key.equals("*V") || key.equals("*VERSION")) {
+                        throw new RuntimeException("MODL version should be on the first line if specified.");
+                    }
+                }
+            }
+            i++;
+        }
 
         modl = new Modl(structures);
     }

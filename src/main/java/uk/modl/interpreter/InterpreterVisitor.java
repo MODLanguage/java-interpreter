@@ -458,10 +458,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
                     throw new RuntimeException("Invalid MODL version: " + p.getValue()
                             .toString());
                 }
-                if (ctx.getPairs()
-                        .nonEmpty()) {
-                    throw new RuntimeException("MODL version should be on the first line if specified.");
-                }
+
                 newCtx = newCtx.withVersion(version);
             } catch (final NumberFormatException e) {
                 throw new RuntimeException("Invalid MODL version: " + p.getValue()
