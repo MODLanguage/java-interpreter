@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 public class LiteralsTransform {
 
-    public static final Pattern literalsPattern = Pattern.compile("(%`%[ %\\w]+`)|(%`[ %\\w]+%`)");
+    public static final Pattern literalsPattern = Pattern.compile("(%`.+`)");
 
     public static ValueItem replacellLiteralRefs(final String s) {
         if (s == null) {

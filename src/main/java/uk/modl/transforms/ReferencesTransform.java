@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 
 public class ReferencesTransform implements Function2<TransformationContext, Structure, Tuple2<TransformationContext, Structure>> {
 
-    private static final Pattern referencePattern = Pattern.compile("(" + LiteralsTransform.literalsPattern + "|((\\\\%|~%|%)\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|((\\\\%|~%|%)` ?[\\w-]+`[\\w.<>,]*%?)|((\\\\%|~%|%)\\*?[\\w]+(\\.%?\\w*<?[\\w,]*>?)*%?))");
+    private static final Pattern referencePattern = Pattern.compile("(((\\\\%|~%|%)\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|((\\\\%|~%|%)` ?[\\w-]+`[\\w.<>,]*%?)|((\\\\%|~%|%)\\*?[\\w]+(\\.%?\\w*<?[\\w,]*>?)*%?)|(%`[ %\\w-]+`(\\.\\w+)+)|(%`.+`))");
 
 
     private final MethodsTransform methodsTransform;
@@ -195,7 +195,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
     }
 
     private Tuple2<String, ValueItem> complexRefToValueItem(final TransformationContext ctx, final String complexRef) {
-        final String ref = stripLeadingAndTrailingPercents(complexRef);
+        final String ref = (complexRef.startsWith("%`%")) ? complexRef : stripLeadingAndTrailingPercents(complexRef);
         final String chainedMethods = StringUtils.substringAfter(ref, ".");
 
         final String head = StringUtils.substringBefore(ref, ".");
