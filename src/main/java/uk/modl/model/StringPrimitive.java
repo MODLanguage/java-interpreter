@@ -1,5 +1,6 @@
 package uk.modl.model;
 
+import lombok.ToString;
 import lombok.Value;
 import org.apache.commons.lang3.math.NumberUtils;
 import uk.modl.utils.IDSource;
@@ -7,6 +8,7 @@ import uk.modl.utils.IDSource;
 @Value(staticConstructor = "of")
 public class StringPrimitive implements Primitive {
 
+    @ToString.Exclude
     long id;
 
     String value;

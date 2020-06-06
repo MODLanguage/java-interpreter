@@ -3,12 +3,14 @@ package uk.modl.model;
 import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 import uk.modl.utils.IDSource;
 
 @Value(staticConstructor = "of")
 public class ConditionTest {
 
+    @ToString.Exclude
     long id;
 
     // The String in the immutable pair is an optional operator: & or |

@@ -2,12 +2,14 @@ package uk.modl.model;
 
 import io.vavr.collection.Vector;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 import uk.modl.utils.IDSource;
 
 @Value(staticConstructor = "of")
 public class MapConditional implements MapItem {
 
+    @ToString.Exclude
     long id;
 
     @NonNull

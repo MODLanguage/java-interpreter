@@ -2,12 +2,14 @@ package uk.modl.model;
 
 import io.vavr.collection.Vector;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 import uk.modl.utils.IDSource;
 
 @Value(staticConstructor = "of")
 public class Condition implements ConditionOrConditionGroupInterface {
 
+    @ToString.Exclude
     long id;
 
     StringPrimitive lhs;

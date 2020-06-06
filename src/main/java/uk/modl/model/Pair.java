@@ -1,12 +1,14 @@
 package uk.modl.model;
 
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 import uk.modl.utils.IDSource;
 
 @Value(staticConstructor = "of")
 public class Pair implements Structure, MapItem, ValueItem, ArrayItem {
 
+    @ToString.Exclude
     long id;
 
     @NonNull
