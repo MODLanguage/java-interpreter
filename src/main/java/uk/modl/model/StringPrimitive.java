@@ -1,16 +1,19 @@
 package uk.modl.model;
 
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.Value;
 import org.apache.commons.lang3.math.NumberUtils;
+import uk.modl.ancestry.Child;
 import uk.modl.utils.IDSource;
 
 @Value(staticConstructor = "of")
-public class StringPrimitive implements Primitive {
+public class StringPrimitive implements Primitive, Child {
 
     @ToString.Exclude
     long id;
 
+    @EqualsAndHashCode.Exclude
     String value;
 
     @Override

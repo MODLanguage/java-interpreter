@@ -5,6 +5,7 @@ import io.vavr.control.Option;
 import lombok.Value;
 import lombok.With;
 import org.apache.commons.lang3.StringUtils;
+import uk.modl.ancestry.Ancestry;
 import uk.modl.model.Array;
 import uk.modl.utils.Util;
 
@@ -20,6 +21,11 @@ public class TransformationContext {
     public static final boolean STAR_LOAD_IMMUTABLE = false;
 
     public static final boolean STAR_CLASS_IMMUTABLE = false;
+
+    /**
+     * This is a mutable object to keep track of child->parent relations.
+     */
+    Ancestry ancestry;
 
     /**
      * Interpreter version
@@ -77,7 +83,7 @@ public class TransformationContext {
     Map<String, StarClassTransform.ClassInstruction> classesByName;
 
     public static TransformationContext emptyCtx() {
-        return new TransformationContext(VERSION, STAR_LOAD_IMMUTABLE, STAR_CLASS_IMMUTABLE, Array.of(Vector.empty()), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
+        return new TransformationContext(new Ancestry(), VERSION, STAR_LOAD_IMMUTABLE, STAR_CLASS_IMMUTABLE, Array.of(Vector.empty()), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
     }
 
     private static void validatePairKey(final String newKey) {
