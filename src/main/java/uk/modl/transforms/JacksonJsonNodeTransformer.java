@@ -290,9 +290,9 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                 } else if (pair.getValue() instanceof ValueConditional) {
                     final Vector<ValueItem> valueItems = ((ValueConditional) pair.getValue()).getResult();
                     if (valueItems.size() == 1) {
-                        accept(node, new Pair(key, valueItems.get(0)));
+                        accept(node, Pair.of(key, valueItems.get(0)));
                     } else {
-                        accept(node, new Pair(key, new Array(valueItems.map(v -> (ArrayItem) v))));
+                        accept(node, Pair.of(key, Array.of(valueItems.map(v -> (ArrayItem) v))));
                     }
                 } else if (pair.getValue() instanceof ValueItem) {
                     final ObjectNode newNode = JsonNodeFactory.instance.objectNode();

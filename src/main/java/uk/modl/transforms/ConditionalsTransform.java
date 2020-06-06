@@ -83,7 +83,7 @@ public class ConditionalsTransform {
                 }
                 i += 1;
             }
-            return Tuple.of(newCtx, tlc.withResult(structures));
+            return Tuple.of(newCtx, tlc.with(structures));
         }
         return Tuple.of(ctx, tlc);
     }
@@ -100,7 +100,7 @@ public class ConditionalsTransform {
 
         newCtx = conditionalFileLoading(newCtx, structures);
 
-        return Tuple.of(newCtx, tlc.withResult(structures));
+        return Tuple.of(newCtx, tlc.with(structures));
     }
 
     private TransformationContext conditionalFileLoading(final TransformationContext ctx, final Vector<Structure> structures) {
@@ -125,7 +125,7 @@ public class ConditionalsTransform {
 
             if (value instanceof ValueConditional) {
                 final ValueConditional result = apply(ctx, (ValueConditional) value);
-                final Pair resultPair = new Pair(p.getKey(), result);
+                final Pair resultPair = p.with(result);
                 return Tuple.of(ctx, resultPair);
             }
         }
@@ -282,7 +282,7 @@ public class ConditionalsTransform {
                     .get(0))) {
                 if (vc.getReturns()
                         .size() == 0) {
-                    return vc.withResult(Vector.of(TruePrimitive.instance));
+                    return vc.with(Vector.of(TruePrimitive.instance));
                 }
 
                 Vector<ValueItem> items = Vector.empty();
@@ -296,11 +296,11 @@ public class ConditionalsTransform {
                     items = items.append(refsResult);
                 }
 
-                return vc.withResult(items);
+                return vc.with(items);
             } else {
                 if (vc.getReturns()
                         .size() == 0) {
-                    return vc.withResult(Vector.of(FalsePrimitive.instance));
+                    return vc.with(Vector.of(FalsePrimitive.instance));
                 }
 
                 Vector<ValueItem> items = Vector.empty();
@@ -313,7 +313,7 @@ public class ConditionalsTransform {
 
                     items = items.append(refsResult);
                 }
-                return vc.withResult(items);
+                return vc.with(items);
             }
         } else {
             int i = 0;
@@ -330,7 +330,7 @@ public class ConditionalsTransform {
 
                         items = items.append(refsResult);
                     }
-                    return vc.withResult(items);
+                    return vc.with(items);
                 }
                 i += 1;
             }
@@ -366,7 +366,7 @@ public class ConditionalsTransform {
                     .get(0))) {
                 if (ac.getReturns()
                         .size() == 0) {
-                    return ac.withResult(Vector.of(TruePrimitive.instance));
+                    return ac.with(Vector.of(TruePrimitive.instance));
                 }
                 Vector<ArrayItem> items = Vector.empty();
 
@@ -379,11 +379,11 @@ public class ConditionalsTransform {
                     items = items.append((ArrayItem) refsResult);
                 }
 
-                return ac.withResult(items);
+                return ac.with(items);
             } else {
                 if (ac.getReturns()
                         .size() == 0) {
-                    return ac.withResult(Vector.of(FalsePrimitive.instance));
+                    return ac.with(Vector.of(FalsePrimitive.instance));
                 }
 
                 Vector<ArrayItem> items = Vector.empty();
@@ -397,7 +397,7 @@ public class ConditionalsTransform {
                     items = items.append((ArrayItem) refsResult);
                 }
 
-                return ac.withResult(items);
+                return ac.with(items);
             }
         } else {
             int i = 0;
@@ -414,7 +414,7 @@ public class ConditionalsTransform {
                         items = items.append((ArrayItem) refsResult);
                     }
 
-                    return ac.withResult(items);
+                    return ac.with(items);
                 }
                 i += 1;
             }
@@ -429,7 +429,7 @@ public class ConditionalsTransform {
                     .get(0))) {
                 if (mc.getReturns()
                         .size() == 0) {
-                    return mc.withResult(Vector.of((MapItem) TruePrimitive.instance));
+                    return mc.with(Vector.of((MapItem) TruePrimitive.instance));
                 }
                 Vector<MapItem> items = Vector.empty();
 
@@ -441,11 +441,11 @@ public class ConditionalsTransform {
 
                     items = items.append((MapItem) refsResult);
                 }
-                return mc.withResult(items);
+                return mc.with(items);
             } else {
                 if (mc.getReturns()
                         .size() == 0) {
-                    return mc.withResult(Vector.of((MapItem) FalsePrimitive.instance));
+                    return mc.with(Vector.of((MapItem) FalsePrimitive.instance));
                 }
                 Vector<MapItem> items = Vector.empty();
 
@@ -457,7 +457,7 @@ public class ConditionalsTransform {
 
                     items = items.append((MapItem) refsResult);
                 }
-                return mc.withResult(items);
+                return mc.with(items);
             }
         } else {
             int i = 0;
@@ -474,7 +474,7 @@ public class ConditionalsTransform {
 
                         items = items.append((MapItem) refsResult);
                     }
-                    return mc.withResult(items);
+                    return mc.with(items);
                 }
                 i += 1;
             }

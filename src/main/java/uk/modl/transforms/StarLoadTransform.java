@@ -1,6 +1,9 @@
 package uk.modl.transforms;
 
-import io.vavr.*;
+import io.vavr.Function2;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import io.vavr.Tuple3;
 import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.AllArgsConstructor;
@@ -20,11 +23,10 @@ public class StarLoadTransform implements Function2<TransformationContext, Struc
     /**
      * Function to extract filenames and pairs from a Modl object.
      */
-    private static final Function1<Pair, Vector<StarLoadExtractor.LoadSet>> extractFilenamesAndPairs = (m) -> {
-        final StarLoadExtractor starLoadExtractor = new StarLoadExtractor();
-        m.visit(starLoadExtractor);
-        return starLoadExtractor.getLoadSets();
-    };
+    private static Vector<StarLoadExtractor.LoadSet> extractFilenamesAndPairs(final Pair p) {
+        return new StarLoadExtractor().accept(p)
+                .getLoadSets();
+    }
 
     /**
      * Function to convert filenames and pairs to Either Strings/Modl-objects and Pairs.
@@ -118,8 +120,7 @@ public class StarLoadTransform implements Function2<TransformationContext, Struc
 
                 // Each tuple in this list holds the original Pair with the `*load` statements and the set of Modl objects
                 // loaded using the filename[s] specified in the file list - there can be 1 or several.
-                final Tuple2<TransformationContext, Vector<Tuple3<Vector<String>, Vector<Modl>, Pair>>> result = convertFilesToModlObjectsAndPairs(newCtx, extractFilenamesAndPairs
-                        .apply(p));
+                final Tuple2<TransformationContext, Vector<Tuple3<Vector<String>, Vector<Modl>, Pair>>> result = convertFilesToModlObjectsAndPairs(newCtx, extractFilenamesAndPairs(p));
 
                 // Record which files were loaded - for use in a `%*load` reference
                 newCtx = result._1.addFilesLoaded(result._2.flatMap(tuple -> tuple._1));
@@ -163,7 +164,7 @@ public class StarLoadTransform implements Function2<TransformationContext, Struc
                         .filter(structure -> structure instanceof ArrayItem)
                         .map(structure -> (ArrayItem) structure));
 
-                return new Pair(p.getKey(), new Array(arrayItems));
+                return p.with(Array.of(arrayItems));
             } else {
                 return p;
             }

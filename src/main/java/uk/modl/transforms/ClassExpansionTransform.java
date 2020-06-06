@@ -91,24 +91,24 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
             final Pair structure = getPairFromPrimitive(ctx, expClass, pairValue);
             if (structure != null) return structure;
         }
-        return new Pair(expClass.name, pairValue);
+        return pair.with(expClass.name, pairValue);
     }
 
     private Pair getPairFromPrimitive(final TransformationContext ctx, final ExpandedClass expClass, final @NonNull PairValue pairValue) {
         if (expClass.hasSingleValueAssign()) {
-            final Structure s = expClass.toStructureUsingAssign(ctx, cache, new Array(Vector.of((ArrayItem) pairValue)));
+            final Structure s = expClass.toStructureUsingAssign(ctx, cache, Array.of(Vector.of((ArrayItem) pairValue)));
 
             final Structure structure = apply(ctx, s);
             if (structure instanceof ValueItem) {
-                return new Pair(expClass.name, (PairValue) structure);
+                return Pair.of(expClass.name, (PairValue) structure);
             } else {
                 throw new RuntimeException("Cannot store this item in a Pair: " + structure.toString());
             }
         } else if (expClass.assigns.isEmpty()) {
-            final Map map = expClass.toMapFromMap(new Map(Vector.of(new Pair("value", pairValue))));
+            final Map map = expClass.toMapFromMap(Map.of(Vector.of(Pair.of("value", pairValue))));
 
             final Structure structure = apply(ctx, map);
-            return new Pair(expClass.name, (PairValue) structure);
+            return Pair.of(expClass.name, (PairValue) structure);
         }
         return null;
     }
@@ -117,7 +117,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
         final Map map = expClass.toMapFromMap(pairValue);
         final Structure structure = apply(ctx, map);
         if (structure instanceof ValueItem) {
-            return new Pair(expClass.name, (PairValue) structure);
+            return Pair.of(expClass.name, (PairValue) structure);
         } else {
             throw new RuntimeException("Cannot store this item in a Pair: " + structure.toString());
         }
@@ -128,14 +128,14 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
 
         final Structure structure = apply(ctx, s);
         if (structure instanceof ValueItem) {
-            return new Pair(expClass.name, (PairValue) structure);
+            return Pair.of(expClass.name, (PairValue) structure);
         } else {
             throw new RuntimeException("Cannot store this item in a Pair: " + structure.toString());
         }
     }
 
     private Pair convertPairToNull(final ExpandedClass expClass) {
-        return new Pair(expClass.name, NullPrimitive.instance);
+        return Pair.of(expClass.name, NullPrimitive.instance);
     }
 
     private Pair convertPairToArray(final TransformationContext ctx, final Pair pair, final ExpandedClass expClass) {
@@ -161,12 +161,12 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                                 key = maybeWildcardKey;
                             }
 
-                            final Pair p = new Pair(key, (PairValue) valuesToAssign.get(i));
+                            final Pair p = Pair.of(key, (PairValue) valuesToAssign.get(i));
                             final Structure structure = expandToClass(ctx, p);
                             if (structure instanceof Pair) {
                                 @NonNull final PairValue value = ((Pair) structure).getValue();
                                 if (value instanceof Map) {
-                                    final Map map = new Map(((Map) value).getMapItems()
+                                    final Map map = Map.of(((Map) value).getMapItems()
                                             .appendAll(expClass.pairs));
                                     items = items.append(map);
                                 } else if (value instanceof Array) {
@@ -183,24 +183,24 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                                 }
                             }
                         }
-                        return new Array(items);
+                        return Array.of(items);
                     })
                     .getOrElse(() -> (Array) pairValue);
 
 
             final Structure structure = apply(ctx, array);
             if (structure instanceof ValueItem) {
-                return new Pair(expClass.name, (PairValue) structure);
+                return Pair.of(expClass.name, (PairValue) structure);
             } else {
                 throw new RuntimeException("Cannot store this item in a Pair: " + structure.toString());
             }
         } else if (pairValue instanceof Primitive) {
-            return new Pair(expClass.name, new Array(Vector.of((ArrayItem) pairValue)));
+            return Pair.of(expClass.name, Array.of(Vector.of((ArrayItem) pairValue)));
         } else if (pairValue instanceof Map) {
             throw new RuntimeException("Cannot convert map to array: " + pairValue);
         }
 
-        return new Pair(expClass.name, pairValue);
+        return Pair.of(expClass.name, pairValue);
 
     }
 
@@ -216,7 +216,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                         .toString() + "\"");
             }
 
-            return new Pair(expClass.name, new NumberPrimitive(NumberUtils.createNumber(pair.getValue()
+            return pair.with(expClass.name, NumberPrimitive.of(NumberUtils.createNumber(pair.getValue()
                     .toString())
                     .toString()));
         } catch (final NumberFormatException e) {
@@ -233,27 +233,27 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
         }
 
         if (pairValue instanceof TruePrimitive) {
-            return new Pair(expClass.name, new StringPrimitive("true"));
+            return pair.with(expClass.name, StringPrimitive.of("true"));
         }
 
         if (pairValue instanceof FalsePrimitive) {
-            return new Pair(expClass.name, new StringPrimitive("false"));
+            return pair.with(expClass.name, StringPrimitive.of("false"));
         }
 
-        return new Pair(expClass.name, new StringPrimitive(pair.getValue()
+        return pair.with(expClass.name, StringPrimitive.of(pair.getValue()
                 .toString()));
     }
 
     private Pair convertPairToBoolean(final Pair pair, final ExpandedClass expClass) {
         @NonNull final PairValue value = pair.getValue();
         if (Util.truthy(value)) {
-            return new Pair(expClass.name, TruePrimitive.instance);
+            return pair.with(expClass.name, TruePrimitive.instance);
         }
-        return new Pair(expClass.name, FalsePrimitive.instance);
+        return pair.with(expClass.name, FalsePrimitive.instance);
     }
 
     private Array processArray(final TransformationContext ctx, final Array array) {
-        return new Array(array.getArrayItems()
+        return array.with(array.getArrayItems()
                 .map(ai -> processArrayItem(ctx, ai)));
     }
 
@@ -278,7 +278,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
     }
 
     private Map processMap(final TransformationContext ctx, final Map map) {
-        return new Map(map.getMapItems()
+        return map.with(map.getMapItems()
                 .map(mi -> processMapItem(ctx, mi)));
     }
 
@@ -422,7 +422,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                                     arrayItems = arrayItems.append((ArrayItem) s);
                                 }
                                 arrayItems = arrayItems.appendAll(pairs);
-                                return new Array(arrayItems);
+                                return Array.of(arrayItems);
                             }
                         }
 
@@ -439,16 +439,16 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                             if (item instanceof Pair) {
                                 mapItems = mapItems.append((MapItem) item);
                             } else if (item instanceof PairValue) {
-                                mapItems = mapItems.append(new Pair(key, (PairValue) item));
+                                mapItems = mapItems.append(Pair.of(key, (PairValue) item));
                             } else if (item instanceof ArrayConditional) {
-                                mapItems = mapItems.append(new Pair(key, (PairValue) ((ArrayConditional) item).getResult()
+                                mapItems = mapItems.append(Pair.of(key, (PairValue) ((ArrayConditional) item).getResult()
                                         .get(0)));
                             }
                         }
 
 
                         mapItems = mapItems.appendAll(pairs);
-                        return new Map(mapItems);
+                        return Map.of(mapItems);
                     })
                     .getOrElseThrow(() -> new RuntimeException("No key list of the correct length in class " + id + " - looking for one of length " + assignListLength));
         }
@@ -476,8 +476,8 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                     .getOrElse(list);
         }
 
-        public Map toMapFromMap(final Map pairValue) {
-            return new Map(pairValue.getMapItems()
+        public Map toMapFromMap(final Map map) {
+            return map.with(map.getMapItems()
                     .appendAll(pairs));
         }
 

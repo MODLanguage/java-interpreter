@@ -4,20 +4,23 @@ import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
 import lombok.NonNull;
 import lombok.Value;
-import uk.modl.visitor.ModlVisitable;
-import uk.modl.visitor.ModlVisitor;
+import uk.modl.utils.IDSource;
 
-@Value
-public class ConditionTest implements ModlVisitable {
+@Value(staticConstructor = "of")
+public class ConditionTest {
+
+    long id;
 
     // The String in the immutable pair is an optional operator: & or |
     @NonNull
     Vector<Tuple2<ConditionOrConditionGroupInterface, String>> conditions;
 
-    @Override
-    public void visit(final ModlVisitor visitor) {
-        visitor.accept(this);
-        conditions.forEach(s -> s._1.visit(visitor));
+    public static ConditionTest of(final Vector<Tuple2<ConditionOrConditionGroupInterface, String>> conditions) {
+        return ConditionTest.of(IDSource.nextId(), conditions);
+    }
+
+    public ConditionTest with(final Vector<Tuple2<ConditionOrConditionGroupInterface, String>> conditions) {
+        return ConditionTest.of(id, conditions);
     }
 
 }

@@ -4,7 +4,6 @@ import io.vavr.Function2;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
-import lombok.NonNull;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
@@ -112,7 +111,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             returns = returns.append(result._2);
         }
 
-        return conditionalsTransform.apply(newCtx, new TopLevelConditional(tests, returns, Vector.empty()));
+        return conditionalsTransform.apply(newCtx, tlc.with(tests, returns));
     }
 
     /**
@@ -140,7 +139,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             returns = returns.append(result._2);
         }
 
-        final MapConditional mapConditional = new MapConditional(tests, returns, Vector.empty());
+        final MapConditional mapConditional = mc.with(tests, returns);
         final MapConditional evaluated = conditionalsTransform.apply(newCtx, mapConditional);
         return Tuple.of(newCtx, evaluated);
     }
@@ -167,7 +166,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             }
         }
 
-        return Tuple.of(newCtx, new MapConditionalReturn(items));
+        return Tuple.of(newCtx, mcr.with(items));
     }
 
     /**
@@ -199,14 +198,14 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
                     newCtx = visitResult._1;
 
 
-                    structures = structures.append(new Pair(p.getKey(), visitResult._2));
+                    structures = structures.append(p.with(visitResult._2));
                 } else {
                     structures = structures.append(structure);
                 }
             }
         }
 
-        return Tuple.of(newCtx, new TopLevelConditionalReturn(structures));
+        return Tuple.of(newCtx, tlcr.with(structures));
     }
 
     /**
@@ -231,7 +230,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             }
         }
 
-        return Tuple.of(newCtx, new ConditionTest(newConditions));
+        return Tuple.of(newCtx, ct.with(newConditions));
     }
 
     /**
@@ -251,7 +250,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             subConditionList = subConditionList.append(subCond.update1(result._2));
         }
 
-        return Tuple.of(newCtx, new ConditionGroup(subConditionList, cg.isShouldNegate()));
+        return Tuple.of(newCtx, cg.with(subConditionList, cg.isShouldNegate()));
     }
 
     /**
@@ -277,7 +276,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             values = values.append(valueResult._2);
         }
 
-        return Tuple.of(newCtx, new Condition(newLhs, c2.getOp(), values, c2.isShouldNegate()));
+        return Tuple.of(newCtx, c.with(newLhs, c2.getOp(), values, c2.isShouldNegate()));
     }
 
     /**
@@ -297,7 +296,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             items = items.append(result._2);
         }
 
-        return Tuple.of(newCtx, new Array(items));
+        return Tuple.of(newCtx, arr.with(items));
     }
 
     /**
@@ -366,7 +365,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             returns = returns.append(result._2);
         }
 
-        final ArrayConditional arrayConditional = new ArrayConditional(tests, returns, Vector.empty());
+        final ArrayConditional arrayConditional = ac.with(tests, returns);
         final ArrayConditional evaluated = conditionalsTransform.apply(newCtx, arrayConditional);
         return Tuple.of(newCtx, evaluated);
     }
@@ -392,7 +391,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             }
         }
 
-        return Tuple.of(newCtx, new ArrayConditionalReturn(items));
+        return Tuple.of(newCtx, acr.with(items));
     }
 
     /**
@@ -411,7 +410,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             newCtx = result._1;
         }
 
-        return Tuple.of(newCtx, new Map(items));
+        return Tuple.of(newCtx, map.with(items));
     }
 
     /**
@@ -468,7 +467,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
         // Special handling for *load instructions.
         if (StarLoadExtractor.isLoadInstruction(p.getKey())) {
             final ValueItem result = referencesTransform.apply(newCtx, (ValueItem) p.getValue());
-            final Tuple2<TransformationContext, Structure> structureWithLoadedFiles = starLoadTransform.apply(newCtx, new Pair(p.getKey(), result));
+            final Tuple2<TransformationContext, Structure> structureWithLoadedFiles = starLoadTransform.apply(newCtx, p.with(result));
             return Tuple.of(structureWithLoadedFiles._1, structureWithLoadedFiles._2);
         }
 
@@ -507,11 +506,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
         }
 
         if (structure instanceof Pair) {
-            @NonNull final String key = ((Pair) structure).getKey();
-            final Pair newPair = new Pair(key, value);
-            if (value instanceof ValueConditional) {
-                newCtx = newCtx.addPair(key, newPair);
-            }
+            final Pair newPair = p.with(value);
             return Tuple.of(newCtx, newPair);
         }
         return Tuple.of(newCtx, structure);
@@ -573,7 +568,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             newCtx = result._1;
         }
 
-        final ValueConditional valueConditional = new ValueConditional(tests, returns, Vector.empty());
+        final ValueConditional valueConditional = vc.with(tests, returns);
         final ValueConditional evaluated = conditionalsTransform.apply(newCtx, valueConditional);
         return Tuple.of(newCtx, evaluated);
     }
@@ -600,7 +595,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             }
         }
 
-        return Tuple.of(newCtx, new ValueConditionalReturn(items));
+        return Tuple.of(newCtx, vcr.with(items));
     }
 
     /**
@@ -641,7 +636,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
         final ValueItem dereferenced = referencesTransform.apply(ctx, prim);
         if (dereferenced instanceof StringPrimitive) {
             final StringPrimitive stringPrimitive = (StringPrimitive) dereferenced;
-            return LiteralsTransform.replacellLiteralRefs(stringPrimitive.getValue());
+            return stringPrimitive.with(LiteralsTransform.replacellLiteralRefs(stringPrimitive.getValue()));
         }
         return dereferenced;
     }
@@ -671,7 +666,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
 
             Vector<Structure> resultStructures = visitedStructures.map(structure -> classExpansionTransform.apply(finalNewCtx, structure));
 
-            return Tuple.of(finalNewCtx, new Modl(resultStructures.filter(Objects::nonNull)));
+            return Tuple.of(finalNewCtx, modl.with(resultStructures.filter(Objects::nonNull)));
         } catch (final InterpreterError e) {
             throw e;
         } catch (final RuntimeException e) {

@@ -52,7 +52,7 @@ public class ModlParsedVisitor {
             i++;
         }
 
-        modl = new Modl(structures);
+        modl = Modl.of(structures);
     }
 
     /**
@@ -96,7 +96,7 @@ public class ModlParsedVisitor {
                         .map(this::visitTopLevelConditionalReturn)) :
                 null;
 
-        return new TopLevelConditional(tests, returns, Vector.empty());
+        return TopLevelConditional.of(tests, returns, Vector.empty());
     }
 
     /**
@@ -119,7 +119,7 @@ public class ModlParsedVisitor {
                         .map(this::visitMapConditionalReturn)) :
                 null;
 
-        return new MapConditional(tests, returns, Vector.empty());
+        return MapConditional.of(tests, returns, Vector.empty());
     }
 
     /**
@@ -133,7 +133,7 @@ public class ModlParsedVisitor {
         final Vector<MapItem> items = Vector.ofAll(ctx.modl_map_item()
                 .stream()
                 .map(this::visitMapItem));
-        return new MapConditionalReturn(items);
+        return MapConditionalReturn.of(items);
     }
 
     /**
@@ -151,7 +151,7 @@ public class ModlParsedVisitor {
                         .map(this::visitStructure)) :
                 null;
 
-        return new TopLevelConditionalReturn(structures);
+        return TopLevelConditionalReturn.of(structures);
     }
 
     /**
@@ -195,7 +195,7 @@ public class ModlParsedVisitor {
             subConditionList = subConditionList.append(lastSubCondition);
         }
 
-        return new ConditionTest(subConditionList);
+        return ConditionTest.of(subConditionList);
     }
 
     /**
@@ -207,7 +207,7 @@ public class ModlParsedVisitor {
     private ConditionGroup visitConditionGroup(final MODLParser.Modl_condition_groupContext ctx, final boolean shouldNegate) {
         log.trace("visitConditionGroup()");
         final Vector<Tuple2<ConditionTest, String>> subConditionList = handleConditionGroup(ctx);
-        return new ConditionGroup(subConditionList, shouldNegate);
+        return ConditionGroup.of(subConditionList, shouldNegate);
     }
 
     /**
@@ -260,7 +260,7 @@ public class ModlParsedVisitor {
         }
 
         inConditional--;
-        return new Condition(new StringPrimitive(lhs), op, values, shouldNegate);
+        return Condition.of(StringPrimitive.of(lhs), op, values, shouldNegate);
     }
 
     /**
@@ -327,7 +327,7 @@ public class ModlParsedVisitor {
         }
 
 
-        return new Array(items);
+        return Array.of(items);
     }
 
     /**
@@ -356,7 +356,7 @@ public class ModlParsedVisitor {
             prev = child.getText();
         }
 
-        return new Array(items);
+        return Array.of(items);
     }
 
     /**
@@ -410,7 +410,7 @@ public class ModlParsedVisitor {
                         .map(this::visitArrayConditionalReturn))) :
                 null;
 
-        return new ArrayConditional(tests, returns, Vector.empty());
+        return ArrayConditional.of(tests, returns, Vector.empty());
     }
 
     /**
@@ -424,7 +424,7 @@ public class ModlParsedVisitor {
         final Vector<ArrayItem> items = Vector.ofAll(ctx.modl_array_item()
                 .stream()
                 .map(this::visitArrayItem));
-        return new ArrayConditionalReturn(items);
+        return ArrayConditionalReturn.of(items);
     }
 
     /**
@@ -440,7 +440,7 @@ public class ModlParsedVisitor {
                 .stream()
                 .map(this::visitMapItem));
 
-        return new Map(items);
+        return Map.of(items);
     }
 
     /**
@@ -485,7 +485,7 @@ public class ModlParsedVisitor {
         } else {
             value = null;
         }
-        return new Pair(key, value);
+        return Pair.of(key, value);
     }
 
     /**
@@ -525,7 +525,7 @@ public class ModlParsedVisitor {
                         .map(this::visitValueConditionReturn)) :
                 null;
 
-        return new ValueConditional(tests, returns, Vector.empty());
+        return ValueConditional.of(tests, returns, Vector.empty());
     }
 
     /**
@@ -541,7 +541,7 @@ public class ModlParsedVisitor {
                 .stream()
                 .map(this::visitValueItem));
 
-        return new ValueConditionalReturn(items);
+        return ValueConditionalReturn.of(items);
     }
 
     /**
@@ -579,14 +579,14 @@ public class ModlParsedVisitor {
                 (ctx.TRUE() != null) ?
                         TruePrimitive.instance :
                         (ctx.STRING() != null) ?
-                                new StringPrimitive(Util.unquote(ctx.STRING()
+                                StringPrimitive.of(Util.unquote(ctx.STRING()
                                         .getText())) :
                                 (ctx.NULL() != null) ?
                                         NullPrimitive.instance :
                                         (ctx.NUMBER() != null) ?
-                                                new NumberPrimitive(ctx.NUMBER()
+                                                NumberPrimitive.of(ctx.NUMBER()
                                                         .getText()) :
-                                                (ctx.QUOTED() != null) ? new StringPrimitive(Util.unquote(ctx.QUOTED()
+                                                (ctx.QUOTED() != null) ? StringPrimitive.of(Util.unquote(ctx.QUOTED()
                                                         .getText())) :
                                                         null;
     }

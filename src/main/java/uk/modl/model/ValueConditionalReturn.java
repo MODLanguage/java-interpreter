@@ -3,19 +3,22 @@ package uk.modl.model;
 import io.vavr.collection.Vector;
 import lombok.NonNull;
 import lombok.Value;
-import uk.modl.visitor.ModlVisitable;
-import uk.modl.visitor.ModlVisitor;
+import uk.modl.utils.IDSource;
 
-@Value
-public class ValueConditionalReturn implements ModlVisitable {
+@Value(staticConstructor = "of")
+public class ValueConditionalReturn {
+
+    long id;
 
     @NonNull
     Vector<ValueItem> items;
 
-    @Override
-    public void visit(final ModlVisitor visitor) {
-        visitor.accept(this);
-        items.forEach(s -> s.visit(visitor));
+    public static ValueConditionalReturn of(final Vector<ValueItem> items) {
+        return ValueConditionalReturn.of(IDSource.nextId(), items);
+    }
+
+    public ValueConditionalReturn with(final Vector<ValueItem> items) {
+        return ValueConditionalReturn.of(id, items);
     }
 
 }

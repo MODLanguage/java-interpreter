@@ -3,23 +3,27 @@ package uk.modl.model;
 import io.vavr.collection.Vector;
 import lombok.NonNull;
 import lombok.Value;
-import uk.modl.visitor.ModlVisitor;
+import uk.modl.utils.IDSource;
 
-@Value
+@Value(staticConstructor = "of")
 public class Map implements PairValue, Structure, ValueItem, ArrayItem {
+
+    long id;
 
     @NonNull
     Vector<MapItem> mapItems;
 
     @Override
-    public void visit(final ModlVisitor visitor) {
-        visitor.accept(this);
-        mapItems.forEach(s -> s.visit(visitor));
-    }
-
-    @Override
     public Number numericValue() {
         throw new RuntimeException("Cannot convert a map to a numeric value.");
+    }
+
+    public static Map of(final Vector<MapItem> mapItems) {
+        return Map.of(IDSource.nextId(), mapItems);
+    }
+
+    public Map with(final Vector<MapItem> mapItems) {
+        return Map.of(id, mapItems);
     }
 
 }

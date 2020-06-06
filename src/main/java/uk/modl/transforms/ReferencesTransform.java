@@ -73,7 +73,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
             if (pair.getValue() instanceof Array) {
                 objectIndex = (Array) pair.getValue();
             } else {
-                objectIndex = new Array(Vector.of((ArrayItem) pair.getValue()));
+                objectIndex = Array.of(Vector.of((ArrayItem) pair.getValue()));
             }
             return ctx.withObjectIndex(objectIndex);
         } else {
@@ -118,7 +118,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 if (applyResult instanceof StringPrimitive) {
                     newLhs = (StringPrimitive) applyResult;
                 } else {
-                    newLhs = new StringPrimitive(applyResult.toString());
+                    newLhs = StringPrimitive.of(applyResult.toString());
                 }
             } else {
                 final String hiddenKey = (value.startsWith("_")) ? value : "_" + value;
@@ -135,7 +135,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                     if (pair.getValue() instanceof StringPrimitive) {
                         newLhs = (StringPrimitive) pair.getValue();
                     } else {
-                        newLhs = new StringPrimitive(pair.getValue()
+                        newLhs = StringPrimitive.of(pair.getValue()
                                 .toString());
                     }
                 }
@@ -144,7 +144,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
 
         if (!condition.getLhs()
                 .equals(newLhs)) {
-            return new Condition(newLhs, op, values, condition.isShouldNegate());
+            return condition.with(newLhs, op, values, condition.isShouldNegate());
         }
         return condition;
     }
@@ -180,7 +180,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                         .map(refList -> refList.map(cr -> complexRefToValueItem(ctx, cr)))
                         .map(tuples -> tuples.get(0))
                         .map(tuple -> {
-                            final Pair pair = new Pair("", tuple._2);
+                            final Pair pair = Pair.of("", tuple._2);
                             final Vector<Tuple3<String, String, Option<Pair>>> vector = Vector.of(Tuple.of(tuple._1, tuple._1, Option.of(pair)));
                             return replaceAllSimpleRefsInValueItem(finalResult).apply(vector);
                         })
@@ -209,7 +209,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
         try {
             final Vector<ValueItem> valueItems = referencedObject.flatMap(t -> {
                 if (wasQuoted) {
-                    return Option.of(new StringPrimitive(t._2));
+                    return Option.of(StringPrimitive.of(t._2));
                 }
                 if (t._3.isDefined()) {
                     return t._3;
@@ -219,7 +219,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                             .getArrayItems()
                             .get(Integer.parseInt(t._2)));
                 } else {
-                    return Option.of(new StringPrimitive(t._2));
+                    return Option.of(StringPrimitive.of(t._2));
                 }
             })
                     .map(pair -> followNestedRef(ctx, pair, refList, 0));
@@ -309,12 +309,12 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 }
                 // Handle methods and trailing values
                 final String valueStr = handleMethodsAndTrailingPathComponents(ctx, refList, skipRefIndexesForPathElementsWithReferences, value.toString());
-                return new StringPrimitive(valueStr);
+                return StringPrimitive.of(((Pair) vi).getId(), valueStr);
             }
             if (vi instanceof StringPrimitive) {
                 // Handle methods and trailing values
                 final String valueStr = handleMethodsAndTrailingPathComponents(ctx, refList, skipRefIndexesForPathElementsWithReferences, vi.toString());
-                return new StringPrimitive(valueStr);
+                return StringPrimitive.of(((StringPrimitive) vi).getId(), valueStr);
             }
         }
         return vi;
@@ -416,7 +416,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 }
             }
 
-            return Tuple.of(newCtx, new uk.modl.model.Array(newItems));
+            return Tuple.of(newCtx, ((Array) p).with(newItems));
         }
         if (p instanceof uk.modl.model.Map) {
             @NonNull final Vector<MapItem> items = ((uk.modl.model.Map) p).getMapItems();
@@ -434,7 +434,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 }
             }
 
-            return Tuple.of(newCtx, new uk.modl.model.Map(newItems));
+            return Tuple.of(newCtx, ((uk.modl.model.Map) p).with(newItems));
 
         }
         return Tuple.of(ctx, p);
@@ -488,7 +488,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 }
             }
 
-            return Tuple.of(newCtx, new Pair(p.getKey(), new uk.modl.model.Map(newItems)));
+            return Tuple.of(newCtx, p.with(((uk.modl.model.Map) p.getValue()).with(newItems)));
         }
         if (p.getValue() instanceof Array) {
             final @NonNull Vector<ArrayItem> items = ((Array) p.getValue()).getArrayItems();
@@ -505,7 +505,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 }
             }
 
-            return Tuple.of(newCtx, new Pair(p.getKey(), new uk.modl.model.Array(newItems)));
+            return Tuple.of(newCtx, p.with(((uk.modl.model.Array) p.getValue()).with(newItems)));
         }
         return Tuple.of(newCtx, p);
     }
@@ -513,7 +513,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
     private Vector<Tuple3<String, String, Option<Pair>>> complexRefToReferencedItems(final TransformationContext ctx, final Pair p, final Vector<String> refList) {
         return refList.map(ref -> {
             final Tuple2<String, ValueItem> result = complexRefToValueItem(ctx, ref);
-            return Tuple.of(ref, p.getKey(), Option.of(new Pair(p.getKey(), result._2)));
+            return Tuple.of(ref, p.getKey(), Option.of(p.with(result._2)));
         });
     }
 
@@ -641,13 +641,15 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                     if (!indexReference.endsWith("%")) {
                         tmpResult = s.replace(indexReference + "%", r);
                     }
-                    return new Pair(curr.getKey(), new StringPrimitive(tmpResult.replace(indexReference, r)));
+                    return curr.with(StringPrimitive.of(tmpResult.replace(indexReference, r)));
                 }
+
                 // Otherwise replace the whole thing
-                return new Pair(curr.getKey(), (PairValue) ctx.getObjectIndex()
+                return curr.with((PairValue) ctx.getObjectIndex()
                         .getArrayItems()
                         .get(next._3));
             }
+
             return curr;
         };
     }
@@ -674,7 +676,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                         tmpResult = s.replace(indexReference + "%", r);
                     }
 
-                    return new StringPrimitive(tmpResult.replace(next._1, r));
+                    return ((StringPrimitive) curr).with(tmpResult.replace(next._1, r));
                 }
             }
             return curr;
@@ -694,18 +696,18 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 if (p.getValue() instanceof StringPrimitive && curr.getValue() instanceof StringPrimitive) {
                     final String s = ((StringPrimitive) curr.getValue()).getValue();
                     final String r = ((StringPrimitive) p.getValue()).getValue();
-                    return new Pair(curr.getKey(), new StringPrimitive(s.replace(next._1, r)));
+                    return curr.with(StringPrimitive.of(s.replace(next._1, r)));
                 } else if (p.getValue() instanceof NumberPrimitive && curr.getValue() instanceof StringPrimitive) {
                     final String s = ((StringPrimitive) curr.getValue()).getValue();
                     final String r = ((NumberPrimitive) p.getValue()).getValue();
                     if (s.equals(next._1)) {
-                        return new Pair(curr.getKey(), new NumberPrimitive(s.replace(next._1, r)));
+                        return curr.with(NumberPrimitive.of(s.replace(next._1, r)));
                     } else {
-                        return new Pair(curr.getKey(), new StringPrimitive(s.replace(next._1, r)));
+                        return curr.with(StringPrimitive.of(s.replace(next._1, r)));
                     }
                 }
                 // Otherwise replace the whole thing
-                return new Pair(curr.getKey(), p.getValue());
+                return curr.with(p.getValue());
             }
             return curr;
         };
@@ -724,7 +726,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                         .getValue() instanceof StringPrimitive && curr instanceof StringPrimitive) {
                     final String r = ((StringPrimitive) next._3.get()
                             .getValue()).getValue();
-                    return new StringPrimitive(((StringPrimitive) curr).getValue()
+                    return ((StringPrimitive) curr).with(((StringPrimitive) curr).getValue()
                             .replace(next._1, r));
                 } else {
                     return (ValueItem) next._3.get()

@@ -3,12 +3,12 @@ package uk.modl.model;
 import io.vavr.collection.Vector;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
-import uk.modl.visitor.ModlVisitor;
+import uk.modl.utils.IDSource;
 
-@Value
-@With
+@Value(staticConstructor = "of")
 public class MapConditional implements MapItem {
+
+    long id;
 
     @NonNull
     Vector<ConditionTest> tests;
@@ -19,11 +19,16 @@ public class MapConditional implements MapItem {
     @NonNull
     Vector<MapItem> result;
 
-    @Override
-    public void visit(final ModlVisitor visitor) {
-        visitor.accept(this);
-        tests.forEach(s -> s.visit(visitor));
-        returns.forEach(s -> s.visit(visitor));
+    public static MapConditional of(final Vector<ConditionTest> tests, final Vector<MapConditionalReturn> returns, final Vector<MapItem> result) {
+        return MapConditional.of(IDSource.nextId(), tests, returns, result);
+    }
+
+    public MapConditional with(final Vector<ConditionTest> tests, final Vector<MapConditionalReturn> returns) {
+        return MapConditional.of(id, tests, returns, result);
+    }
+
+    public MapConditional with(final Vector<MapItem> result) {
+        return MapConditional.of(id, tests, returns, result);
     }
 
 }

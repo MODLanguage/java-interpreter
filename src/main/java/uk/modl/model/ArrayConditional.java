@@ -3,12 +3,12 @@ package uk.modl.model;
 import io.vavr.collection.Vector;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
-import uk.modl.visitor.ModlVisitor;
+import uk.modl.utils.IDSource;
 
-@Value
-@With
+@Value(staticConstructor = "of")
 public class ArrayConditional implements ArrayItem {
+
+    long id;
 
     @NonNull
     Vector<ConditionTest> tests;
@@ -19,11 +19,16 @@ public class ArrayConditional implements ArrayItem {
     @NonNull
     Vector<ArrayItem> result;
 
-    @Override
-    public void visit(final ModlVisitor visitor) {
-        visitor.accept(this);
-        tests.forEach(s -> s.visit(visitor));
-        returns.forEach(s -> s.visit(visitor));
+    public static ArrayConditional of(final Vector<ConditionTest> tests, final Vector<ArrayConditionalReturn> returns, final Vector<ArrayItem> result) {
+        return ArrayConditional.of(IDSource.nextId(), tests, returns, result);
+    }
+
+    public ArrayConditional with(final Vector<ConditionTest> tests, final Vector<ArrayConditionalReturn> returns) {
+        return ArrayConditional.of(id, tests, returns, result);
+    }
+
+    public ArrayConditional with(final Vector<ArrayItem> result) {
+        return ArrayConditional.of(id, tests, returns, result);
     }
 
 }

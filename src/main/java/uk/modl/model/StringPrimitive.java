@@ -2,17 +2,14 @@ package uk.modl.model;
 
 import lombok.Value;
 import org.apache.commons.lang3.math.NumberUtils;
-import uk.modl.visitor.ModlVisitor;
+import uk.modl.utils.IDSource;
 
-@Value
+@Value(staticConstructor = "of")
 public class StringPrimitive implements Primitive {
 
-    String value;
+    long id;
 
-    @Override
-    public void visit(final ModlVisitor visitor) {
-        visitor.accept(this);
-    }
+    String value;
 
     @Override
     public String toString() {
@@ -22,6 +19,14 @@ public class StringPrimitive implements Primitive {
     @Override
     public Number numericValue() {
         return NumberUtils.createNumber(value);
+    }
+
+    public static StringPrimitive of(final String value) {
+        return StringPrimitive.of(IDSource.nextId(), value);
+    }
+
+    public StringPrimitive with(final String value) {
+        return StringPrimitive.of(id, value);
     }
 
 }

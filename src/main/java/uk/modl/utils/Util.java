@@ -304,7 +304,7 @@ public class Util {
 
         normalized = normalized.replace("~://", "://");
 
-        return new StarLoadExtractor.FileSpec(normalized, forceLoad);
+        return StarLoadExtractor.FileSpec.of(normalized, forceLoad);
     }
 
     /**

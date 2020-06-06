@@ -1,7 +1,6 @@
 package uk.modl.model;
 
 import lombok.EqualsAndHashCode;
-import uk.modl.visitor.ModlVisitor;
 
 @EqualsAndHashCode
 public class TruePrimitive implements Primitive {
@@ -10,11 +9,6 @@ public class TruePrimitive implements Primitive {
 
     private TruePrimitive() {
 
-    }
-
-    @Override
-    public void visit(final ModlVisitor visitor) {
-        visitor.accept(this);
     }
 
     @Override

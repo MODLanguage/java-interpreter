@@ -3,12 +3,12 @@ package uk.modl.model;
 import io.vavr.collection.Vector;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
-import uk.modl.visitor.ModlVisitor;
+import uk.modl.utils.IDSource;
 
-@Value
-@With
+@Value(staticConstructor = "of")
 public class TopLevelConditional implements Structure {
+
+    long id;
 
     @NonNull
     Vector<ConditionTest> tests;
@@ -19,12 +19,16 @@ public class TopLevelConditional implements Structure {
     @NonNull
     Vector<Structure> result;
 
+    public static TopLevelConditional of(final Vector<ConditionTest> tests, final Vector<TopLevelConditionalReturn> returns, final Vector<Structure> result) {
+        return TopLevelConditional.of(IDSource.nextId(), tests, returns, result);
+    }
 
-    @Override
-    public void visit(final ModlVisitor visitor) {
-        visitor.accept(this);
-        tests.forEach(s -> s.visit(visitor));
-        returns.forEach(s -> s.visit(visitor));
+    public TopLevelConditional with(final Vector<ConditionTest> tests, final Vector<TopLevelConditionalReturn> returns) {
+        return TopLevelConditional.of(id, tests, returns, result);
+    }
+
+    public TopLevelConditional with(final Vector<Structure> result) {
+        return TopLevelConditional.of(id, tests, returns, result);
     }
 
 }

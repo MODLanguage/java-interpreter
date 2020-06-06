@@ -1,7 +1,5 @@
 package uk.modl.transforms;
 
-import uk.modl.model.StringPrimitive;
-import uk.modl.model.ValueItem;
 import uk.modl.utils.Util;
 
 import java.util.regex.Matcher;
@@ -11,7 +9,7 @@ public class LiteralsTransform {
 
     public static final Pattern literalsPattern = Pattern.compile("(%`.+`)");
 
-    public static ValueItem replacellLiteralRefs(final String s) {
+    public static String replacellLiteralRefs(final String s) {
         if (s == null) {
             return null;
         }
@@ -23,7 +21,7 @@ public class LiteralsTransform {
             final String match = matcher.group();
             result = result.replace(match, Util.unwrapLiteral(match));
         }
-        return new StringPrimitive(result);
+        return result;
     }
 
 }

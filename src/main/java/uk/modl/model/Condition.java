@@ -3,10 +3,12 @@ package uk.modl.model;
 import io.vavr.collection.Vector;
 import lombok.NonNull;
 import lombok.Value;
-import uk.modl.visitor.ModlVisitor;
+import uk.modl.utils.IDSource;
 
-@Value
+@Value(staticConstructor = "of")
 public class Condition implements ConditionOrConditionGroupInterface {
+
+    long id;
 
     StringPrimitive lhs;
 
@@ -17,10 +19,12 @@ public class Condition implements ConditionOrConditionGroupInterface {
 
     boolean shouldNegate;
 
-    @Override
-    public void visit(final ModlVisitor visitor) {
-        visitor.accept(this);
-        values.forEach(s -> s.visit(visitor));
+    public static Condition of(final StringPrimitive lhs, final Operator op, final Vector<ValueItem> values, final boolean shouldNegate) {
+        return Condition.of(IDSource.nextId(), lhs, op, values, shouldNegate);
+    }
+
+    public Condition with(final StringPrimitive lhs, final Operator op, final Vector<ValueItem> values, final boolean shouldNegate) {
+        return Condition.of(id, lhs, op, values, shouldNegate);
     }
 
 }

@@ -3,17 +3,18 @@ package uk.modl.model;
 import lombok.NonNull;
 import lombok.Value;
 import org.apache.commons.lang3.math.NumberUtils;
-import uk.modl.visitor.ModlVisitor;
+import uk.modl.utils.IDSource;
 
-@Value
+@Value(staticConstructor = "of")
 public class NumberPrimitive implements Primitive {
+
+    long id;
 
     @NonNull
     String value;
 
-    @Override
-    public void visit(final ModlVisitor visitor) {
-        visitor.accept(this);
+    public static NumberPrimitive of(final String value) {
+        return NumberPrimitive.of(IDSource.nextId(), value);
     }
 
     @Override

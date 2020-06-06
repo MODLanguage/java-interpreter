@@ -2,10 +2,12 @@ package uk.modl.model;
 
 import lombok.NonNull;
 import lombok.Value;
-import uk.modl.visitor.ModlVisitor;
+import uk.modl.utils.IDSource;
 
-@Value
+@Value(staticConstructor = "of")
 public class Pair implements Structure, MapItem, ValueItem, ArrayItem {
+
+    long id;
 
     @NonNull
     String key;
@@ -13,14 +15,21 @@ public class Pair implements Structure, MapItem, ValueItem, ArrayItem {
     @NonNull
     PairValue value;
 
-    @Override
-    public void visit(final ModlVisitor visitor) {
-        visitor.accept(this);
+    public static Pair of(final String key, final PairValue value) {
+        return Pair.of(IDSource.nextId(), key, value);
     }
 
     @Override
     public Number numericValue() {
         return value.numericValue();
+    }
+
+    public Pair with(final PairValue v) {
+        return Pair.of(id, key, v);
+    }
+
+    public Pair with(final String key, final PairValue value) {
+        return Pair.of(id, key, value);
     }
 
 }

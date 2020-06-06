@@ -6,13 +6,12 @@ import lombok.Value;
 import lombok.With;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.model.Array;
-import uk.modl.model.Pair;
 import uk.modl.utils.Util;
 
 /**
  * Stores context needed by other parts of the interpreter
  */
-@Value
+@Value(staticConstructor = "of")
 @With
 public class TransformationContext {
 
@@ -36,11 +35,6 @@ public class TransformationContext {
      * StarClassImmutable
      */
     boolean starClassImmutable;
-
-    /**
-     * Possible targets of references
-     */
-    Map<String, Pair> pairs;
 
     /**
      * The Modl Object Index
@@ -83,7 +77,7 @@ public class TransformationContext {
     Map<String, StarClassTransform.ClassInstruction> classesByName;
 
     public static TransformationContext emptyCtx() {
-        return new TransformationContext(VERSION, STAR_LOAD_IMMUTABLE, STAR_CLASS_IMMUTABLE, LinkedHashMap.empty(), new Array(Vector.empty()), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
+        return new TransformationContext(VERSION, STAR_LOAD_IMMUTABLE, STAR_CLASS_IMMUTABLE, Array.of(Vector.empty()), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
     }
 
     private static void validatePairKey(final String newKey) {
@@ -169,14 +163,6 @@ public class TransformationContext {
     public Option<StarClassTransform.ClassInstruction> getClassByNameOrId(final String idOrName) {
         return classesById.get(idOrName)
                 .orElse(classesByName.get(idOrName));
-    }
-
-    public TransformationContext addPair(final String key, final Pair p) {
-        validatePairKey(key);
-        if (pairs.containsKey(key) && StringUtils.isAllUpperCase(key)) {
-            throw new RuntimeException("Already defined " + key + " as final.");
-        }
-        return this.withPairs(pairs.put(key, p));
     }
 
     public Option<StarMethodTransform.MethodInstruction> getMethodByNameOrId(final String idOrName) {
