@@ -1,5 +1,8 @@
 package uk.modl.model;
 
-public interface ValueItem extends PairValue {
+import uk.modl.ancestry.Child;
+import uk.modl.ancestry.Parent;
+
+public interface ValueItem extends PairValue, Parent, Child {
 
 }

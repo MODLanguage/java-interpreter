@@ -1,5 +1,8 @@
 package uk.modl.model;
 
-public interface ArrayItem {
+import uk.modl.ancestry.Child;
+import uk.modl.ancestry.Parent;
+
+public interface ArrayItem extends Parent, Child {
 
 }

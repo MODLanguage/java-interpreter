@@ -21,4 +21,9 @@ public class NullPrimitive implements Primitive {
         return null;
     }
 
+    @Override
+    public long getId() {
+        return 0;
+    }
+
 }

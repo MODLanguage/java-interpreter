@@ -23,8 +23,13 @@ public class StarLoadTransformTest {
                 .get(0));
         assertNotNull(result);
 
-        final Pair expected = new Pair("*l", new Array(Vector.of(new Pair("a", new StringPrimitive("b")))));
-        assertEquals(expected, result._2);
+        final Pair expected = Pair.of("*l", Array.of(Vector.of(Pair.of("a", StringPrimitive.of("b")))));
+        final Pair resultPair = (Pair) result._2;
+
+        assertEquals(expected.getKey(), resultPair.getKey());
+        assertEquals(expected.getValue()
+                .toString(), resultPair.getValue()
+                .toString());
     }
 
 }

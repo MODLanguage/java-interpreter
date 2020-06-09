@@ -16,7 +16,7 @@ public class Condition implements ConditionOrConditionGroupInterface, Parent, Ch
     long id;
 
     @EqualsAndHashCode.Exclude
-    StringPrimitive lhs;
+    Primitive lhs;
 
     @EqualsAndHashCode.Exclude
     Operator op;
@@ -28,11 +28,11 @@ public class Condition implements ConditionOrConditionGroupInterface, Parent, Ch
     @EqualsAndHashCode.Exclude
     boolean shouldNegate;
 
-    public static Condition of(final StringPrimitive lhs, final Operator op, final Vector<ValueItem> values, final boolean shouldNegate) {
+    public static Condition of(final Primitive lhs, final Operator op, final Vector<ValueItem> values, final boolean shouldNegate) {
         return Condition.of(IDSource.nextId(), lhs, op, values, shouldNegate);
     }
 
-    public Condition with(final StringPrimitive lhs, final Operator op, final Vector<ValueItem> values, final boolean shouldNegate) {
+    public Condition with(final Primitive lhs, final Operator op, final Vector<ValueItem> values, final boolean shouldNegate) {
         return Condition.of(id, lhs, op, values, shouldNegate);
     }
 

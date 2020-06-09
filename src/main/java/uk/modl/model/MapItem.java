@@ -1,5 +1,8 @@
 package uk.modl.model;
 
-public interface MapItem {
+import uk.modl.ancestry.Child;
+import uk.modl.ancestry.Parent;
+
+public interface MapItem extends Parent, Child {
 
 }

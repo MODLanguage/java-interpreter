@@ -21,4 +21,9 @@ public class TruePrimitive implements Primitive {
         return 1;
     }
 
+    @Override
+    public long getId() {
+        return 0;
+    }
+
 }

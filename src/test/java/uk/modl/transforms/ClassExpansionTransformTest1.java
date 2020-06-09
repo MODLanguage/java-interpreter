@@ -14,13 +14,13 @@ public class ClassExpansionTransformTest1 {
         final ClassExpansionTransform transform = new ClassExpansionTransform();
 
         // Create the class
-        final Vector<ArrayItem> assign = Vector.of(new Array(Vector.of(new StringPrimitive("one"), new StringPrimitive("two"), new StringPrimitive("three"))));
+        final Vector<ArrayItem> assign = Vector.of(Array.of(Vector.of(StringPrimitive.of("one"), StringPrimitive.of("two"), StringPrimitive.of("three"))));
         final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("test", null, null, assign, HashMap.empty());
         ctx.addClassInstruction(classInstruction);
 
         // Create the Pair to be transformed by the class
-        final Map pairValue = new Map(Vector.of(new Pair("one", new StringPrimitive("1")), new Pair("two", new StringPrimitive("2")), new Pair("three", new StringPrimitive("3"))));
-        final Pair testPair = new Pair("test", pairValue);
+        final Map pairValue = Map.of(Vector.of(Pair.of("one", StringPrimitive.of("1")), Pair.of("two", StringPrimitive.of("2")), Pair.of("three", StringPrimitive.of("3"))));
+        final Pair testPair = Pair.of("test", pairValue);
 
         // Transform the pair
         final Pair updatedPair = (Pair) transform.apply(ctx, testPair);

@@ -17,26 +17,26 @@ public class ExpandedClassTest {
     @Test
     public void testSuperclassStructure() {
         final Vector<ArrayItem> assign = Vector.of(
-                new Array(Vector.of(new StringPrimitive("a"), new StringPrimitive("b"))),
-                new Array(Vector.of(new StringPrimitive("a"), new StringPrimitive("b"), new StringPrimitive("c")))
+                Array.of(Vector.of(StringPrimitive.of("a"), StringPrimitive.of("b"))),
+                Array.of(Vector.of(StringPrimitive.of("a"), StringPrimitive.of("b"), StringPrimitive.of("c")))
         );
 
         final HashMap<String, Pair> pairs = HashMap.of(
-                "p1", new Pair("p1", new StringPrimitive("p1_value")),
-                "p2", new Pair("p2", new StringPrimitive("p2_value")),
-                "p3", new Pair("p3", new StringPrimitive("p3_value"))
+                "p1", Pair.of("p1", StringPrimitive.of("p1_value")),
+                "p2", Pair.of("p2", StringPrimitive.of("p2_value")),
+                "p3", Pair.of("p3", StringPrimitive.of("p3_value"))
         );
         final StarClassTransform.ClassInstruction ci = of("test1", "name", "super", assign, pairs);
 
         final Vector<ArrayItem> assign2 = Vector.of(
-                new Array(Vector.of(new StringPrimitive("d"), new StringPrimitive("e"))),
-                new Array(Vector.of(new StringPrimitive("d"), new StringPrimitive("e"), new StringPrimitive("f")))
+                Array.of(Vector.of(StringPrimitive.of("d"), StringPrimitive.of("e"))),
+                Array.of(Vector.of(StringPrimitive.of("d"), StringPrimitive.of("e"), StringPrimitive.of("f")))
         );
 
         final HashMap<String, Pair> pairs2 = HashMap.of(
-                "p4", new Pair("p4", new StringPrimitive("p4_value")),
-                "p5", new Pair("p5", new StringPrimitive("p5_value")),
-                "p6", new Pair("p6", new StringPrimitive("p6_value"))
+                "p4", Pair.of("p4", StringPrimitive.of("p4_value")),
+                "p5", Pair.of("p5", StringPrimitive.of("p5_value")),
+                "p6", Pair.of("p6", StringPrimitive.of("p6_value"))
         );
         final StarClassTransform.ClassInstruction superclass = of("super", "super", "str", assign2, pairs2);
 

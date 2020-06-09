@@ -1,5 +1,8 @@
 package uk.modl.model;
 
-public interface ConditionOrConditionGroupInterface {
+import uk.modl.ancestry.Child;
+import uk.modl.ancestry.Parent;
+
+public interface ConditionOrConditionGroupInterface extends Parent, Child {
 
 }

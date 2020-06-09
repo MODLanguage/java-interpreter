@@ -16,7 +16,7 @@ public class ClassExpansionTransformTest2 {
 
         final ClassExpansionTransform transform = new ClassExpansionTransform();
 
-        final Pair updatedPair = (Pair) transform.apply(ctx, new Pair("d", new Map(Vector.of(new Pair("test1", new StringPrimitive("test2"))))));
+        final Pair updatedPair = (Pair) transform.apply(ctx, Pair.of("d", Map.of(Vector.of(Pair.of("test1", StringPrimitive.of("test2"))))));
         Assert.assertNotNull(updatedPair);
         Assert.assertEquals("delta", updatedPair.getKey());
         Assert.assertTrue(updatedPair.getValue() instanceof Map);
@@ -29,25 +29,25 @@ public class ClassExpansionTransformTest2 {
 
     private TransformationContext addClasses(TransformationContext ctx) {
         {
-            final io.vavr.collection.Map<String, Pair> pairs = HashMap.of("v", new Pair("v", new StringPrimitive("victor")));
+            final io.vavr.collection.Map<String, Pair> pairs = HashMap.of("v", Pair.of("v", StringPrimitive.of("victor")));
 
             final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("a", "alpha", "map", Vector.empty(), pairs);
             ctx = ctx.addClassInstruction(classInstruction);
         }
         {
-            final io.vavr.collection.Map<String, Pair> pairs = HashMap.of("w", new Pair("w", new StringPrimitive("whisky")));
+            final io.vavr.collection.Map<String, Pair> pairs = HashMap.of("w", Pair.of("w", StringPrimitive.of("whisky")));
 
             final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("b", "bravo", "alpha", Vector.empty(), pairs);
             ctx = ctx.addClassInstruction(classInstruction);
         }
         {
-            final io.vavr.collection.Map<String, Pair> pairs = HashMap.of("x", new Pair("x", new StringPrimitive("xray")));
+            final io.vavr.collection.Map<String, Pair> pairs = HashMap.of("x", Pair.of("x", StringPrimitive.of("xray")));
 
             final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("c", "charlie", "bravo", Vector.empty(), pairs);
             ctx = ctx.addClassInstruction(classInstruction);
         }
         {
-            final io.vavr.collection.Map<String, Pair> pairs = HashMap.of("y", new Pair("y", new StringPrimitive("yankee")));
+            final io.vavr.collection.Map<String, Pair> pairs = HashMap.of("y", Pair.of("y", StringPrimitive.of("yankee")));
 
             final StarClassTransform.ClassInstruction classInstruction = StarClassTransform.ClassInstruction.of("d", "delta", "charlie", Vector.empty(), pairs);
             ctx = ctx.addClassInstruction(classInstruction);

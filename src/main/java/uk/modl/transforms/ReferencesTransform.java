@@ -7,6 +7,7 @@ import io.vavr.control.Option;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
+import uk.modl.ancestry.Ancestry;
 import uk.modl.model.*;
 import uk.modl.parser.errors.DeepReferenceException;
 import uk.modl.utils.Util;
@@ -70,30 +71,22 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
 
             // Capture the Object Index
             final Array objectIndex;
+            final Ancestry ancestry = ctx.getAncestry();
+
             if (pair.getValue() instanceof Array) {
                 objectIndex = (Array) pair.getValue();
+                objectIndex.getArrayItems()
+                        .forEach(ai -> ancestry
+                                .add(objectIndex, ai));
             } else {
-                objectIndex = Array.of(Vector.of((ArrayItem) pair.getValue()));
+                final ArrayItem value = (ArrayItem) pair.getValue();
+                objectIndex = Array.of(Vector.of(value));
+                ancestry
+                        .add(objectIndex, value);
             }
             return ctx.withObjectIndex(objectIndex);
-        } else {
-            // Keep a map of pairs indexed by their key...
-            TransformationContext updatedContext = ctx.addPair(pair.getKey(), pair);
-
-            // ...and by their key without the underscore prefix if there is one.
-            if (pair.getKey()
-                    .startsWith("_")) {
-                updatedContext = updatedContext.addPair(pair.getKey()
-                        .substring(1), pair);
-            }
-
-            // ...and by the key with the underscore prefix if this doesn't have one, but we already have one with an underscore
-            if (updatedContext.getPairs()
-                    .containsKey("_" + pair.getKey())) {
-                updatedContext = updatedContext.addPair("_" + pair.getKey(), pair);
-            }
-            return updatedContext;
         }
+        return ctx;
     }
 
 
@@ -106,11 +99,11 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
      */
     public Condition apply(final TransformationContext ctx, final Condition condition) {
 
-        StringPrimitive newLhs = condition.getLhs();
+        Primitive newLhs = condition.getLhs();
         Operator op = condition.getOp();
         Vector<ValueItem> values = condition.getValues();
 
-        final String value = newLhs.getValue();
+        final String value = newLhs.toString();
 
         if (value != null) {
             if (value.contains("%")) {
@@ -124,14 +117,15 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 final String hiddenKey = (value.startsWith("_")) ? value : "_" + value;
                 final String unhiddenKey = (value.startsWith("_")) ? value.substring(1) : value;
 
-                final Pair pair = ctx.getPairs()
-                        .get(unhiddenKey)
-                        .getOrElse(() -> ctx.getPairs()
-                                .get(hiddenKey)
-                                .getOrElse((Pair) null));
-
+                final Pair pair = ctx.getAncestry()
+                        .findByKey(condition, hiddenKey)
+                        .orElse(() -> ctx.getAncestry()
+                                .findByKey(condition, unhiddenKey))
+                        .getOrElse((Pair) null);
 
                 if (pair != null) {
+                    ctx.getAncestry()
+                            .add(pair, pair.getValue());
                     if (pair.getValue() instanceof StringPrimitive) {
                         newLhs = (StringPrimitive) pair.getValue();
                     } else {
@@ -144,6 +138,10 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
 
         if (!condition.getLhs()
                 .equals(newLhs)) {
+
+            ctx.getAncestry()
+                    .add(condition, newLhs);
+
             return condition.with(newLhs, op, values, condition.isShouldNegate());
         }
         return condition;
@@ -170,14 +168,14 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
 
                 // Process simple String references, e.g. %val% etc.
                 result = groupedByType.get(ReferenceType.SIMPLE_REF)
-                        .map(k -> keyToReferencedObject(ctx, k))
+                        .map(k -> keyToReferencedObject(ctx, vi, k))
                         .map(replaceAllSimpleRefsInValueItem(result))
                         .getOrElse(result);
 
                 // Process complex references
                 final ValueItem finalResult = result;
                 result = groupedByType.get(ReferenceType.COMPLEX_REF)
-                        .map(refList -> refList.map(cr -> complexRefToValueItem(ctx, cr)))
+                        .map(refList -> refList.map(cr -> complexRefToValueItem(ctx, vi, cr)))
                         .map(tuples -> tuples.get(0))
                         .map(tuple -> {
                             final Pair pair = Pair.of("", tuple._2);
@@ -194,7 +192,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
         return vi;
     }
 
-    private Tuple2<String, ValueItem> complexRefToValueItem(final TransformationContext ctx, final String complexRef) {
+    private Tuple2<String, ValueItem> complexRefToValueItem(final TransformationContext ctx, final ValueItem vi, final String complexRef) {
         final String ref = (complexRef.startsWith("%`%")) ? complexRef : stripLeadingAndTrailingPercents(complexRef);
         final String chainedMethods = StringUtils.substringAfter(ref, ".");
 
@@ -204,7 +202,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
 
         final Vector<String> methods = Util.toMethodList(chainedMethods);
         final String[] refList = methods.toJavaArray(String[]::new);
-        Vector<Tuple3<String, String, Option<Pair>>> referencedObject = keyToReferencedObject(ctx, Vector.of(reference));
+        Vector<Tuple3<String, String, Option<Pair>>> referencedObject = keyToReferencedObject(ctx, vi, Vector.of(reference));
 
         try {
             final Vector<ValueItem> valueItems = referencedObject.flatMap(t -> {
@@ -269,11 +267,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                         .find(mapItem -> {
                             // Check whether the reference key needs de-referencing
                             if (ref.contains("%")) {
-                                String actualRef = ctx.getPairs()
-                                        .get(stripLeadingAndTrailingPercents(ref))
-                                        .map(pair -> pair.getValue()
-                                                .toString())
-                                        .getOrElse(ref);
+                                String actualRef = "LOOK_ME_UP_IN_ANCESTRY";
 
                                 return mapItem instanceof Pair && ((Pair) mapItem).getKey()
                                         .equals(actualRef);
@@ -309,12 +303,12 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 }
                 // Handle methods and trailing values
                 final String valueStr = handleMethodsAndTrailingPathComponents(ctx, refList, skipRefIndexesForPathElementsWithReferences, value.toString());
-                return StringPrimitive.of(((Pair) vi).getId(), valueStr);
+                return StringPrimitive.of(vi.getId(), valueStr);
             }
             if (vi instanceof StringPrimitive) {
                 // Handle methods and trailing values
                 final String valueStr = handleMethodsAndTrailingPathComponents(ctx, refList, skipRefIndexesForPathElementsWithReferences, vi.toString());
-                return StringPrimitive.of(((StringPrimitive) vi).getId(), valueStr);
+                return StringPrimitive.of(vi.getId(), valueStr);
             }
         }
         return vi;
@@ -385,19 +379,26 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
 
         if (p instanceof Pair) {
             final Pair pair = (Pair) p;
-            if ((pair).getValue() instanceof ValueConditional) {
+            if (pair.getValue() instanceof ValueConditional) {
                 return Tuple.of(ctx, p);
             } else {
-                final Tuple2<TransformationContext, Pair> resolved = resolve(newCtx, pair);
-                newCtx = resolved._1;
+                if (!pair.getValue()
+                        .toString()
+                        .startsWith("%*")) {
+                    final Tuple2<TransformationContext, Pair> resolved = resolve(newCtx, pair);
+                    newCtx = resolved._1;
 
-                newCtx = accept(newCtx, resolved._2);
+                    newCtx.getAncestry()
+                            .replaceChild(((Pair) p).getValue(), resolved._2.getValue());
+                    newCtx = accept(newCtx, resolved._2);
 
-                final Pair transformedPair = newCtx.getPairs()
-                        .get((pair).getKey())
-                        .getOrElse(pair);
+                    final Pair transformedPair = resolved._2;
 
-                return Tuple.of(newCtx, transformedPair);
+                    ctx.getAncestry()
+                            .add(pair, pair.getValue());
+
+                    return Tuple.of(newCtx, transformedPair);
+                }
             }
         }
         if (p instanceof Array) {
@@ -458,7 +459,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
 
             // Process simple String references, e.g. %val% etc.
             result = groupedByType.get(ReferenceType.SIMPLE_REF)
-                    .map(k -> keyToReferencedObject(ctx, k))
+                    .map(k -> keyToReferencedObject(ctx, p, k))
                     .map(replaceAllSimpleRefs(result))
                     .getOrElse(result);
 
@@ -512,7 +513,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
 
     private Vector<Tuple3<String, String, Option<Pair>>> complexRefToReferencedItems(final TransformationContext ctx, final Pair p, final Vector<String> refList) {
         return refList.map(ref -> {
-            final Tuple2<String, ValueItem> result = complexRefToValueItem(ctx, ref);
+            final Tuple2<String, ValueItem> result = complexRefToValueItem(ctx, p, ref);
             return Tuple.of(ref, p.getKey(), Option.of(p.with(result._2)));
         });
     }
@@ -603,7 +604,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
      * @param list a Vector of String indexes of the form `%var%` or `%var`
      * @return a tuple of the original reference, %-stripped reference, and possible new value, e.g. ("%var%","var", Option(Pair))
      */
-    private Vector<Tuple3<String, String, Option<Pair>>> keyToReferencedObject(final TransformationContext ctx, final Vector<String> list) {
+    private Vector<Tuple3<String, String, Option<Pair>>> keyToReferencedObject(final TransformationContext ctx, final ValueItem vi, final Vector<String> list) {
         return list.map(s -> Tuple.of(s, stripLeadingAndTrailingPercents(s)))// E.g. ("%var%","var")
                 .map(t -> {
 
@@ -611,11 +612,13 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                     final String hiddenKey = (t._2.startsWith("_")) ? t._2 : "_" + t._2;
                     final String unhiddenKey = (t._2.startsWith("_")) ? t._2.substring(1) : t._2;
 
-                    final Option<Pair> unhiddenPair = ctx.getPairs()
-                            .get(unhiddenKey);
+                    final Pair transformedPair = ctx.getAncestry()
+                            .findByKey(vi, hiddenKey)
+                            .orElse(() -> ctx.getAncestry()
+                                    .findByKey(vi, unhiddenKey))
+                            .getOrElse((Pair) null);
 
-                    final Option<Pair> pair = (unhiddenPair.isDefined()) ? unhiddenPair : ctx.getPairs()
-                            .get(hiddenKey);
+                    final Option<Pair> pair = Option.of(transformedPair);
 
                     return t.append(pair);
                 });// E.g. ("%var%","var", Option(Pair))

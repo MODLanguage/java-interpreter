@@ -168,12 +168,12 @@ public class TransformationContext {
      */
     public Option<StarClassTransform.ClassInstruction> getClassByNameOrId(final String idOrName) {
         return classesById.get(idOrName)
-                .orElse(classesByName.get(idOrName));
+                .orElse(() -> classesByName.get(idOrName));
     }
 
     public Option<StarMethodTransform.MethodInstruction> getMethodByNameOrId(final String idOrName) {
         return methodsById.get(idOrName)
-                .orElse(methodsByName.get(idOrName));
+                .orElse(() -> methodsByName.get(idOrName));
     }
 
 }

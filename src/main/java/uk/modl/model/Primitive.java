@@ -1,5 +1,7 @@
 package uk.modl.model;
 
-public interface Primitive extends ValueItem, ArrayItem {
+import uk.modl.ancestry.Child;
+
+public interface Primitive extends ValueItem, ArrayItem, Child {
 
 }

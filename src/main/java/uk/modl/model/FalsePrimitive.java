@@ -21,4 +21,9 @@ public class FalsePrimitive implements Primitive {
         return 0;
     }
 
+    @Override
+    public long getId() {
+        return 0;
+    }
+
 }

@@ -37,6 +37,8 @@ public class ConditionalsTransform {
                     newCtx = refsResult._1;
 
                     vector = vector.append(refsResult._2);
+                    ctx.getAncestry()
+                            .add(tlc, refsResult._2);
                 }
 
                 return getToplevelConditionalResult(newCtx, tlc, vector);
@@ -53,6 +55,8 @@ public class ConditionalsTransform {
                         newCtx = refsResult._1;
 
                         vector = vector.append(refsResult._2);
+                        ctx.getAncestry()
+                                .add(tlc, refsResult._2);
                     }
 
                     return getToplevelConditionalResult(newCtx, tlc, vector);
@@ -76,6 +80,8 @@ public class ConditionalsTransform {
                         final Tuple2<TransformationContext, Structure> refsResult = referencesTransform.apply(newCtx, result._2);
                         newCtx = refsResult._1;
                         structures = structures.append(refsResult._2);
+                        ctx.getAncestry()
+                                .add(tlc, refsResult._2);
                     }
 
                     newCtx = conditionalFileLoading(newCtx, structures);
@@ -183,7 +189,7 @@ public class ConditionalsTransform {
         final Operator op = c.getOp();
         final boolean shouldNegate = c.isShouldNegate();
 
-        final StringPrimitive lhs = c.getLhs();
+        final Primitive lhs = c.getLhs();
 
         @NonNull final Vector<ValueItem> values = c.getValues();
 
@@ -197,39 +203,44 @@ public class ConditionalsTransform {
                     return false;
                 }
                 final String key = v.toString();
-                final String hiddenKey = "_" + key;
-                if (v instanceof StringPrimitive && (ctx.getPairs()
-                        .containsKey(key) || ctx.getPairs()
-                        .containsKey(hiddenKey))) {
 
-                    final Pair pair = ctx.getPairs()
-                            .get(key)
-                            .getOrElse(() -> ctx.getPairs()
-                                    .get(hiddenKey)
-                                    .get());
+                final String hiddenKey = (key.startsWith("_")) ? key : "_" + key;
+                final String unhiddenKey = (key.startsWith("_")) ? key.substring(1) : key;
 
-                    @NonNull final PairValue pairValue = pair.getValue();
-                    if (pairValue instanceof TruePrimitive) {
+                if (v instanceof StringPrimitive) {
+                    final Pair pair = ctx.getAncestry()
+                            .findByKey(c, hiddenKey)
+                            .orElse(() -> ctx.getAncestry()
+                                    .findByKey(c, unhiddenKey))
+                            .getOrElse((Pair) null);
+
+                    if (pair != null) {
+                        ctx.getAncestry()
+                                .add(pair, pair.getValue());
+
+                        @NonNull final PairValue pairValue = pair.getValue();
+                        if (pairValue instanceof TruePrimitive) {
+                            return true;
+                        }
+                        if (pairValue instanceof FalsePrimitive || pairValue instanceof NullPrimitive) {
+                            return false;
+                        }
+                        if (pairValue instanceof ValueConditional) {
+                            final ValueConditional vc = (ValueConditional) pairValue;
+                            return vc.getResult()
+                                    .map(vcResult -> {
+                                        if (vcResult instanceof TruePrimitive) {
+                                            return true;
+                                        }
+                                        if (vcResult instanceof FalsePrimitive || vcResult instanceof NullPrimitive) {
+                                            return false;
+                                        }
+                                        return false;
+                                    })
+                                    .getOrElse(false);
+                        }
                         return true;
                     }
-                    if (pairValue instanceof FalsePrimitive || pairValue instanceof NullPrimitive) {
-                        return false;
-                    }
-                    if (pairValue instanceof ValueConditional) {
-                        final ValueConditional vc = (ValueConditional) pairValue;
-                        return vc.getResult()
-                                .map(vcResult -> {
-                                    if (vcResult instanceof TruePrimitive) {
-                                        return true;
-                                    }
-                                    if (vcResult instanceof FalsePrimitive || vcResult instanceof NullPrimitive) {
-                                        return false;
-                                    }
-                                    return false;
-                                })
-                                .getOrElse(false);
-                    }
-                    return true;
                 }
                 return false;
             })
@@ -282,6 +293,8 @@ public class ConditionalsTransform {
                     .get(0))) {
                 if (vc.getReturns()
                         .size() == 0) {
+                    ctx.getAncestry()
+                            .add(vc, TruePrimitive.instance);
                     return vc.with(Vector.of(TruePrimitive.instance));
                 }
 
@@ -294,12 +307,16 @@ public class ConditionalsTransform {
                     final ValueItem refsResult = referencesTransform.apply(ctx, vi);
 
                     items = items.append(refsResult);
+                    ctx.getAncestry()
+                            .add(vc, refsResult);
                 }
 
                 return vc.with(items);
             } else {
                 if (vc.getReturns()
                         .size() == 0) {
+                    ctx.getAncestry()
+                            .add(vc, FalsePrimitive.instance);
                     return vc.with(Vector.of(FalsePrimitive.instance));
                 }
 
@@ -312,6 +329,8 @@ public class ConditionalsTransform {
                     final ValueItem refsResult = referencesTransform.apply(ctx, vi);
 
                     items = items.append(refsResult);
+                    ctx.getAncestry()
+                            .add(vc, refsResult);
                 }
                 return vc.with(items);
             }
@@ -329,6 +348,8 @@ public class ConditionalsTransform {
                         final ValueItem refsResult = referencesTransform.apply(ctx, vi);
 
                         items = items.append(refsResult);
+                        ctx.getAncestry()
+                                .add(vc, refsResult);
                     }
                     return vc.with(items);
                 }
@@ -366,6 +387,8 @@ public class ConditionalsTransform {
                     .get(0))) {
                 if (ac.getReturns()
                         .size() == 0) {
+                    ctx.getAncestry()
+                            .add(ac, TruePrimitive.instance);
                     return ac.with(Vector.of(TruePrimitive.instance));
                 }
                 Vector<ArrayItem> items = Vector.empty();
@@ -377,12 +400,16 @@ public class ConditionalsTransform {
                     final ValueItem refsResult = referencesTransform.apply(ctx, (ValueItem) ai);
 
                     items = items.append((ArrayItem) refsResult);
+                    ctx.getAncestry()
+                            .add(ac, refsResult);
                 }
 
                 return ac.with(items);
             } else {
                 if (ac.getReturns()
                         .size() == 0) {
+                    ctx.getAncestry()
+                            .add(ac, FalsePrimitive.instance);
                     return ac.with(Vector.of(FalsePrimitive.instance));
                 }
 
@@ -395,6 +422,8 @@ public class ConditionalsTransform {
                     final ValueItem refsResult = referencesTransform.apply(ctx, (ValueItem) ai);
 
                     items = items.append((ArrayItem) refsResult);
+                    ctx.getAncestry()
+                            .add(ac, refsResult);
                 }
 
                 return ac.with(items);
@@ -412,6 +441,8 @@ public class ConditionalsTransform {
                         final ValueItem refsResult = referencesTransform.apply(ctx, (ValueItem) ai);
 
                         items = items.append((ArrayItem) refsResult);
+                        ctx.getAncestry()
+                                .add(ac, refsResult);
                     }
 
                     return ac.with(items);
@@ -429,6 +460,8 @@ public class ConditionalsTransform {
                     .get(0))) {
                 if (mc.getReturns()
                         .size() == 0) {
+                    ctx.getAncestry()
+                            .add(mc, TruePrimitive.instance);
                     return mc.with(Vector.of((MapItem) TruePrimitive.instance));
                 }
                 Vector<MapItem> items = Vector.empty();
@@ -440,11 +473,15 @@ public class ConditionalsTransform {
                     final ValueItem refsResult = referencesTransform.apply(ctx, (ValueItem) mi);
 
                     items = items.append((MapItem) refsResult);
+                    ctx.getAncestry()
+                            .add(mc, refsResult);
                 }
                 return mc.with(items);
             } else {
                 if (mc.getReturns()
                         .size() == 0) {
+                    ctx.getAncestry()
+                            .add(mc, FalsePrimitive.instance);
                     return mc.with(Vector.of((MapItem) FalsePrimitive.instance));
                 }
                 Vector<MapItem> items = Vector.empty();
@@ -456,6 +493,8 @@ public class ConditionalsTransform {
                     final ValueItem refsResult = referencesTransform.apply(ctx, (ValueItem) mi);
 
                     items = items.append((MapItem) refsResult);
+                    ctx.getAncestry()
+                            .add(mc, refsResult);
                 }
                 return mc.with(items);
             }
@@ -473,6 +512,8 @@ public class ConditionalsTransform {
                         final ValueItem refsResult = referencesTransform.apply(ctx, (ValueItem) mi);
 
                         items = items.append((MapItem) refsResult);
+                        ctx.getAncestry()
+                                .add(mc, refsResult);
                     }
                     return mc.with(items);
                 }

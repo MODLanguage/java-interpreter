@@ -1,6 +1,9 @@
 package uk.modl.model;
 
-public interface PairValue {
+import uk.modl.ancestry.Child;
+import uk.modl.ancestry.Parent;
+
+public interface PairValue extends Parent, Child {
 
     Number numericValue();
 
