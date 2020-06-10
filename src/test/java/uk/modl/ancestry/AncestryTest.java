@@ -167,6 +167,7 @@ public class AncestryTest {
         a.dump();
 
         final StringPrimitive s = StringPrimitive.of(a, four, "Child of 4");
+        final StringPrimitive s2 = StringPrimitive.of(a, four, "Another Child of 4");
 
         System.out.println();
         a.dump();

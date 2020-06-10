@@ -17,7 +17,9 @@ public class Ancestry {
     }
 
     public void add(final Parent parent, final Child child) {
-        ancestors.put(child, parent);
+        if (parent != null && child != null) {
+            ancestors.put(child, parent);
+        }
     }
 
     /**
@@ -108,8 +110,24 @@ public class Ancestry {
     }
 
     public void replaceChild(final Child oldChild, final Child newChild) {
-        final Parent parent = ancestors.remove(oldChild);
-        ancestors.put(newChild, parent);
+        if (oldChild != null && newChild != null) {
+            final Parent parent = ancestors.remove(oldChild);
+
+            final List<Child> childrenOfOldChild = ancestors.entrySet()
+                    .stream()
+                    .filter(entry -> entry.getValue() != null && entry.getValue()
+                            .equals(oldChild))
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toList());
+
+
+            for (final Child childOfOldChild : childrenOfOldChild) {
+                ancestors.remove(childOfOldChild);
+                ancestors.put(childOfOldChild, (Parent) newChild);
+            }
+
+            ancestors.put(newChild, parent);
+        }
     }
 
     /**
@@ -128,6 +146,16 @@ public class Ancestry {
         referencesToOldChild.forEach(ancestors::remove);
 
         referencesToOldChild.forEach(child -> prune((Parent) child));
+    }
+
+    public void replaceSubTree(final Child oldChild, final Child newChild) {
+        if (oldChild != null && newChild != null) {
+            final Parent parent = ancestors.remove(oldChild);
+
+            prune((Parent) oldChild);
+
+            ancestors.put(newChild, parent);
+        }
     }
 
 }

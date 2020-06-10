@@ -115,7 +115,16 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             returns = returns.append(result._2);
         }
 
-        return conditionalsTransform.apply(newCtx, tlc.with(ctx.getAncestry(), tests, returns));
+        final Tuple2<TransformationContext, Structure> result = conditionalsTransform.apply(newCtx, tlc.with(ctx.getAncestry(), tests, returns));
+        if (result._2 instanceof TopLevelConditional) {
+            final TopLevelConditional tlcResult = (TopLevelConditional) result._2;
+            if (tlcResult.getResult()
+                    .nonEmpty()) {
+                return result.update2(tlcResult.getResult()
+                        .get(0));
+            }
+        }
+        return result;
     }
 
     /**
@@ -124,7 +133,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
      * @param mc the MapConditional
      * @return a MapConditional
      */
-    private Tuple2<TransformationContext, MapConditional> visitMapConditional(final TransformationContext ctx, final MapConditional mc) {
+    private Tuple2<TransformationContext, MapItem> visitMapConditional(final TransformationContext ctx, final MapConditional mc) {
 
         TransformationContext newCtx = ctx;
         Vector<ConditionTest> tests = Vector.empty();
@@ -147,6 +156,11 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
 
         final MapConditional mapConditional = mc.with(ctx.getAncestry(), tests, returns);
         final MapConditional evaluated = conditionalsTransform.apply(newCtx, mapConditional);
+        if (evaluated.getResult()
+                .nonEmpty()) {
+            return Tuple.of(newCtx, evaluated.getResult()
+                    .get(0));
+        }
         return Tuple.of(newCtx, evaluated);
     }
 
@@ -202,7 +216,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
                 } else if (structure instanceof Pair && ((Pair) structure).getValue() instanceof ValueConditional) {
                     final Pair p = (Pair) structure;
 
-                    final Tuple2<TransformationContext, ValueConditional> visitResult = visitValueConditional(newCtx, (ValueConditional) p.getValue());
+                    final Tuple2<TransformationContext, ValueItem> visitResult = visitValueConditional(newCtx, (ValueConditional) p.getValue());
                     newCtx = visitResult._1;
 
 
@@ -319,7 +333,9 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
     private Tuple2<TransformationContext, ArrayItem> visitArrayItem(final TransformationContext ctx, final ArrayItem ai) {
 
         if (ai instanceof ArrayConditional) {
-            final Tuple2<TransformationContext, ArrayConditional> result = visitArrayConditional(ctx, (ArrayConditional) ai);
+            final Tuple2<TransformationContext, ArrayItem> result = visitArrayConditional(ctx, (ArrayConditional) ai);
+            ctx.getAncestry()
+                    .replaceSubTree(ai, result._2);
             return Tuple.of(result._1, result._2);
         }
         return visitArrayValueItem(ctx, ai);
@@ -357,7 +373,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
      * @param ac the ArrayConditional
      * @return an ArrayItem
      */
-    private Tuple2<TransformationContext, ArrayConditional> visitArrayConditional(final TransformationContext ctx, final ArrayConditional ac) {
+    private Tuple2<TransformationContext, ArrayItem> visitArrayConditional(final TransformationContext ctx, final ArrayConditional ac) {
 
         TransformationContext newCtx = ctx;
         Vector<ConditionTest> tests = Vector.empty();
@@ -380,6 +396,11 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
 
         final ArrayConditional arrayConditional = ac.with(ctx.getAncestry(), tests, returns);
         final ArrayConditional evaluated = conditionalsTransform.apply(newCtx, arrayConditional);
+        if (evaluated.getResult()
+                .nonEmpty()) {
+            return Tuple.of(newCtx, evaluated.getResult()
+                    .get(0));
+        }
         return Tuple.of(newCtx, evaluated);
     }
 
@@ -439,8 +460,10 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
             final Tuple2<TransformationContext, Structure> result = visitPair(ctx, (Pair) mi);
             return Tuple.of(result._1, (MapItem) result._2);
         } else {
-            final Tuple2<TransformationContext, MapConditional> mapConditional = visitMapConditional(ctx, (MapConditional) mi);
-            return Tuple.of(mapConditional._1, mapConditional._2);
+            final Tuple2<TransformationContext, MapItem> result = visitMapConditional(ctx, (MapConditional) mi);
+            ctx.getAncestry()
+                    .replaceSubTree(mi, result._2);
+            return Tuple.of(result._1, result._2);
         }
     }
 
@@ -539,7 +562,9 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
     private Tuple2<TransformationContext, ValueItem> visitValueItem(final TransformationContext ctx, final ValueItem vi) {
 
         if (vi instanceof ValueConditional) {
-            final Tuple2<TransformationContext, ValueConditional> result = visitValueConditional(ctx, (ValueConditional) vi);
+            final Tuple2<TransformationContext, ValueItem> result = visitValueConditional(ctx, (ValueConditional) vi);
+            ctx.getAncestry()
+                    .replaceSubTree(vi, result._2);
             return Tuple.of(result._1, result._2);
         }
         if (vi instanceof Map) {
@@ -567,7 +592,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
      * @param vc the ValueConditional
      * @return a ValueItem
      */
-    private Tuple2<TransformationContext, ValueConditional> visitValueConditional(final TransformationContext ctx, final ValueConditional vc) {
+    private Tuple2<TransformationContext, ValueItem> visitValueConditional(final TransformationContext ctx, final ValueConditional vc) {
 
         TransformationContext newCtx = ctx;
         Vector<ConditionTest> tests = Vector.empty();
@@ -590,8 +615,11 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
 
         final ValueConditional valueConditional = vc.with(ctx.getAncestry(), tests, returns);
         final ValueConditional evaluated = conditionalsTransform.apply(newCtx, valueConditional);
-        newCtx.getAncestry()
-                .replaceChild(vc, evaluated);
+        if (evaluated.getResult()
+                .nonEmpty()) {
+            return Tuple.of(newCtx, evaluated.getResult()
+                    .get(0));
+        }
         return Tuple.of(newCtx, evaluated);
     }
 
@@ -677,12 +705,16 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
 
         try {
             Vector<Structure> visitedStructures = Vector.empty();
+            Modl updatedModl = modl;
             {
                 for (final Structure structure : modl.getStructures()) {
 
                     final Tuple2<TransformationContext, Structure> result = visitStructure(newCtx, structure);
+                    ctx.getAncestry()
+                            .replaceSubTree(structure, result._2);
                     newCtx = result._1;
                     visitedStructures = visitedStructures.append(result._2);
+                    updatedModl = modl.with(ctx.getAncestry(), visitedStructures);
                 }
             }
 
@@ -690,10 +722,15 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
 
             final Vector<Structure> resultStructures = visitedStructures.map(structure -> classExpansionTransform.apply(finalNewCtx, structure));
 
-            finalNewCtx.getAncestry()
-                    .dump();// TODO: Delete this
+            updatedModl = modl.with(ctx.getAncestry(), resultStructures.filter(Objects::nonNull));
 
-            return Tuple.of(finalNewCtx, modl.with(ctx.getAncestry(), resultStructures.filter(Objects::nonNull)));
+            // TODO: Delete this
+//            System.out.println("--- BEGIN DUMP ---");
+//            finalNewCtx.getAncestry()
+//                    .dump();
+//            System.out.println("--- END DUMP ---");
+
+            return Tuple.of(finalNewCtx, updatedModl);
         } catch (final InterpreterError e) {
             throw e;
         } catch (final RuntimeException e) {
