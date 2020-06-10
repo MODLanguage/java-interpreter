@@ -19,10 +19,11 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 package uk.modl.parser;
 
-import io.vavr.Function1;
+import io.vavr.Function2;
 import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import uk.modl.ancestry.Ancestry;
 import uk.modl.model.Modl;
 import uk.modl.parser.antlr.MODLLexer;
 import uk.modl.parser.antlr.MODLParser;
@@ -37,15 +38,16 @@ import java.nio.charset.StandardCharsets;
  * Class to parse MODL Strings to Modl trees.
  */
 @Log4j2
-public class Parser implements Function1<String, Modl> {
+public class Parser implements Function2<String, Ancestry, Modl> {
 
     /**
      * Parse a MODL String to a Modl object
      *
-     * @param input the MODL String
+     * @param input    the MODL String
+     * @param ancestry
      * @return Either a Throwable or a Modl object
      */
-    public Modl apply(final String input) {
+    public Modl apply(final String input, final Ancestry ancestry) {
         try {
             // Antlr boilerplate
             final InputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
@@ -60,7 +62,7 @@ public class Parser implements Function1<String, Modl> {
             final MODLParser.ModlContext modlCtx = parser.modl();
 
             // The String has been parsed by Antlr, now its our turn
-            return new ModlParsedVisitor(modlCtx).getModl();
+            return new ModlParsedVisitor(modlCtx, ancestry).getModl();
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }

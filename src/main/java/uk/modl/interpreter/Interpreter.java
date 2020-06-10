@@ -53,7 +53,7 @@ public class Interpreter implements Function2<TransformationContext, String, Tup
         return Option.of(input)
                 .map(s -> {
                     try {
-                        return parser.apply(s);
+                        return parser.apply(s, ctx.getAncestry());
                     } catch (final ParseCancellationException e) {
                         throw new InterpreterError("Parser Error: " + e.getMessage());
                     } catch (final RuntimeException e) {

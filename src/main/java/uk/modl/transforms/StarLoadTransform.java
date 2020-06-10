@@ -126,7 +126,7 @@ public class StarLoadTransform implements Function2<TransformationContext, Struc
                 newCtx = result._1.addFilesLoaded(result._2.flatMap(tuple -> tuple._1));
 
 
-                return Tuple.of(newCtx, new StarLoadMutator(result._2).accept(p));
+                return Tuple.of(newCtx, new StarLoadMutator(result._2).accept(p, ctx));
             }
         }
         return Tuple.of(newCtx, s);
@@ -140,12 +140,12 @@ public class StarLoadTransform implements Function2<TransformationContext, Struc
 
         private final Vector<Tuple3<Vector<String>, Vector<Modl>, Pair>> loadedModlObjects;
 
-        public Pair accept(final Pair pair) {
+        public Pair accept(final Pair pair, final TransformationContext ctx) {
             // Find the last matching loaded object (last because the earlier ones might be overridden by later ones)
             final Option<Tuple3<Vector<String>, Vector<Modl>, Pair>> maybeFoundPair = loadedModlObjects.findLast(tuple3 -> pair.equals(tuple3._3));
 
             // Create a new Modl object with the updated pair.
-            return maybeFoundPair.map(p -> replace(pair, p))
+            return maybeFoundPair.map(p -> replace(pair, p, ctx))
                     .getOrElse(pair);
         }
 
@@ -154,9 +154,10 @@ public class StarLoadTransform implements Function2<TransformationContext, Struc
          *
          * @param p           the current Modl object
          * @param replacement the pair to be replaced and the set of Modl objects loaded from the files.
+         * @param ctx
          * @return a new Modl object with the relevant changes, sharing existing objects where possible
          */
-        private Pair replace(final Pair p, final Tuple3<Vector<String>, Vector<Modl>, Pair> replacement) {
+        private Pair replace(final Pair p, final Tuple3<Vector<String>, Vector<Modl>, Pair> replacement, final TransformationContext ctx) {
 
             if (p.equals(replacement._3)) {
 
@@ -164,7 +165,7 @@ public class StarLoadTransform implements Function2<TransformationContext, Struc
                         .filter(structure -> structure instanceof ArrayItem)
                         .map(structure -> (ArrayItem) structure));
 
-                return p.with(Array.of(arrayItems));
+                return p.with(ctx.getAncestry(), Array.of(ctx.getAncestry(), p, arrayItems));
             } else {
                 return p;
             }

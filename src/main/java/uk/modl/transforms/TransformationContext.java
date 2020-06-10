@@ -6,7 +6,7 @@ import lombok.Value;
 import lombok.With;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.ancestry.Ancestry;
-import uk.modl.model.Array;
+import uk.modl.model.ArrayItem;
 import uk.modl.utils.Util;
 
 /**
@@ -45,7 +45,7 @@ public class TransformationContext {
     /**
      * The Modl Object Index
      */
-    uk.modl.model.Array objectIndex;
+    Vector<ArrayItem> objectIndex;
 
     /**
      * Files loaded by a *load instruction
@@ -83,7 +83,7 @@ public class TransformationContext {
     Map<String, StarClassTransform.ClassInstruction> classesByName;
 
     public static TransformationContext emptyCtx() {
-        return new TransformationContext(new Ancestry(), VERSION, STAR_LOAD_IMMUTABLE, STAR_CLASS_IMMUTABLE, Array.of(Vector.empty()), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
+        return new TransformationContext(new Ancestry(), VERSION, STAR_LOAD_IMMUTABLE, STAR_CLASS_IMMUTABLE, Vector.empty(), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
     }
 
     private static void validatePairKey(final String newKey) {

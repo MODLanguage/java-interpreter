@@ -4,6 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import uk.modl.ancestry.Ancestry;
 import uk.modl.ancestry.Child;
 import uk.modl.ancestry.Parent;
 import uk.modl.utils.IDSource;
@@ -22,8 +23,10 @@ public class Pair implements Structure, MapItem, ValueItem, ArrayItem, Parent, C
     @NonNull
     PairValue value;
 
-    public static Pair of(final String key, final PairValue value) {
-        return Pair.of(IDSource.nextId(), key, value);
+    public static Pair of(final Ancestry ancestry, final Parent parent, final String key, final PairValue value) {
+        final Pair child = Pair.of(IDSource.nextId(), key, value);
+        ancestry.add(parent, child);
+        return child;
     }
 
     @Override
@@ -31,12 +34,16 @@ public class Pair implements Structure, MapItem, ValueItem, ArrayItem, Parent, C
         return value.numericValue();
     }
 
-    public Pair with(final PairValue v) {
-        return Pair.of(id, key, v);
+    public Pair with(final Ancestry ancestry, final PairValue v) {
+        final Pair child = Pair.of(id, key, v);
+        ancestry.replaceChild(this, child);
+        return child;
     }
 
-    public Pair with(final String key, final PairValue value) {
-        return Pair.of(id, key, value);
+    public Pair with(final Ancestry ancestry, final String key, final PairValue value) {
+        final Pair child = Pair.of(id, key, value);
+        ancestry.replaceChild(this, child);
+        return child;
     }
 
 }

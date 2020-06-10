@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import uk.modl.ancestry.Ancestry;
+import uk.modl.ancestry.Parent;
 import uk.modl.model.*;
 import uk.modl.utils.SupertypeInference;
 import uk.modl.utils.Util;
@@ -37,14 +39,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
         if (s instanceof Pair) {
             return processPair(ctx, (Pair) s);
         }
-        if (s instanceof TopLevelConditional) {
-            return processTopLevelConditional((TopLevelConditional) s);
-        }
         return s;
-    }
-
-    private TopLevelConditional processTopLevelConditional(final TopLevelConditional topLevelConditional) {
-        return topLevelConditional;
     }
 
     private Structure processPair(final TransformationContext ctx, final Pair pair) {
@@ -64,15 +59,15 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                 case "map":
                     return convertPairToMap(ctx, pair, expClass);
                 case "null":
-                    return convertPairToNull(expClass);
+                    return convertPairToNull(ctx, pair, expClass);
                 case "arr":
                     return convertPairToArray(ctx, pair, expClass);
                 case "num":
-                    return convertPairToNumber(pair, expClass);
+                    return convertPairToNumber(ctx, pair, expClass);
                 case "str":
-                    return convertPairToString(pair, expClass);
+                    return convertPairToString(ctx, pair, expClass);
                 case "bool":
-                    return convertPairToBoolean(pair, expClass);
+                    return convertPairToBoolean(ctx, pair, expClass);
                 default:
                     throw new RuntimeException("Invalid superclass: " + supertype);
             }
@@ -84,58 +79,60 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
         @NonNull final PairValue pairValue = pair.getValue();
 
         if (pairValue instanceof Array) {
-            return getPairFromArray(ctx, expClass, (Array) pairValue);
+            return getPairFromArray(ctx, pair, expClass, (Array) pairValue);
         } else if (pairValue instanceof Map) {
-            return getPairFromMap(ctx, expClass, (Map) pairValue);
+            return getPairFromMap(ctx, pair, expClass, (Map) pairValue);
         } else if (pairValue instanceof Primitive) {
-            final Pair structure = getPairFromPrimitive(ctx, expClass, pairValue);
+            final Pair structure = getPairFromPrimitive(ctx, pair, expClass, pairValue);
             if (structure != null) return structure;
         }
-        return pair.with(expClass.name, pairValue);
+        return pair.with(ctx.getAncestry(), expClass.name, pairValue);
     }
 
-    private Pair getPairFromPrimitive(final TransformationContext ctx, final ExpandedClass expClass, final @NonNull PairValue pairValue) {
+    private Pair getPairFromPrimitive(final TransformationContext ctx, final Pair pair, final ExpandedClass expClass, final @NonNull PairValue pairValue) {
+        final Ancestry ancestry = ctx.getAncestry();
+
         if (expClass.hasSingleValueAssign()) {
-            final Structure s = expClass.toStructureUsingAssign(ctx, cache, Array.of(Vector.of((ArrayItem) pairValue)));
+            final Structure s = expClass.toStructureUsingAssign(ctx, pair, cache, Array.of(ancestry, pair, Vector.of((ArrayItem) pairValue)));
 
             final Structure structure = apply(ctx, s);
             if (structure instanceof ValueItem) {
-                return Pair.of(expClass.name, (PairValue) structure);
+                return pair.with(ancestry, expClass.name, (PairValue) structure);
             } else {
                 throw new RuntimeException("Cannot store this item in a Pair: " + structure.toString());
             }
         } else if (expClass.assigns.isEmpty()) {
-            final Map map = expClass.toMapFromMap(Map.of(Vector.of(Pair.of("value", pairValue))));
+            final Map map = expClass.toMapFromMap(ctx, Map.of(ancestry, pair, Vector.of(pair.with(ancestry, "value", pairValue))));
 
             final Structure structure = apply(ctx, map);
-            return Pair.of(expClass.name, (PairValue) structure);
+            return pair.with(ancestry, expClass.name, (PairValue) structure);
         }
         return null;
     }
 
-    private Pair getPairFromMap(final TransformationContext ctx, final ExpandedClass expClass, final Map pairValue) {
-        final Map map = expClass.toMapFromMap(pairValue);
+    private Pair getPairFromMap(final TransformationContext ctx, final Pair pair, final ExpandedClass expClass, final Map pairValue) {
+        final Map map = expClass.toMapFromMap(ctx, pairValue);
         final Structure structure = apply(ctx, map);
         if (structure instanceof ValueItem) {
-            return Pair.of(expClass.name, (PairValue) structure);
+            return pair.with(ctx.getAncestry(), expClass.name, (PairValue) structure);
         } else {
             throw new RuntimeException("Cannot store this item in a Pair: " + structure.toString());
         }
     }
 
-    private Pair getPairFromArray(final TransformationContext ctx, final ExpandedClass expClass, final Array pairValue) {
-        final Structure s = expClass.toStructureUsingAssign(ctx, cache, pairValue);
+    private Pair getPairFromArray(final TransformationContext ctx, final Pair pair, final ExpandedClass expClass, final Array pairValue) {
+        final Structure s = expClass.toStructureUsingAssign(ctx, pair, cache, pairValue);
 
         final Structure structure = apply(ctx, s);
         if (structure instanceof ValueItem) {
-            return Pair.of(expClass.name, (PairValue) structure);
+            return pair.with(ctx.getAncestry(), expClass.name, (PairValue) structure);
         } else {
             throw new RuntimeException("Cannot store this item in a Pair: " + structure.toString());
         }
     }
 
-    private Pair convertPairToNull(final ExpandedClass expClass) {
-        return Pair.of(expClass.name, NullPrimitive.instance);
+    private Pair convertPairToNull(final TransformationContext ctx, final Pair pair, final ExpandedClass expClass) {
+        return pair.with(ctx.getAncestry(), expClass.name, NullPrimitive.instance);
     }
 
     private Pair convertPairToArray(final TransformationContext ctx, final Pair pair, final ExpandedClass expClass) {
@@ -150,6 +147,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
 
             final Array array = expClass.assigns.find(l -> l.size() == assignListLength)
                     .map(assignList -> {
+                        final Array arr = Array.of(ctx.getAncestry(), pair, Vector.empty());
                         Vector<ArrayItem> items = Vector.empty();
                         for (int i = 0; i < assignListLength; i++) {
                             final String maybeWildcardKey = assignList.get(i);
@@ -161,12 +159,13 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                                 key = maybeWildcardKey;
                             }
 
-                            final Pair p = Pair.of(key, (PairValue) valuesToAssign.get(i));
+
+                            final Pair p = Pair.of(ctx.getAncestry(), pair, key, (PairValue) valuesToAssign.get(i));
                             final Structure structure = expandToClass(ctx, p);
                             if (structure instanceof Pair) {
                                 @NonNull final PairValue value = ((Pair) structure).getValue();
                                 if (value instanceof Map) {
-                                    final Map map = Map.of(((Map) value).getMapItems()
+                                    final Map map = Map.of(ctx.getAncestry(), pair, ((Map) value).getMapItems()
                                             .appendAll(expClass.pairs));
                                     items = items.append(map);
                                 } else if (value instanceof Array) {
@@ -175,7 +174,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                                         final StarClassTransform.ClassInstruction classs = maybeClass.get();
                                         final ExpandedClass expandedClass = cache.getExpandedClass(ctx, classs, classs.getSuperclass());
 
-                                        final Structure expandedObject = expandedClass.toStructureUsingAssign(ctx, cache, (Structure) value);
+                                        final Structure expandedObject = expandedClass.toStructureUsingAssign(ctx, pair, cache, (Structure) value);
                                         items = items.append((ArrayItem) expandedObject);
                                     } else {
                                         items = items.appendAll(((Array) value).getArrayItems());
@@ -183,28 +182,28 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                                 }
                             }
                         }
-                        return Array.of(items);
+                        return arr.with(ctx.getAncestry(), items);
                     })
                     .getOrElse(() -> (Array) pairValue);
 
 
             final Structure structure = apply(ctx, array);
             if (structure instanceof ValueItem) {
-                return Pair.of(expClass.name, (PairValue) structure);
+                return pair.with(ctx.getAncestry(), expClass.name, (PairValue) structure);
             } else {
                 throw new RuntimeException("Cannot store this item in a Pair: " + structure.toString());
             }
         } else if (pairValue instanceof Primitive) {
-            return Pair.of(expClass.name, Array.of(Vector.of((ArrayItem) pairValue)));
+            return pair.with(ctx.getAncestry(), expClass.name, Array.of(ctx.getAncestry(), pair, Vector.of((ArrayItem) pairValue)));
         } else if (pairValue instanceof Map) {
             throw new RuntimeException("Cannot convert map to array: " + pairValue);
         }
 
-        return Pair.of(expClass.name, pairValue);
+        return pair.with(ctx.getAncestry(), expClass.name, pairValue);
 
     }
 
-    private Pair convertPairToNumber(final Pair pair, final ExpandedClass expClass) {
+    private Pair convertPairToNumber(final TransformationContext ctx, final Pair pair, final ExpandedClass expClass) {
         try {
             if (pair.getValue() instanceof NullPrimitive) {
                 throw new RuntimeException("Superclass of \"" + expClass.id + "\" is num - cannot assign value \"" + pair.getValue()
@@ -216,7 +215,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                         .toString() + "\"");
             }
 
-            return pair.with(expClass.name, NumberPrimitive.of(NumberUtils.createNumber(pair.getValue()
+            return pair.with(ctx.getAncestry(), expClass.name, NumberPrimitive.of(ctx.getAncestry(), pair, NumberUtils.createNumber(pair.getValue()
                     .toString())
                     .toString()));
         } catch (final NumberFormatException e) {
@@ -225,7 +224,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
         }
     }
 
-    private Pair convertPairToString(final Pair pair, final ExpandedClass expClass) {
+    private Pair convertPairToString(final TransformationContext ctx, final Pair pair, final ExpandedClass expClass) {
         @NonNull final PairValue pairValue = pair.getValue();
 
         if (pairValue instanceof NullPrimitive) {
@@ -233,27 +232,27 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
         }
 
         if (pairValue instanceof TruePrimitive) {
-            return pair.with(expClass.name, StringPrimitive.of("true"));
+            return pair.with(ctx.getAncestry(), expClass.name, StringPrimitive.of(ctx.getAncestry(), pair, "true"));
         }
 
         if (pairValue instanceof FalsePrimitive) {
-            return pair.with(expClass.name, StringPrimitive.of("false"));
+            return pair.with(ctx.getAncestry(), expClass.name, StringPrimitive.of(ctx.getAncestry(), pair, "false"));
         }
 
-        return pair.with(expClass.name, StringPrimitive.of(pair.getValue()
+        return pair.with(ctx.getAncestry(), expClass.name, StringPrimitive.of(ctx.getAncestry(), pair, pair.getValue()
                 .toString()));
     }
 
-    private Pair convertPairToBoolean(final Pair pair, final ExpandedClass expClass) {
+    private Pair convertPairToBoolean(final TransformationContext ctx, final Pair pair, final ExpandedClass expClass) {
         @NonNull final PairValue value = pair.getValue();
         if (Util.truthy(value)) {
-            return pair.with(expClass.name, TruePrimitive.instance);
+            return pair.with(ctx.getAncestry(), expClass.name, TruePrimitive.instance);
         }
-        return pair.with(expClass.name, FalsePrimitive.instance);
+        return pair.with(ctx.getAncestry(), expClass.name, FalsePrimitive.instance);
     }
 
     private Array processArray(final TransformationContext ctx, final Array array) {
-        return array.with(array.getArrayItems()
+        return array.with(ctx.getAncestry(), array.getArrayItems()
                 .map(ai -> processArrayItem(ctx, ai)));
     }
 
@@ -278,7 +277,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
     }
 
     private Map processMap(final TransformationContext ctx, final Map map) {
-        return map.with(map.getMapItems()
+        return map.with(ctx.getAncestry(), map.getMapItems()
                 .map(mi -> processMapItem(ctx, mi)));
     }
 
@@ -286,14 +285,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
         if (mapItem instanceof Pair) {
             return (MapItem) processPair(ctx, (Pair) mapItem);
         }
-        if (mapItem instanceof MapConditional) {
-            return processMapConditional((MapConditional) mapItem);
-        }
         return mapItem;
-    }
-
-    private MapConditional processMapConditional(final MapConditional mapConditional) {
-        return mapConditional;
     }
 
     private static class ExpandedClassCache {
@@ -378,7 +370,7 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                     .getOrElse(Vector.empty()));
         }
 
-        public Structure toStructureUsingAssign(final TransformationContext ctx, final ExpandedClassCache cache, final Structure value) {
+        public Structure toStructureUsingAssign(final TransformationContext ctx, final Parent parent, final ExpandedClassCache cache, final Structure value) {
             Vector<ArrayItem> tmpValuesToAssign = Vector.empty();
             if (value instanceof Array) {
                 tmpValuesToAssign = ((Array) value).getArrayItems();
@@ -415,18 +407,21 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                                 final StarClassTransform.ClassInstruction classs = maybeClassByNameOrId.get();
                                 final ExpandedClass expandedClass = cache.getExpandedClass(ctx, classs, classs.getSuperclass());
 
+                                final Array arr = Array.of(ctx.getAncestry(), parent, Vector.empty());
+
                                 for (int i = 0; i < assignListLength; i++) {
                                     final ArrayItem item = valuesToAssign.get(i);
 
-                                    final Structure s = expandedClass.toStructureUsingAssign(ctx, cache, (Structure) item);
+                                    final Structure s = expandedClass.toStructureUsingAssign(ctx, arr, cache, (Structure) item);
                                     arrayItems = arrayItems.append((ArrayItem) s);
                                 }
                                 arrayItems = arrayItems.appendAll(pairs);
-                                return Array.of(arrayItems);
+                                return arr.with(ctx.getAncestry(), arrayItems);
                             }
                         }
 
                         Vector<MapItem> mapItems = Vector.empty();
+                        final Map map = Map.of(ctx.getAncestry(), null, mapItems);
 
                         for (int i = 0; i < assignListLength; i++) {
 
@@ -439,16 +434,16 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                             if (item instanceof Pair) {
                                 mapItems = mapItems.append((MapItem) item);
                             } else if (item instanceof PairValue) {
-                                mapItems = mapItems.append(Pair.of(key, (PairValue) item));
+                                mapItems = mapItems.append(Pair.of(ctx.getAncestry(), map, key, (PairValue) item));
                             } else if (item instanceof ArrayConditional) {
-                                mapItems = mapItems.append(Pair.of(key, (PairValue) ((ArrayConditional) item).getResult()
+                                mapItems = mapItems.append(Pair.of(ctx.getAncestry(), map, key, (PairValue) ((ArrayConditional) item).getResult()
                                         .get(0)));
                             }
                         }
 
 
                         mapItems = mapItems.appendAll(pairs);
-                        return Map.of(mapItems);
+                        return map.with(ctx.getAncestry(), mapItems);
                     })
                     .getOrElseThrow(() -> new RuntimeException("No key list of the correct length in class " + id + " - looking for one of length " + assignListLength));
         }
@@ -476,8 +471,8 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
                     .getOrElse(list);
         }
 
-        public Map toMapFromMap(final Map map) {
-            return map.with(map.getMapItems()
+        public Map toMapFromMap(final TransformationContext ctx, final Map map) {
+            return map.with(ctx.getAncestry(), map.getMapItems()
                     .appendAll(pairs));
         }
 

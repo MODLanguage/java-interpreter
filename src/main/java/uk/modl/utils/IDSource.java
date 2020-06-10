@@ -8,4 +8,8 @@ public class IDSource {
         return ids++;
     }
 
+    public static void reset() {
+        ids = 0L;
+    }
+
 }

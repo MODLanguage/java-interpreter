@@ -15,7 +15,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 @Log4j2
-public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
+public class JacksonJsonNodeTransform implements Function1<Modl, JsonNode> {
 
     /**
      * Predicate to filter out items that should not be in the output.
@@ -30,6 +30,12 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
         }
         return true;
     });
+
+    private final TransformationContext ctx;
+
+    public JacksonJsonNodeTransform(final TransformationContext ctx) {
+        this.ctx = ctx;
+    }
 
     /**
      * Applies this function to one argument and returns the result.
@@ -290,9 +296,9 @@ public class JacksonJsonNodeTransformer implements Function1<Modl, JsonNode> {
                 } else if (pair.getValue() instanceof ValueConditional) {
                     final Vector<ValueItem> valueItems = ((ValueConditional) pair.getValue()).getResult();
                     if (valueItems.size() == 1) {
-                        accept(node, Pair.of(key, valueItems.get(0)));
+                        accept(node, Pair.of(ctx.getAncestry(), pair, key, valueItems.get(0)));
                     } else {
-                        accept(node, Pair.of(key, Array.of(valueItems.map(v -> (ArrayItem) v))));
+                        accept(node, Pair.of(ctx.getAncestry(), pair, key, Array.of(ctx.getAncestry(), pair, valueItems.map(v -> (ArrayItem) v))));
                     }
                 } else if (pair.getValue() instanceof ValueItem) {
                     final ObjectNode newNode = JsonNodeFactory.instance.objectNode();

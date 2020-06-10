@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import uk.modl.ancestry.Ancestry;
 import uk.modl.ancestry.Child;
 import uk.modl.ancestry.Parent;
 import uk.modl.utils.IDSource;
@@ -19,12 +20,16 @@ public class ValueConditionalReturn implements Parent, Child {
     @NonNull
     Vector<ValueItem> items;
 
-    public static ValueConditionalReturn of(final Vector<ValueItem> items) {
-        return ValueConditionalReturn.of(IDSource.nextId(), items);
+    public static ValueConditionalReturn of(final Ancestry ancestry, final Parent parent, final Vector<ValueItem> items) {
+        final ValueConditionalReturn child = ValueConditionalReturn.of(IDSource.nextId(), items);
+        ancestry.add(parent, child);
+        return child;
     }
 
-    public ValueConditionalReturn with(final Vector<ValueItem> items) {
-        return ValueConditionalReturn.of(id, items);
+    public ValueConditionalReturn with(final Ancestry ancestry, final Vector<ValueItem> items) {
+        final ValueConditionalReturn child = ValueConditionalReturn.of(id, items);
+        ancestry.replaceChild(this, child);
+        return child;
     }
 
 }

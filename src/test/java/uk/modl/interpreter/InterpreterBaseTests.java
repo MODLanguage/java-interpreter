@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Test;
 import uk.modl.model.Modl;
-import uk.modl.transforms.JacksonJsonNodeTransformer;
+import uk.modl.transforms.JacksonJsonNodeTransform;
 import uk.modl.transforms.TransformationContext;
 import uk.modl.utils.Util;
 
@@ -25,8 +25,6 @@ import static org.junit.Assert.*;
 
 @Log4j2
 public class InterpreterBaseTests {
-
-    private static final JacksonJsonNodeTransformer jsonTransformer = new JacksonJsonNodeTransformer();
 
     private final List<String> errors = new ArrayList<>();
 
@@ -70,7 +68,10 @@ public class InterpreterBaseTests {
 
     private void checkValidTestInput(final TestInput testInput) {
         try {
-            final Tuple2<TransformationContext, Modl> interpreted = new Interpreter().apply(TransformationContext.emptyCtx(), testInput.input);
+            final TransformationContext ctx = TransformationContext.emptyCtx();
+            final Tuple2<TransformationContext, Modl> interpreted = new Interpreter().apply(ctx, testInput.input);
+            final JacksonJsonNodeTransform jsonTransformer = new JacksonJsonNodeTransform(ctx);
+
             if (interpreted._2 != null) {
                 final JsonNode jsonResult = jsonTransformer.apply(interpreted._2);
 
@@ -133,7 +134,9 @@ public class InterpreterBaseTests {
 
     private void checkInvalidTestInput(final TestInput testInput) {
         try {
-            final Tuple2<TransformationContext, Modl> interpreted = new Interpreter().apply(TransformationContext.emptyCtx(), testInput.input);
+            final TransformationContext ctx = TransformationContext.emptyCtx();
+            final Tuple2<TransformationContext, Modl> interpreted = new Interpreter().apply(ctx, testInput.input);
+            final JacksonJsonNodeTransform jsonTransformer = new JacksonJsonNodeTransform(ctx);
             if (interpreted._2 != null) {
                 final JsonNode jsonResult = jsonTransformer.apply(interpreted._2);
 

@@ -7,7 +7,6 @@ import io.vavr.control.Option;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
-import uk.modl.ancestry.Ancestry;
 import uk.modl.model.*;
 import uk.modl.parser.errors.DeepReferenceException;
 import uk.modl.utils.Util;
@@ -70,19 +69,13 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 .equals("?")) {
 
             // Capture the Object Index
-            final Array objectIndex;
-            final Ancestry ancestry = ctx.getAncestry();
+            final Vector<ArrayItem> objectIndex;
 
             if (pair.getValue() instanceof Array) {
-                objectIndex = (Array) pair.getValue();
-                objectIndex.getArrayItems()
-                        .forEach(ai -> ancestry
-                                .add(objectIndex, ai));
+                objectIndex = ((Array) pair.getValue()).getArrayItems();
             } else {
                 final ArrayItem value = (ArrayItem) pair.getValue();
-                objectIndex = Array.of(Vector.of(value));
-                ancestry
-                        .add(objectIndex, value);
+                objectIndex = Vector.of(value);
             }
             return ctx.withObjectIndex(objectIndex);
         }
@@ -111,7 +104,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 if (applyResult instanceof StringPrimitive) {
                     newLhs = (StringPrimitive) applyResult;
                 } else {
-                    newLhs = StringPrimitive.of(applyResult.toString());
+                    newLhs = StringPrimitive.of(ctx.getAncestry(), condition, applyResult.toString());
                 }
             } else {
                 final String hiddenKey = (value.startsWith("_")) ? value : "_" + value;
@@ -124,12 +117,10 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                         .getOrElse((Pair) null);
 
                 if (pair != null) {
-                    ctx.getAncestry()
-                            .add(pair, pair.getValue());
                     if (pair.getValue() instanceof StringPrimitive) {
                         newLhs = (StringPrimitive) pair.getValue();
                     } else {
-                        newLhs = StringPrimitive.of(pair.getValue()
+                        newLhs = StringPrimitive.of(ctx.getAncestry(), condition, pair.getValue()
                                 .toString());
                     }
                 }
@@ -139,10 +130,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
         if (!condition.getLhs()
                 .equals(newLhs)) {
 
-            ctx.getAncestry()
-                    .add(condition, newLhs);
-
-            return condition.with(newLhs, op, values, condition.isShouldNegate());
+            return condition.with(ctx.getAncestry(), newLhs, op, values, condition.isShouldNegate());
         }
         return condition;
     }
@@ -169,7 +157,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 // Process simple String references, e.g. %val% etc.
                 result = groupedByType.get(ReferenceType.SIMPLE_REF)
                         .map(k -> keyToReferencedObject(ctx, vi, k))
-                        .map(replaceAllSimpleRefsInValueItem(result))
+                        .map(replaceAllSimpleRefsInValueItem(ctx, result))
                         .getOrElse(result);
 
                 // Process complex references
@@ -178,9 +166,9 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                         .map(refList -> refList.map(cr -> complexRefToValueItem(ctx, vi, cr)))
                         .map(tuples -> tuples.get(0))
                         .map(tuple -> {
-                            final Pair pair = Pair.of("", tuple._2);
+                            final Pair pair = Pair.of(ctx.getAncestry(), vi, "", tuple._2);
                             final Vector<Tuple3<String, String, Option<Pair>>> vector = Vector.of(Tuple.of(tuple._1, tuple._1, Option.of(pair)));
-                            return replaceAllSimpleRefsInValueItem(finalResult).apply(vector);
+                            return replaceAllSimpleRefsInValueItem(ctx, finalResult).apply(vector);
                         })
                         .getOrElse(result);
 
@@ -207,17 +195,16 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
         try {
             final Vector<ValueItem> valueItems = referencedObject.flatMap(t -> {
                 if (wasQuoted) {
-                    return Option.of(StringPrimitive.of(t._2));
+                    return Option.of(StringPrimitive.of(ctx.getAncestry(), vi, t._2));
                 }
                 if (t._3.isDefined()) {
                     return t._3;
                 }
                 if (StringUtils.isNumeric(t._2)) {
                     return Option.of((ValueItem) ctx.getObjectIndex()
-                            .getArrayItems()
                             .get(Integer.parseInt(t._2)));
                 } else {
-                    return Option.of(StringPrimitive.of(t._2));
+                    return Option.of(StringPrimitive.of(ctx.getAncestry(), vi, t._2));
                 }
             })
                     .map(pair -> followNestedRef(ctx, pair, refList, 0));
@@ -394,9 +381,6 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
 
                     final Pair transformedPair = resolved._2;
 
-                    ctx.getAncestry()
-                            .add(pair, pair.getValue());
-
                     return Tuple.of(newCtx, transformedPair);
                 }
             }
@@ -417,7 +401,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 }
             }
 
-            return Tuple.of(newCtx, ((Array) p).with(newItems));
+            return Tuple.of(newCtx, ((Array) p).with(ctx.getAncestry(), newItems));
         }
         if (p instanceof uk.modl.model.Map) {
             @NonNull final Vector<MapItem> items = ((uk.modl.model.Map) p).getMapItems();
@@ -435,7 +419,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 }
             }
 
-            return Tuple.of(newCtx, ((uk.modl.model.Map) p).with(newItems));
+            return Tuple.of(newCtx, ((uk.modl.model.Map) p).with(ctx.getAncestry(), newItems));
 
         }
         return Tuple.of(ctx, p);
@@ -460,14 +444,14 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
             // Process simple String references, e.g. %val% etc.
             result = groupedByType.get(ReferenceType.SIMPLE_REF)
                     .map(k -> keyToReferencedObject(ctx, p, k))
-                    .map(replaceAllSimpleRefs(result))
+                    .map(replaceAllSimpleRefs(ctx, result))
                     .getOrElse(result);
 
             // Process complex references
             final Pair finalResult = result;
             result = groupedByType.get(ReferenceType.COMPLEX_REF)
                     .map(refList -> complexRefToReferencedItems(ctx, finalResult, refList))
-                    .map(replaceAllSimpleRefs(result))
+                    .map(replaceAllSimpleRefs(ctx, result))
                     .getOrElse(result);
 
             // Ignore literals as they are handled separately.
@@ -489,7 +473,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 }
             }
 
-            return Tuple.of(newCtx, p.with(((uk.modl.model.Map) p.getValue()).with(newItems)));
+            return Tuple.of(newCtx, p.with(ctx.getAncestry(), ((uk.modl.model.Map) p.getValue()).with(ctx.getAncestry(), newItems)));
         }
         if (p.getValue() instanceof Array) {
             final @NonNull Vector<ArrayItem> items = ((Array) p.getValue()).getArrayItems();
@@ -506,7 +490,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 }
             }
 
-            return Tuple.of(newCtx, p.with(((uk.modl.model.Array) p.getValue()).with(newItems)));
+            return Tuple.of(newCtx, p.with(ctx.getAncestry(), ((uk.modl.model.Array) p.getValue()).with(ctx.getAncestry(), newItems)));
         }
         return Tuple.of(newCtx, p);
     }
@@ -514,7 +498,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
     private Vector<Tuple3<String, String, Option<Pair>>> complexRefToReferencedItems(final TransformationContext ctx, final Pair p, final Vector<String> refList) {
         return refList.map(ref -> {
             final Tuple2<String, ValueItem> result = complexRefToValueItem(ctx, p, ref);
-            return Tuple.of(ref, p.getKey(), Option.of(p.with(result._2)));
+            return Tuple.of(ref, p.getKey(), Option.of(p.with(ctx.getAncestry(), result._2)));
         });
     }
 
@@ -563,8 +547,8 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
      * @param p a Pair with references
      * @return a function to convert the Pair in the supplied tuple to a Pair with references replaced
      */
-    private Function<Vector<Tuple3<String, String, Option<Pair>>>, Pair> replaceAllSimpleRefs(final Pair p) {
-        return refTuples -> refTuples.foldLeft(p, replaceSimpleRefInPair());
+    private Function<Vector<Tuple3<String, String, Option<Pair>>>, Pair> replaceAllSimpleRefs(final TransformationContext ctx, final Pair p) {
+        return refTuples -> refTuples.foldLeft(p, replaceSimpleRefInPair(ctx));
     }
 
     /**
@@ -573,8 +557,8 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
      * @param vi a ValueItem with references
      * @return a function to convert the String to a String with references replaced
      */
-    private Function<Vector<Tuple3<String, String, Option<Pair>>>, ValueItem> replaceAllSimpleRefsInValueItem(final ValueItem vi) {
-        return refTuples -> refTuples.foldLeft(vi, replaceSimpleRefInValueItem());
+    private Function<Vector<Tuple3<String, String, Option<Pair>>>, ValueItem> replaceAllSimpleRefsInValueItem(final TransformationContext ctx, final ValueItem vi) {
+        return refTuples -> refTuples.foldLeft(vi, replaceSimpleRefInValueItem(ctx));
     }
 
     /**
@@ -588,10 +572,8 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 .map(t -> t.append(Integer.parseInt(t._2)))// E.g. ("%1%","1", 1)
                 .map(t -> {
                     if (t._3 >= 0 && t._3 < ctx.getObjectIndex()
-                            .getArrayItems()
                             .size()) {
                         return t.append(Option.of(ctx.getObjectIndex()
-                                .getArrayItems()
                                 .get(t._3)));
                     }
                     return t.append(Option.none());
@@ -636,7 +618,6 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 if (next._4.get() instanceof StringPrimitive) {
                     final String s = ((StringPrimitive) curr.getValue()).getValue();
                     final String r = ctx.getObjectIndex()
-                            .getArrayItems()
                             .get(next._3)
                             .toString();
                     final String indexReference = next._1;
@@ -644,12 +625,11 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                     if (!indexReference.endsWith("%")) {
                         tmpResult = s.replace(indexReference + "%", r);
                     }
-                    return curr.with(StringPrimitive.of(tmpResult.replace(indexReference, r)));
+                    return curr.with(ctx.getAncestry(), StringPrimitive.of(ctx.getAncestry(), curr, tmpResult.replace(indexReference, r)));
                 }
 
                 // Otherwise replace the whole thing
-                return curr.with((PairValue) ctx.getObjectIndex()
-                        .getArrayItems()
+                return curr.with(ctx.getAncestry(), (PairValue) ctx.getObjectIndex()
                         .get(next._3));
             }
 
@@ -668,7 +648,6 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 // If the item containing the reference is a StringPrimitive then do String substitution
                 if ((next._4.get() instanceof NumberPrimitive || next._4.get() instanceof StringPrimitive) && curr instanceof StringPrimitive) {
                     final String r = ctx.getObjectIndex()
-                            .getArrayItems()
                             .get(next._3)
                             .toString();
 
@@ -679,7 +658,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                         tmpResult = s.replace(indexReference + "%", r);
                     }
 
-                    return ((StringPrimitive) curr).with(tmpResult.replace(next._1, r));
+                    return ((StringPrimitive) curr).with(ctx.getAncestry(), tmpResult.replace(next._1, r));
                 }
             }
             return curr;
@@ -691,7 +670,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
      *
      * @return a tuple with an updated Pair
      */
-    private BiFunction<Pair, Tuple3<String, String, Option<Pair>>, Pair> replaceSimpleRefInPair() {
+    private BiFunction<Pair, Tuple3<String, String, Option<Pair>>, Pair> replaceSimpleRefInPair(final TransformationContext ctx) {
         return (curr, next) -> {
             if (next._3.isDefined()) {
                 // If the item containing the reference is a StringPrimitive then do String substitution
@@ -699,18 +678,18 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 if (p.getValue() instanceof StringPrimitive && curr.getValue() instanceof StringPrimitive) {
                     final String s = ((StringPrimitive) curr.getValue()).getValue();
                     final String r = ((StringPrimitive) p.getValue()).getValue();
-                    return curr.with(StringPrimitive.of(s.replace(next._1, r)));
+                    return curr.with(ctx.getAncestry(), StringPrimitive.of(ctx.getAncestry(), curr, s.replace(next._1, r)));
                 } else if (p.getValue() instanceof NumberPrimitive && curr.getValue() instanceof StringPrimitive) {
                     final String s = ((StringPrimitive) curr.getValue()).getValue();
                     final String r = ((NumberPrimitive) p.getValue()).getValue();
                     if (s.equals(next._1)) {
-                        return curr.with(NumberPrimitive.of(s.replace(next._1, r)));
+                        return curr.with(ctx.getAncestry(), NumberPrimitive.of(ctx.getAncestry(), curr, s.replace(next._1, r)));
                     } else {
-                        return curr.with(StringPrimitive.of(s.replace(next._1, r)));
+                        return curr.with(ctx.getAncestry(), StringPrimitive.of(ctx.getAncestry(), curr, s.replace(next._1, r)));
                     }
                 }
                 // Otherwise replace the whole thing
-                return curr.with(p.getValue());
+                return curr.with(ctx.getAncestry(), p.getValue());
             }
             return curr;
         };
@@ -721,7 +700,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
      *
      * @return an updated String
      */
-    private BiFunction<ValueItem, Tuple3<String, String, Option<Pair>>, ValueItem> replaceSimpleRefInValueItem() {
+    private BiFunction<ValueItem, Tuple3<String, String, Option<Pair>>, ValueItem> replaceSimpleRefInValueItem(final TransformationContext ctx) {
         return (curr, next) -> {
             if (next._3.isDefined()) {
                 // If the item containing the reference is a StringPrimitive then do String substitution
@@ -729,7 +708,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                         .getValue() instanceof StringPrimitive && curr instanceof StringPrimitive) {
                     final String r = ((StringPrimitive) next._3.get()
                             .getValue()).getValue();
-                    return ((StringPrimitive) curr).with(((StringPrimitive) curr).getValue()
+                    return ((StringPrimitive) curr).with(ctx.getAncestry(), ((StringPrimitive) curr).getValue()
                             .replace(next._1, r));
                 } else {
                     return (ValueItem) next._3.get()
