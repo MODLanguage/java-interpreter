@@ -7,7 +7,6 @@ import lombok.With;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.ancestry.Ancestry;
 import uk.modl.model.ArrayItem;
-import uk.modl.utils.Util;
 
 /**
  * Stores context needed by other parts of the interpreter
@@ -84,21 +83,6 @@ public class TransformationContext {
 
     public static TransformationContext emptyCtx() {
         return new TransformationContext(new Ancestry(), VERSION, STAR_LOAD_IMMUTABLE, STAR_CLASS_IMMUTABLE, Vector.empty(), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
-    }
-
-    private static void validatePairKey(final String newKey) {
-        final String k = (newKey.startsWith("_") || newKey.startsWith("*")) ? newKey.substring(1) : newKey;// Strip any leading underscore or asterisk
-
-        final int badCharIndex = StringUtils.indexOfAny(k, Util.INVALID_CHARS);
-        if (badCharIndex > -1) {
-            throw new RuntimeException("Invalid key - \"" +
-                    k.charAt(badCharIndex) +
-                    "\" character not allowed: " +
-                    newKey);
-        }
-        if (StringUtils.isNumeric(k)) {
-            throw new RuntimeException("Invalid key - \"" + k + "\" - entirely numeric keys are not allowed: " + newKey);
-        }
     }
 
     /**

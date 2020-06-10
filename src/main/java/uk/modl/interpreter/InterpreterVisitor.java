@@ -705,7 +705,6 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
 
         try {
             Vector<Structure> visitedStructures = Vector.empty();
-            Modl updatedModl = modl;
             {
                 for (final Structure structure : modl.getStructures()) {
 
@@ -714,7 +713,9 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
                             .replaceSubTree(structure, result._2);
                     newCtx = result._1;
                     visitedStructures = visitedStructures.append(result._2);
-                    updatedModl = modl.with(ctx.getAncestry(), visitedStructures);
+
+                    // Update the ancestry as we go
+                    modl.with(ctx.getAncestry(), visitedStructures);
                 }
             }
 
@@ -722,7 +723,7 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
 
             final Vector<Structure> resultStructures = visitedStructures.map(structure -> classExpansionTransform.apply(finalNewCtx, structure));
 
-            updatedModl = modl.with(ctx.getAncestry(), resultStructures.filter(Objects::nonNull));
+            final Modl updatedModl = modl.with(ctx.getAncestry(), resultStructures.filter(Objects::nonNull));
 
             // TODO: Delete this
 //            System.out.println("--- BEGIN DUMP ---");

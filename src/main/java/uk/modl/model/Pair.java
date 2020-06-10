@@ -8,6 +8,7 @@ import uk.modl.ancestry.Ancestry;
 import uk.modl.ancestry.Child;
 import uk.modl.ancestry.Parent;
 import uk.modl.utils.IDSource;
+import uk.modl.utils.Util;
 
 @Value(staticConstructor = "of")
 public class Pair implements Structure, MapItem, ValueItem, ArrayItem, Parent, Child {
@@ -24,6 +25,7 @@ public class Pair implements Structure, MapItem, ValueItem, ArrayItem, Parent, C
     PairValue value;
 
     public static Pair of(final Ancestry ancestry, final Parent parent, final String key, final PairValue value) {
+        Util.validatePairKey(key);
         final Pair child = Pair.of(IDSource.nextId(), key, value);
         ancestry.add(parent, child);
         return child;
@@ -41,6 +43,7 @@ public class Pair implements Structure, MapItem, ValueItem, ArrayItem, Parent, C
     }
 
     public Pair with(final Ancestry ancestry, final String key, final PairValue value) {
+        Util.validatePairKey(key);
         final Pair child = Pair.of(id, key, value);
         ancestry.replaceChild(this, child);
         return child;

@@ -322,4 +322,19 @@ public class Util {
         return StringUtils.unwrap(literal.substring(1), "`");
     }
 
+    public void validatePairKey(final String newKey) {
+        final String k = (newKey.startsWith("_") || newKey.startsWith("*")) ? newKey.substring(1) : newKey;// Strip any leading underscore or asterisk
+
+        final int badCharIndex = StringUtils.indexOfAny(k, Util.INVALID_CHARS);
+        if (badCharIndex > -1) {
+            throw new RuntimeException("Invalid key - \"" +
+                    k.charAt(badCharIndex) +
+                    "\" character not allowed: " +
+                    newKey);
+        }
+        if (StringUtils.isNumeric(k)) {
+            throw new RuntimeException("Invalid key - \"" + k + "\" - entirely numeric keys are not allowed: " + newKey);
+        }
+    }
+
 }

@@ -3,7 +3,7 @@ package uk.modl.ancestry;
 import io.vavr.control.Option;
 import uk.modl.model.*;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -13,11 +13,11 @@ public class Ancestry {
     private final Map<Child, Parent> ancestors;
 
     public Ancestry() {
-        ancestors = new HashMap<>();
+        ancestors = new LinkedHashMap<>();
     }
 
     public void add(final Parent parent, final Child child) {
-        if (parent != null && child != null) {
+        if (child != null) {
             ancestors.put(child, parent);
         }
     }
@@ -69,42 +69,81 @@ public class Ancestry {
     }
 
     public Option<Pair> findByKey(final Child child, final String key) {
-        if (child instanceof Pair && ((Pair) child).getKey()
+        return findByKey(0, child, key);
+    }
+
+    public Option<Pair> findByKey(final int depth, final Child child, final String key) {
+        if (depth > 0 && child instanceof Pair && ((Pair) child).getKey()
                 .equals(key)) {
             return Option.of((Pair) child);
         }
 
         if (child instanceof Array) {
+            Pair found = null;
             final Array array = (Array) child;
             for (final ArrayItem arrayItem : array.getArrayItems()) {
                 if (arrayItem instanceof Pair && ((Pair) arrayItem).getKey()
                         .equals(key)) {
-                    return Option.of((Pair) arrayItem);
+                    found = (Pair) arrayItem;
                 }
+            }
+            if (found != null) {
+                return Option.of(found);
             }
         }
         if (child instanceof uk.modl.model.Map) {
+            Pair found = null;
             final uk.modl.model.Map map = (uk.modl.model.Map) child;
             for (final MapItem mapItem : map.getMapItems()) {
                 if (mapItem instanceof Pair && ((Pair) mapItem).getKey()
                         .equals(key)) {
-                    return Option.of((Pair) mapItem);
+                    found = (Pair) mapItem;
                 }
+            }
+            if (found != null) {
+                return Option.of(found);
             }
         }
         if (child instanceof Modl) {
+            Pair found = null;
             final Modl modl = (Modl) child;
             for (final Structure s : modl.getStructures()) {
                 if (s instanceof Pair && ((Pair) s).getKey()
                         .equals(key)) {
-                    return Option.of((Pair) s);
+                    found = (Pair) s;
                 }
+            }
+            if (found != null) {
+                return Option.of(found);
             }
         }
 
         final Parent parent = ancestors.get(child);
         if (parent != null) {
-            return findByKey((Child) parent, key);
+            return findByKey(depth + 1, (Child) parent, key);
+        } else {
+            final List<Child> roots = ancestors.entrySet()
+                    .stream()
+                    .filter(entry -> entry.getValue() == null)
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toList());
+
+            Pair found = null;
+            for (final Child root : roots) {
+                if (root instanceof Modl) {
+                    final Modl modl = (Modl) root;
+                    for (final Structure s : modl.getStructures()) {
+                        if (s instanceof Pair && ((Pair) s).getKey()
+                                .equals(key)) {
+                            found = (Pair) s;
+                        }
+                    }
+                }
+            }
+            if (found != null) {
+                return Option.of(found);
+            }
+
         }
         return Option.none();
     }
