@@ -54,6 +54,8 @@ public class Interpreter implements Function2<TransformationContext, String, Tup
                 .map(s -> {
                     try {
                         return parser.apply(s, ctx.getAncestry());
+                    } catch (final InterpreterError e) {
+                        throw e;
                     } catch (final ParseCancellationException e) {
                         throw new InterpreterError("Parser Error: " + e.getMessage());
                     } catch (final RuntimeException e) {

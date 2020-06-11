@@ -11,6 +11,7 @@ import uk.modl.ancestry.Ancestry;
 import uk.modl.ancestry.Parent;
 import uk.modl.model.*;
 import uk.modl.parser.antlr.MODLParser;
+import uk.modl.parser.errors.InterpreterError;
 import uk.modl.utils.Util;
 
 /**
@@ -29,6 +30,8 @@ public class ModlParsedVisitor {
 
     private int inConditional = 0;
 
+    private int version = 1;
+
     /**
      * Constructor
      *
@@ -36,31 +39,39 @@ public class ModlParsedVisitor {
      * @param ancestry an Ancestry object
      */
     public ModlParsedVisitor(final MODLParser.ModlContext ctx, final Ancestry ancestry) {
-        this.ancestry = ancestry;
         log.trace("ModlParsedVisitor()");
+        try {
+            this.ancestry = ancestry;
 
-        modl = Modl.of(ancestry, null, Vector.empty());
+            modl = Modl.of(ancestry, null, Vector.empty());
 
-        final Vector<Structure> structures = Vector.ofAll(ctx.modl_structure()
-                .stream()
-                .map(ctx1 -> visitStructure(ctx1, modl)));
+            final Vector<Structure> structures = Vector.ofAll(ctx.modl_structure()
+                    .stream()
+                    .map(ctx1 -> visitStructure(ctx1, modl)));
 
-        // Look for a *V or *VERSION that isn't in the first position of the file.
-        int i = 0;
-        for (final Structure structure : structures) {
-            if (i > 0) {
-                if (structure instanceof Pair) {
-                    final Pair first = (Pair) structure;
-                    @NonNull final String key = first.getKey();
-                    if (key.equals("*V") || key.equals("*VERSION")) {
-                        throw new RuntimeException("MODL version should be on the first line if specified.");
+            // Look for a *V or *VERSION that isn't in the first position of the file.
+            int i = 0;
+            for (final Structure structure : structures) {
+                if (i > 0) {
+                    if (structure instanceof Pair) {
+                        final Pair first = (Pair) structure;
+                        @NonNull final String key = first.getKey();
+                        if (key.equals("*V") || key.equals("*VERSION")) {
+                            throw new RuntimeException("MODL version should be on the first line if specified.");
+                        }
                     }
                 }
+                i++;
             }
-            i++;
-        }
 
-        modl = modl.with(ancestry, structures);
+            modl = modl.with(ancestry, structures);
+        } catch (final RuntimeException e) {
+            if (version > 1) {
+                throw new InterpreterError("Interpreter Error: " + e.getMessage() + " - MODL Version 1 interpreter cannot process this MODL Version " + version + " file.");
+            }
+            throw new InterpreterError("Interpreter Error: " + e.getMessage());
+
+        }
     }
 
     /**
@@ -513,6 +524,7 @@ public class ModlParsedVisitor {
     private Pair visitPair(final MODLParser.Modl_pairContext ctx, final Parent parent) {
         log.trace("visitPair()");
 
+
         final String key = Util.unquote((ctx.QUOTED() != null) ? ctx.QUOTED()
                 .getText() : (ctx.STRING() != null) ? ctx.STRING()
                 .getText() : null);
@@ -532,6 +544,23 @@ public class ModlParsedVisitor {
         } else {
             value = null;
         }
+
+        if (key.equals("*VERSION") || p.getKey()
+                .equals("*V")) {
+            try {
+                final int version = value.numericValue()
+                        .intValue();
+
+                if (version <= 0) {
+                    throw new RuntimeException("Invalid MODL version: " + value.toString());
+                }
+
+                this.version = version;
+            } catch (final NumberFormatException e) {
+                throw new RuntimeException("Invalid MODL version: " + value.toString());
+            }
+        }
+
         return p.with(ancestry, key, value);
     }
 
