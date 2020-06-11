@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.apache.commons.lang3.StringUtils;
 import uk.modl.ancestry.Ancestry;
 import uk.modl.ancestry.Parent;
 import uk.modl.model.*;
@@ -21,6 +22,11 @@ import uk.modl.utils.Util;
 public class ModlParsedVisitor {
 
     private final Ancestry ancestry;
+
+    /**
+     * Used to detect redefined immutable names
+     */
+    java.util.Set<String> immutableNames = new java.util.TreeSet<>();
 
     /**
      * Immutable result
@@ -71,6 +77,16 @@ public class ModlParsedVisitor {
             }
             throw new InterpreterError("Interpreter Error: " + e.getMessage());
 
+        }
+    }
+
+    public void addImmutableName(final String name) {
+
+        if (immutableNames.contains(name)) {
+            throw new RuntimeException("Already defined " + name + " as final.");
+        }
+        if (StringUtils.isAllUpperCase(name)) {
+            immutableNames.add(name);
         }
     }
 
@@ -545,9 +561,11 @@ public class ModlParsedVisitor {
             value = null;
         }
 
+        assert key != null;
         if (key.equals("*VERSION") || p.getKey()
                 .equals("*V")) {
             try {
+                assert value != null;
                 final int version = value.numericValue()
                         .intValue();
 
@@ -560,6 +578,8 @@ public class ModlParsedVisitor {
                 throw new RuntimeException("Invalid MODL version: " + value.toString());
             }
         }
+
+        addImmutableName(key);
 
         return p.with(ancestry, key, value);
     }

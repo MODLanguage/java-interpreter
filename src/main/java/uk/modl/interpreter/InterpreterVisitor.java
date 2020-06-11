@@ -746,11 +746,6 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
 
             final Modl updatedModl = modl.with(ctx.getAncestry(), resultStructures.filter(Objects::nonNull));
 
-            // TODO: Delete this
-//            System.out.println("--- BEGIN DUMP ---");
-//            finalNewCtx.getAncestry()
-//                    .dump();
-//            System.out.println("--- END DUMP ---");
 
             return Tuple.of(finalNewCtx, updatedModl);
         } catch (final InterpreterError e) {
