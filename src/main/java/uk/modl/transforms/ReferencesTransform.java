@@ -254,10 +254,27 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                         .find(mapItem -> {
                             // Check whether the reference key needs de-referencing
                             if (ref.contains("%")) {
-                                String actualRef = "LOOK_ME_UP_IN_ANCESTRY";
+                                String rawRef = stripLeadingAndTrailingPercents(ref);
 
-                                return mapItem instanceof Pair && ((Pair) mapItem).getKey()
-                                        .equals(actualRef);
+                                final String hiddenKey = (rawRef.startsWith("_")) ? rawRef : "_" + rawRef;
+                                final String unhiddenKey = (rawRef.startsWith("_")) ? rawRef.substring(1) : rawRef;
+
+                                final Pair pair = ctx.getAncestry()
+                                        .findByKey(vi, hiddenKey)
+                                        .orElse(() -> ctx.getAncestry()
+                                                .findByKey(vi, unhiddenKey))
+                                        .getOrElse((Pair) null);
+
+
+                                if (pair != null) {
+                                    final String actualRef = pair.getValue()
+                                            .toString();
+
+                                    return mapItem instanceof Pair && ((Pair) mapItem).getKey()
+                                            .equals(actualRef);
+                                } else {
+                                    throw new DeepReferenceException("No entry '" + ref + "' in Map '" + vi + "'");
+                                }
                             } else {
                                 return mapItem instanceof Pair && ((Pair) mapItem).getKey()
                                         .equals(ref);
