@@ -69,10 +69,38 @@ public class Ancestry {
     }
 
     public Option<Pair> findByKey(final Child child, final String key) {
-        return findByKey(0, child, key);
+        final Option<Pair> result = findByKey(0, child, key);
+        if (result.isDefined() && !result.get()
+                .equals(child)) {
+            return result;
+        }
+
+        // Check the root objects but filter out the current object.
+        final List<Child> roots = ancestors.entrySet()
+                .stream()
+                .filter(entry -> entry.getValue() == null)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        Pair found = null;
+        for (final Child root : roots) {
+            if (root instanceof Modl) {
+                final Modl modl = (Modl) root;
+                for (final Structure s : modl.getStructures()) {
+                    if (s instanceof Pair && ((Pair) s).getKey()
+                            .equals(key) && !s.equals(child)) {
+                        found = (Pair) s;
+                    }
+                }
+            }
+        }
+        if (found != null) {
+            return Option.of(found);
+        }
+        return Option.none();
     }
 
-    public Option<Pair> findByKey(final int depth, final Child child, final String key) {
+    private Option<Pair> findByKey(final int depth, final Child child, final String key) {
         if (depth > 0 && child instanceof Pair && ((Pair) child).getKey()
                 .equals(key)) {
             return Option.of((Pair) child);

@@ -126,7 +126,20 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
                     .size() > 1) {
 
                 final Vector<MapItem> mapItems = tlcResult.getResult()
-                        .map(s -> (MapItem) s);
+                        .map(s -> {
+                            if (s instanceof MapItem) {
+                                return (MapItem) s;
+                            } else if (s instanceof TopLevelConditional) {
+                                final TopLevelConditional topLevelConditional = (TopLevelConditional) s;
+                                if (topLevelConditional.getResult()
+                                        .size() > 0) {
+                                    return (MapItem) topLevelConditional.getResult()
+                                            .get(0);
+                                }
+                            }
+                            return null;
+                        })
+                        .filter(Objects::nonNull);
 
                 final Map mapResult = Map.of(ctx.getAncestry(), tlc, mapItems);
                 return result.update2(mapResult);
