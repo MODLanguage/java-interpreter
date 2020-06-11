@@ -32,7 +32,7 @@ compileTestJava.options.encoding = "UTF-8"
 group = "uk.modl"
 applicationName = "java-interpreter"
 archivesBaseName = "java-interpreter"
-version = "0.0.17"
+version = "0.0.21"
 
 def isSnapshot = version.endsWith("SNAPSHOT")
 
@@ -193,9 +193,9 @@ def customisePom(pom) {
             }
             developers {
                 developer {
-                    id 'alex@caerkettontech.com'
-                    name 'Alex Dalitz'
-                    email 'alex@caerkettontech.com'
+                    id 'tony.walmsley@num.uk'
+                    name 'Tony Walmsley'
+                    email 'tony.walmsley@num.uk'
                 }
             }
         }

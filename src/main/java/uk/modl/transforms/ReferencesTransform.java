@@ -273,8 +273,11 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                                     throw new DeepReferenceException("No entry '" + ref + "' in Map '" + vi + "'");
                                 }
                             } else {
-                                return mapItem instanceof Pair && ((Pair) mapItem).getKey()
-                                        .equals(ref);
+                                final String hiddenKey = (ref.startsWith("_")) ? ref : "_" + ref;
+                                final String unhiddenKey = (ref.startsWith("_")) ? ref.substring(1) : ref;
+                                return mapItem instanceof Pair && (((Pair) mapItem).getKey()
+                                        .equals(hiddenKey) || ((Pair) mapItem).getKey()
+                                        .equals(unhiddenKey));
                             }
 
                         });
@@ -290,8 +293,11 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 final PairValue value = ((Pair) vi).getValue();
 
                 if (!(value instanceof Primitive)) {
+                    final String hiddenKey = (ref.startsWith("_")) ? ref : "_" + ref;
+                    final String unhiddenKey = (ref.startsWith("_")) ? ref.substring(1) : ref;
                     if (((Pair) vi).getKey()
-                            .equals(ref)) {
+                            .equals(hiddenKey) || ((Pair) vi).getKey()
+                            .equals(unhiddenKey)) {
                         return followNestedRef(ctx, (ValueItem) value, refList, refIndex + 1);
                     } else {
                         // Use the current refIndex since we haven't yet consumed it.
@@ -304,7 +310,11 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                 }
                 // Handle methods and trailing values
                 final String valueStr = handleMethodsAndTrailingPathComponents(ctx, refList, skipRefIndexesForPathElementsWithReferences, value.toString());
-                return StringPrimitive.of(vi.getId(), valueStr);
+                if (!StringUtils.isNumeric(valueStr)) {
+                    return StringPrimitive.of(vi.getId(), valueStr);
+                } else {
+                    return NumberPrimitive.of(vi.getId(), valueStr);
+                }
             }
             if (vi instanceof StringPrimitive) {
                 // Handle methods and trailing values
