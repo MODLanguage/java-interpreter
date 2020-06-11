@@ -75,7 +75,7 @@ public class InterpreterBaseTests {
             if (interpreted._2 != null) {
                 final JsonNode jsonResult = jsonTransformer.apply(interpreted._2);
 
-                final String output = Util.jsonNodeToString.apply(jsonResult);
+                final String output = Util.jsonNodeToString(jsonResult);
                 if (output != null) {
 
                     final String expected = testInput.expected_output.replace(" ", "")
@@ -140,7 +140,7 @@ public class InterpreterBaseTests {
             if (interpreted._2 != null) {
                 final JsonNode jsonResult = jsonTransformer.apply(interpreted._2);
 
-                final String output = Util.jsonNodeToString.apply(jsonResult);
+                final String output = Util.jsonNodeToString(jsonResult);
                 if (output != null) {
 
                     final String expected = testInput.expected_output.replace(" ", "")

@@ -1,6 +1,5 @@
 package uk.modl.transforms;
 
-import io.vavr.Function2;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.LinkedHashMap;
@@ -12,7 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import uk.modl.model.*;
 
 @RequiredArgsConstructor
-public class StarClassTransform implements Function2<TransformationContext, Structure, Tuple2<TransformationContext, Structure>> {
+public class StarClassTransform {
 
     private static final Vector<String> RESERVED_CLASS_NAMES = Vector.of(
             "arr",

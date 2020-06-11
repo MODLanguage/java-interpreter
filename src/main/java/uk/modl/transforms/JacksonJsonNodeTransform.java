@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.vavr.Function1;
 import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.extern.log4j.Log4j2;
@@ -15,7 +14,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 @Log4j2
-public class JacksonJsonNodeTransform implements Function1<Modl, JsonNode> {
+public class JacksonJsonNodeTransform {
 
     /**
      * Predicate to filter out items that should not be in the output.
@@ -43,7 +42,6 @@ public class JacksonJsonNodeTransform implements Function1<Modl, JsonNode> {
      * @param modl argument 1
      * @return the result of function application
      */
-    @Override
     public JsonNode apply(final Modl modl) {
         JsonNode result = null;// In case this object is being re-used
         final Vector<Structure> filtered = modl.getStructures()

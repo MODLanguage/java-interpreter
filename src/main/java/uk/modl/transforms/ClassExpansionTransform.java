@@ -1,6 +1,5 @@
 package uk.modl.transforms;
 
-import io.vavr.Function2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Vector;
 import io.vavr.control.Option;
@@ -18,7 +17,7 @@ import uk.modl.utils.Util;
 import java.util.Objects;
 
 @RequiredArgsConstructor
-public class ClassExpansionTransform implements Function2<TransformationContext, Structure, Structure> {
+public class ClassExpansionTransform {
 
     private final ExpandedClassCache cache = new ExpandedClassCache();
 
@@ -28,7 +27,6 @@ public class ClassExpansionTransform implements Function2<TransformationContext,
      * @param s argument 1
      * @return the result of function application
      */
-    @Override
     public Structure apply(final TransformationContext ctx, final Structure s) {
         if (s instanceof Map) {
             return processMap(ctx, (Map) s);

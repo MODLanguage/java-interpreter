@@ -1,13 +1,12 @@
 package uk.modl.transforms;
 
-import io.vavr.Function3;
 import io.vavr.collection.Vector;
 import lombok.RequiredArgsConstructor;
 import uk.modl.ancestry.Parent;
 import uk.modl.model.*;
 
 @RequiredArgsConstructor
-public class PercentStarInstructionTransform implements Function3<TransformationContext, Parent, Structure, Structure> {
+public class PercentStarInstructionTransform {
 
     /**
      * Replace if necessary
@@ -120,7 +119,6 @@ public class PercentStarInstructionTransform implements Function3<Transformation
      * @param s argument 1
      * @return the result of function application
      */
-    @Override
     public Structure apply(final TransformationContext ctx, final Parent parent, final Structure s) {
         if (s instanceof Pair) {
             final Pair pair = (Pair) s;

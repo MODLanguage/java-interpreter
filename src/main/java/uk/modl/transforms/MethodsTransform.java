@@ -1,13 +1,12 @@
 package uk.modl.transforms;
 
-import io.vavr.Function3;
 import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.RequiredArgsConstructor;
 import uk.modl.utils.Util;
 
 @RequiredArgsConstructor
-public class MethodsTransform implements Function3<TransformationContext, String, String, String> {
+public class MethodsTransform {
 
 
     /**
@@ -16,7 +15,6 @@ public class MethodsTransform implements Function3<TransformationContext, String
      * @param s argument 1
      * @return the result of function application
      */
-    @Override
     public String apply(final TransformationContext ctx, final String method, final String s) {
         if (s != null) {
             return runMethods(ctx, method, s);

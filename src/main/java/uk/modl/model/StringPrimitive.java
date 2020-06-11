@@ -18,6 +18,12 @@ public class StringPrimitive implements Primitive, Child {
     @EqualsAndHashCode.Exclude
     String value;
 
+    public static StringPrimitive of(final Ancestry ancestry, final Parent parent, final String value) {
+        final StringPrimitive child = StringPrimitive.of(IDSource.nextId(), value);
+        ancestry.add(parent, child);
+        return child;
+    }
+
     @Override
     public String toString() {
         return value;
@@ -26,12 +32,6 @@ public class StringPrimitive implements Primitive, Child {
     @Override
     public Number numericValue() {
         return NumberUtils.createNumber(value);
-    }
-
-    public static StringPrimitive of(final Ancestry ancestry, final Parent parent, final String value) {
-        final StringPrimitive child = StringPrimitive.of(IDSource.nextId(), value);
-        ancestry.add(parent, child);
-        return child;
     }
 
     public StringPrimitive with(final Ancestry ancestry, final String value) {

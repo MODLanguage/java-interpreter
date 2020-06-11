@@ -1,6 +1,5 @@
 package uk.modl.transforms;
 
-import io.vavr.Function2;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import lombok.NonNull;
@@ -12,7 +11,7 @@ import uk.modl.model.Pair;
 import uk.modl.model.Structure;
 
 @RequiredArgsConstructor
-public class StarMethodTransform implements Function2<TransformationContext, Structure, Tuple2<TransformationContext, Structure>> {
+public class StarMethodTransform {
 
     /**
      * Check whether the key represents a *method instruction

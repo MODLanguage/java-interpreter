@@ -19,7 +19,6 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 package uk.modl.interpreter;
 
-import io.vavr.Function2;
 import io.vavr.Tuple2;
 import io.vavr.control.Option;
 import lombok.NonNull;
@@ -34,7 +33,7 @@ import uk.modl.transforms.TransformationContext;
  *
  * @author tonywalmsley
  */
-public class Interpreter implements Function2<TransformationContext, String, Tuple2<TransformationContext, Modl>> {
+public class Interpreter {
 
     private final Parser parser = new Parser();
 
@@ -47,7 +46,6 @@ public class Interpreter implements Function2<TransformationContext, String, Tup
      * @param input a String, which should be a MODL String, but could be any value.
      * @return Either an Error or a Modl object.
      */
-    @Override
     public Tuple2<TransformationContext, Modl> apply(final TransformationContext ctx, @NonNull final String input) {
         // Apply the function and return the result.
         return Option.of(input)

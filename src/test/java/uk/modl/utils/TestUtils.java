@@ -17,7 +17,7 @@ public class TestUtils {
         final TransformationContext ctx = TransformationContext.emptyCtx();
         final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(ctx, input);
         final JsonNode json = new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
-        final String result = Util.jsonNodeToString.apply(json);
+        final String result = Util.jsonNodeToString(json);
 
         Assert.assertEquals(expected, result);
     }

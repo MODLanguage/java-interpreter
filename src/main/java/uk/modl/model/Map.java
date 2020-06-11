@@ -20,15 +20,15 @@ public class Map implements PairValue, Structure, ValueItem, ArrayItem, Parent, 
     @NonNull
     Vector<MapItem> mapItems;
 
-    @Override
-    public Number numericValue() {
-        throw new RuntimeException("Cannot convert a map to a numeric value.");
-    }
-
     public static Map of(final Ancestry ancestry, final Parent parent, final Vector<MapItem> mapItems) {
         final Map child = Map.of(IDSource.nextId(), mapItems);
         ancestry.add(parent, child);
         return child;
+    }
+
+    @Override
+    public Number numericValue() {
+        throw new RuntimeException("Cannot convert a map to a numeric value.");
     }
 
     public Map with(final Ancestry ancestry, final Vector<MapItem> mapItems) {

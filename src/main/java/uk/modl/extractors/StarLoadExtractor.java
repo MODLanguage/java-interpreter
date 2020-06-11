@@ -28,7 +28,7 @@ public class StarLoadExtractor {
 
         if (isLoadInstruction(key)) {
 
-            val specs = Util.getFilenames.apply(pair.getValue())
+            val specs = Util.getFilenames(pair.getValue())
                     .map(Util::normalize);
 
             loadSets = loadSets.append(new LoadSet(pair, specs));

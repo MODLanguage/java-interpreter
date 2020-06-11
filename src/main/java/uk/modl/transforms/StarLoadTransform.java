@@ -1,6 +1,5 @@
 package uk.modl.transforms;
 
-import io.vavr.Function2;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.Tuple3;
@@ -16,7 +15,7 @@ import uk.modl.utils.SimpleCache;
 import uk.modl.utils.Util;
 
 @RequiredArgsConstructor
-public class StarLoadTransform implements Function2<TransformationContext, Structure, Tuple2<TransformationContext, Structure>> {
+public class StarLoadTransform {
 
     private static final SimpleCache<String, Modl> cache = new SimpleCache<>();
 
@@ -71,13 +70,11 @@ public class StarLoadTransform implements Function2<TransformationContext, Struc
                     } else {
                         // Its either not cached or not force-loaded
                         // Map the filenames to the contents of the files, or Error
-                        final Tuple2<StarLoadExtractor.FileSpec, String> contents = Util.getFileContents.apply(spec);
-                        if (contents != null) {
-                            final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(newCtx, contents._2);
-                            newCtx = interpreted._1;
+                        final Tuple2<StarLoadExtractor.FileSpec, String> contents = Util.getFileContents(spec);
+                        final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(newCtx, contents._2);
+                        newCtx = interpreted._1;
 
-                            result = result.append(Tuple.of(Vector.of(contents._1.getFilename()), Vector.of(interpreted._2), loadSet.getPair()));
-                        }
+                        result = result.append(Tuple.of(Vector.of(contents._1.getFilename()), Vector.of(interpreted._2), loadSet.getPair()));
                     }
                 } catch (final StarLoadException e) {
                     //

@@ -1,6 +1,5 @@
 package uk.modl.interpreter;
 
-import io.vavr.Function2;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
@@ -14,7 +13,7 @@ import java.util.Objects;
 /**
  * Interpreter for a Modl object
  */
-public class InterpreterVisitor implements Function2<TransformationContext, Modl, Tuple2<TransformationContext, Modl>> {
+public class InterpreterVisitor {
 
     public static final Vector<String> VALID_INSTRUCTIONS = Vector.of(
             "*class",
@@ -719,7 +718,6 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
      * @param modl argument 1
      * @return the result of function application
      */
-    @Override
     public Tuple2<TransformationContext, Modl> apply(final TransformationContext ctx, final Modl modl) {
 
         TransformationContext newCtx = ctx;

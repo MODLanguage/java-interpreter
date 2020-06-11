@@ -3,7 +3,6 @@ package uk.modl.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vavr.Function1;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
@@ -38,9 +37,41 @@ public class Util {
     public final String INVALID_CHARS = "!$-+'#^*£&";
 
     /**
+     * A pattern used for splitting method lists correctly.
+     */
+    private final Pattern METHODS_PATTERN = Pattern.compile("replace<[^.]*>|r<[^.]*>|t<[^<>]+>|trim<[^<>]+>|initcap|[^.]\\w+|\\w|u|e|p|s|i|d|[^%.][0-9]+");
+
+    /**
+     * A Regex to match the parameters of a MODL replace method
+     */
+    private final Pattern replacerPattern = Pattern.compile("^replace<(.*),(.*)>$|^r<(.*),(.*)>$");
+
+    /**
+     * A Regex to match the parameters of a MODL trim method
+     */
+    private final Pattern trimmerPattern = Pattern.compile("^trim<(.*)>$|^t<(.*)>$");
+
+    /**
+     * Map a PairValue to a list of Strings - for use as file names.
+     * This is only applicable to *load MODL instructions
+     */
+    public Vector<String> getFilenames(final PairValue pairValue) {
+        if (pairValue instanceof Primitive) {
+            final Primitive pv = (Primitive) pairValue;
+            return Vector.of(pv.toString());
+        }
+        if (pairValue instanceof Array) {
+            final Array a = (Array) pairValue;
+            return Vector.ofAll(a.getArrayItems()
+                    .map(Objects::toString));
+        }
+        return Vector.empty();
+    }
+
+    /**
      * Map a filename to Either an Error or the file contents as a String
      */
-    public final Function1<StarLoadExtractor.FileSpec, Tuple2<StarLoadExtractor.FileSpec, String>> getFileContents = (spec) -> {
+    public Tuple2<StarLoadExtractor.FileSpec, String> getFileContents(final StarLoadExtractor.FileSpec spec) {
         try {
             if (spec.getFilename()
                     .startsWith("http")) {
@@ -58,50 +89,18 @@ public class Util {
             throw new StarLoadException("Could not load resource: " + e.getMessage());
         }
         throw new StarLoadException("Could not load resource: " + spec.getFilename());
-    };
-
-    /**
-     * Map a PairValue to a list of Strings - for use as file names.
-     * This is only applicable to *load MODL instructions
-     */
-    public final Function1<PairValue, Vector<String>> getFilenames = (pairValue) -> {
-        if (pairValue instanceof Primitive) {
-            final Primitive pv = (Primitive) pairValue;
-            return Vector.of(pv.toString());
-        }
-        if (pairValue instanceof Array) {
-            final Array a = (Array) pairValue;
-            return Vector.ofAll(a.getArrayItems()
-                    .map(Objects::toString));
-        }
-        return Vector.empty();
-    };
-
-    /**
-     * A pattern used for splitting method lists correctly.
-     */
-    private final Pattern METHODS_PATTERN = Pattern.compile("replace<[^.]*>|r<[^.]*>|t<[^<>]+>|trim<[^<>]+>|initcap|[^.]\\w+|\\w|u|e|p|s|i|d|[^%.][0-9]+");
-
-    /**
-     * A Regex to match the parameters of a MODL replace method
-     */
-    private final Pattern replacerPattern = Pattern.compile("^replace<(.*),(.*)>$|^r<(.*),(.*)>$");
-
-    /**
-     * A Regex to match the parameters of a MODL trim method
-     */
-    private final Pattern trimmerPattern = Pattern.compile("^trim<(.*)>$|^t<(.*)>$");
+    }
 
     /**
      * Render a JSON Node to a String.
      */
-    public Function1<JsonNode, String> jsonNodeToString = (jsonNode -> {
+    public String jsonNodeToString(final JsonNode jsonNode) {
         try {
             return new ObjectMapper().writeValueAsString(jsonNode);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-    });
+    }
 
     /**
      * Remove single quotes from a String
