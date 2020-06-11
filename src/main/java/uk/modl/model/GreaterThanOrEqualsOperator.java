@@ -7,7 +7,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class GreaterThanOrEqualsOperator implements Operator {
 
-    public static GreaterThanOrEqualsOperator instance = new GreaterThanOrEqualsOperator();
+    public static final GreaterThanOrEqualsOperator instance = new GreaterThanOrEqualsOperator();
 
     private GreaterThanOrEqualsOperator() {
     }

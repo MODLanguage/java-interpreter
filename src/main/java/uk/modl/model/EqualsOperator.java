@@ -7,7 +7,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class EqualsOperator implements Operator {
 
-    public static EqualsOperator instance = new EqualsOperator();
+    public static final EqualsOperator instance = new EqualsOperator();
 
     private EqualsOperator() {
     }

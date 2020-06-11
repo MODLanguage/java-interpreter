@@ -44,7 +44,7 @@ public class Parser implements Function2<String, Ancestry, Modl> {
      * Parse a MODL String to a Modl object
      *
      * @param input    the MODL String
-     * @param ancestry
+     * @param ancestry Ancestry
      * @return Either a Throwable or a Modl object
      */
     public Modl apply(final String input, final Ancestry ancestry) {

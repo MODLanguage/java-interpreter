@@ -21,12 +21,12 @@ import uk.modl.utils.Util;
 @Log4j2
 public class ModlParsedVisitor {
 
-    private final Ancestry ancestry;
-
     /**
      * Used to detect redefined immutable names
      */
-    java.util.Set<String> immutableNames = new java.util.TreeSet<>();
+    final java.util.Set<String> immutableNames = new java.util.TreeSet<>();
+
+    private final Ancestry ancestry;
 
     /**
      * Immutable result

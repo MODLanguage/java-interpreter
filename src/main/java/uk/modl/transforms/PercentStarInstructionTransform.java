@@ -12,8 +12,9 @@ public class PercentStarInstructionTransform implements Function3<Transformation
     /**
      * Replace if necessary
      *
-     * @param ctx TransformationContext
-     * @param vi  a ValueItem
+     * @param ctx    TransformationContext
+     * @param parent a Parent
+     * @param vi     a ValueItem
      * @return a ValueItem
      */
     public PairValue apply(final TransformationContext ctx, final Parent parent, final PairValue vi) {

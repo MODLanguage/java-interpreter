@@ -7,6 +7,7 @@ import io.vavr.control.Option;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
+import uk.modl.ancestry.Child;
 import uk.modl.model.*;
 import uk.modl.parser.errors.DeepReferenceException;
 import uk.modl.utils.Util;
@@ -107,14 +108,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                     newLhs = StringPrimitive.of(ctx.getAncestry(), condition, applyResult.toString());
                 }
             } else {
-                final String hiddenKey = (value.startsWith("_")) ? value : "_" + value;
-                final String unhiddenKey = (value.startsWith("_")) ? value.substring(1) : value;
-
-                final Pair pair = ctx.getAncestry()
-                        .findByKey(condition, hiddenKey)
-                        .orElse(() -> ctx.getAncestry()
-                                .findByKey(condition, unhiddenKey))
-                        .getOrElse((Pair) null);
+                final Pair pair = findPairFromAncestry(ctx, condition, value);
 
                 if (pair != null) {
                     if (pair.getValue() instanceof StringPrimitive) {
@@ -133,6 +127,17 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
             return condition.with(ctx.getAncestry(), newLhs, op, values, condition.isShouldNegate());
         }
         return condition;
+    }
+
+    private Pair findPairFromAncestry(final TransformationContext ctx, final Child child, final String value) {
+        final String hiddenKey = (value.startsWith("_")) ? value : "_" + value;
+        final String unhiddenKey = (value.startsWith("_")) ? value.substring(1) : value;
+
+        return ctx.getAncestry()
+                .findByKey(child, hiddenKey)
+                .orElse(() -> ctx.getAncestry()
+                        .findByKey(child, unhiddenKey))
+                .getOrElse((Pair) null);
     }
 
     /**
@@ -256,15 +261,7 @@ public class ReferencesTransform implements Function2<TransformationContext, Str
                             if (ref.contains("%")) {
                                 String rawRef = stripLeadingAndTrailingPercents(ref);
 
-                                final String hiddenKey = (rawRef.startsWith("_")) ? rawRef : "_" + rawRef;
-                                final String unhiddenKey = (rawRef.startsWith("_")) ? rawRef.substring(1) : rawRef;
-
-                                final Pair pair = ctx.getAncestry()
-                                        .findByKey(vi, hiddenKey)
-                                        .orElse(() -> ctx.getAncestry()
-                                                .findByKey(vi, unhiddenKey))
-                                        .getOrElse((Pair) null);
-
+                                final Pair pair = findPairFromAncestry(ctx, vi, rawRef);
 
                                 if (pair != null) {
                                     final String actualRef = pair.getValue()

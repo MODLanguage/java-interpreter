@@ -7,7 +7,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class NotEqualsOperator implements Operator {
 
-    public static NotEqualsOperator instance = new NotEqualsOperator();
+    public static final NotEqualsOperator instance = new NotEqualsOperator();
 
     private NotEqualsOperator() {
     }

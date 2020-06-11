@@ -38,24 +38,9 @@ public class Util {
     public final String INVALID_CHARS = "!$-+'#^*£&";
 
     /**
-     * A pattern used for splitting method lists correctly.
-     */
-    private final Pattern METHODS_PATTERN = Pattern.compile("replace<[^.]*>|r<[^.]*>|t<[^<>]+>|trim<[^<>]+>|initcap|[^.]\\w+|\\w|u|e|p|s|i|d|[^%.][0-9]+");
-
-    /**
-     * A Regex to match the parameters of a MODL replace method
-     */
-    private final Pattern replacerPattern = Pattern.compile("^replace<(.*),(.*)>$|^r<(.*),(.*)>$");
-
-    /**
-     * A Regex to match the parameters of a MODL trim method
-     */
-    private final Pattern trimmerPattern = Pattern.compile("^trim<(.*)>$|^t<(.*)>$");
-
-    /**
      * Map a filename to Either an Error or the file contents as a String
      */
-    public Function1<StarLoadExtractor.FileSpec, Tuple2<StarLoadExtractor.FileSpec, String>> getFileContents = (spec) -> {
+    public final Function1<StarLoadExtractor.FileSpec, Tuple2<StarLoadExtractor.FileSpec, String>> getFileContents = (spec) -> {
         try {
             if (spec.getFilename()
                     .startsWith("http")) {
@@ -79,7 +64,7 @@ public class Util {
      * Map a PairValue to a list of Strings - for use as file names.
      * This is only applicable to *load MODL instructions
      */
-    public Function1<PairValue, Vector<String>> getFilenames = (pairValue) -> {
+    public final Function1<PairValue, Vector<String>> getFilenames = (pairValue) -> {
         if (pairValue instanceof Primitive) {
             final Primitive pv = (Primitive) pairValue;
             return Vector.of(pv.toString());
@@ -91,6 +76,21 @@ public class Util {
         }
         return Vector.empty();
     };
+
+    /**
+     * A pattern used for splitting method lists correctly.
+     */
+    private final Pattern METHODS_PATTERN = Pattern.compile("replace<[^.]*>|r<[^.]*>|t<[^<>]+>|trim<[^<>]+>|initcap|[^.]\\w+|\\w|u|e|p|s|i|d|[^%.][0-9]+");
+
+    /**
+     * A Regex to match the parameters of a MODL replace method
+     */
+    private final Pattern replacerPattern = Pattern.compile("^replace<(.*),(.*)>$|^r<(.*),(.*)>$");
+
+    /**
+     * A Regex to match the parameters of a MODL trim method
+     */
+    private final Pattern trimmerPattern = Pattern.compile("^trim<(.*)>$|^t<(.*)>$");
 
     /**
      * Render a JSON Node to a String.
