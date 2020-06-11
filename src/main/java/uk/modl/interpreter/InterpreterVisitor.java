@@ -119,9 +119,17 @@ public class InterpreterVisitor implements Function2<TransformationContext, Modl
         if (result._2 instanceof TopLevelConditional) {
             final TopLevelConditional tlcResult = (TopLevelConditional) result._2;
             if (tlcResult.getResult()
-                    .nonEmpty()) {
+                    .size() == 1) {
                 return result.update2(tlcResult.getResult()
                         .get(0));
+            } else if (tlcResult.getResult()
+                    .size() > 1) {
+
+                final Vector<MapItem> mapItems = tlcResult.getResult()
+                        .map(s -> (MapItem) s);
+
+                final Map mapResult = Map.of(ctx.getAncestry(), tlc, mapItems);
+                return result.update2(mapResult);
             }
         }
         return result;
