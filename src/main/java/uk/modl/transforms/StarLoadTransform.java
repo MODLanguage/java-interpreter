@@ -125,6 +125,9 @@ public class StarLoadTransform {
 
     /**
      * Map a filename to Either an Error or the file contents as a String
+     *
+     * @param spec StarLoadExtractor.FileSpec
+     * @return Tuple of StarLoadExtractor.FileSpec and String
      */
     public Tuple2<StarLoadExtractor.FileSpec, String> getFileContents(final StarLoadExtractor.FileSpec spec) {
         try {
@@ -149,7 +152,8 @@ public class StarLoadTransform {
     /**
      * Applies this function to one argument and returns the result.
      *
-     * @param s argument 1
+     * @param ctx TransformationContext
+     * @param s   Structure
      * @return the result of function application
      */
     public Tuple2<TransformationContext, Structure> apply(final TransformationContext ctx, final Structure s) {

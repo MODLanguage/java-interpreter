@@ -64,6 +64,9 @@ public class StarLoadExtractor {
     /**
      * Map a PairValue to a list of Strings - for use as file names.
      * This is only applicable to *load MODL instructions
+     *
+     * @param pairValue PairValue
+     * @return Vector of String
      */
     public Vector<String> getFilenames(final PairValue pairValue) {
         if (pairValue instanceof Primitive) {

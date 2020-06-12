@@ -32,7 +32,9 @@ public class MethodsTransform {
     /**
      * Applies this function to one argument and returns the result.
      *
-     * @param s argument 1
+     * @param ctx    TransformationContext
+     * @param method String
+     * @param s      String
      * @return the result of function application
      */
     public String apply(final TransformationContext ctx, final String method, final String s) {

@@ -44,7 +44,8 @@ public class ClassExpansionTransform {
     /**
      * Applies this function to one argument and returns the result.
      *
-     * @param s argument 1
+     * @param ctx TransformationContext
+     * @param s   Structure
      * @return the result of function application
      */
     public Structure apply(final TransformationContext ctx, final Structure s) {

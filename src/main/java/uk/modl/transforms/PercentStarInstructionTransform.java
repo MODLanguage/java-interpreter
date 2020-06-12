@@ -131,7 +131,9 @@ public class PercentStarInstructionTransform {
     /**
      * Applies this function to one argument and returns the result.
      *
-     * @param s argument 1
+     * @param ctx    TransformationContext
+     * @param parent Parent
+     * @param s      Structure
      * @return the result of function application
      */
     public Structure apply(final TransformationContext ctx, final Parent parent, final Structure s) {

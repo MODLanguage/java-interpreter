@@ -400,7 +400,8 @@ public class ReferencesTransform {
     /**
      * Replace a pair with a new value that has its references resolved.
      *
-     * @param p a Pair with references
+     * @param ctx TransformationContext
+     * @param p   a Structure
      * @return a Pair with the references resolved
      */
     public Tuple2<TransformationContext, Structure> apply(final TransformationContext ctx, final Structure p) {

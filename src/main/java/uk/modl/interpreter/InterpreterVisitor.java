@@ -735,7 +735,8 @@ public class InterpreterVisitor {
     /**
      * Applies this function to one argument and returns the result.
      *
-     * @param modl argument 1
+     * @param ctx  TransformationContext
+     * @param modl Modl
      * @return the result of function application
      */
     public Tuple2<TransformationContext, Modl> apply(final TransformationContext ctx, final Modl modl) {

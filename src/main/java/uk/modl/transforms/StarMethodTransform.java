@@ -49,7 +49,8 @@ public class StarMethodTransform {
     /**
      * Applies this function to one argument and returns the result.
      *
-     * @param p argument 1
+     * @param ctx TransformationContext
+     * @param p   Structure
      * @return the result of function application
      */
     public Tuple2<TransformationContext, Structure> apply(final TransformationContext ctx, final Structure p) {
