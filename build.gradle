@@ -1,3 +1,11 @@
+buildscript {
+
+    ext {
+        lombokVersion = '1.18.12'
+    }
+
+}
+
 plugins {
     id 'java-library'
     id 'maven-publish'
@@ -24,7 +32,7 @@ compileTestJava.options.encoding = "UTF-8"
 group = "uk.modl"
 applicationName = "java-interpreter"
 archivesBaseName = "java-interpreter"
-version = "0.0.20"
+version = "0.0.21"
 
 def isSnapshot = version.endsWith("SNAPSHOT")
 
@@ -37,6 +45,9 @@ wrapper {
 }
 
 dependencies {
+// https://mvnrepository.com/artifact/io.vavr/vavr
+    compile group: 'io.vavr', name: 'vavr', version: '0.10.2'
+
     testCompile group: 'junit', name: 'junit', version: '4.12'
 
     // https://mvnrepository.com/artifact/org.antlr/antlr4
@@ -48,8 +59,14 @@ dependencies {
     // https://mvnrepository.com/artifact/org.apache.commons/commons-text
     compile group: 'org.apache.commons', name: 'commons-text', version: '1.2'
 
-    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
+    // Dependency and config for Lombok annotations
+    compile("org.projectlombok:lombok:${lombokVersion}")
+    annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
+    testAnnotationProcessor("org.projectlombok:lombok:${lombokVersion}")
+
+    compile group: 'org.slf4j', name: 'log4j-over-slf4j', version: '1.7.29'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.12.1'
+
 }
 
 
@@ -105,26 +122,24 @@ publishing {
             def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
             def snapshotsRepoUrl = "$buildDir/repos/snapshots"
             url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
-            if(!isSnapshot) {
+            if (!isSnapshot) {
                 def stUser
                 def stPwd
-                
+
                 if (project.hasProperty('sonatypeUsername')) {
                     stUser = sonatypeUsername
-                }
-                else{
+                } else {
                     stUser = "notdefined"
                     logger.warn("sonatypeUsername not defined. Please update your gradle config file")
                 }
-                
+
                 if (project.hasProperty('sonatypePassword')) {
                     stPwd = sonatypePassword
-                }
-                else{
+                } else {
                     stPwd = "notdefined"
                     logger.warn("sonatypePassword not defined. Please update your gradle config file")
                 }
-                
+
                 credentials {
                     username stUser
                     password stPwd
@@ -178,9 +193,9 @@ def customisePom(pom) {
             }
             developers {
                 developer {
-                    id 'alex@caerkettontech.com'
-                    name 'Alex Dalitz'
-                    email 'alex@caerkettontech.com'
+                    id 'tony.walmsley@num.uk'
+                    name 'Tony Walmsley'
+                    email 'tony.walmsley@num.uk'
                 }
             }
         }
@@ -193,12 +208,12 @@ def customisePom(pom) {
  ***********/
 
 //we create the branch that we will contain the changes
-task createBranch(type: Exec){
-    if(!project.hasProperty('branch')){
+task createBranch(type: Exec) {
+    if (!project.hasProperty('branch')) {
         logger.warn("Branch not provided, using default: branch-for-pr")
         project.ext.branch = "branch-for-pr"
     }
-    if(!project.hasProperty('grammarTag')){
+    if (!project.hasProperty('grammarTag')) {
         logger.warn("grammarTag not provided, using default: latest")
         project.ext.grammarTag = "latest"
     }
@@ -208,17 +223,17 @@ task createBranch(type: Exec){
 }
 
 //we connect to the grammar repo that contains the files we want
-task createRemote(type: Exec){
+task createRemote(type: Exec) {
     commandLine "git", "remote", "add", "grammar", "git@github.com:MODLanguage/grammar"
 }
 
 //we get the branches and tags from the grammar repo
-task fetchRemote(type: Exec, dependsOn: createRemote){
+task fetchRemote(type: Exec, dependsOn: createRemote) {
     commandLine "git", "fetch", "--tags", "grammar"
 }
 
 //we create a tmp branch with a copy of the grammar on the tag we're interested in
-task checkoutGrammar(type: Exec){
+task checkoutGrammar(type: Exec) {
     dependsOn(fetchRemote)
     dependsOn(createBranch)
     commandLine "git", "checkout", "-b", "removeme-export-branch", "tags/" + grammarTag
@@ -229,16 +244,16 @@ task checkoutGrammar(type: Exec){
  ***********/
 
 //we extract the files we're intrested in (only the grammar antlr files)
-task splitSubtreeGrammar(type: Exec, dependsOn: checkoutGrammar){
+task splitSubtreeGrammar(type: Exec, dependsOn: checkoutGrammar) {
     commandLine "git", "subtree", "split", "--prefix", "antlr4", "-b", "removeme-antlr4-branch"
 }
 
 //we go back to our main branch to do the subtree in the right place
-task switchBranchGrammar(type: Exec, dependsOn: splitSubtreeGrammar){
+task switchBranchGrammar(type: Exec, dependsOn: splitSubtreeGrammar) {
     commandLine "git", "checkout", branch
 }
 
-task updateGrammar(type: Exec, dependsOn: switchBranchGrammar){
+task updateGrammar(type: Exec, dependsOn: switchBranchGrammar) {
     group = 'git'
     description = 'Updates the grammar files from the grammar repo'
 
@@ -250,16 +265,16 @@ task updateGrammar(type: Exec, dependsOn: switchBranchGrammar){
  ***********/
 
 //we extract the files we're intrested in (only the grammar antlr files)
-task splitSubtreeTests(type: Exec, dependsOn: checkoutGrammar){
+task splitSubtreeTests(type: Exec, dependsOn: checkoutGrammar) {
     commandLine "git", "subtree", "split", "--prefix", "tests", "-b", "removeme-tests-branch"
 }
 
 //we go back to our main branch to do the subtree in the right place
-task switchBranchTests(type: Exec, dependsOn: splitSubtreeTests){
+task switchBranchTests(type: Exec, dependsOn: splitSubtreeTests) {
     commandLine "git", "checkout", branch
 }
 
-task updateTests(type: Exec, dependsOn: switchBranchTests){
+task updateTests(type: Exec, dependsOn: switchBranchTests) {
     group = 'git'
     description = 'Updates the test files from the grammar repo'
 
@@ -271,21 +286,21 @@ task updateTests(type: Exec, dependsOn: switchBranchTests){
  ***********/
 
 //we go back to our main branch to do the subtree in the right place
-task switchExportBranchGrammarAndTests(type: Exec, dependsOn: updateGrammar){
+task switchExportBranchGrammarAndTests(type: Exec, dependsOn: updateGrammar) {
     commandLine "git", "checkout", "removeme-export-branch"
 }
 
 //we extract the files we're interested in (only the tests files)
-task splitSubtreeGrammarAndTests(type: Exec, dependsOn: switchExportBranchGrammarAndTests){
+task splitSubtreeGrammarAndTests(type: Exec, dependsOn: switchExportBranchGrammarAndTests) {
     commandLine "git", "subtree", "split", "--prefix", "tests", "-b", "removeme-tests-branch"
 }
 
 //we go back to our main branch to do the subtree in the right place
-task switchBranchGrammarAndTests(type: Exec, dependsOn: splitSubtreeGrammarAndTests){
+task switchBranchGrammarAndTests(type: Exec, dependsOn: splitSubtreeGrammarAndTests) {
     commandLine "git", "checkout", branch
 }
 
-task updateGrammarWithTests(type: Exec){
+task updateGrammarWithTests(type: Exec) {
     dependsOn(updateGrammar)
     dependsOn(switchBranchGrammarAndTests)
 
@@ -300,12 +315,12 @@ task updateGrammarWithTests(type: Exec){
  ***********/
 
 //we clean the temporary branches used in the process
-task cleanBranches(type: Exec){
+task cleanBranches(type: Exec) {
     ignoreExitValue true
     commandLine "git", "branch", "-D", "removeme-export-branch", "removeme-antlr4-branch", "removeme-tests-branch"
 }
 
-task gitClean(type: Exec, dependsOn: cleanBranches){
+task gitClean(type: Exec, dependsOn: cleanBranches) {
     group = 'git'
     description = 'Cleans items generated as part of the git tasks (branches, remote, ...)'
     ignoreExitValue true
@@ -315,3 +330,12 @@ task gitClean(type: Exec, dependsOn: cleanBranches){
 updateGrammar.finalizedBy gitClean
 updateTests.finalizedBy gitClean
 updateGrammarWithTests.finalizedBy gitClean
+
+task customFatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'Interpret'
+    }
+    baseName = 'interpreter'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}

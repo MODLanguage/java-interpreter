@@ -19,9 +19,11 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 package uk.modl.parser;
 
+import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.RecognitionException;
+import uk.modl.ancestry.Ancestry;
+import uk.modl.model.Modl;
 import uk.modl.parser.antlr.MODLLexer;
 import uk.modl.parser.antlr.MODLParser;
 import uk.modl.parser.errors.ThrowingErrorListener;
@@ -31,28 +33,38 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-class Parser {
+/**
+ * Class to parse MODL Strings to Modl trees.
+ */
+@Log4j2
+public class Parser {
 
-    static ModlParsed parse(final String input) throws IOException {
-        final InputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
-        final MODLLexer lexer = new MODLLexer(CharStreams.fromStream(stream, StandardCharsets.UTF_8));
-
-        lexer.removeErrorListeners();
-        lexer.addErrorListener(ThrowingErrorListener.INSTANCE);
-
-        final CommonTokenStream tokens = new CommonTokenStream(lexer);
-        //        tokens.fill();
-        final MODLParser parser = new MODLParser(tokens);
-        parser.removeErrorListeners();
-        parser.addErrorListener(ThrowingErrorListener.INSTANCE);
-
-        final ModlParsed modlParsed = new ModlParsed();
+    /**
+     * Parse a MODL String to a Modl object
+     *
+     * @param input    the MODL String
+     * @param ancestry Ancestry
+     * @return Either a Throwable or a Modl object
+     */
+    public Modl apply(final String input, final Ancestry ancestry) {
         try {
-            parser.modl()
-                    .enterRule(modlParsed);
-        } catch (Exception e) {
-            throw new RuntimeException("Parser Error: " + e.getMessage());
+            // Antlr boilerplate
+            final InputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
+            final MODLLexer lexer = new MODLLexer(CharStreams.fromStream(stream, StandardCharsets.UTF_8));
+            final CommonTokenStream tokens = new CommonTokenStream(lexer);
+            final MODLParser parser = new MODLParser(tokens);
+            parser.setBuildParseTree(true);
+
+            lexer.addErrorListener(ThrowingErrorListener.INSTANCE);
+            parser.addErrorListener(ThrowingErrorListener.INSTANCE);
+
+            final MODLParser.ModlContext modlCtx = parser.modl();
+
+            // The String has been parsed by Antlr, now its our turn
+            return new ModlParsedVisitor(modlCtx, ancestry).getModl();
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
         }
-        return modlParsed;
     }
+
 }

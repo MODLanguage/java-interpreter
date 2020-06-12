@@ -10,3 +10,9 @@ out
 .classpath
 .project
 bin/
+/gen/MODLLexer.interp
+/grammar/gen/MODLLexer.interp
+/gen/MODLLexer.java
+/grammar/gen/MODLLexer.java
+/gen/MODLLexer.tokens
+/grammar/gen/MODLLexer.tokens

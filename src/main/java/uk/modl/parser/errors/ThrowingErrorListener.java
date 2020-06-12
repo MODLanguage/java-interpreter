@@ -35,7 +35,8 @@ public class ThrowingErrorListener extends BaseErrorListener {
                             int charPositionInLine,
                             String msg,
                             RecognitionException e)
-        throws ParseCancellationException {
+            throws ParseCancellationException {
         throw new ParseCancellationException("line " + line + ":" + charPositionInLine + " " + msg);
     }
+
 }

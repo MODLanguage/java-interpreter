@@ -20,7 +20,7 @@ options {
 }
 
 modl
-  // Valid MODL is zero or more MODL structures separated by semi-colons, newlines or both
+  // Valid MODL is zero or more MODL structures separated by semi-colons
   : (( modl_structure?) | (modl_structure (STRUCT_SEP modl_structure )* ) STRUCT_SEP?) EOF;
 
 modl_structure
@@ -45,7 +45,9 @@ modl_array
   ;
 
 modl_nb_array
-  // non-bracketed array with missing elements
+  // non-bracketed array
+  // numbers=1:2:3
+  // also possible to have blank items
   // numbers=1:2:3:::4:5:6
   : (modl_array_item COLON+ )+ (modl_array_item)* COLON?
   ;
@@ -57,11 +59,11 @@ modl_pair
   // For efficiency, it's also possible to assign a map to a pair without an equals sign,
   // since the left bracket separates the key from the value  – this is called a map pair.
   // e.g. person(name=John) – this is equivalent to person=(name=John)
-  //a
+  //
   // It's also possible to do the same with an array pair
   // e.g. numbers[1;2;3] – equivalent to numbers=[1;2;3]
 
-  : ( STRING | QUOTED | NUMBER | NULL | TRUE | FALSE) EQUALS  modl_value_item                // key = value        (standard pair)
+  : ( STRING | QUOTED ) EQUALS modl_value_item  // key = value (standard pair)
   | STRING modl_map                                                            // key( key = value ) (map pair)
   | STRING modl_array                                                          // key[ item; item ]  (array pair)
   ;
@@ -86,7 +88,7 @@ modl_top_level_conditional
     RCBRAC
   ;
   modl_top_level_conditional_return
-    : (modl_structure)*
+    : modl_structure ( STRUCT_SEP modl_structure )*
     ;
 
 modl_map_conditional
