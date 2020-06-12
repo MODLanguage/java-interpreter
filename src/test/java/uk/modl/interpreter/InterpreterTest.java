@@ -20,7 +20,11 @@
 
 package uk.modl.interpreter;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.junit.Assert;
 import org.junit.Test;
+import uk.modl.model.Modl;
 import uk.modl.transforms.TransformationContext;
 import uk.modl.utils.TestUtils;
 
@@ -39,4 +43,38 @@ public class InterpreterTest {
     public void parseBad() {
         new Interpreter().apply(TransformationContext.emptyCtx(), "xxx");
     }
+
+    @Test
+    public void testInterpreterConvenienceMethods_1() {
+        final Interpreter interpreter = new Interpreter();
+        final Modl modl = interpreter.interpret("a=b");
+        Assert.assertNotNull(modl);
+        Assert.assertEquals(1, modl.getStructures()
+                .size());
+    }
+
+    @Test
+    public void testInterpreterConvenienceMethods_2() {
+        final Interpreter interpreter = new Interpreter();
+        final JsonNode jsonNode = interpreter.interpretToJsonObject("a=b");
+        Assert.assertNotNull(jsonNode);
+        Assert.assertEquals("{\"a\":\"b\"}", jsonNode.toString());
+    }
+
+    @Test
+    public void testInterpreterConvenienceMethods_3() throws JsonProcessingException {
+        final Interpreter interpreter = new Interpreter();
+        final String json = interpreter.interpretToJsonString("a=b");
+        Assert.assertNotNull(json);
+        Assert.assertEquals("{\"a\":\"b\"}", json);
+    }
+
+    @Test
+    public void testInterpreterConvenienceMethods_4() throws JsonProcessingException {
+        final Interpreter interpreter = new Interpreter();
+        final String json = interpreter.interpretToPrettyJsonString("a=b");
+        Assert.assertNotNull(json);
+        Assert.assertEquals("{\n  \"a\" : \"b\"\n}", json);
+    }
+
 }

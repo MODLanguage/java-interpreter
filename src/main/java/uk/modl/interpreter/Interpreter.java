@@ -20,6 +20,9 @@
 
 package uk.modl.interpreter;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vavr.Tuple2;
 import io.vavr.control.Option;
 import lombok.NonNull;
@@ -27,6 +30,7 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 import uk.modl.model.Modl;
 import uk.modl.parser.Parser;
 import uk.modl.parser.errors.InterpreterError;
+import uk.modl.transforms.JacksonJsonNodeTransform;
 import uk.modl.transforms.TransformationContext;
 
 /**
@@ -39,6 +43,55 @@ public class Interpreter {
     private final Parser parser = new Parser();
 
     private final InterpreterVisitor interpreterVisitor = new InterpreterVisitor();
+
+    /**
+     * Interpret a String into a Modl object.
+     *
+     * @param modlString String
+     * @return Modl
+     */
+    public Modl interpret(final String modlString) {
+        final TransformationContext ctx = TransformationContext.emptyCtx();
+        final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
+        return interpreted._2;
+    }
+
+    /**
+     * Interpret a String into a JsonNode object.
+     *
+     * @param modlString String
+     * @return JsonNode
+     */
+    public JsonNode interpretToJsonObject(final String modlString) {
+        final TransformationContext ctx = TransformationContext.emptyCtx();
+        final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
+        return new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
+    }
+
+    /**
+     * Interpret a String into a JsonNode object.
+     *
+     * @param modlString String
+     * @return String
+     * @throws JsonProcessingException on error
+     */
+    public String interpretToJsonString(final String modlString) throws JsonProcessingException {
+        final JsonNode jsonNode = interpretToJsonObject(modlString);
+        return new ObjectMapper().writeValueAsString(jsonNode);
+    }
+
+    /**
+     * Interpret a String into a JsonNode object.
+     *
+     * @param modlString String
+     * @return String
+     * @throws JsonProcessingException on error
+     */
+    public String interpretToPrettyJsonString(final String modlString) throws JsonProcessingException {
+        final JsonNode jsonNode = interpretToJsonObject(modlString);
+        return new ObjectMapper().writerWithDefaultPrettyPrinter()
+                .writeValueAsString(jsonNode);
+    }
 
     /**
      * Interpreter entry point

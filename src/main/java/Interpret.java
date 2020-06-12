@@ -36,7 +36,7 @@ public class Interpret {
 
     public static void main(final String... args) {
         if (args.length == 0) {
-            System.out.println("Usage: java -cp [path-to-jar]/interpreter-0.0.17.jar Interpret <modl-file-name> [modl-file-name] ...");
+            System.out.println("Usage: java -cp ./build/libs/interpreter-0.1.1.jar Interpret <modl-file-name> [modl-file-name] ...");
         }
 
         Arrays.stream(args)
