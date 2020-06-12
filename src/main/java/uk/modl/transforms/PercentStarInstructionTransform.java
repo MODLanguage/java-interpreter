@@ -67,10 +67,7 @@ public class PercentStarInstructionTransform {
         }
         mthdItems = mthdItems.append(transformPair);
 
-        final MapItem mthdMap = pair.with(ctx.getAncestry(), m.getId(), map.with(ctx.getAncestry(), mthdItems));
-        final Vector<MapItem> mthd = Vector.of(mthdMap);
-
-        return resultMap.with(ctx.getAncestry(), mthd);
+        return resultMap.with(ctx.getAncestry(), Vector.of(pair.with(ctx.getAncestry(), m.getId(), map.with(ctx.getAncestry(), mthdItems))));
     }
 
     /**
@@ -108,9 +105,7 @@ public class PercentStarInstructionTransform {
                     .values());
         }
 
-        final MapItem clssMap = pair.with(ctx.getAncestry(), ci.getId(), uk.modl.model.Map.of(ctx.getAncestry(), pair, clssItems));
-        final Vector<MapItem> clss = Vector.of(clssMap);
-        return resultMap.with(ctx.getAncestry(), clss);
+        return resultMap.with(ctx.getAncestry(), Vector.of(pair.with(ctx.getAncestry(), ci.getId(), Map.of(ctx.getAncestry(), pair, clssItems))));
     }
 
     /**

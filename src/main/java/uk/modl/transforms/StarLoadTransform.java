@@ -12,7 +12,12 @@ import uk.modl.interpreter.Interpreter;
 import uk.modl.model.*;
 import uk.modl.parser.errors.StarLoadException;
 import uk.modl.utils.SimpleCache;
-import uk.modl.utils.Util;
+
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Scanner;
 
 @RequiredArgsConstructor
 public class StarLoadTransform {
@@ -70,7 +75,7 @@ public class StarLoadTransform {
                     } else {
                         // Its either not cached or not force-loaded
                         // Map the filenames to the contents of the files, or Error
-                        final Tuple2<StarLoadExtractor.FileSpec, String> contents = Util.getFileContents(spec);
+                        final Tuple2<StarLoadExtractor.FileSpec, String> contents = getFileContents(spec);
                         final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(newCtx, contents._2);
                         newCtx = interpreted._1;
 
@@ -96,6 +101,29 @@ public class StarLoadTransform {
         }
 
         return Tuple.of(newCtx, result);
+    }
+
+    /**
+     * Map a filename to Either an Error or the file contents as a String
+     */
+    public Tuple2<StarLoadExtractor.FileSpec, String> getFileContents(final StarLoadExtractor.FileSpec spec) {
+        try {
+            if (spec.getFilename()
+                    .startsWith("http")) {
+
+                // Load over the net
+                final URL url = new URL(spec.getFilename());
+                return Tuple.of(spec, new Scanner(url.openStream(), StandardCharsets.UTF_8.name()).useDelimiter("\\A")
+                        .next());
+            } else if (Files.exists(Paths.get(spec.getFilename()))) {
+
+                // Load local file
+                return Tuple.of(spec, String.join("", Files.readAllLines(Paths.get(spec.getFilename()))));
+            }
+        } catch (final Exception e) {
+            throw new StarLoadException("Could not load resource: " + e.getMessage());
+        }
+        throw new StarLoadException("Could not load resource: " + spec.getFilename());
     }
 
     /**

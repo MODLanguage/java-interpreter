@@ -39,14 +39,12 @@ public class ReferencesTransform {
      * @return the ReferenceType
      */
     private static ReferenceType refToRefType(final String s) {
+        final String refKey = stripLeadingAndTrailingPercents(s);
         if (s.contains(".")) {
             return ReferenceType.COMPLEX_REF;
-        }
-        final String refKey = stripLeadingAndTrailingPercents(s);
-        if (StringUtils.isNumeric(refKey)) {
+        } else if (StringUtils.isNumeric(refKey)) {
             return ReferenceType.OBJECT_INDEX_REF;
-        }
-        if (s.startsWith("%`")) {
+        } else if (s.startsWith("%`")) {
             return ReferenceType.LITERAL_REF;
         }
         return ReferenceType.SIMPLE_REF;
@@ -59,6 +57,7 @@ public class ReferencesTransform {
      * @return a String with leading and trailing %'s removed
      */
     private static String stripLeadingAndTrailingPercents(final String ref) {
+        // Not the same as StringUtils.unwrap()
         return StringUtils.removeEnd(StringUtils.removeStart(ref, "%"), "%");
     }
 

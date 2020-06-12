@@ -5,8 +5,13 @@ import lombok.Getter;
 import lombok.Value;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import uk.modl.model.Array;
 import uk.modl.model.Pair;
+import uk.modl.model.PairValue;
+import uk.modl.model.Primitive;
 import uk.modl.utils.Util;
+
+import java.util.Objects;
 
 @Getter
 public class StarLoadExtractor {
@@ -28,12 +33,28 @@ public class StarLoadExtractor {
 
         if (isLoadInstruction(key)) {
 
-            val specs = Util.getFilenames(pair.getValue())
+            val specs = getFilenames(pair.getValue())
                     .map(Util::normalize);
 
             loadSets = loadSets.append(new LoadSet(pair, specs));
         }
         return this;
+    }
+
+    /**
+     * Map a PairValue to a list of Strings - for use as file names.
+     * This is only applicable to *load MODL instructions
+     */
+    public Vector<String> getFilenames(final PairValue pairValue) {
+        if (pairValue instanceof Primitive) {
+            final Primitive pv = (Primitive) pairValue;
+            return Vector.of(pv.toString());
+        } else if (pairValue instanceof Array) {
+            final Array a = (Array) pairValue;
+            return Vector.ofAll(a.getArrayItems()
+                    .map(Objects::toString));
+        }
+        return Vector.empty();
     }
 
     /**

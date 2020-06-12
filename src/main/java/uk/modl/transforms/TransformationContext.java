@@ -145,7 +145,7 @@ public class TransformationContext {
     }
 
     /**
-     * Get a class by name or id if we have one.
+     * Get a ClassInstruction by name or id if we have one.
      *
      * @param idOrName the id or name String
      * @return an Option of a StarClassTransform.ClassInstruction
@@ -155,6 +155,12 @@ public class TransformationContext {
                 .orElse(() -> classesByName.get(idOrName));
     }
 
+    /**
+     * Get a MethodInstruction by name or id if we have one.
+     *
+     * @param idOrName the id or name String
+     * @return an Option of a StarClassTransform.ClassInstruction
+     */
     public Option<StarMethodTransform.MethodInstruction> getMethodByNameOrId(final String idOrName) {
         return methodsById.get(idOrName)
                 .orElse(() -> methodsByName.get(idOrName));

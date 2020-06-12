@@ -25,16 +25,14 @@ public class MethodsTransform {
     private String runMethods(final TransformationContext ctx, final String method, final String s) {
         final Option<StarMethodTransform.MethodInstruction> maybeMethod = ctx.getMethodByNameOrId(method);
 
-        if (maybeMethod.isDefined()) {
-            final StarMethodTransform.MethodInstruction mi = maybeMethod.get();
-
+        return maybeMethod.map(mi -> {
             final Vector<String> methods = Util.toMethodList(mi.getTransform());
 
             final String[] refList = methods.toJavaArray(String[]::new);
 
             return Util.handleMethodsAndTrailingPathComponents(refList, s);
-        }
-        return s;
+        })
+                .getOrElse(s);
     }
 
 }

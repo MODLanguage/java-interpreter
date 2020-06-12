@@ -3,28 +3,18 @@ package uk.modl.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
 import uk.modl.extractors.StarLoadExtractor;
-import uk.modl.model.Array;
 import uk.modl.model.PairValue;
-import uk.modl.model.Primitive;
 import uk.modl.model.ValueItem;
-import uk.modl.parser.errors.StarLoadException;
 
 import java.net.IDN;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Objects;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,46 +40,6 @@ public class Util {
      * A Regex to match the parameters of a MODL trim method
      */
     private final Pattern trimmerPattern = Pattern.compile("^trim<(.*)>$|^t<(.*)>$");
-
-    /**
-     * Map a PairValue to a list of Strings - for use as file names.
-     * This is only applicable to *load MODL instructions
-     */
-    public Vector<String> getFilenames(final PairValue pairValue) {
-        if (pairValue instanceof Primitive) {
-            final Primitive pv = (Primitive) pairValue;
-            return Vector.of(pv.toString());
-        }
-        if (pairValue instanceof Array) {
-            final Array a = (Array) pairValue;
-            return Vector.ofAll(a.getArrayItems()
-                    .map(Objects::toString));
-        }
-        return Vector.empty();
-    }
-
-    /**
-     * Map a filename to Either an Error or the file contents as a String
-     */
-    public Tuple2<StarLoadExtractor.FileSpec, String> getFileContents(final StarLoadExtractor.FileSpec spec) {
-        try {
-            if (spec.getFilename()
-                    .startsWith("http")) {
-
-                // Load over the net
-                final URL url = new URL(spec.getFilename());
-                return Tuple.of(spec, new Scanner(url.openStream(), StandardCharsets.UTF_8.name()).useDelimiter("\\A")
-                        .next());
-            } else if (Files.exists(Paths.get(spec.getFilename()))) {
-
-                // Load local file
-                return Tuple.of(spec, String.join("", Files.readAllLines(Paths.get(spec.getFilename()))));
-            }
-        } catch (final Exception e) {
-            throw new StarLoadException("Could not load resource: " + e.getMessage());
-        }
-        throw new StarLoadException("Could not load resource: " + spec.getFilename());
-    }
 
     /**
      * Render a JSON Node to a String.
@@ -270,8 +220,7 @@ public class Util {
         final Matcher matcher = METHODS_PATTERN.matcher(chainedMethods);
         Vector<String> methods = Vector.empty();
         while (matcher.find()) {
-            final String match = matcher.group(0);
-            methods = methods.append(match);
+            methods = methods.append(matcher.group(0));
         }
         return methods;
     }
@@ -322,7 +271,7 @@ public class Util {
     }
 
     public void validatePairKey(final String newKey) {
-        final String k = (newKey.startsWith("_") || newKey.startsWith("*")) ? newKey.substring(1) : newKey;// Strip any leading underscore or asterisk
+        final String k = maybeStripLeadingSpecialCharacter(newKey);// Strip any leading underscore or asterisk
 
         final int badCharIndex = StringUtils.indexOfAny(k, Util.INVALID_CHARS);
         if (badCharIndex > -1) {
@@ -334,6 +283,10 @@ public class Util {
         if (StringUtils.isNumeric(k)) {
             throw new RuntimeException("Invalid key - \"" + k + "\" - entirely numeric keys are not allowed: " + newKey);
         }
+    }
+
+    private String maybeStripLeadingSpecialCharacter(final String newKey) {
+        return (newKey.startsWith("_") || newKey.startsWith("*")) ? newKey.substring(1) : newKey;
     }
 
 }

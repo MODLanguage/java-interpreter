@@ -88,15 +88,10 @@ public class StringEscapeReplacer {
     }
 
     public static String replace(final String stringToTransform) {
-        String result = stringToTransform;
-        if (stringToTransform != null) {
-            result = UnicodeEscapeReplacer.convertUnicodeSequences(stringToTransform);
+        String result = UnicodeEscapeReplacer.convertUnicodeSequences(stringToTransform);
 
-            for (Map.Entry<String, String> replacement : replacements.entrySet()) {
-                if (stringToTransform.contains(replacement.getKey())) {
-                    result = result.replace(replacement.getKey(), replacement.getValue());
-                }
-            }
+        for (final Map.Entry<String, String> replacement : replacements.entrySet()) {
+            result = result.replace(replacement.getKey(), replacement.getValue());
         }
         return result;
     }
