@@ -47,6 +47,11 @@ public class JacksonJsonNodeTransform {
                     .startsWith("*") && !p.getKey()
                     .equals("?");
         }
+        if (s instanceof TopLevelConditional) {
+            final TopLevelConditional tlc = (TopLevelConditional) s;
+            return !tlc.getResult()
+                    .isEmpty();
+        }
         return true;
     });
 
@@ -96,10 +101,6 @@ public class JacksonJsonNodeTransform {
                     filtered.forEach(s -> accept(arrayNode, (ArrayItem) s));
 
                 }
-        }
-        if (result != null && !result.elements()
-                .hasNext()) {
-            result = null;
         }
         return result;
     }

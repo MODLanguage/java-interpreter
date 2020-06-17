@@ -26,7 +26,6 @@ import uk.modl.model.Modl;
 import uk.modl.transforms.JacksonJsonNodeTransform;
 import uk.modl.transforms.TransformationContext;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -58,7 +57,7 @@ public class Interpret {
 
                         System.out.println(result);
 
-                    } catch (final IOException e) {
+                    } catch (final Throwable e) {
                         System.err.println(e.getMessage());
                     }
                     System.out.println("Finished file: " + filename);
