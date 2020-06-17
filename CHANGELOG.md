@@ -1,3 +1,12 @@
+0.1.3
+===
+- Fix empty array and empty map results.
+- Change scope-search to look in the left parent tree only.
+
+0.1.2
+===
+- Class expansion fixes.
+
 0.1.1
 ===
 - README Updates
