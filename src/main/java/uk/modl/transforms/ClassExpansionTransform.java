@@ -112,7 +112,7 @@ public class ClassExpansionTransform {
         final Ancestry ancestry = ctx.getAncestry();
 
         if (expClass.hasSingleValueAssign()) {
-            final Structure s = expClass.toStructureUsingAssign(ctx, pair, cache, Array.of(ancestry, pair, Vector.of((ArrayItem) pairValue)));
+            final Structure s = expClass.toMapUsingAssign(ctx, pair, cache, Array.of(ancestry, pair, Vector.of((ArrayItem) pairValue)));
 
             final Structure structure = apply(ctx, s);
             if (structure instanceof ValueItem) {
@@ -140,7 +140,7 @@ public class ClassExpansionTransform {
     }
 
     private Pair getPairFromArray(final TransformationContext ctx, final Pair pair, final ExpandedClass expClass, final Array pairValue) {
-        final Structure s = expClass.toStructureUsingAssign(ctx, pair, cache, pairValue);
+        final Structure s = expClass.toMapUsingAssign(ctx, pair, cache, pairValue);
 
         final Structure structure = apply(ctx, s);
         if (structure instanceof ValueItem) {
@@ -159,54 +159,59 @@ public class ClassExpansionTransform {
 
         if (pairValue instanceof Array) {
 
-            @NonNull final Vector<ArrayItem> valuesToAssign = ((Array) pairValue).getArrayItems();
+            Array array;
+            if (expClass.assigns.nonEmpty()) {
+                array = expClass.toArrayUsingAssign(ctx, pair, cache, (Array) pairValue);
+            } else {
+                @NonNull final Vector<ArrayItem> valuesToAssign = ((Array) pairValue).getArrayItems();
 
-            final int assignListLength = valuesToAssign
-                    .size();
+                final int assignListLength = valuesToAssign
+                        .size();
 
-            final Array array = expClass.assigns.find(l -> l.size() == assignListLength)
-                    .map(assignList -> {
-                        final Array arr = Array.of(ctx.getAncestry(), pair, Vector.empty());
-                        Vector<ArrayItem> items = Vector.empty();
-                        for (int i = 0; i < assignListLength; i++) {
-                            final String maybeWildcardKey = assignList.get(i);
-                            final String key;
+                array = expClass.assigns.find(l -> l.size() == assignListLength)
+                        .map(assignList -> {
+                            final Array arr = Array.of(ctx.getAncestry(), pair, Vector.empty());
+                            Vector<ArrayItem> items = Vector.empty();
+                            for (int i = 0; i < assignListLength; i++) {
+                                final String maybeWildcardKey = assignList.get(i);
+                                final String key;
 
-                            if (maybeWildcardKey.endsWith("*")) {
-                                key = StringUtils.removeEnd(maybeWildcardKey, "*");
-                            } else {
-                                key = maybeWildcardKey;
-                            }
+                                if (maybeWildcardKey.endsWith("*")) {
+                                    key = StringUtils.removeEnd(maybeWildcardKey, "*");
+                                } else {
+                                    key = maybeWildcardKey;
+                                }
 
 
-                            final Pair p = Pair.of(ctx.getAncestry(), pair, key, (PairValue) valuesToAssign.get(i));
-                            final Structure structure = expandToClass(ctx, p);
-                            if (structure instanceof Pair) {
-                                @NonNull final PairValue value = ((Pair) structure).getValue();
-                                if (value instanceof Map) {
-                                    final Map map = Map.of(ctx.getAncestry(), pair, ((Map) value).getMapItems()
-                                            .appendAll(expClass.pairs));
-                                    items = items.append(map);
-                                } else if (value instanceof Array) {
-                                    final Option<StarClassTransform.ClassInstruction> maybeClass = ctx.getClassByNameOrId(key);
-                                    if (maybeClass.isDefined()) {
-                                        final StarClassTransform.ClassInstruction classs = maybeClass.get();
-                                        final ExpandedClass expandedClass = cache.getExpandedClass(ctx, classs, classs.getSuperclass());
+                                final Pair p = Pair.of(ctx.getAncestry(), pair, key, (PairValue) valuesToAssign.get(i));
+                                final Structure structure = expandToClass(ctx, p);
+                                if (structure instanceof Pair) {
+                                    @NonNull final PairValue value = ((Pair) structure).getValue();
+                                    if (value instanceof Map) {
+                                        final Map map = Map.of(ctx.getAncestry(), pair, ((Map) value).getMapItems()
+                                                .appendAll(expClass.pairs));
+                                        items = items.append(map);
+                                    } else if (value instanceof Array) {
+                                        final Option<StarClassTransform.ClassInstruction> maybeClass = ctx.getClassByNameOrId(key);
+                                        if (maybeClass.isDefined()) {
+                                            final StarClassTransform.ClassInstruction classs = maybeClass.get();
+                                            final ExpandedClass expandedClass = cache.getExpandedClass(ctx, classs, classs.getSuperclass());
 
-                                        final Structure expandedObject = expandedClass.toStructureUsingAssign(ctx, pair, cache, (Structure) value);
-                                        items = items.append((ArrayItem) expandedObject);
-                                    } else {
-                                        items = items.appendAll(((Array) value).getArrayItems());
+                                            final Structure expandedObject = expandedClass.toMapUsingAssign(ctx, pair, cache, (Structure) value);
+                                            items = items.append((ArrayItem) expandedObject);
+                                        } else {
+                                            items = items.appendAll(((Array) value).getArrayItems());
+                                        }
                                     }
                                 }
                             }
-                        }
-                        return arr.with(ctx.getAncestry(), items);
-                    })
-                    .getOrElse(() -> (Array) pairValue);
-
+                            return arr.with(ctx.getAncestry(), items);
+                        })
+                        .getOrElse(() -> (Array) pairValue);
+            }
 
             final Structure structure = apply(ctx, array);
+
             if (structure instanceof ValueItem) {
                 return pair.with(ctx.getAncestry(), expClass.name, (PairValue) structure);
             } else {
@@ -389,7 +394,7 @@ public class ClassExpansionTransform {
                     .getOrElse(Vector.empty()));
         }
 
-        public Structure toStructureUsingAssign(final TransformationContext ctx, final Parent parent, final ExpandedClassCache cache, final Structure value) {
+        public Structure toMapUsingAssign(final TransformationContext ctx, final Parent parent, final ExpandedClassCache cache, final Structure value) {
             Vector<ArrayItem> tmpValuesToAssign = Vector.empty();
             if (value instanceof Array) {
                 tmpValuesToAssign = ((Array) value).getArrayItems();
@@ -431,7 +436,7 @@ public class ClassExpansionTransform {
                                 for (int i = 0; i < assignListLength; i++) {
                                     final ArrayItem item = valuesToAssign.get(i);
 
-                                    final Structure s = expandedClass.toStructureUsingAssign(ctx, arr, cache, (Structure) item);
+                                    final Structure s = expandedClass.toMapUsingAssign(ctx, arr, cache, (Structure) item);
                                     arrayItems = arrayItems.append((ArrayItem) s);
                                 }
                                 arrayItems = arrayItems.appendAll(pairs);
@@ -463,6 +468,66 @@ public class ClassExpansionTransform {
 
                         mapItems = mapItems.appendAll(pairs);
                         return map.with(ctx.getAncestry(), mapItems);
+                    })
+                    .getOrElseThrow(() -> new RuntimeException("No key list of the correct length in class " + id + " - looking for one of length " + assignListLength));
+        }
+
+        public Array toArrayUsingAssign(final TransformationContext ctx, final Parent parent, final ExpandedClassCache cache, final Array value) {
+
+            final Vector<ArrayItem> valuesToAssign = value.getArrayItems();
+
+            final int assignListLength = valuesToAssign
+                    .size();
+
+            // If there's a value ending with * in the list then we have a match
+            return assigns.find(l -> l.size() == assignListLength || l.count(s -> s.endsWith("*")) > 0)
+                    .map(assignList -> {
+                        Vector<ArrayItem> arrayItems = Vector.empty();
+
+
+                        if (assignList.length() == 1 && assignList.get(0)
+                                .endsWith("*")) {
+                            final Option<StarClassTransform.ClassInstruction> maybeClassByNameOrId = ctx.getClassByNameOrId(StringUtils.removeEnd(assignList.get(0), "*"));
+
+                            if (maybeClassByNameOrId
+                                    .isDefined() && maybeClassByNameOrId.get()
+                                    .getAssign()
+                                    .nonEmpty()) {
+                                final StarClassTransform.ClassInstruction classs = maybeClassByNameOrId.get();
+                                final ExpandedClass expandedClass = cache.getExpandedClass(ctx, classs, classs.getSuperclass());
+
+                                final Array arr = Array.of(ctx.getAncestry(), parent, Vector.empty());
+
+                                for (int i = 0; i < assignListLength; i++) {
+                                    final ArrayItem item = valuesToAssign.get(i);
+
+                                    final Structure s = expandedClass.toMapUsingAssign(ctx, arr, cache, (Structure) item);
+                                    arrayItems = arrayItems.append((ArrayItem) s);
+                                }
+                                arrayItems = arrayItems.appendAll(pairs);
+                                return arr.with(ctx.getAncestry(), arrayItems);
+                            }
+                        }
+
+                        final Array arr = Array.of(ctx.getAncestry(), parent, Vector.empty());
+
+                        for (int i = 0; i < assignListLength; i++) {
+                            final Option<StarClassTransform.ClassInstruction> maybeClassByNameOrId = ctx.getClassByNameOrId(StringUtils.removeEnd(assignList.get(i), "*"));
+                            if (maybeClassByNameOrId
+                                    .isDefined() && maybeClassByNameOrId.get()
+                                    .getAssign()
+                                    .nonEmpty()) {
+                                final StarClassTransform.ClassInstruction classs = maybeClassByNameOrId.get();
+                                final ExpandedClass expandedClass = cache.getExpandedClass(ctx, classs, classs.getSuperclass());
+
+                                final ArrayItem item = valuesToAssign.get(i);
+
+                                final Structure s = expandedClass.toMapUsingAssign(ctx, arr, cache, (Structure) item);
+                                arrayItems = arrayItems.append((ArrayItem) s);
+                            }
+                        }
+                        arrayItems = arrayItems.appendAll(pairs);
+                        return arr.with(ctx.getAncestry(), arrayItems);
                     })
                     .getOrElseThrow(() -> new RuntimeException("No key list of the correct length in class " + id + " - looking for one of length " + assignListLength));
         }
