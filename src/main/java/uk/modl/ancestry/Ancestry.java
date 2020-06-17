@@ -89,10 +89,14 @@ public class Ancestry {
     }
 
     public Option<Pair> findByKey(final Child child, final String key) {
-        final Option<Pair> result = findByKey(0, child, key);
-        if (result.isDefined() && !result.get()
-                .equals(child)) {
-            return result;
+        final Parent parent = ancestors.get(child);
+
+        if (parent != null) {
+            final Option<Pair> result = findByKey(0, parent, child, key);
+            if (result.isDefined() && !result.get()
+                    .equals(child)) {
+                return result;
+            }
         }
 
         // Check the root objects but filter out the current object.
@@ -107,8 +111,11 @@ public class Ancestry {
             if (root instanceof Modl) {
                 final Modl modl = (Modl) root;
                 for (final Structure s : modl.getStructures()) {
+                    if (s != null && (s.equals(parent) || s.equals(child))) {
+                        break;
+                    }
                     if (s instanceof Pair && ((Pair) s).getKey()
-                            .equals(key) && !s.equals(child)) {
+                            .equals(key)) {
                         found = (Pair) s;
                     }
                 }
@@ -120,7 +127,7 @@ public class Ancestry {
         return Option.none();
     }
 
-    private Option<Pair> findByKey(final int depth, final Child child, final String key) {
+    private Option<Pair> findByKey(final int depth, final Parent parent, final Child child, final String key) {
         if (depth > 0 && child instanceof Pair && ((Pair) child).getKey()
                 .equals(key)) {
             return Option.of((Pair) child);
@@ -130,6 +137,9 @@ public class Ancestry {
             Pair found = null;
             final Array array = (Array) child;
             for (final ArrayItem arrayItem : array.getArrayItems()) {
+                if (arrayItem.equals(parent)) {
+                    break;
+                }
                 if (arrayItem instanceof Pair && ((Pair) arrayItem).getKey()
                         .equals(key)) {
                     found = (Pair) arrayItem;
@@ -143,6 +153,9 @@ public class Ancestry {
             Pair found = null;
             final uk.modl.model.Map map = (uk.modl.model.Map) child;
             for (final MapItem mapItem : map.getMapItems()) {
+                if (mapItem.equals(parent)) {
+                    break;
+                }
                 if (mapItem instanceof Pair && ((Pair) mapItem).getKey()
                         .equals(key)) {
                     found = (Pair) mapItem;
@@ -166,9 +179,9 @@ public class Ancestry {
             }
         }
 
-        final Parent parent = ancestors.get(child);
-        if (parent != null) {
-            return findByKey(depth + 1, (Child) parent, key);
+        final Parent grandParent = ancestors.get(parent);
+        if (grandParent != null) {
+            return findByKey(depth + 1, grandParent, (Child) parent, key);
         } else {
             final List<Child> roots = ancestors.entrySet()
                     .stream()
@@ -181,6 +194,9 @@ public class Ancestry {
                 if (root instanceof Modl) {
                     final Modl modl = (Modl) root;
                     for (final Structure s : modl.getStructures()) {
+                        if (s != null && (s.equals(parent) || s.equals(child))) {
+                            break;
+                        }
                         if (s instanceof Pair && ((Pair) s).getKey()
                                 .equals(key)) {
                             found = (Pair) s;
