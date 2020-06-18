@@ -21,7 +21,8 @@
 package uk.modl.ancestry;
 
 import io.vavr.control.Option;
-import uk.modl.model.*;
+import uk.modl.model.Pair;
+import uk.modl.model.Primitive;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,14 +33,21 @@ public class Ancestry {
 
     private final Map<Child, Parent> ancestors;
 
+    private final ScopedAncestrySearch ancestrySearch;
+
     public Ancestry() {
         ancestors = new LinkedHashMap<>();
+        ancestrySearch = new ScopedAncestrySearch(ancestors);
     }
 
     public void add(final Parent parent, final Child child) {
         if (child != null) {
             ancestors.put(child, parent);
         }
+    }
+
+    public Option<Pair> findByKey(final Child child, final String key) {
+        return ancestrySearch.findByKey(child, key);
     }
 
     /**
@@ -88,129 +96,6 @@ public class Ancestry {
                 .forEach(System.out::println);
     }
 
-    public Option<Pair> findByKey(final Child child, final String key) {
-        final Parent parent = ancestors.get(child);
-
-        if (parent != null) {
-            final Option<Pair> result = findByKey(0, parent, child, key);
-            if (result.isDefined() && !result.get()
-                    .equals(child)) {
-                return result;
-            }
-        }
-
-        // Check the root objects but filter out the current object.
-        final List<Child> roots = ancestors.entrySet()
-                .stream()
-                .filter(entry -> entry.getValue() == null)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
-
-        Pair found = null;
-        for (final Child root : roots) {
-            if (root instanceof Modl) {
-                final Modl modl = (Modl) root;
-                for (final Structure s : modl.getStructures()) {
-                    if (s != null && (s.equals(parent) || s.equals(child))) {
-                        break;
-                    }
-                    if (s instanceof Pair && ((Pair) s).getKey()
-                            .equals(key)) {
-                        found = (Pair) s;
-                    }
-                }
-            }
-        }
-        if (found != null) {
-            return Option.of(found);
-        }
-        return Option.none();
-    }
-
-    private Option<Pair> findByKey(final int depth, final Parent parent, final Child child, final String key) {
-        if (depth > 0 && child instanceof Pair && ((Pair) child).getKey()
-                .equals(key)) {
-            return Option.of((Pair) child);
-        }
-
-        if (child instanceof Array) {
-            Pair found = null;
-            final Array array = (Array) child;
-            for (final ArrayItem arrayItem : array.getArrayItems()) {
-                if (arrayItem.equals(parent)) {
-                    break;
-                }
-                if (arrayItem instanceof Pair && ((Pair) arrayItem).getKey()
-                        .equals(key)) {
-                    found = (Pair) arrayItem;
-                }
-            }
-            if (found != null) {
-                return Option.of(found);
-            }
-        }
-        if (child instanceof uk.modl.model.Map) {
-            Pair found = null;
-            final uk.modl.model.Map map = (uk.modl.model.Map) child;
-            for (final MapItem mapItem : map.getMapItems()) {
-                if (mapItem.equals(parent)) {
-                    break;
-                }
-                if (mapItem instanceof Pair && ((Pair) mapItem).getKey()
-                        .equals(key)) {
-                    found = (Pair) mapItem;
-                }
-            }
-            if (found != null) {
-                return Option.of(found);
-            }
-        }
-        if (child instanceof Modl) {
-            Pair found = null;
-            final Modl modl = (Modl) child;
-            for (final Structure s : modl.getStructures()) {
-                if (s instanceof Pair && ((Pair) s).getKey()
-                        .equals(key)) {
-                    found = (Pair) s;
-                }
-            }
-            if (found != null) {
-                return Option.of(found);
-            }
-        }
-
-        final Parent grandParent = ancestors.get(parent);
-        if (grandParent != null) {
-            return findByKey(depth + 1, grandParent, (Child) parent, key);
-        } else {
-            final List<Child> roots = ancestors.entrySet()
-                    .stream()
-                    .filter(entry -> entry.getValue() == null)
-                    .map(Map.Entry::getKey)
-                    .collect(Collectors.toList());
-
-            Pair found = null;
-            for (final Child root : roots) {
-                if (root instanceof Modl) {
-                    final Modl modl = (Modl) root;
-                    for (final Structure s : modl.getStructures()) {
-                        if (s != null && (s.equals(parent) || s.equals(child))) {
-                            break;
-                        }
-                        if (s instanceof Pair && ((Pair) s).getKey()
-                                .equals(key)) {
-                            found = (Pair) s;
-                        }
-                    }
-                }
-            }
-            if (found != null) {
-                return Option.of(found);
-            }
-
-        }
-        return Option.none();
-    }
 
     public void replaceChild(final Child oldChild, final Child newChild) {
         if (oldChild != null && newChild != null) {
