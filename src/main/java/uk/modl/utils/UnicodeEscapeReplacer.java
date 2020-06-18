@@ -66,17 +66,20 @@ class UnicodeEscapeReplacer {
             start = unicodeStrIdx + 1;
 
             // If the escape sequence is itself escaped then don't replace it
-            if (unicodeStrIdx > 0 && (result.charAt(unicodeStrIdx - 1) == TILDE || result.charAt(unicodeStrIdx - 1) == BACKSLASH)) {
-                continue;
+            if (!escapeSequenceIsEscaped(result, unicodeStrIdx)) {
+                // Get the codepoint value and replace the escape sequence
+                if (tryParse.codePoint > 0) {
+                    final char[] chars = Character.toChars(tryParse.codePoint);
+                    result = replace(result, chars, unicodeStrIdx, tryParse.length + 2);
+                }
             }
 
-            // Get the codepoint value and replace the escape sequence
-            if (tryParse.codePoint > 0) {
-                final char[] chars = Character.toChars(tryParse.codePoint);
-                result = replace(result, chars, unicodeStrIdx, tryParse.length + 2);
-            }
         }
         return result;
+    }
+
+    private static boolean escapeSequenceIsEscaped(final String result, final int unicodeStrIdx) {
+        return unicodeStrIdx > 0 && (result.charAt(unicodeStrIdx - 1) == TILDE || result.charAt(unicodeStrIdx - 1) == BACKSLASH);
     }
 
     /**
@@ -137,7 +140,7 @@ class UnicodeEscapeReplacer {
 
         // Check for a 6-digit unicode value
         if (hasEnoughDigits(str, idx, 6)) {
-            final int value = Integer.parseInt(str.substring(idx, idx + 6), HEX);
+            final int value = getPossibleUnicodeValue(str, idx, 6);
             if (isValidRange(value)) {
                 return new TryParseResult(value, 6);
             }
@@ -145,7 +148,7 @@ class UnicodeEscapeReplacer {
 
         // Check for a 5-digit unicode value
         if (hasEnoughDigits(str, idx, 5)) {
-            final int value = Integer.parseInt(str.substring(idx, idx + 5), HEX);
+            final int value = getPossibleUnicodeValue(str, idx, 5);
             if (isValidRange(value)) {
                 return new TryParseResult(value, 5);
             }
@@ -153,7 +156,7 @@ class UnicodeEscapeReplacer {
 
         // Check for a 4-digit unicode value
         if (hasEnoughDigits(str, idx, 4)) {
-            final int value = Integer.parseInt(str.substring(idx, idx + 4), HEX);
+            final int value = getPossibleUnicodeValue(str, idx, 4);
             if (isValidRange(value)) {
                 return new TryParseResult(value, 4);
             }
@@ -161,6 +164,10 @@ class UnicodeEscapeReplacer {
 
         // Failed
         return new TryParseResult(0, 4);
+    }
+
+    private static int getPossibleUnicodeValue(final String str, final int idx, final int i) {
+        return Integer.parseInt(str.substring(idx, idx + i), HEX);
     }
 
     /**

@@ -1,3 +1,8 @@
+0.1.4
+===
+- Factor out the scoped search into a class separate from the Ancestry class.
+- Refactor the most complex sections for easier readability.
+
 0.1.3
 ===
 - Fix empty array and empty map results.

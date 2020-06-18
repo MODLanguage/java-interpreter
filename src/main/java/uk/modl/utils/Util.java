@@ -35,8 +35,12 @@ import uk.modl.model.ValueItem;
 import java.net.IDN;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static io.vavr.API.*;
+import static io.vavr.Predicates.*;
 
 @UtilityClass
 public class Util {
@@ -195,38 +199,18 @@ public class Util {
     }
 
     private String handlePathComponent(String valueStr, final String pathComponent) {
-        switch (pathComponent) {
-            case "p":
-            case "punydecode":
-                valueStr = replacePunycode(Util.unquote(valueStr));
-                break;
-            case "u":
-            case "upcase":
-                valueStr = Util.unquote(valueStr)
-                        .toUpperCase();
-                break;
-            case "d":
-            case "downcase":
-                valueStr = Util.unquote(valueStr)
-                        .toLowerCase();
-                break;
-            case "i":
-            case "initcap":
-                valueStr = WordUtils.capitalize(Util.unquote(valueStr));
-                break;
-            case "s":
-            case "sentence":
-                valueStr = StringUtils.capitalize(Util.unquote(valueStr));
-                break;
-            case "e":
-            case "urlencode":
-                valueStr = urlEncode(valueStr);
-                break;
-            default:
-                valueStr = doReplaceOrTrim(valueStr, pathComponent);
-                break;
-        }
-        return valueStr;
+
+        final String unquoted = Util.unquote(valueStr);
+        final String finalValueStr = valueStr;
+        return Match(pathComponent).of(
+                Case($(isIn("p", "punydecode")), () -> replacePunycode(unquoted)),
+                Case($(isIn("u", "upcase")), (Supplier<String>) unquoted::toUpperCase),
+                Case($(isIn("d", "downcase")), (Supplier<String>) unquoted::toLowerCase),
+                Case($(isIn("i", "initcap")), () -> WordUtils.capitalize(unquoted)),
+                Case($(isIn("s", "sentence")), () -> StringUtils.capitalize(unquoted)),
+                Case($(isIn("e", "urlencode")), () -> urlEncode(finalValueStr)),
+                Case($(), () -> doReplaceOrTrim(unquoted, pathComponent))
+        );
     }
 
     private String doReplaceOrTrim(String valueStr, final String pathComponent) {

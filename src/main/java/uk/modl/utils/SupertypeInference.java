@@ -24,11 +24,16 @@ import io.vavr.Function2;
 import io.vavr.collection.List;
 import io.vavr.collection.Vector;
 import io.vavr.control.Option;
+import uk.modl.model.Array;
+import uk.modl.model.Map;
 import uk.modl.model.*;
 import uk.modl.transforms.StarClassTransform;
 import uk.modl.transforms.TransformationContext;
 
 import java.util.Objects;
+
+import static io.vavr.API.*;
+import static io.vavr.Predicates.*;
 
 public class SupertypeInference {
 
@@ -38,33 +43,22 @@ public class SupertypeInference {
         String tc = topClass(ctx, ci, 0);
         if (tc == null) {
             if (hasAssignStatement(ctx, ci)) {
-                if (allAssignmentKeysAreClasses(ctx, ci)) {
-                    tc = "arr";
-                } else {
-                    tc = "map";
-                }
+                tc = allAssignmentKeysAreClasses(ctx, ci) ? "arr" : "map";
             } else {
-                if (hasInheritedPairs(ctx, ci, 0)) {
-                    tc = "map";
-                } else {
-                    if (pv instanceof StringPrimitive) {
-                        tc = "str";
-                    } else if (pv instanceof NumberPrimitive) {
-                        tc = "num";
-                    } else if ((pv instanceof TruePrimitive) || (pv instanceof FalsePrimitive)) {
-                        tc = "bool";
-                    } else if (pv instanceof NullPrimitive) {
-                        tc = "null";
-                    } else if (pv instanceof Array) {
-                        tc = "arr";
-                    } else if (pv instanceof Map) {
-                        tc = "map";
-                    } else if (pv instanceof Pair) {
-                        tc = "map";
-                    } else {
-                        throw new NullPointerException("Unknown object type: " + pv.getClass());
-                    }
-                }
+                tc = hasInheritedPairs(ctx, ci, 0) ? "map" :
+                        Match(pv).of(
+                                Case($(instanceOf(StringPrimitive.class)), "str"),
+                                Case($(instanceOf(NumberPrimitive.class)), "num"),
+                                Case($(instanceOf(TruePrimitive.class)), "bool"),
+                                Case($(instanceOf(FalsePrimitive.class)), "bool"),
+                                Case($(instanceOf(NullPrimitive.class)), "null"),
+                                Case($(instanceOf(Array.class)), "arr"),
+                                Case($(instanceOf(Map.class)), "map"),
+                                Case($(instanceOf(Pair.class)), "map"),
+                                Case($(), () -> {
+                                    throw new NullPointerException("Unknown object type: " + pv.getClass());
+                                })
+                        );
             }
         }
         return tc;
