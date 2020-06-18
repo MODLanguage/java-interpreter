@@ -207,56 +207,8 @@ public class ConditionalsTransform {
 
         @NonNull final Vector<ValueItem> values = c.getValues();
 
-        if (op == null && lhs == null || lhs.toString() == null) {
-            // Is the RHS true?
-            return shouldNegate != values.map(v -> {
-                if (v instanceof TruePrimitive) {
-                    return true;
-                }
-                if (v instanceof FalsePrimitive || v instanceof NullPrimitive) {
-                    return false;
-                }
-                final String key = v.toString();
-
-                final String hiddenKey = (key.startsWith("_")) ? key : "_" + key;
-                final String unhiddenKey = (key.startsWith("_")) ? key.substring(1) : key;
-
-                if (v instanceof StringPrimitive) {
-                    final Pair pair = ctx.getAncestry()
-                            .findByKey(c, hiddenKey)
-                            .orElse(() -> ctx.getAncestry()
-                                    .findByKey(c, unhiddenKey))
-                            .getOrElse((Pair) null);
-
-                    if (pair != null) {
-
-                        @NonNull final PairValue pairValue = pair.getValue();
-                        if (pairValue instanceof TruePrimitive) {
-                            return true;
-                        }
-                        if (pairValue instanceof FalsePrimitive || pairValue instanceof NullPrimitive) {
-                            return false;
-                        }
-                        if (pairValue instanceof ValueConditional) {
-                            final ValueConditional vc = (ValueConditional) pairValue;
-                            return vc.getResult()
-                                    .map(vcResult -> {
-                                        if (vcResult instanceof TruePrimitive) {
-                                            return true;
-                                        }
-                                        if (vcResult instanceof FalsePrimitive || vcResult instanceof NullPrimitive) {
-                                            return false;
-                                        }
-                                        return false;
-                                    })
-                                    .getOrElse(false);
-                        }
-                        return true;
-                    }
-                }
-                return false;
-            })
-                    .getOrElse(false);
+        if (isSingleValueConditional(op, lhs)) {
+            return handleSingleValueConditional(ctx, c, shouldNegate, values);
         }
         if (op instanceof GreaterThanOperator) {
             return shouldNegate != Util.greaterThanAll(lhs, values);
@@ -279,6 +231,60 @@ public class ConditionalsTransform {
             return shouldNegate != (count == 0);
         }
         return shouldNegate;
+    }
+
+    private boolean isSingleValueConditional(final Operator op, final Primitive lhs) {
+        return op == null && lhs == null || lhs.toString() == null;
+    }
+
+    private boolean handleSingleValueConditional(final TransformationContext ctx, final Condition c, final boolean shouldNegate, final @NonNull Vector<ValueItem> values) {
+        // Is the RHS true?
+        return shouldNegate != values.map(v -> {
+            if (v instanceof TruePrimitive) {
+                return true;
+            }
+            if (v instanceof FalsePrimitive || v instanceof NullPrimitive) {
+                return false;
+            }
+            final String key = v.toString();
+
+            if (v instanceof StringPrimitive) {
+                final Pair pair = findReferencedPair(ctx, c, key);
+
+                if (pair != null) {
+
+                    @NonNull final PairValue pairValue = pair.getValue();
+                    if (pairValue instanceof TruePrimitive) {
+                        return true;
+                    }
+                    if (pairValue instanceof FalsePrimitive || pairValue instanceof NullPrimitive) {
+                        return false;
+                    }
+                    if (pairValue instanceof ValueConditional) {
+                        final ValueConditional vc = (ValueConditional) pairValue;
+                        return vc.getResult()
+                                .map(vcResult -> {
+                                    if (vcResult instanceof TruePrimitive) {
+                                        return true;
+                                    }
+                                    if (vcResult instanceof FalsePrimitive || vcResult instanceof NullPrimitive) {
+                                        return false;
+                                    }
+                                    return false;
+                                })
+                                .getOrElse(false);
+                    }
+                    return true;
+                }
+            }
+            return false;
+        })
+                .getOrElse(false);
+    }
+
+    private Pair findReferencedPair(final TransformationContext ctx, final Condition c, final String key) {
+        return ctx.getAncestry()
+                .findReferencedPair(ctx, c, key);
     }
 
     private int countMatches(final Condition c, final ValueItem lhs) {

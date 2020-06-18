@@ -23,6 +23,7 @@ package uk.modl.ancestry;
 import io.vavr.control.Option;
 import uk.modl.model.Pair;
 import uk.modl.model.Primitive;
+import uk.modl.transforms.TransformationContext;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -96,6 +97,17 @@ public class Ancestry {
                 .forEach(System.out::println);
     }
 
+    public Pair findReferencedPair(final TransformationContext ctx, final Child c, final String key) {
+        final String hiddenKey = (key.startsWith("_")) ? key : "_" + key;
+        final String unhiddenKey = (key.startsWith("_")) ? key.substring(1) : key;
+
+        return ctx.getAncestry()
+                .findByKey(c, hiddenKey)
+                .orElse(() -> ctx.getAncestry()
+                        .findByKey(c, unhiddenKey))
+                .getOrElse((Pair) null);
+    }
+
 
     public void replaceChild(final Child oldChild, final Child newChild) {
         if (oldChild != null && newChild != null) {
@@ -103,8 +115,7 @@ public class Ancestry {
 
             final List<Child> childrenOfOldChild = ancestors.entrySet()
                     .stream()
-                    .filter(entry -> entry.getValue() != null && entry.getValue()
-                            .equals(oldChild))
+                    .filter(entry -> entryValueMatchesChild(oldChild, entry))
                     .map(Map.Entry::getKey)
                     .collect(Collectors.toList());
 
@@ -116,6 +127,11 @@ public class Ancestry {
 
             ancestors.put(newChild, parent);
         }
+    }
+
+    private boolean entryValueMatchesChild(final Child oldChild, final Map.Entry<Child, Parent> entry) {
+        return entry.getValue() != null && entry.getValue()
+                .equals(oldChild);
     }
 
     /**

@@ -82,14 +82,14 @@ public class Util {
      * @return an unquoted String
      */
     public String unquote(final String text) {
-        if (text == null) {
-            return null;
+        if (text != null) {
+            if (text.startsWith("`") && text.endsWith("`")) {
+                return StringUtils.unwrap(text, "`");
+            } else {
+                return StringUtils.unwrap(text, "\"");
+            }
         }
-
-        if (text.startsWith("`") && text.endsWith("`")) {
-            return StringUtils.unwrap(text, "`");
-        }
-        return StringUtils.unwrap(text, "\"");
+        return null;
     }
 
     /**
@@ -108,9 +108,8 @@ public class Util {
             final String newText = Util.unquote(rep);
             final String oldtext = Util.unquote(text);
             return s.replace(oldtext, newText);
-        } else {
-            throw new RuntimeException("Invalid method: " + spec);
         }
+        throw new RuntimeException("Invalid method: " + spec);
     }
 
     /**
@@ -124,7 +123,7 @@ public class Util {
         final Matcher matcher = trimmerPattern.matcher(spec);
 
         if (matcher.find()) {
-            final String text = (matcher.group(1) != null) ? matcher.group(1) : matcher.group(2);
+            final String text = getMatcherGroup(matcher);
             final int i = s.indexOf(text);
             if (i > -1) {
                 return s.substring(0, i);
@@ -133,6 +132,10 @@ public class Util {
             throw new RuntimeException("Invalid method: " + spec);
         }
         return s;
+    }
+
+    private String getMatcherGroup(final Matcher matcher) {
+        return (matcher.group(1) != null) ? matcher.group(1) : matcher.group(2);
     }
 
     public boolean greaterThanAll(final ValueItem lhs, final Vector<ValueItem> values) {
@@ -186,47 +189,70 @@ public class Util {
     public String handleMethodsAndTrailingPathComponents(final String[] refList, String
             valueStr) {
         for (final String pathComponent : refList) {
-            switch (pathComponent) {
-                case "p":
-                case "punydecode":
-                    valueStr = replacePunycode(Util.unquote(valueStr));
-                    break;
-                case "u":
-                case "upcase":
-                    valueStr = Util.unquote(valueStr)
-                            .toUpperCase();
-                    break;
-                case "d":
-                case "downcase":
-                    valueStr = Util.unquote(valueStr)
-                            .toLowerCase();
-                    break;
-                case "i":
-                case "initcap":
-                    valueStr = WordUtils.capitalize(Util.unquote(valueStr));
-                    break;
-                case "s":
-                case "sentence":
-                    valueStr = StringUtils.capitalize(Util.unquote(valueStr));
-                    break;
-                case "e":
-                case "urlencode":
-                    try {
-                        valueStr = URLEncoder.encode(valueStr, StandardCharsets.UTF_8.toString());
-                    } catch (final Exception e) {
-                        throw new RuntimeException("Error processing URL encoding instruction: " + e.getMessage());
-                    }
-                    break;
-                default:
-                    if (pathComponent.startsWith("r<") || pathComponent.startsWith("replace<")) {
-                        valueStr = Util.replacer(pathComponent, valueStr);
-                    } else if (pathComponent.startsWith("t<") || pathComponent.startsWith("trim<")) {
-                        valueStr = Util.trimmer(pathComponent, valueStr);
-                    }
-                    break;
-            }
+            valueStr = handlePathComponent(valueStr, pathComponent);
         }
         return valueStr;
+    }
+
+    private String handlePathComponent(String valueStr, final String pathComponent) {
+        switch (pathComponent) {
+            case "p":
+            case "punydecode":
+                valueStr = replacePunycode(Util.unquote(valueStr));
+                break;
+            case "u":
+            case "upcase":
+                valueStr = Util.unquote(valueStr)
+                        .toUpperCase();
+                break;
+            case "d":
+            case "downcase":
+                valueStr = Util.unquote(valueStr)
+                        .toLowerCase();
+                break;
+            case "i":
+            case "initcap":
+                valueStr = WordUtils.capitalize(Util.unquote(valueStr));
+                break;
+            case "s":
+            case "sentence":
+                valueStr = StringUtils.capitalize(Util.unquote(valueStr));
+                break;
+            case "e":
+            case "urlencode":
+                valueStr = urlEncode(valueStr);
+                break;
+            default:
+                valueStr = doReplaceOrTrim(valueStr, pathComponent);
+                break;
+        }
+        return valueStr;
+    }
+
+    private String doReplaceOrTrim(String valueStr, final String pathComponent) {
+        if (isReplaceMethod(pathComponent)) {
+            valueStr = Util.replacer(pathComponent, valueStr);
+        } else if (isTrimMethod(pathComponent)) {
+            valueStr = Util.trimmer(pathComponent, valueStr);
+        }
+        return valueStr;
+    }
+
+    private String urlEncode(String valueStr) {
+        try {
+            valueStr = URLEncoder.encode(valueStr, StandardCharsets.UTF_8.toString());
+        } catch (final Exception e) {
+            throw new RuntimeException("Error processing URL encoding instruction: " + e.getMessage());
+        }
+        return valueStr;
+    }
+
+    private boolean isTrimMethod(final String pathComponent) {
+        return pathComponent.startsWith("t<") || pathComponent.startsWith("trim<");
+    }
+
+    private boolean isReplaceMethod(final String pathComponent) {
+        return pathComponent.startsWith("r<") || pathComponent.startsWith("replace<");
     }
 
     public String replacePunycode(final String s) {
@@ -257,10 +283,10 @@ public class Util {
     public StarLoadExtractor.FileSpec normalize(@NonNull final String text) {
         String normalized = text;
 
-        if (normalized.length() > 1 && normalized.startsWith("`") && normalized.endsWith("`")) {
+        if (isGraved(normalized)) {
             // Remove graves
             normalized = StringUtils.unwrap(normalized, "`");
-        } else if (normalized.length() > 1 && normalized.startsWith("\"") && normalized.endsWith("\"")) {
+        } else if (isDoubleQuoted(normalized)) {
             // Remove quotes
             normalized = StringUtils.unwrap(normalized, "\"");
         }
@@ -268,7 +294,7 @@ public class Util {
         final boolean forceLoad = (normalized.endsWith("!"));
         normalized = StringUtils.removeEnd(normalized, "!");
 
-        if (!normalized.endsWith(".modl") && !normalized.endsWith(".txt")) {
+        if (hasNoExtension(normalized)) {
             // Add a file extension
             normalized += ".modl";
         }
@@ -276,6 +302,18 @@ public class Util {
         normalized = normalized.replace("~://", "://");
 
         return StarLoadExtractor.FileSpec.of(normalized, forceLoad);
+    }
+
+    private boolean hasNoExtension(final String normalized) {
+        return !normalized.endsWith(".modl") && !normalized.endsWith(".txt");
+    }
+
+    private boolean isDoubleQuoted(final String normalized) {
+        return normalized.length() > 1 && normalized.startsWith("\"") && normalized.endsWith("\"");
+    }
+
+    private boolean isGraved(final String normalized) {
+        return normalized.length() > 1 && normalized.startsWith("`") && normalized.endsWith("`");
     }
 
     /**

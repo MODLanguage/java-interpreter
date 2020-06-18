@@ -94,14 +94,11 @@ public class InterpreterVisitor {
 
         if (s instanceof Map) {
             return visitMap(ctx, (Map) s);
-        }
-        if (s instanceof Array) {
+        } else if (s instanceof Array) {
             return visitArray(ctx, (Array) s);
-        }
-        if (s instanceof Pair) {
+        } else if (s instanceof Pair) {
             return visitPair(ctx, (Pair) s);
-        }
-        if (s instanceof TopLevelConditional) {
+        } else if (s instanceof TopLevelConditional) {
             return visitTopLevelConditional(ctx, (TopLevelConditional) s);
         }
         return Tuple.of(ctx, s);
@@ -515,32 +512,11 @@ public class InterpreterVisitor {
      */
     private Tuple2<TransformationContext, Structure> visitPair(final TransformationContext ctx, final Pair p) {
 
-        if (p.getKey()
-                .startsWith("*") && !VALID_INSTRUCTIONS
-                .contains(p.getKey()
-                        .toLowerCase())) {
+        if (isInvalidKeyword(p)) {
             throw new RuntimeException("Invalid keyword: " + p.getKey());
         }
         TransformationContext newCtx = ctx;
-        if (p.getKey()
-                .equals("*VERSION") || p.getKey()
-                .equals("*V")) {
-            try {
-                final int version = p.getValue()
-                        .numericValue()
-                        .intValue();
-
-                if (version <= 0) {
-                    throw new RuntimeException("Invalid MODL version: " + p.getValue()
-                            .toString());
-                }
-
-                newCtx = newCtx.withVersion(version);
-            } catch (final NumberFormatException e) {
-                throw new RuntimeException("Invalid MODL version: " + p.getValue()
-                        .toString());
-            }
-        }
+        newCtx = checkForVersionInstruction(p, newCtx);
 
         // Special handling for *load instructions.
         if (StarLoadExtractor.isLoadInstruction(p.getKey())) {
@@ -558,39 +534,72 @@ public class InterpreterVisitor {
 
         newCtx = contextAndStructure._1;
 
-        if (structure == null) {
-            return Tuple.of(newCtx, null);
+        if (structure != null) {
+            PairValue value;
+
+            if (structure instanceof Pair) {
+                final Pair pair = (Pair) structure;
+                value = pair.getValue();
+            } else {
+                value = (PairValue) structure;
+            }
+
+            if (value instanceof Array) {
+                final Tuple2<TransformationContext, Structure> result = visitArray(newCtx, (Array) value);
+                newCtx = result._1;
+                value = (PairValue) result._2;
+            } else if (value instanceof Map) {
+                final Tuple2<TransformationContext, Structure> result = visitMap(newCtx, (Map) value);
+                newCtx = result._1;
+                value = (PairValue) result._2;
+            } else if (value instanceof ValueItem) {
+                final Tuple2<TransformationContext, ValueItem> result = visitValueItem(newCtx, (ValueItem) value);
+                newCtx = result._1;
+                value = result._2;
+            }
+
+            if (structure instanceof Pair) {
+                final Pair newPair = p.with(ctx.getAncestry(), value);
+
+                return Tuple.of(newCtx, newPair);
+            }
         }
 
-        PairValue value;
-
-        if (structure instanceof Pair) {
-            final Pair pair = (Pair) structure;
-            value = pair.getValue();
-        } else {
-            value = (PairValue) structure;
-        }
-
-        if (value instanceof Array) {
-            final Tuple2<TransformationContext, Structure> result = visitArray(newCtx, (Array) value);
-            newCtx = result._1;
-            value = (PairValue) result._2;
-        } else if (value instanceof Map) {
-            final Tuple2<TransformationContext, Structure> result = visitMap(newCtx, (Map) value);
-            newCtx = result._1;
-            value = (PairValue) result._2;
-        } else if (value instanceof ValueItem) {
-            final Tuple2<TransformationContext, ValueItem> result = visitValueItem(newCtx, (ValueItem) value);
-            newCtx = result._1;
-            value = result._2;
-        }
-
-        if (structure instanceof Pair) {
-            final Pair newPair = p.with(ctx.getAncestry(), value);
-
-            return Tuple.of(newCtx, newPair);
-        }
         return Tuple.of(newCtx, structure);
+    }
+
+    private TransformationContext checkForVersionInstruction(final Pair p, TransformationContext newCtx) {
+        if (isVersionKey(p)) {
+            try {
+                final int version = p.getValue()
+                        .numericValue()
+                        .intValue();
+
+                if (version <= 0) {
+                    throw new RuntimeException("Invalid MODL version: " + p.getValue()
+                            .toString());
+                }
+
+                newCtx = newCtx.withVersion(version);
+            } catch (final NumberFormatException e) {
+                throw new RuntimeException("Invalid MODL version: " + p.getValue()
+                        .toString());
+            }
+        }
+        return newCtx;
+    }
+
+    private boolean isVersionKey(final Pair p) {
+        return p.getKey()
+                .equals("*VERSION") || p.getKey()
+                .equals("*V");
+    }
+
+    private boolean isInvalidKeyword(final Pair p) {
+        return p.getKey()
+                .startsWith("*") && !VALID_INSTRUCTIONS
+                .contains(p.getKey()
+                        .toLowerCase());
     }
 
     /**

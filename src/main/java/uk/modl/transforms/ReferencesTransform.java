@@ -151,15 +151,9 @@ public class ReferencesTransform {
         return condition;
     }
 
-    private Pair findPairFromAncestry(final TransformationContext ctx, final Child child, final String value) {
-        final String hiddenKey = (value.startsWith("_")) ? value : "_" + value;
-        final String unhiddenKey = (value.startsWith("_")) ? value.substring(1) : value;
-
+    private Pair findPairFromAncestry(final TransformationContext ctx, final Child c, final String key) {
         return ctx.getAncestry()
-                .findByKey(child, hiddenKey)
-                .orElse(() -> ctx.getAncestry()
-                        .findByKey(child, unhiddenKey))
-                .getOrElse((Pair) null);
+                .findReferencedPair(ctx, c, key);
     }
 
     /**
@@ -278,31 +272,7 @@ public class ReferencesTransform {
             // If we have a Map then try to get a Pair from within it and recurse.
             if (vi instanceof uk.modl.model.Map) {
                 final Option<MapItem> matchingMapItem = ((uk.modl.model.Map) vi).getMapItems()
-                        .find(mapItem -> {
-                            // Check whether the reference key needs de-referencing
-                            if (ref.contains("%")) {
-                                String rawRef = stripLeadingAndTrailingPercents(ref);
-
-                                final Pair pair = findPairFromAncestry(ctx, vi, rawRef);
-
-                                if (pair != null) {
-                                    final String actualRef = pair.getValue()
-                                            .toString();
-
-                                    return mapItem instanceof Pair && ((Pair) mapItem).getKey()
-                                            .equals(actualRef);
-                                } else {
-                                    throw new DeepReferenceException("No entry '" + ref + "' in Map '" + vi + "'");
-                                }
-                            } else {
-                                final String hiddenKey = (ref.startsWith("_")) ? ref : "_" + ref;
-                                final String unhiddenKey = (ref.startsWith("_")) ? ref.substring(1) : ref;
-                                return mapItem instanceof Pair && (((Pair) mapItem).getKey()
-                                        .equals(hiddenKey) || ((Pair) mapItem).getKey()
-                                        .equals(unhiddenKey));
-                            }
-
-                        });
+                        .find(mapItem -> followNestedRefIntoMap(ctx, vi, ref, mapItem));
                 if (matchingMapItem.isDefined()) {
                     return followNestedRef(ctx, (ValueItem) matchingMapItem.get(), refList, refIndex);
                 } else {
@@ -315,16 +285,7 @@ public class ReferencesTransform {
                 final PairValue value = ((Pair) vi).getValue();
 
                 if (!(value instanceof Primitive)) {
-                    final String hiddenKey = (ref.startsWith("_")) ? ref : "_" + ref;
-                    final String unhiddenKey = (ref.startsWith("_")) ? ref.substring(1) : ref;
-                    if (((Pair) vi).getKey()
-                            .equals(hiddenKey) || ((Pair) vi).getKey()
-                            .equals(unhiddenKey)) {
-                        return followNestedRef(ctx, (ValueItem) value, refList, refIndex + 1);
-                    } else {
-                        // Use the current refIndex since we haven't yet consumed it.
-                        return followNestedRef(ctx, (ValueItem) value, refList, refIndex);
-                    }
+                    return followNestedRefIntoPrimitive(ctx, (Pair) vi, refList, refIndex, ref, (ValueItem) value);
                 }
                 if (refIndex == (refList.length - 1) && ((Pair) vi).getKey()
                         .equals(ref)) {
@@ -345,6 +306,44 @@ public class ReferencesTransform {
             }
         }
         return vi;
+    }
+
+    private ValueItem followNestedRefIntoPrimitive(final TransformationContext ctx, final Pair vi, final String[] refList, final int refIndex, final String ref, final ValueItem value) {
+        final String hiddenKey = (ref.startsWith("_")) ? ref : "_" + ref;
+        final String unhiddenKey = (ref.startsWith("_")) ? ref.substring(1) : ref;
+        if (vi.getKey()
+                .equals(hiddenKey) || vi.getKey()
+                .equals(unhiddenKey)) {
+            return followNestedRef(ctx, value, refList, refIndex + 1);
+        } else {
+            // Use the current refIndex since we haven't yet consumed it.
+            return followNestedRef(ctx, value, refList, refIndex);
+        }
+    }
+
+    private boolean followNestedRefIntoMap(final TransformationContext ctx, final ValueItem vi, final String ref, final MapItem mapItem) {
+        // Check whether the reference key needs de-referencing
+        if (ref.contains("%")) {
+            String rawRef = stripLeadingAndTrailingPercents(ref);
+
+            final Pair pair = findPairFromAncestry(ctx, vi, rawRef);
+
+            if (pair != null) {
+                final String actualRef = pair.getValue()
+                        .toString();
+
+                return mapItem instanceof Pair && ((Pair) mapItem).getKey()
+                        .equals(actualRef);
+            } else {
+                throw new DeepReferenceException("No entry '" + ref + "' in Map '" + vi + "'");
+            }
+        } else {
+            final String hiddenKey = (ref.startsWith("_")) ? ref : "_" + ref;
+            final String unhiddenKey = (ref.startsWith("_")) ? ref.substring(1) : ref;
+            return mapItem instanceof Pair && (((Pair) mapItem).getKey()
+                    .equals(hiddenKey) || ((Pair) mapItem).getKey()
+                    .equals(unhiddenKey));
+        }
     }
 
     private String handleMethodsAndTrailingPathComponents(final TransformationContext ctx, final String[] refList, final int refIndex, String valueStr) {

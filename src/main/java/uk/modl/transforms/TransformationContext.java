@@ -122,11 +122,11 @@ public class TransformationContext {
      * @return TransformationContext
      */
     public TransformationContext addMethodInstruction(final StarMethodTransform.MethodInstruction mi) {
-        if (methodsById.containsKey(mi.getId()) || methodsByName.containsKey(mi.getId())) {
+        if (isDuplicateId(mi)) {
             throw new RuntimeException("Duplicate method name or id: " + mi.getId());
         }
 
-        if (methodsById.containsKey(mi.getName()) || methodsByName.containsKey(mi.getName())) {
+        if (isDuplicateName(mi)) {
             throw new RuntimeException("Duplicate method name or id: " + mi.getName());
         }
 
@@ -140,6 +140,14 @@ public class TransformationContext {
                 .withMethodsByName(updatedMethodsByName);
     }
 
+    private boolean isDuplicateName(final StarMethodTransform.MethodInstruction mi) {
+        return methodsById.containsKey(mi.getName()) || methodsByName.containsKey(mi.getName());
+    }
+
+    private boolean isDuplicateId(final StarMethodTransform.MethodInstruction mi) {
+        return methodsById.containsKey(mi.getId()) || methodsByName.containsKey(mi.getId());
+    }
+
     /**
      * Add a class defined by a *class instruction
      *
@@ -150,7 +158,7 @@ public class TransformationContext {
         if (starClassImmutable) {
             throw new RuntimeException("Already defined *class as final.");
         }
-        if (classesById.containsKey(ci.getId()) || classesByName.containsKey(ci.getId()) || classesById.containsKey(ci.getName()) || classesByName.containsKey(ci.getName())) {
+        if (isAlreadyDefined(ci)) {
             throw new RuntimeException("Class name or id already defined - cannot redefine: " + ci.getId() + ", " + ci.getName());
         }
 
@@ -162,6 +170,10 @@ public class TransformationContext {
         return this.withClasses(updatedClasses)
                 .withClassesById(updatedClassesById)
                 .withClassesByName(updatedClassesByName);
+    }
+
+    private boolean isAlreadyDefined(final StarClassTransform.ClassInstruction ci) {
+        return classesById.containsKey(ci.getId()) || classesByName.containsKey(ci.getId()) || classesById.containsKey(ci.getName()) || classesByName.containsKey(ci.getName());
     }
 
     /**

@@ -49,19 +49,35 @@ public class PercentStarInstructionTransform {
     private Array instructionToReferencedItems(final TransformationContext ctx, final Parent parent, final String ir) {
         final Array arr = Array.of(ctx.getAncestry(), parent, Vector.empty());
 
-        if ("%*load".equals(ir)) {
+        if (isStarLoad(ir)) {
             return arr.with(ctx.getAncestry(), ctx.getFilesLoaded()
-                    .map(f -> (ArrayItem) StringPrimitive.of(ctx.getAncestry(), arr, f)));
-        } else if ("%*class".equals(ir)) {
+                    .map(f -> toStringPrimitive(ctx, arr, f)));
+        } else if (isStarClass(ir)) {
             return arr.with(ctx.getAncestry(), ctx.getClasses()
                     .map(classInstruction -> classInstructionToArrayItem(ctx, parent, classInstruction))
                     .toVector());
-        } else if ("%*method".equals(ir)) {
+        } else if (isStarMethod(ir)) {
             return arr.with(ctx.getAncestry(), ctx.getMethods()
                     .map(methodInstruction -> methodInstructionToArrayItem(ctx, parent, methodInstruction))
                     .toVector());
         }
         return arr;
+    }
+
+    private ArrayItem toStringPrimitive(final TransformationContext ctx, final Array arr, final String f) {
+        return StringPrimitive.of(ctx.getAncestry(), arr, f);
+    }
+
+    private boolean isStarMethod(final String ir) {
+        return "%*method".equals(ir);
+    }
+
+    private boolean isStarClass(final String ir) {
+        return "%*class".equals(ir);
+    }
+
+    private boolean isStarLoad(final String ir) {
+        return "%*load".equals(ir);
     }
 
     /**
