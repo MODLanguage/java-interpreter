@@ -433,10 +433,7 @@ public class ClassExpansionTransform {
             if (isSingleWildcardAssign(assignList)) {
                 final Option<StarClassTransform.ClassInstruction> maybeClassByNameOrId = ctx.getClassByNameOrId(StringUtils.removeEnd(assignList.get(0), "*"));
 
-                if (maybeClassByNameOrId
-                        .isDefined() && maybeClassByNameOrId.get()
-                        .getAssign()
-                        .nonEmpty()) {
+                if (isDefinedWithAssigns(maybeClassByNameOrId)) {
                     final StarClassTransform.ClassInstruction classs = maybeClassByNameOrId.get();
                     final ExpandedClass expandedClass = cache.getExpandedClass(ctx, classs, classs.getSuperclass());
 
@@ -500,10 +497,7 @@ public class ClassExpansionTransform {
                         if (isSingleWildcardAssign(assignList)) {
                             final Option<StarClassTransform.ClassInstruction> maybeClassByNameOrId = ctx.getClassByNameOrId(StringUtils.removeEnd(assignList.get(0), "*"));
 
-                            if (maybeClassByNameOrId
-                                    .isDefined() && maybeClassByNameOrId.get()
-                                    .getAssign()
-                                    .nonEmpty()) {
+                            if (isDefinedWithAssigns(maybeClassByNameOrId)) {
                                 final StarClassTransform.ClassInstruction classs = maybeClassByNameOrId.get();
                                 final ExpandedClass expandedClass = cache.getExpandedClass(ctx, classs, classs.getSuperclass());
 
@@ -524,10 +518,7 @@ public class ClassExpansionTransform {
 
                         for (int i = 0; i < assignListLength; i++) {
                             final Option<StarClassTransform.ClassInstruction> maybeClassByNameOrId = ctx.getClassByNameOrId(StringUtils.removeEnd(assignList.get(i), "*"));
-                            if (maybeClassByNameOrId
-                                    .isDefined() && maybeClassByNameOrId.get()
-                                    .getAssign()
-                                    .nonEmpty()) {
+                            if (isDefinedWithAssigns(maybeClassByNameOrId)) {
                                 final StarClassTransform.ClassInstruction classs = maybeClassByNameOrId.get();
                                 final ExpandedClass expandedClass = cache.getExpandedClass(ctx, classs, classs.getSuperclass());
 
@@ -543,27 +534,35 @@ public class ClassExpansionTransform {
                     .getOrElseThrow(() -> new RuntimeException("No key list of the correct length in class " + id + " - looking for one of length " + assignListLength));
         }
 
+        private boolean isDefinedWithAssigns(final Option<StarClassTransform.ClassInstruction> maybeClassByNameOrId) {
+            return maybeClassByNameOrId
+                    .isDefined() && maybeClassByNameOrId.get()
+                    .getAssign()
+                    .nonEmpty();
+        }
+
         private Vector<String> extendAssignList(final int len, final Vector<String> list) {
 
             // Only one of the keys should be a wildcard, so continuing on the assumption that it is true
             return list.find(s -> s.endsWith("*"))
                     .map(wild -> StringUtils.removeEnd(wild, "*"))
-                    .map(s -> {
-                        final int numberOfNonWildcardKeys = list.size() - 1;
-                        final int numberOfAdditionalKeys = len - numberOfNonWildcardKeys;
-
-                        Vector<String> result = Vector.empty();
-                        for (int i = 0; i < list.size(); i++) {
-                            final String key = list.get(i);
-                            if (key.endsWith("*")) {
-                                result = result.appendAll(Vector.fill(numberOfAdditionalKeys, s));
-                            } else {
-                                result = result.append(key);
-                            }
-                        }
-                        return result;
-                    })
+                    .map(s -> extendAssignList(len, list, s))
                     .getOrElse(list);
+        }
+
+        private Vector<String> extendAssignList(final int len, final Vector<String> list, final String s) {
+            final int numberOfNonWildcardKeys = list.size() - 1;
+            final int numberOfAdditionalKeys = len - numberOfNonWildcardKeys;
+
+            return list.map(key -> extendedKeyList(s, numberOfAdditionalKeys, key))
+                    .foldLeft(Vector.empty(), Vector::appendAll);
+        }
+
+        private Vector<String> extendedKeyList(final String s, final int numberOfAdditionalKeys, final String key) {
+            if (key.endsWith("*")) {
+                return Vector.fill(numberOfAdditionalKeys, s);
+            }
+            return Vector.of(key);
         }
 
         public Map toMapFromMap(final TransformationContext ctx, final Map map) {

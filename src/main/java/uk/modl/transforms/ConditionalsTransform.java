@@ -23,6 +23,7 @@ package uk.modl.transforms;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
+import io.vavr.control.Option;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import uk.modl.model.*;
@@ -240,12 +241,11 @@ public class ConditionalsTransform {
     private boolean handleSingleValueConditional(final TransformationContext ctx, final Condition c, final boolean shouldNegate, final @NonNull Vector<ValueItem> values) {
         // Is the RHS true?
         return shouldNegate != values.map(v -> {
-            if (v instanceof TruePrimitive) {
-                return true;
+            final Option<Boolean> simpleBoolean = maybeBoolean(v);
+            if (simpleBoolean.isDefined()) {
+                return simpleBoolean.get();
             }
-            if (v instanceof FalsePrimitive || v instanceof NullPrimitive) {
-                return false;
-            }
+
             final String key = v.toString();
 
             if (v instanceof StringPrimitive) {
@@ -254,25 +254,12 @@ public class ConditionalsTransform {
                 if (pair != null) {
 
                     @NonNull final PairValue pairValue = pair.getValue();
-                    if (pairValue instanceof TruePrimitive) {
-                        return true;
-                    }
-                    if (pairValue instanceof FalsePrimitive || pairValue instanceof NullPrimitive) {
-                        return false;
+                    final Option<Boolean> simpleBoolean2 = maybeBoolean(pairValue);
+                    if (simpleBoolean2.isDefined()) {
+                        return simpleBoolean2.get();
                     }
                     if (pairValue instanceof ValueConditional) {
-                        final ValueConditional vc = (ValueConditional) pairValue;
-                        return vc.getResult()
-                                .map(vcResult -> {
-                                    if (vcResult instanceof TruePrimitive) {
-                                        return true;
-                                    }
-                                    if (vcResult instanceof FalsePrimitive || vcResult instanceof NullPrimitive) {
-                                        return false;
-                                    }
-                                    return false;
-                                })
-                                .getOrElse(false);
+                        return checkValueConditionalResult((ValueConditional) pairValue);
                     }
                     return true;
                 }
@@ -280,6 +267,27 @@ public class ConditionalsTransform {
             return false;
         })
                 .getOrElse(false);
+    }
+
+    private Boolean checkValueConditionalResult(final ValueConditional pairValue) {
+        return pairValue.getResult()
+                .map(vcResult -> {
+                    final Option<Boolean> simpleBoolean3 = maybeBoolean(vcResult);
+                    if (simpleBoolean3.isDefined()) {
+                        return simpleBoolean3.get();
+                    }
+                    return false;
+                })
+                .getOrElse(false);
+    }
+
+    private Option<Boolean> maybeBoolean(final Object o) {
+        if (o instanceof TruePrimitive) {
+            return Option.of(Boolean.TRUE);
+        } else if (o instanceof FalsePrimitive || o instanceof NullPrimitive) {
+            return Option.of(Boolean.FALSE);
+        }
+        return Option.none();
     }
 
     private Pair findReferencedPair(final TransformationContext ctx, final Condition c, final String key) {
@@ -309,40 +317,9 @@ public class ConditionalsTransform {
                 .size() == 1) {
             if (evaluate(ctx, vc.getTests()
                     .get(0))) {
-                if (vc.getReturns()
-                        .size() == 0) {
-                    return vc.with(ctx.getAncestry(), Vector.of(TruePrimitive.instance));
-                }
-
-                Vector<ValueItem> items = Vector.empty();
-
-                for (final ValueItem vi : vc.getReturns()
-                        .get(0)
-                        .getItems()
-                        .map(nested -> handleNestedValueConditionals(ctx, nested))) {
-                    final ValueItem refsResult = referencesTransform.apply(ctx, vi);
-
-                    items = items.append(refsResult);
-                }
-
-                return vc.with(ctx.getAncestry(), items);
+                return handleValueConditionalTrue(ctx, vc);
             } else {
-                if (vc.getReturns()
-                        .size() == 0) {
-                    return vc.with(ctx.getAncestry(), Vector.of(FalsePrimitive.instance));
-                }
-
-                Vector<ValueItem> items = Vector.empty();
-
-                for (final ValueItem vi : vc.getReturns()
-                        .get(1)
-                        .getItems()
-                        .map(nested -> handleNestedValueConditionals(ctx, nested))) {
-                    final ValueItem refsResult = referencesTransform.apply(ctx, vi);
-
-                    items = items.append(refsResult);
-                }
-                return vc.with(ctx.getAncestry(), items);
+                return handleValueConditionalFalse(ctx, vc);
             }
         } else {
             int i = 0;
@@ -365,6 +342,45 @@ public class ConditionalsTransform {
             }
         }
         return vc;
+    }
+
+    private ValueConditional handleValueConditionalFalse(final TransformationContext ctx, final ValueConditional vc) {
+        if (vc.getReturns()
+                .size() == 0) {
+            return vc.with(ctx.getAncestry(), Vector.of(FalsePrimitive.instance));
+        }
+
+        Vector<ValueItem> items = Vector.empty();
+
+        for (final ValueItem vi : vc.getReturns()
+                .get(1)
+                .getItems()
+                .map(nested -> handleNestedValueConditionals(ctx, nested))) {
+            final ValueItem refsResult = referencesTransform.apply(ctx, vi);
+
+            items = items.append(refsResult);
+        }
+        return vc.with(ctx.getAncestry(), items);
+    }
+
+    private ValueConditional handleValueConditionalTrue(final TransformationContext ctx, final ValueConditional vc) {
+        if (vc.getReturns()
+                .size() == 0) {
+            return vc.with(ctx.getAncestry(), Vector.of(TruePrimitive.instance));
+        }
+
+        Vector<ValueItem> items = Vector.empty();
+
+        for (final ValueItem vi : vc.getReturns()
+                .get(0)
+                .getItems()
+                .map(nested -> handleNestedValueConditionals(ctx, nested))) {
+            final ValueItem refsResult = referencesTransform.apply(ctx, vi);
+
+            items = items.append(refsResult);
+        }
+
+        return vc.with(ctx.getAncestry(), items);
     }
 
     private ValueItem handleNestedValueConditionals(final TransformationContext ctx, final ValueItem vi) {

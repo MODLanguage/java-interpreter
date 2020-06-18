@@ -90,6 +90,7 @@ public class StarClassTransform {
             for (final MapItem mi : ((Map) pair.getValue()).getMapItems()) {
                 if (mi instanceof Pair) {
                     final Pair p = (Pair) mi;
+
                     switch (p.getKey()
                             .toLowerCase()) {
                         case "*i":
@@ -109,18 +110,7 @@ public class StarClassTransform {
                             break;
                         case "*a":
                         case "*assign":
-                            if (p.getValue() instanceof Array) {
-                                assign = ((Array) p.getValue()).getArrayItems()
-                                        .map(ai -> {
-                                            if (ai instanceof Array) {
-                                                return ai;
-                                            } else {
-                                                throw new RuntimeException("*assign statement should be an Array of Arrays");
-                                            }
-                                        });
-                            } else {
-                                throw new RuntimeException("*assign statement should be an Array of Arrays");
-                            }
+                            assign = extractAssign(p);
                             break;
                         default:
                             if (p.getValue()
@@ -155,6 +145,23 @@ public class StarClassTransform {
             throw new RuntimeException("Expected a map for " + pair.getKey() + " but found a " + pair.getValue()
                     .getClass());
         }
+    }
+
+    private Vector<ArrayItem> extractAssign(final Pair p) {
+        final Vector<ArrayItem> assign;
+        if (p.getValue() instanceof Array) {
+            assign = ((Array) p.getValue()).getArrayItems()
+                    .map(ai -> {
+                        if (ai instanceof Array) {
+                            return ai;
+                        } else {
+                            throw new RuntimeException("*assign statement should be an Array of Arrays");
+                        }
+                    });
+        } else {
+            throw new RuntimeException("*assign statement should be an Array of Arrays");
+        }
+        return assign;
     }
 
     private void validateAssign(final Vector<ArrayItem> assigns) {

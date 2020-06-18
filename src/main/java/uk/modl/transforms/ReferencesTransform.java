@@ -249,55 +249,16 @@ public class ReferencesTransform {
 
         final String ref = refList[refIndex];
         if (StringUtils.isNumeric(ref)) {
-            final int refNum = Integer.parseInt(ref);
-            if (vi instanceof Array) {
-                final Array arr = (Array) vi;
-                final ValueItem valueItem = (ValueItem) arr.getArrayItems()
-                        .get(refNum);
-
-                return followNestedRef(ctx, valueItem, refList, refIndex + 1);
-
-            } else if (vi instanceof Pair && ((Pair) vi).getValue() instanceof Array) {
-                final ValueItem valueItem = (ValueItem) ((Array) ((Pair) vi).getValue()).getArrayItems()
-                        .get(refNum);
-                return followNestedRef(ctx, valueItem, refList, refIndex + 1);
-            } else {
-                if (refIndex < (refList.length - 1)) {
-                    throw new DeepReferenceException("Invalid reference.");
-                } else {
-                    throw new RuntimeException("Found a map when expecting an array");
-                }
-            }
+            return followNumericNestedRef(ctx, vi, refList, refIndex, ref);
         } else {
             // If we have a Map then try to get a Pair from within it and recurse.
             if (vi instanceof uk.modl.model.Map) {
-                final Option<MapItem> matchingMapItem = ((uk.modl.model.Map) vi).getMapItems()
-                        .find(mapItem -> followNestedRefIntoMap(ctx, vi, ref, mapItem));
-                if (matchingMapItem.isDefined()) {
-                    return followNestedRef(ctx, (ValueItem) matchingMapItem.get(), refList, refIndex);
-                } else {
-                    throw new DeepReferenceException("No entry '" + ref + "' in Map '" + vi + "'");
-                }
+                return followMapNestedRef(ctx, vi, refList, refIndex, ref);
             }
             // If we have a Pair then take the pair value and recurse if possible
             final int skipRefIndexesForPathElementsWithReferences = (ref.contains("%")) ? refIndex + 1 : refIndex;
             if (vi instanceof Pair) {
-                final PairValue value = ((Pair) vi).getValue();
-
-                if (!(value instanceof Primitive)) {
-                    return followNestedRefIntoPrimitive(ctx, (Pair) vi, refList, refIndex, ref, (ValueItem) value);
-                }
-                if (refIndex == (refList.length - 1) && ((Pair) vi).getKey()
-                        .equals(ref)) {
-                    return (ValueItem) value;
-                }
-                // Handle methods and trailing values
-                final String valueStr = handleMethodsAndTrailingPathComponents(ctx, refList, skipRefIndexesForPathElementsWithReferences, value.toString());
-                if (!StringUtils.isNumeric(valueStr)) {
-                    return StringPrimitive.of(vi.getId(), valueStr);
-                } else {
-                    return NumberPrimitive.of(vi.getId(), valueStr);
-                }
+                return followPairNestedRef(ctx, vi, refList, refIndex, ref, skipRefIndexesForPathElementsWithReferences);
             }
             if (vi instanceof StringPrimitive) {
                 // Handle methods and trailing values
@@ -306,6 +267,61 @@ public class ReferencesTransform {
             }
         }
         return vi;
+    }
+
+    private ValueItem followPairNestedRef(final TransformationContext ctx, final ValueItem vi, final String[] refList, final int refIndex, final String ref, final int skipRefIndexesForPathElementsWithReferences) {
+        final PairValue value = ((Pair) vi).getValue();
+
+        if (!(value instanceof Primitive)) {
+            return followNestedRefIntoPrimitive(ctx, (Pair) vi, refList, refIndex, ref, (ValueItem) value);
+        }
+        if (refIndex == (refList.length - 1) && ((Pair) vi).getKey()
+                .equals(ref)) {
+            return (ValueItem) value;
+        }
+        // Handle methods and trailing values
+        final String valueStr = handleMethodsAndTrailingPathComponents(ctx, refList, skipRefIndexesForPathElementsWithReferences, value.toString());
+        if (!StringUtils.isNumeric(valueStr)) {
+            return StringPrimitive.of(vi.getId(), valueStr);
+        } else {
+            return NumberPrimitive.of(vi.getId(), valueStr);
+        }
+    }
+
+    private ValueItem followMapNestedRef(final TransformationContext ctx, final ValueItem vi, final String[] refList, final int refIndex, final String ref) {
+        final Option<MapItem> matchingMapItem = ((uk.modl.model.Map) vi).getMapItems()
+                .find(mapItem -> followNestedRefIntoMap(ctx, vi, ref, mapItem));
+        if (matchingMapItem.isDefined()) {
+            return followNestedRef(ctx, (ValueItem) matchingMapItem.get(), refList, refIndex);
+        } else {
+            throw new DeepReferenceException("No entry '" + ref + "' in Map '" + vi + "'");
+        }
+    }
+
+    private ValueItem followNumericNestedRef(final TransformationContext ctx, final ValueItem vi, final String[] refList, final int refIndex, final String ref) {
+        final int refNum = Integer.parseInt(ref);
+        if (vi instanceof Array) {
+            final Array arr = (Array) vi;
+            final ValueItem valueItem = (ValueItem) arr.getArrayItems()
+                    .get(refNum);
+
+            return followNestedRef(ctx, valueItem, refList, refIndex + 1);
+
+        } else if (pairValueIsArray(vi)) {
+            final ValueItem valueItem = (ValueItem) ((Array) ((Pair) vi).getValue()).getArrayItems()
+                    .get(refNum);
+            return followNestedRef(ctx, valueItem, refList, refIndex + 1);
+        } else {
+            if (refIndex < (refList.length - 1)) {
+                throw new DeepReferenceException("Invalid reference.");
+            } else {
+                throw new RuntimeException("Found a map when expecting an array");
+            }
+        }
+    }
+
+    private boolean pairValueIsArray(final ValueItem vi) {
+        return vi instanceof Pair && ((Pair) vi).getValue() instanceof Array;
     }
 
     private ValueItem followNestedRefIntoPrimitive(final TransformationContext ctx, final Pair vi, final String[] refList, final int refIndex, final String ref, final ValueItem value) {

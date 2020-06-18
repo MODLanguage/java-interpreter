@@ -24,11 +24,16 @@ import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
 import uk.modl.extractors.StarLoadExtractor;
+import uk.modl.model.Array;
+import uk.modl.model.Map;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
 import uk.modl.transforms.*;
 
 import java.util.Objects;
+
+import static io.vavr.API.*;
+import static io.vavr.Predicates.*;
 
 /**
  * Interpreter for a Modl object
@@ -92,16 +97,13 @@ public class InterpreterVisitor {
      */
     private Tuple2<TransformationContext, Structure> visitStructure(final TransformationContext ctx, final Structure s) {
 
-        if (s instanceof Map) {
-            return visitMap(ctx, (Map) s);
-        } else if (s instanceof Array) {
-            return visitArray(ctx, (Array) s);
-        } else if (s instanceof Pair) {
-            return visitPair(ctx, (Pair) s);
-        } else if (s instanceof TopLevelConditional) {
-            return visitTopLevelConditional(ctx, (TopLevelConditional) s);
-        }
-        return Tuple.of(ctx, s);
+        return Match(s).of(
+                Case($(instanceOf(Map.class)), () -> visitMap(ctx, (Map) s)),
+                Case($(instanceOf(Array.class)), () -> visitArray(ctx, (Array) s)),
+                Case($(instanceOf(Pair.class)), () -> visitPair(ctx, (Pair) s)),
+                Case($(instanceOf(TopLevelConditional.class)), () -> visitTopLevelConditional(ctx, (TopLevelConditional) s)),
+                Case($(), () -> Tuple.of(ctx, s))
+        );
     }
 
     /**
