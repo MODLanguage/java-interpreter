@@ -78,9 +78,10 @@ public class StarLoadTransform {
             for (final StarLoadExtractor.FileSpec spec : filenames) {
                 // Interpret each MODL string from each file
                 final Interpreter interpreter = new Interpreter();
+                final boolean cached = cache.contains(spec.getFilename());
                 try {
 
-                    if (cache.contains(spec.getFilename()) && !spec.isForceLoad()) {
+                    if (cached && !spec.isForceLoad()) {
                         // Its cached and not force-loaded
                         final Tuple2<StarLoadExtractor.FileSpec, Modl> cachedModl = Tuple.of(spec, cache.get(spec.getFilename()));
 
@@ -90,22 +91,23 @@ public class StarLoadTransform {
 
                         result = result.append(Tuple.of(Vector.of(cachedModl._1.getFilename()), Vector.of(cachedModl._2), loadSet.getPair()));
 
-                        // Add the cache misses to the cache for next time
-                        cache.put(cachedModl._1.getFilename(), cachedModl._2);
                     } else {
                         // Its either not cached or not force-loaded
                         // Map the filenames to the contents of the files, or Error
                         final Tuple2<StarLoadExtractor.FileSpec, String> contents = getFileContents(spec);
-                        final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(newCtx, contents._2);
+                        final Modl parsed = interpreter.parse(ctx, contents._2);
+                        final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(newCtx, parsed);
                         newCtx = interpreted._1;
 
                         result = result.append(Tuple.of(Vector.of(contents._1.getFilename()), Vector.of(interpreted._2), loadSet.getPair()));
+                        // Add the cache misses to the cache for next time
+                        cache.put(contents._1.getFilename(), parsed);
                     }
                 } catch (final StarLoadException e) {
                     //
                     // If any load returns an error AND we have a cached copy then use the cached copy for up to 7 days.
                     //
-                    if (cache.contains(spec.getFilename())) {
+                    if (cached) {
                         final Tuple2<StarLoadExtractor.FileSpec, Modl> cachedModl = Tuple.of(spec, cache.get(spec.getFilename()));
 
                         // Re-interpret the cached Modl objects to extract classes, methods etc. for the current context

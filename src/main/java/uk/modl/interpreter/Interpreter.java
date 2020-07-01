@@ -103,19 +103,28 @@ public class Interpreter {
     public Tuple2<TransformationContext, Modl> apply(final TransformationContext ctx, @NonNull final String input) {
         // Apply the function and return the result.
         return Option.of(input)
-                .map(s -> {
-                    try {
-                        return parser.apply(s, ctx.getAncestry());
-                    } catch (final InterpreterError e) {
-                        throw e;
-                    } catch (final ParseCancellationException e) {
-                        throw new InterpreterError("Parser Error: " + e.getMessage());
-                    } catch (final RuntimeException e) {
-                        throw new InterpreterError("Interpreter Error: " + e.getMessage());
-                    }
-                })
+                .map(s -> parse(ctx, s))
                 .map(modl -> apply(ctx, modl))
                 .get();
+    }
+
+    /**
+     * Initial parsing of a MODL string - no interpretation
+     *
+     * @param ctx        TransformationContext
+     * @param modlString a String, which should be a MODL String, but could be any value.
+     * @return a Modl object
+     */
+    public Modl parse(final TransformationContext ctx, @NonNull final String modlString) {
+        try {
+            return parser.apply(modlString, ctx.getAncestry());
+        } catch (final InterpreterError e) {
+            throw e;
+        } catch (final ParseCancellationException e) {
+            throw new InterpreterError("Parser Error: " + e.getMessage());
+        } catch (final RuntimeException e) {
+            throw new InterpreterError("Interpreter Error: " + e.getMessage());
+        }
     }
 
     /**
