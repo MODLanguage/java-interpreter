@@ -1,3 +1,7 @@
+0.1.5
+===
+- Fix caching issue.
+
 0.1.4
 ===
 - Factor out the scoped search into a class separate from the Ancestry class.
