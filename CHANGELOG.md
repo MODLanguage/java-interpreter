@@ -1,3 +1,7 @@
+0.1.6
+===
+- Allow immutable names to be reused in different scopes.
+
 0.1.5
 ===
 - Fix caching issue.

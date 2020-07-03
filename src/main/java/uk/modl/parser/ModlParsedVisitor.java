@@ -100,13 +100,15 @@ public class ModlParsedVisitor {
         }
     }
 
-    public void addImmutableName(final String name) {
+    public void addImmutableName(final Parent parent, final String name) {
 
-        if (immutableNames.contains(name)) {
+        final String path = ancestry.pathTo(Vector.empty(), parent) + "/" + name;
+
+        if (immutableNames.contains(path)) {
             throw new RuntimeException("Already defined " + name + " as final.");
         }
         if (StringUtils.isAllUpperCase(name)) {
-            immutableNames.add(name);
+            immutableNames.add(path);
         }
     }
 
@@ -599,7 +601,7 @@ public class ModlParsedVisitor {
             }
         }
 
-        addImmutableName(key);
+        addImmutableName(parent, key);
 
         return p.with(ancestry, key, value);
     }

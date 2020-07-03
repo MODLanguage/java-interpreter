@@ -20,7 +20,9 @@
 
 package uk.modl.ancestry;
 
+import io.vavr.collection.Vector;
 import io.vavr.control.Option;
+import uk.modl.model.Array;
 import uk.modl.model.Pair;
 import uk.modl.model.Primitive;
 import uk.modl.transforms.TransformationContext;
@@ -160,6 +162,26 @@ public class Ancestry {
 
             ancestors.put(newChild, parent);
         }
+    }
+
+    public String pathTo(final Vector<String> path, final Parent parent) {
+        if (parent == null) {
+            return path.reverse()
+                    .mkString("/");
+        }
+
+        Vector<String> newPath = path;
+        if (parent instanceof Pair) {
+            newPath = newPath.append(((Pair) parent).getKey());
+        } else if (parent instanceof Array) {
+            newPath = newPath.append("array");
+        } else if (parent instanceof uk.modl.model.Map) {
+            newPath = newPath.append("map");
+        } else {
+            newPath = newPath.append("object");
+        }
+        final Parent grandparent = ancestors.get(parent);
+        return pathTo(newPath, grandparent);
     }
 
 }
