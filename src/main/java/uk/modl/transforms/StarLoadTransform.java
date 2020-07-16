@@ -143,7 +143,7 @@ public class StarLoadTransform {
             } else if (Files.exists(Paths.get(spec.getFilename()))) {
 
                 // Load local file
-                return Tuple.of(spec, String.join("", Files.readAllLines(Paths.get(spec.getFilename()))));
+                return Tuple.of(spec, String.join("\n", Files.readAllLines(Paths.get(spec.getFilename()))));
             }
         } catch (final Exception e) {
             throw new StarLoadException("Could not load resource: " + e.getMessage());
