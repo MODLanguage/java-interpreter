@@ -35,6 +35,8 @@ import uk.modl.parser.antlr.MODLParser;
 import uk.modl.parser.errors.InterpreterError;
 import uk.modl.utils.Util;
 
+import java.util.Arrays;
+
 /**
  * Parser for a MODLParser.ModlContext object
  */
@@ -104,9 +106,16 @@ public class ModlParsedVisitor {
 
         final String path = ancestry.pathTo(Vector.empty(), parent) + "/" + name;
 
-        if (immutableNames.contains(path)) {
-            throw new RuntimeException("Already defined " + name + " as final.");
+        // Check the parent scopes
+        final String[] elements = path.split("/");
+        for (int i = 1; i < elements.length; i++) {
+            final String parentPath = String.join("/", Arrays.copyOfRange(elements, 0, i)) + "/" + name;
+
+            if (immutableNames.contains(parentPath)) {
+                throw new RuntimeException("Already defined " + name + " as final.");
+            }
         }
+
         if (StringUtils.isAllUpperCase(name)) {
             immutableNames.add(path);
         }
