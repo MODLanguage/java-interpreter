@@ -56,7 +56,16 @@ public class ClassExpansionTransform {
             return processArray(ctx, (Array) s);
         }
         if (s instanceof Pair) {
-            return processPair(ctx, (Pair) s);
+            final Pair pair = (Pair) s;
+            final Structure structure = processPair(ctx, pair);
+            if (structure == pair) {
+                @NonNull final PairValue value = ((Pair) structure).getValue();
+                if (value instanceof Map) {
+                    final Map map = processMap(ctx, (Map) value);
+                    return pair.with(ctx.getAncestry(), map);
+                }
+            }
+            return structure;
         }
         return s;
     }

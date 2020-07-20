@@ -1,3 +1,7 @@
+0.1.8
+===
+- Fix *assign for values inside maps.
+
 0.1.7
 ===
 - Detect immutable name clashes in parent scopes.
