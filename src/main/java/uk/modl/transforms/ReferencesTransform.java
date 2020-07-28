@@ -44,7 +44,7 @@ import java.util.regex.Pattern;
 
 public class ReferencesTransform {
 
-    private static final Pattern referencePattern = Pattern.compile("(((\\\\%|~%|%)\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|((\\\\%|~%|%)` ?[\\w-]+`[\\w.<>,]*%?)|((\\\\%|~%|%)\\*?[\\w]+(\\.%?\\w*(<[\\w,]+>)?)*%?)|(%`[ %\\w-]+`(\\.\\w+)+)|(%`.+`))");
+    private static final Pattern referencePattern = Pattern.compile("(((\\\\%|~%|%)\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|((\\\\%|~%|%)` ?[\\w-]+`[\\w.<>,]*%?)|((\\\\%|~%|%)\\*?[\\w]+(\\.%?\\w*(<[\\w, `]*>)?)*%?)|(%`[ %\\w-]+`(\\.\\w+)+)|(%`.+`))");
 
 
     private final MethodsTransform methodsTransform;
@@ -292,7 +292,9 @@ public class ReferencesTransform {
         final Option<MapItem> matchingMapItem = ((uk.modl.model.Map) vi).getMapItems()
                 .find(mapItem -> followNestedRefIntoMap(ctx, vi, ref, mapItem));
         if (matchingMapItem.isDefined()) {
-            return followNestedRef(ctx, (ValueItem) matchingMapItem.get(), refList, refIndex);
+            final Pair matchingPair = (Pair) matchingMapItem.get();
+            final int newRef = (ref.equals(matchingPair.getKey()) && (refIndex + 1) < refList.length) ? refIndex + 1 : refIndex;
+            return followNestedRef(ctx, matchingPair, refList, newRef);
         } else {
             throw new DeepReferenceException("No entry '" + ref + "' in Map '" + vi + "'");
         }

@@ -2,6 +2,7 @@
 ===
 - Disallow top-level pairs with top=level arrays or maps.
 - Trailing commas are not part of a reference.
+- Fix nested refs with applied methods.
 
 0.1.9
 ===
