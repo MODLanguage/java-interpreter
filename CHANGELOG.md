@@ -1,6 +1,7 @@
 0.1.10
 ===
 - Disallow top-level pairs with top=level arrays or maps.
+- Trailing commas are not part of a reference.
 
 0.1.9
 ===

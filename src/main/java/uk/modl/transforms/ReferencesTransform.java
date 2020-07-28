@@ -44,7 +44,7 @@ import java.util.regex.Pattern;
 
 public class ReferencesTransform {
 
-    private static final Pattern referencePattern = Pattern.compile("(((\\\\%|~%|%)\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|((\\\\%|~%|%)` ?[\\w-]+`[\\w.<>,]*%?)|((\\\\%|~%|%)\\*?[\\w]+(\\.%?\\w*<?[\\w,]*>?)*%?)|(%`[ %\\w-]+`(\\.\\w+)+)|(%`.+`))");
+    private static final Pattern referencePattern = Pattern.compile("(((\\\\%|~%|%)\\w+)(\\.\\w*<`?\\w*`?,`\\w*`>)+|((\\\\%|~%|%)` ?[\\w-]+`[\\w.<>,]*%?)|((\\\\%|~%|%)\\*?[\\w]+(\\.%?\\w*(<[\\w,]+>)?)*%?)|(%`[ %\\w-]+`(\\.\\w+)+)|(%`.+`))");
 
 
     private final MethodsTransform methodsTransform;
