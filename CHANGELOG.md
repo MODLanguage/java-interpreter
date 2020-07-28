@@ -3,6 +3,8 @@
 - Disallow top-level pairs with top=level arrays or maps.
 - Trailing commas are not part of a reference.
 - Fix nested refs with applied methods.
+- Error when attempting to embed objects in strings via references.
+- Allow embedding of primitives in strings via references.
 
 0.1.9
 ===

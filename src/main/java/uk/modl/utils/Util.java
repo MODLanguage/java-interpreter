@@ -66,6 +66,9 @@ public class Util {
 
     /**
      * Predicate to filter out items that should not be in the output.
+     *
+     * @param s a Structure
+     * @return true if the structure is expected in the output JSON.
      */
     public boolean shouldAppearInOutput(final Structure s) {
         if (s instanceof Pair) {

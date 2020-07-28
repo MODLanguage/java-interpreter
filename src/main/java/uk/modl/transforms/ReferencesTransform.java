@@ -33,6 +33,7 @@ import org.apache.commons.text.WordUtils;
 import uk.modl.ancestry.Child;
 import uk.modl.model.*;
 import uk.modl.parser.errors.DeepReferenceException;
+import uk.modl.parser.errors.InterpreterError;
 import uk.modl.utils.Util;
 
 import java.net.URLEncoder;
@@ -739,21 +740,46 @@ public class ReferencesTransform {
             if (next._3.isDefined()) {
                 // If the item containing the reference is a StringPrimitive then do String substitution
                 final Pair p = next._3.get();
-                if (p.getValue() instanceof StringPrimitive && curr.getValue() instanceof StringPrimitive) {
+                @NonNull final PairValue pairValue = p.getValue();
+                if (curr.getValue() instanceof StringPrimitive) {
                     final String s = ((StringPrimitive) curr.getValue()).getValue();
-                    final String r = ((StringPrimitive) p.getValue()).getValue();
-                    return curr.with(ctx.getAncestry(), StringPrimitive.of(ctx.getAncestry(), curr, s.replace(next._1, r)));
-                } else if (p.getValue() instanceof NumberPrimitive && curr.getValue() instanceof StringPrimitive) {
-                    final String s = ((StringPrimitive) curr.getValue()).getValue();
-                    final String r = ((NumberPrimitive) p.getValue()).getValue();
-                    if (s.equals(next._1)) {
-                        return curr.with(ctx.getAncestry(), NumberPrimitive.of(ctx.getAncestry(), curr, s.replace(next._1, r)));
-                    } else {
+                    if (pairValue instanceof StringPrimitive) {
+                        final String r = ((StringPrimitive) pairValue).getValue();
                         return curr.with(ctx.getAncestry(), StringPrimitive.of(ctx.getAncestry(), curr, s.replace(next._1, r)));
+                    } else if (pairValue instanceof NumberPrimitive) {
+                        final String r = ((NumberPrimitive) pairValue).getValue();
+                        if (s.equals(next._1)) {
+                            return curr.with(ctx.getAncestry(), NumberPrimitive.of(ctx.getAncestry(), curr, s.replace(next._1, r)));
+                        } else {
+                            return curr.with(ctx.getAncestry(), StringPrimitive.of(ctx.getAncestry(), curr, s.replace(next._1, r)));
+                        }
+                    } else if (pairValue instanceof TruePrimitive) {
+                        final String r = "true";
+                        if (s.equals(next._1)) {
+                            return curr.with(ctx.getAncestry(), TruePrimitive.instance);
+                        } else {
+                            return curr.with(ctx.getAncestry(), StringPrimitive.of(ctx.getAncestry(), curr, s.replace(next._1, r)));
+                        }
+                    } else if (pairValue instanceof FalsePrimitive) {
+                        final String r = "false";
+                        if (s.equals(next._1)) {
+                            return curr.with(ctx.getAncestry(), FalsePrimitive.instance);
+                        } else {
+                            return curr.with(ctx.getAncestry(), StringPrimitive.of(ctx.getAncestry(), curr, s.replace(next._1, r)));
+                        }
+                    } else if (pairValue instanceof NullPrimitive) {
+                        final String r = "null";
+                        if (s.equals(next._1)) {
+                            return curr.with(ctx.getAncestry(), NullPrimitive.instance);
+                        } else {
+                            return curr.with(ctx.getAncestry(), StringPrimitive.of(ctx.getAncestry(), curr, s.replace(next._1, r)));
+                        }
+                    } else if (!s.equals(next._1)) {
+                        throw new InterpreterError("Interpreter Error: Cannot embed object in a primitive value.");
                     }
                 }
                 // Otherwise replace the whole thing
-                return curr.with(ctx.getAncestry(), p.getValue());
+                return curr.with(ctx.getAncestry(), pairValue);
             }
             return curr;
         };
