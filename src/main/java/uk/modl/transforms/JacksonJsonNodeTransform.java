@@ -29,31 +29,12 @@ import io.vavr.control.Option;
 import lombok.extern.log4j.Log4j2;
 import uk.modl.model.*;
 import uk.modl.utils.StringEscapeReplacer;
+import uk.modl.utils.Util;
 
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 @Log4j2
 public class JacksonJsonNodeTransform {
-
-    /**
-     * Predicate to filter out items that should not be in the output.
-     */
-    private static final Predicate<Structure> shouldAppearInOutput = (s -> {
-        if (s instanceof Pair) {
-            final Pair p = (Pair) s;
-            return !p.getKey()
-                    .startsWith("_") && !p.getKey()
-                    .startsWith("*") && !p.getKey()
-                    .equals("?");
-        }
-        if (s instanceof TopLevelConditional) {
-            final TopLevelConditional tlc = (TopLevelConditional) s;
-            return !tlc.getResult()
-                    .isEmpty();
-        }
-        return true;
-    });
 
     private final TransformationContext ctx;
 
@@ -70,7 +51,7 @@ public class JacksonJsonNodeTransform {
     public JsonNode apply(final Modl modl) {
         JsonNode result = null;// In case this object is being re-used
         final Vector<Structure> filtered = modl.getStructures()
-                .filter(shouldAppearInOutput);
+                .filter(Util::shouldAppearInOutput);
 
         switch (filtered.size()) {
             case 0:
@@ -198,7 +179,7 @@ public class JacksonJsonNodeTransform {
 
     private void accept(final ObjectNode node, final Structure structure) {
         Option.of(structure)
-                .filter(shouldAppearInOutput)
+                .filter(Util::shouldAppearInOutput)
                 .map(addMapToObjectNode(node))
                 .map(addTopLevelConditionalToObjectNode(node))
                 .map(addPairToObjectNode(node));
@@ -264,7 +245,7 @@ public class JacksonJsonNodeTransform {
 
     private void accept(final ObjectNode node, final Pair pair) {
         Option.of(pair)
-                .filter(shouldAppearInOutput)
+                .filter(Util::shouldAppearInOutput)
                 .map(addPairToObjectNode(node));
     }
 

@@ -29,8 +29,7 @@ import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
 import uk.modl.extractors.StarLoadExtractor;
-import uk.modl.model.PairValue;
-import uk.modl.model.ValueItem;
+import uk.modl.model.*;
 
 import java.net.IDN;
 import java.net.URLEncoder;
@@ -64,6 +63,25 @@ public class Util {
      * A Regex to match the parameters of a MODL trim method
      */
     private final Pattern trimmerPattern = Pattern.compile("^trim<(.*)>$|^t<(.*)>$");
+
+    /**
+     * Predicate to filter out items that should not be in the output.
+     */
+    public boolean shouldAppearInOutput(final Structure s) {
+        if (s instanceof Pair) {
+            final Pair p = (Pair) s;
+            return !p.getKey()
+                    .startsWith("_") && !p.getKey()
+                    .startsWith("*") && !p.getKey()
+                    .equals("?");
+        }
+        if (s instanceof TopLevelConditional) {
+            final TopLevelConditional tlc = (TopLevelConditional) s;
+            return !tlc.getResult()
+                    .isEmpty();
+        }
+        return true;
+    }
 
     /**
      * Render a JSON Node to a String.
@@ -247,7 +265,6 @@ public class Util {
 
         return IDN.toUnicode("xn--" + s);
     }
-
 
     public Vector<String> toMethodList(final String chainedMethods) {
         final Matcher matcher = METHODS_PATTERN.matcher(chainedMethods);

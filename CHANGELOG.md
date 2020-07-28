@@ -1,6 +1,14 @@
-0.1.8
+0.1.10
+===
+- Disallow top-level pairs with top=level arrays or maps.
+
+0.1.9
 ===
 - Fix *assign for values inside maps.
+
+0.1.8
+===
+- Locally loaded files need lines joined with a newline separator.
 
 0.1.7
 ===

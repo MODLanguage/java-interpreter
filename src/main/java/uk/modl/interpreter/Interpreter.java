@@ -24,14 +24,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vavr.Tuple2;
+import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.NonNull;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import uk.modl.model.Modl;
+import uk.modl.model.Pair;
+import uk.modl.model.Structure;
 import uk.modl.parser.Parser;
 import uk.modl.parser.errors.InterpreterError;
 import uk.modl.transforms.JacksonJsonNodeTransform;
 import uk.modl.transforms.TransformationContext;
+import uk.modl.utils.Util;
 
 /**
  * Interpret a MODL String
@@ -117,7 +121,17 @@ public class Interpreter {
      */
     public Modl parse(final TransformationContext ctx, @NonNull final String modlString) {
         try {
-            return parser.apply(modlString, ctx.getAncestry());
+            final Modl modl = parser.apply(modlString, ctx.getAncestry());
+
+            // Check that the top level has all Pairs if it has any at all.
+            final Vector<Structure> filtered = modl.getStructures()
+                    .filter(Util::shouldAppearInOutput);
+            final int numberOfTopLevelPairs = filtered.count(s -> s instanceof Pair);
+            if (numberOfTopLevelPairs > 0 && numberOfTopLevelPairs < filtered.size()) {
+                throw new InterpreterError("Interpreter Error: Mixed top-level types are not allowed.");
+            }
+
+            return modl;
         } catch (final InterpreterError e) {
             throw e;
         } catch (final ParseCancellationException e) {
