@@ -32,7 +32,7 @@ compileTestJava.options.encoding = "UTF-8"
 group = "uk.modl"
 applicationName = "java-interpreter"
 archivesBaseName = "java-interpreter"
-version = "0.1.10"
+version = "0.1.11"
 
 def isSnapshot = version.endsWith("SNAPSHOT")
 
@@ -118,6 +118,11 @@ artifacts {
  * MAVEN PUBLISHING
  ***********/
 
+def fatJarFile = file("$buildDir/libs/interpreter-" + version + ".jar")
+def fatJarArtifact = artifacts.add('archives', fatJarFile) {
+    builtBy('customFatJar')
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -134,6 +139,10 @@ publishing {
 
             artifact(javadocJar) {
                 classifier = 'javadoc'
+            }
+
+            artifact(fatJarArtifact) {
+                classifier = 'exe'
             }
         }
     }
@@ -359,3 +368,4 @@ task customFatJar(type: Jar) {
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
+

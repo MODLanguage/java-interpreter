@@ -21,7 +21,7 @@ c=Hello World
 Run the interpreter using the command:
 
 ```shell script
-java -cp ./build/libs/interpreter-0.1.1.jar Interpret test.modl
+java -cp ./build/libs/interpreter-<version>.jar test.modl
 ```
 
 The result should be:
@@ -34,7 +34,7 @@ Processing file: test.modl
 }
 Finished file: test.modl
 ```
-Multiple file names can be provided if needed.
+Multiple file names can be provided if needed, and the value of `$?` is the number of files that errored, so `0` is success.
 ## Usage In a Java Program
 
 The `Interpreter` class has several convenience methods, each returning a slightly different result depending on how the result is to be further processed.

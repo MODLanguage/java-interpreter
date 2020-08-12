@@ -35,11 +35,11 @@ public class Interpret {
 
     public static void main(final String... args) {
         if (args.length == 0) {
-            System.out.println("Usage: java -cp ./build/libs/interpreter-0.1.1.jar Interpret <modl-file-name> [modl-file-name] ...");
+            System.out.println("Usage: java -cp ./build/libs/interpreter-<version>.jar <modl-file-name> [modl-file-name] ...");
         }
 
-        Arrays.stream(args)
-                .forEach(filename -> {
+        final int sum = Arrays.stream(args)
+                .mapToInt(filename -> {
                     System.out.println("Processing file: " + filename);
                     try {
                         final Path path = Paths.get(filename);
@@ -59,10 +59,14 @@ public class Interpret {
 
                     } catch (final Throwable e) {
                         System.err.println(e.getMessage());
+                        return 1;
                     }
                     System.out.println("Finished file: " + filename);
                     System.out.println();
-                });
+                    return 0;
+                })
+                .sum();
+        System.exit(sum);
     }
 
 }
