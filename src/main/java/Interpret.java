@@ -43,7 +43,7 @@ public class Interpret {
                     System.out.println("Processing file: " + filename);
                     try {
                         final Path path = Paths.get(filename);
-                        final String modlString = String.join("", Files.readAllLines(path));
+                        final String modlString = String.join("\n", Files.readAllLines(path));
 
 
                         final Interpreter interpreter = new Interpreter();
