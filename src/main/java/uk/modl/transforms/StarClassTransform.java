@@ -135,6 +135,12 @@ public class StarClassTransform {
             if (name != null && RESERVED_CLASS_NAMES.contains(name.toLowerCase())) {
                 throw new RuntimeException("Reserved class name - cannot redefine: " + name);
             }
+
+            if (superclass != null && !RESERVED_CLASS_NAMES.contains(superclass) && !ctx.getClassByNameOrId(superclass)
+                    .isDefined()) {
+                throw new RuntimeException("Invalid superclass: " + superclass);
+            }
+
             TransformationContext newCtx = ctx.addClassInstruction(ClassInstruction.of(id, name, superclass, assign, pairs));
             if (pair.getKey()
                     .startsWith("*C")) {
