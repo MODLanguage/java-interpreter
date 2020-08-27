@@ -70,6 +70,7 @@ public class Interpreter {
      *
      * @param url URL
      * @return Modl
+     * @throws IOException on error
      */
     public Modl interpret(final URL url) throws IOException {
         final String modlString = IOUtils.toString(url, StandardCharsets.UTF_8);
@@ -109,6 +110,7 @@ public class Interpreter {
      *
      * @param url URL
      * @return JsonNode
+     * @throws IOException on error
      */
     public JsonNode interpretToJsonObject(final URL url) throws IOException {
         final String modlString = IOUtils.toString(url, StandardCharsets.UTF_8);
@@ -134,6 +136,7 @@ public class Interpreter {
      * Interpret a String into a JsonNode object.
      *
      * @param modlString String
+     * @param url        URL
      * @return String
      * @throws JsonProcessingException on error
      */
