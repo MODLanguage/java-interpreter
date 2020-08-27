@@ -23,6 +23,8 @@ package uk.modl.interpreter;
 import org.junit.Test;
 import uk.modl.utils.TestUtils;
 
+import java.net.MalformedURLException;
+
 public class NestedStarLoadTest1 {
 
     public static final String EXPECTED1 = "{\"the_number\":3}";
@@ -34,12 +36,12 @@ public class NestedStarLoadTest1 {
     public static final String INPUT2 = "*l=../grammar/tests/1:../grammar/tests/2:../grammar/tests/3:../grammar/tests/1;the_number=%number";
 
     @Test
-    public void test1() {
+    public void test1() throws MalformedURLException {
         TestUtils.runTest(INPUT1, EXPECTED1);
     }
 
     @Test
-    public void test2() {
+    public void test2() throws MalformedURLException {
         TestUtils.runTest(INPUT2, EXPECTED2);
     }
 }

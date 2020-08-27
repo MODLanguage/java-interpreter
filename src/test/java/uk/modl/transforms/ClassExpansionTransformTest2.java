@@ -30,6 +30,9 @@ import uk.modl.model.Map;
 import uk.modl.model.Pair;
 import uk.modl.model.StringPrimitive;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 public class ClassExpansionTransformTest2 {
 
     final Ancestry ancestry = new Ancestry();
@@ -38,8 +41,8 @@ public class ClassExpansionTransformTest2 {
 
 
     @Test
-    public void testAssigns() {
-        final TransformationContext ctx = addClasses(TransformationContext.emptyCtx());
+    public void testAssigns() throws MalformedURLException {
+        final TransformationContext ctx = addClasses(TransformationContext.baseCtx(new URL("file:///")));
 
         final ClassExpansionTransform transform = new ClassExpansionTransform();
 

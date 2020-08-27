@@ -23,6 +23,8 @@ package uk.modl.interpreter;
 import org.junit.Test;
 import uk.modl.utils.TestUtils;
 
+import java.net.MalformedURLException;
+
 public class ConditionalTest4 {
 
     public static final String EXPECTED = "{\"result\":\"result is false\"}";
@@ -30,7 +32,7 @@ public class ConditionalTest4 {
     public static final String INPUT = "_test=00;{test?result=result is true/?result=result is false}";
 
     @Test
-    public void parseOk() {
+    public void parseOk() throws MalformedURLException {
         TestUtils.runTest(INPUT, EXPECTED);
     }
 

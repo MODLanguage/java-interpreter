@@ -29,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.model.*;
+import uk.modl.utils.Util;
 
 @RequiredArgsConstructor
 public class StarClassTransform {
@@ -94,19 +95,51 @@ public class StarClassTransform {
                     switch (p.getKey()
                             .toLowerCase()) {
                         case "*i":
-                        case "*id":
-                            id = p.getValue()
-                                    .toString();
-                            break;
+                        case "*id": {
+                            final PairValue value = p.getValue();
+                            if (value instanceof StringPrimitive) {
+                                if (Util.isKeywordAllowedInClassesAndMethods(((StringPrimitive) value).getValue())) {
+                                    id = value
+                                            .toString();
+                                } else {
+                                    throw new RuntimeException("Class *id is not a valid pair name " + ((StringPrimitive) value).getValue());
+                                }
+                            } else {
+                                throw new RuntimeException("Class *id should be a String value, but is a " + value.getClass()
+                                        .getSimpleName());
+                            }
+                        }
+                        break;
                         case "*n":
-                        case "*name":
-                            name = p.getValue()
-                                    .toString();
-                            break;
+                        case "*name": {
+                            final PairValue value = p.getValue();
+                            if (value instanceof StringPrimitive) {
+                                if (Util.isKeywordAllowedInClassesAndMethods(((StringPrimitive) value).getValue())) {
+                                    name = value
+                                            .toString();
+                                } else {
+                                    throw new RuntimeException("Class *name is not a valid pair name " + ((StringPrimitive) value).getValue());
+                                }
+                            } else {
+                                throw new RuntimeException("Class *name should be a String value, but is a " + value.getClass()
+                                        .getSimpleName());
+                            }
+                        }
+                        break;
                         case "*s":
                         case "*superclass":
-                            superclass = p.getValue()
-                                    .toString();
+                            final PairValue value = p.getValue();
+                            if (value instanceof StringPrimitive) {
+                                if (Util.isKeywordAllowedInClassesAndMethods(((StringPrimitive) value).getValue())) {
+                                    superclass = value
+                                            .toString();
+                                } else {
+                                    throw new RuntimeException("Class *superclass is not a valid pair name " + ((StringPrimitive) value).getValue());
+                                }
+                            } else {
+                                throw new RuntimeException("Class *superclass should be a String value, but is a " + value.getClass()
+                                        .getSimpleName());
+                            }
                             break;
                         case "*a":
                         case "*assign":
@@ -159,6 +192,14 @@ public class StarClassTransform {
             assign = ((Array) p.getValue()).getArrayItems()
                     .map(ai -> {
                         if (ai instanceof Array) {
+                            ((Array) ai).getArrayItems()
+                                    .forEach(nestedItem -> {
+                                        if (!(nestedItem instanceof StringPrimitive)) {
+                                            throw new RuntimeException("*assign statement should be an Array of Arrays of Strings.");
+                                        } else if (!Util.isKeywordAllowedInClassesAndMethods(((StringPrimitive) nestedItem).getValue())) {
+                                            throw new RuntimeException("*assign statement contains an invalid key: " + ((StringPrimitive) nestedItem).getValue());
+                                        }
+                                    });
                             return ai;
                         } else {
                             throw new RuntimeException("*assign statement should be an Array of Arrays");

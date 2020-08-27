@@ -23,6 +23,8 @@ package uk.modl.interpreter;
 import org.junit.Test;
 import uk.modl.utils.TestUtils;
 
+import java.net.MalformedURLException;
+
 public class NonASCIITests {
 
     public static final String EXPECTED = "{\"å∫ç∂´´©\":\"œ∑´´¥\"}";
@@ -30,7 +32,7 @@ public class NonASCIITests {
     public static final String INPUT = "å∫ç∂´´©=œ∑´´¥";
 
     @Test
-    public void parseOk() {
+    public void parseOk() throws MalformedURLException {
         TestUtils.runTest(INPUT, EXPECTED);
     }
 

@@ -26,6 +26,7 @@ import uk.modl.model.Modl;
 import uk.modl.transforms.JacksonJsonNodeTransform;
 import uk.modl.transforms.TransformationContext;
 
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,7 +48,8 @@ public class Interpret {
 
 
                         final Interpreter interpreter = new Interpreter();
-                        final TransformationContext ctx = TransformationContext.emptyCtx();
+                        final TransformationContext ctx = TransformationContext.baseCtx(new URL(path.toUri()
+                                .toASCIIString()));
                         final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(ctx, modlString);
                         final JsonNode json = new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
 

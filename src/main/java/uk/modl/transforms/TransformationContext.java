@@ -28,6 +28,8 @@ import org.apache.commons.lang3.StringUtils;
 import uk.modl.ancestry.Ancestry;
 import uk.modl.model.ArrayItem;
 
+import java.net.URL;
+
 /**
  * Stores context needed by other parts of the interpreter
  */
@@ -40,6 +42,11 @@ public class TransformationContext {
     public static final boolean STAR_LOAD_IMMUTABLE = false;
 
     public static final boolean STAR_CLASS_IMMUTABLE = false;
+
+    /**
+     * The URL of the MODL that is being processed.
+     */
+    Option<URL> url;
 
     /**
      * This is a mutable object to keep track of child->parent relations.
@@ -101,8 +108,13 @@ public class TransformationContext {
      */
     Map<String, StarClassTransform.ClassInstruction> classesByName;
 
-    public static TransformationContext emptyCtx() {
-        return new TransformationContext(new Ancestry(), VERSION, STAR_LOAD_IMMUTABLE, STAR_CLASS_IMMUTABLE, Vector.empty(), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
+    /**
+     * @param uri the URI of the MODL
+     * @return TransformationContext
+     */
+    public static TransformationContext baseCtx(final URL uri) {
+        final Option<URL> maybeUri = Option.of(uri);
+        return TransformationContext.of(maybeUri, new Ancestry(), VERSION, STAR_LOAD_IMMUTABLE, STAR_CLASS_IMMUTABLE, Vector.empty(), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
     }
 
     /**

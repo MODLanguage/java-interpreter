@@ -23,6 +23,8 @@ package uk.modl.interpreter;
 import org.junit.Test;
 import uk.modl.utils.TestUtils;
 
+import java.net.MalformedURLException;
+
 public class NumberFormatTest1 {
 
     public static final String EXPECTED = "{\"print\":\"20180921 08:20 2\"}";
@@ -30,7 +32,7 @@ public class NumberFormatTest1 {
     public static final String INPUT = "_var=2;\n*L=\"http://modl.uk/tests/testing.txt!\";\nprint=%update_date";
 
     @Test
-    public void parseOk() {
+    public void parseOk() throws MalformedURLException {
         TestUtils.runTest(INPUT, EXPECTED);
     }
 

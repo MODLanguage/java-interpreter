@@ -44,6 +44,27 @@ import static io.vavr.Predicates.*;
 @UtilityClass
 public class Util {
 
+    public static final Vector<String> VALID_INSTRUCTIONS = Vector.of(
+            "*class",
+            "*c",
+            "*method",
+            "*m",
+            "*version",
+            "*v",
+            "*id",
+            "*i",
+            "*name",
+            "*n",
+            "*assign",
+            "*a",
+            "*superclass",
+            "*s",
+            "*load",
+            "*l",
+            "*t",
+            "*transform"
+    );
+
     /**
      * The disallowed characters for a pair key.
      */
@@ -353,5 +374,15 @@ public class Util {
     private String maybeStripLeadingSpecialCharacter(final String newKey) {
         return (newKey.startsWith("_") || newKey.startsWith("*")) ? newKey.substring(1) : newKey;
     }
+
+    public boolean isInvalidKeyword(@NonNull final String key) {
+        return key.startsWith("*") && !VALID_INSTRUCTIONS
+                .contains(key.toLowerCase());
+    }
+
+    public boolean isKeywordAllowedInClassesAndMethods(@NonNull final String key) {
+        return !(key.startsWith("*") || StringUtils.isBlank(key) || StringUtils.containsAny(key, " \n\r\f"));
+    }
+
 
 }

@@ -29,6 +29,7 @@ import uk.modl.model.Map;
 import uk.modl.model.*;
 import uk.modl.parser.errors.InterpreterError;
 import uk.modl.transforms.*;
+import uk.modl.utils.Util;
 
 import java.util.Objects;
 
@@ -39,27 +40,6 @@ import static io.vavr.Predicates.*;
  * Interpreter for a Modl object
  */
 public class InterpreterVisitor {
-
-    public static final Vector<String> VALID_INSTRUCTIONS = Vector.of(
-            "*class",
-            "*c",
-            "*method",
-            "*m",
-            "*version",
-            "*v",
-            "*id",
-            "*i",
-            "*name",
-            "*n",
-            "*assign",
-            "*a",
-            "*superclass",
-            "*s",
-            "*load",
-            "*l",
-            "*t",
-            "*transform"
-    );
 
     private final StarLoadTransform starLoadTransform;
 
@@ -514,7 +494,7 @@ public class InterpreterVisitor {
      */
     private Tuple2<TransformationContext, Structure> visitPair(final TransformationContext ctx, final Pair p) {
 
-        if (isInvalidKeyword(p)) {
+        if (Util.isInvalidKeyword(p.getKey())) {
             throw new RuntimeException("Invalid keyword: " + p.getKey());
         }
         TransformationContext newCtx = ctx;
@@ -595,13 +575,6 @@ public class InterpreterVisitor {
         return p.getKey()
                 .equals("*VERSION") || p.getKey()
                 .equals("*V");
-    }
-
-    private boolean isInvalidKeyword(final Pair p) {
-        return p.getKey()
-                .startsWith("*") && !VALID_INSTRUCTIONS
-                .contains(p.getKey()
-                        .toLowerCase());
     }
 
     /**

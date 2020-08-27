@@ -29,12 +29,15 @@ import uk.modl.model.Modl;
 import uk.modl.transforms.JacksonJsonNodeTransform;
 import uk.modl.transforms.TransformationContext;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 @UtilityClass
 public class TestUtils {
 
-    public void runTest(final String input, final String expected) {
+    public void runTest(final String input, final String expected) throws MalformedURLException {
         final Interpreter interpreter = new Interpreter();
-        final TransformationContext ctx = TransformationContext.emptyCtx();
+        final TransformationContext ctx = TransformationContext.baseCtx(new URL("file:///"));
         final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(ctx, input);
         final JsonNode json = new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
         final String result = Util.jsonNodeToString(json);

@@ -25,10 +25,8 @@ import io.vavr.Tuple2;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import uk.modl.model.Map;
-import uk.modl.model.MapItem;
-import uk.modl.model.Pair;
-import uk.modl.model.Structure;
+import uk.modl.model.*;
+import uk.modl.utils.Util;
 
 @RequiredArgsConstructor
 public class StarMethodTransform {
@@ -79,20 +77,49 @@ public class StarMethodTransform {
                     switch (p.getKey()
                             .toLowerCase()) {
                         case "*i":
-                        case "*id":
-                            id = p.getValue()
-                                    .toString();
-                            break;
+                        case "*id": {
+                            final PairValue value = p.getValue();
+                            if (value instanceof StringPrimitive) {
+                                if (Util.isKeywordAllowedInClassesAndMethods(((StringPrimitive) value).getValue())) {
+                                    id = value
+                                            .toString();
+                                } else {
+                                    throw new RuntimeException("Method *id is not a valid pair name " + ((StringPrimitive) value).getValue());
+                                }
+                            } else {
+                                throw new RuntimeException("Method *id should be a String value, but is a " + value.getClass()
+                                        .getSimpleName());
+                            }
+                        }
+                        break;
                         case "*n":
-                        case "*name":
-                            name = p.getValue()
-                                    .toString();
-                            break;
+                        case "*name": {
+                            final PairValue value = p.getValue();
+                            if (value instanceof StringPrimitive) {
+                                if (Util.isKeywordAllowedInClassesAndMethods(((StringPrimitive) value).getValue())) {
+                                    name = value
+                                            .toString();
+                                } else {
+                                    throw new RuntimeException("Method *name is not a valid pair name " + ((StringPrimitive) value).getValue());
+                                }
+                            } else {
+                                throw new RuntimeException("Method *name should be a String value, but is a " + value.getClass()
+                                        .getSimpleName());
+                            }
+                        }
+                        break;
                         case "*t":
-                        case "*transform":
-                            transform = p.getValue()
-                                    .toString();
-                            break;
+                        case "*transform": {
+                            final PairValue value = p.getValue();
+                            if (value instanceof StringPrimitive) {
+                                transform = value
+                                        .toString();
+                            } else {
+                                throw new RuntimeException("Method *transform should be a String value, but is a " + value.getClass()
+                                        .getSimpleName());
+                            }
+                        }
+                        break;
                     }
                 } else {
                     throw new RuntimeException("Expected a Pair but found a " + mi.getClass());

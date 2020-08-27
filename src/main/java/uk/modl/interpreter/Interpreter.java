@@ -28,6 +28,7 @@ import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.NonNull;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
+import org.apache.commons.io.IOUtils;
 import uk.modl.model.Modl;
 import uk.modl.model.Pair;
 import uk.modl.model.Structure;
@@ -36,6 +37,10 @@ import uk.modl.parser.errors.InterpreterError;
 import uk.modl.transforms.JacksonJsonNodeTransform;
 import uk.modl.transforms.TransformationContext;
 import uk.modl.utils.Util;
+
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Interpret a MODL String
@@ -55,7 +60,34 @@ public class Interpreter {
      * @return Modl
      */
     public Modl interpret(final String modlString) {
-        final TransformationContext ctx = TransformationContext.emptyCtx();
+        final TransformationContext ctx = TransformationContext.baseCtx(null);
+        final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
+        return interpreted._2;
+    }
+
+    /**
+     * Interpret a String into a Modl object.
+     *
+     * @param url URL
+     * @return Modl
+     */
+    public Modl interpret(final URL url) throws IOException {
+        final String modlString = IOUtils.toString(url, StandardCharsets.UTF_8);
+
+        final TransformationContext ctx = TransformationContext.baseCtx(url);
+        final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
+        return interpreted._2;
+    }
+
+    /**
+     * Interpret a String into a Modl object.
+     *
+     * @param modlString String
+     * @param url        URL
+     * @return Modl
+     */
+    public Modl interpret(final String modlString, final URL url) {
+        final TransformationContext ctx = TransformationContext.baseCtx(url);
         final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
         return interpreted._2;
     }
@@ -67,7 +99,33 @@ public class Interpreter {
      * @return JsonNode
      */
     public JsonNode interpretToJsonObject(final String modlString) {
-        final TransformationContext ctx = TransformationContext.emptyCtx();
+        final TransformationContext ctx = TransformationContext.baseCtx(null);
+        final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
+        return new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
+    }
+
+    /**
+     * Interpret a String into a JsonNode object.
+     *
+     * @param url URL
+     * @return JsonNode
+     */
+    public JsonNode interpretToJsonObject(final URL url) throws IOException {
+        final String modlString = IOUtils.toString(url, StandardCharsets.UTF_8);
+        final TransformationContext ctx = TransformationContext.baseCtx(url);
+        final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
+        return new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
+    }
+
+    /**
+     * Interpret a String into a JsonNode object.
+     *
+     * @param modlString String
+     * @param url        URL
+     * @return JsonNode
+     */
+    public JsonNode interpretToJsonObject(final String modlString, final URL url) {
+        final TransformationContext ctx = TransformationContext.baseCtx(url);
         final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
         return new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
     }
@@ -79,8 +137,8 @@ public class Interpreter {
      * @return String
      * @throws JsonProcessingException on error
      */
-    public String interpretToJsonString(final String modlString) throws JsonProcessingException {
-        final JsonNode jsonNode = interpretToJsonObject(modlString);
+    public String interpretToJsonString(final String modlString, final URL url) throws JsonProcessingException {
+        final JsonNode jsonNode = interpretToJsonObject(modlString, url);
         return new ObjectMapper().writeValueAsString(jsonNode);
     }
 
@@ -92,7 +150,35 @@ public class Interpreter {
      * @throws JsonProcessingException on error
      */
     public String interpretToPrettyJsonString(final String modlString) throws JsonProcessingException {
-        final JsonNode jsonNode = interpretToJsonObject(modlString);
+        final JsonNode jsonNode = interpretToJsonObject(modlString, null);
+        return new ObjectMapper().writerWithDefaultPrettyPrinter()
+                .writeValueAsString(jsonNode);
+    }
+
+    /**
+     * Interpret a String into a JsonNode object.
+     *
+     * @param url URL
+     * @return String
+     * @throws JsonProcessingException on error
+     */
+    public String interpretToPrettyJsonString(final URL url) throws IOException {
+        final String modlString = IOUtils.toString(url, StandardCharsets.UTF_8);
+        final JsonNode jsonNode = interpretToJsonObject(modlString, url);
+        return new ObjectMapper().writerWithDefaultPrettyPrinter()
+                .writeValueAsString(jsonNode);
+    }
+
+    /**
+     * Interpret a String into a JsonNode object.
+     *
+     * @param modlString String
+     * @param url        URL
+     * @return String
+     * @throws JsonProcessingException on error
+     */
+    public String interpretToPrettyJsonString(final String modlString, final URL url) throws JsonProcessingException {
+        final JsonNode jsonNode = interpretToJsonObject(modlString, url);
         return new ObjectMapper().writerWithDefaultPrettyPrinter()
                 .writeValueAsString(jsonNode);
     }

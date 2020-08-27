@@ -23,6 +23,8 @@ package uk.modl.interpreter;
 import org.junit.Test;
 import uk.modl.utils.TestUtils;
 
+import java.net.MalformedURLException;
+
 public class ArrayConditionalTest1 {
 
     public static final String EXPECTED = "{\"country\":\"gb\",\"x\":[\"this\"]}";
@@ -30,7 +32,7 @@ public class ArrayConditionalTest1 {
     public static final String INPUT = "country=gb;x=[{ country=gb ? this /country=us? that }]";
 
     @Test
-    public void parseOk() {
+    public void parseOk() throws MalformedURLException {
         TestUtils.runTest(INPUT, EXPECTED);
     }
 

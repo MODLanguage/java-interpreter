@@ -23,6 +23,8 @@ package uk.modl.interpreter;
 import org.junit.Test;
 import uk.modl.utils.TestUtils;
 
+import java.net.MalformedURLException;
+
 public class MethodTest1 {
 
     public static final String EXPECTED = "{\"friendly_name\":\"Smiths Limited\"}";
@@ -37,7 +39,7 @@ public class MethodTest1 {
             "friendly_name = %domain.cn";
 
     @Test
-    public void parseOk() {
+    public void parseOk() throws MalformedURLException {
         TestUtils.runTest(INPUT, EXPECTED);
     }
 

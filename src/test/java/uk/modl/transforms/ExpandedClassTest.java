@@ -31,6 +31,9 @@ import uk.modl.model.Pair;
 import uk.modl.model.StringPrimitive;
 import uk.modl.transforms.ClassExpansionTransform.ExpandedClass;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import static org.junit.Assert.*;
 import static uk.modl.transforms.StarClassTransform.ClassInstruction.*;
 
@@ -42,7 +45,7 @@ public class ExpandedClassTest {
 
 
     @Test
-    public void testSuperclassStructure() {
+    public void testSuperclassStructure() throws MalformedURLException {
         final Vector<ArrayItem> assign = Vector.of(
                 Array.of(ancestry, parent, Vector.of(StringPrimitive.of(ancestry, parent, "a"), StringPrimitive.of(ancestry, parent, "b"))),
                 Array.of(ancestry, parent, Vector.of(StringPrimitive.of(ancestry, parent, "a"), StringPrimitive.of(ancestry, parent, "b"), StringPrimitive.of(ancestry, parent, "c")))
@@ -67,7 +70,7 @@ public class ExpandedClassTest {
         );
         final StarClassTransform.ClassInstruction superclass = of("super", "super", "str", assign2, pairs2);
 
-        final TransformationContext ctx = TransformationContext.emptyCtx()
+        final TransformationContext ctx = TransformationContext.baseCtx(new URL("file:///"))
                 .addClassInstruction(superclass);
 
         final ExpandedClass expandedClass = ExpandedClass.of(ctx, ci, "str");
@@ -75,14 +78,14 @@ public class ExpandedClassTest {
     }
 
     @Test
-    public void testMinimalClassInstruction() {
+    public void testMinimalClassInstruction() throws MalformedURLException {
         final Vector<ArrayItem> assign = Vector.empty();
 
         final HashMap<String, Pair> pairs = HashMap.empty();
         final StarClassTransform.ClassInstruction ci = of("test2", null, null, assign, pairs);
 
 
-        final TransformationContext ctx = TransformationContext.emptyCtx();
+        final TransformationContext ctx = TransformationContext.baseCtx(new URL("file:///"));
 
         final ExpandedClass expandedClass = ExpandedClass.of(ctx, ci, null);
         assertEquals("ClassExpansionTransform.ExpandedClass(id=test2, name=test2, superclass=null, assigns=Vector(), pairs=Vector())", expandedClass.toString());

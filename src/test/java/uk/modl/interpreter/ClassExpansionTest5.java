@@ -23,6 +23,8 @@ package uk.modl.interpreter;
 import org.junit.Test;
 import uk.modl.utils.TestUtils;
 
+import java.net.MalformedURLException;
+
 public class ClassExpansionTest5 {
 
     public static final String EXPECTED = "{\"alpha\":{\"value\":1,\"x\":\"test\"}}";
@@ -30,7 +32,7 @@ public class ClassExpansionTest5 {
     public static final String INPUT = "*class(*id=a;*name=alpha;x=\"test\");a=1";
 
     @Test
-    public void parseOk() {
+    public void parseOk() throws MalformedURLException {
         TestUtils.runTest(INPUT, EXPECTED);
     }
 

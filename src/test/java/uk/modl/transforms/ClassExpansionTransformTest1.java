@@ -29,6 +29,9 @@ import uk.modl.ancestry.Ancestry;
 import uk.modl.ancestry.Parent;
 import uk.modl.model.*;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 public class ClassExpansionTransformTest1 {
 
     final Ancestry ancestry = new Ancestry();
@@ -36,8 +39,8 @@ public class ClassExpansionTransformTest1 {
     final Parent parent = () -> 0;
 
     @Test
-    public void test() {
-        final TransformationContext ctx = TransformationContext.emptyCtx();
+    public void test() throws MalformedURLException {
+        final TransformationContext ctx = TransformationContext.baseCtx(new URL("file:///"));
         final ClassExpansionTransform transform = new ClassExpansionTransform();
 
         // Create the class

@@ -1,3 +1,17 @@
+0.1.13
+===
+- Raise an error if a `*superclass` doesn't exist when encountered. I.e. there has to be a pre-existing `*class` with that name, unless its a built-in superclass such as map, arr, etc.
+- Some support for relative URIs in `*load` instructions.
+- Extra validation for `*class` and `*method` instructions.
+
+0.1.12
+===
+- Join lines from files using `\n`
+
+0.1.11
+===
+- Add a custom artifact for running the interpreter as an executable jar.
+
 0.1.10
 ===
 - Disallow top-level pairs with top=level arrays or maps.

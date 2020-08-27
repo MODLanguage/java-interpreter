@@ -23,6 +23,8 @@ package uk.modl.interpreter;
 import org.junit.Test;
 import uk.modl.utils.TestUtils;
 
+import java.net.MalformedURLException;
+
 public class BuiltInMethodsTest2 {
 
     public static final String EXPECTED = "{\"test\":\"Blah huzzahne t\"}";
@@ -30,7 +32,7 @@ public class BuiltInMethodsTest2 {
     public static final String INPUT = "?=one:two;test=Blah %0.r<o,huzzah> %1.t<w>";
 
     @Test
-    public void parseOk() {
+    public void parseOk() throws MalformedURLException {
         TestUtils.runTest(INPUT, EXPECTED);
     }
 

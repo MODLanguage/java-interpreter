@@ -23,6 +23,8 @@ package uk.modl.interpreter;
 import org.junit.Test;
 import uk.modl.utils.TestUtils;
 
+import java.net.MalformedURLException;
+
 public class ConditionalTest15 {
 
     public static final String EXPECTED = "{\"country\":\"us\",\"language\":\"en\",\"time_zone\":\"EST\"}";
@@ -39,7 +41,7 @@ public class ConditionalTest15 {
             "time_zone = %tz";
 
     @Test
-    public void parseOk() {
+    public void parseOk() throws MalformedURLException {
         TestUtils.runTest(INPUT, EXPECTED);
     }
 

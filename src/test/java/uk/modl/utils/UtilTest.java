@@ -74,4 +74,14 @@ public class UtilTest {
         assertEquals("%hello %test world", Util.unwrapLiteral("%`%hello %test world`"));
     }
 
+    @Test
+    public void isInvalidKeyword() {
+        assertFalse(Util.isKeywordAllowedInClassesAndMethods("*id"));
+        assertFalse(Util.isKeywordAllowedInClassesAndMethods(""));
+        assertFalse(Util.isKeywordAllowedInClassesAndMethods("   "));
+        assertFalse(Util.isKeywordAllowedInClassesAndMethods("\n"));
+        assertFalse(Util.isKeywordAllowedInClassesAndMethods("\t"));
+        assertFalse(Util.isKeywordAllowedInClassesAndMethods("\f"));
+    }
+
 }

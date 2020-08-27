@@ -23,6 +23,8 @@ package uk.modl.interpreter;
 import org.junit.Test;
 import uk.modl.utils.TestUtils;
 
+import java.net.MalformedURLException;
+
 public class ClassExpansionTest2 {
 
     public static final String EXPECTED = "{\"GlossDef\":{\"para\":\"A meta-markup language, used to create markup languages such as DocBook.\",\"SeeAlso\":[\"GML\",\"XML\"]}}";
@@ -49,7 +51,7 @@ public class ClassExpansionTest2 {
             "gd=A meta-%1 %2, used to create %1 %2%s such as DocBook.:[GML;XML];\n";
 
     @Test
-    public void parseOk() {
+    public void parseOk() throws MalformedURLException {
         TestUtils.runTest(INPUT, EXPECTED);
     }
 
