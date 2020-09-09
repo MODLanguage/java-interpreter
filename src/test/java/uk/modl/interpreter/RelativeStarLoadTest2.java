@@ -18,30 +18,23 @@
  *
  */
 
-package uk.modl.utils;
+package uk.modl.interpreter;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.vavr.Tuple2;
-import lombok.experimental.UtilityClass;
 import org.junit.Assert;
-import uk.modl.interpreter.Interpreter;
-import uk.modl.model.Modl;
-import uk.modl.transforms.JacksonJsonNodeTransform;
-import uk.modl.transforms.TransformationContext;
+import org.junit.Test;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
+import java.net.URL;
 
-@UtilityClass
-public class TestUtils {
+public class RelativeStarLoadTest2 {
 
-    public void runTest(final String input, final String expected) throws MalformedURLException {
+    public static final String EXPECTED = "null";
+
+    @Test
+    public void parseOk() throws IOException {
         final Interpreter interpreter = new Interpreter();
-        final TransformationContext ctx = TransformationContext.baseCtx(null);
-        final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(ctx, input);
-        final JsonNode json = new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
-        final String result = Util.jsonNodeToString(json);
-
-        Assert.assertEquals(expected, result);
+        final String json = interpreter.interpretToJsonString(new URL("http://modules.numprotocol.com/1/rcf.txt"));
+        Assert.assertEquals(EXPECTED, json);
     }
 
 }

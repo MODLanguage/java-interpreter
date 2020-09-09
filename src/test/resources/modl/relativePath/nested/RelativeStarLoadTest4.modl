@@ -1,0 +1,10 @@
+*class(
+  *id=m;
+  *name=message;
+  *superclass=map;
+  *assign=[
+    [direction;date_time;message]
+  ];
+  method=sms
+);
+a=b

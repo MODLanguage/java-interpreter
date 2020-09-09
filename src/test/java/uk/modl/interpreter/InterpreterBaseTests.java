@@ -35,7 +35,6 @@ import uk.modl.utils.Util;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -89,7 +88,7 @@ public class InterpreterBaseTests {
 
     private void checkValidTestInput(final TestInput testInput) {
         try {
-            final TransformationContext ctx = TransformationContext.baseCtx(new URL("file:///"));
+            final TransformationContext ctx = TransformationContext.baseCtx(null);
             final Tuple2<TransformationContext, Modl> interpreted = new Interpreter().apply(ctx, testInput.input);
             final JacksonJsonNodeTransform jsonTransformer = new JacksonJsonNodeTransform(ctx);
 
@@ -155,7 +154,7 @@ public class InterpreterBaseTests {
 
     private void checkInvalidTestInput(final TestInput testInput) {
         try {
-            final TransformationContext ctx = TransformationContext.baseCtx(new URL("file:///"));
+            final TransformationContext ctx = TransformationContext.baseCtx(null);
             final Tuple2<TransformationContext, Modl> interpreted = new Interpreter().apply(ctx, testInput.input);
             final JacksonJsonNodeTransform jsonTransformer = new JacksonJsonNodeTransform(ctx);
             if (interpreted._2 != null) {

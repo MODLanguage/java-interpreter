@@ -28,25 +28,21 @@ import uk.modl.ancestry.Parent;
 import uk.modl.model.*;
 import uk.modl.parser.Parser;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import static org.junit.Assert.*;
 
 public class StarLoadTransformTest {
-
-    final Ancestry ancestry = new Ancestry();
-
-    final Parent parent = () -> 0;
-
 
     private static final Parser parser = new Parser();
 
     private static final StarLoadTransform starLoadTransform = new StarLoadTransform();
 
+    final Ancestry ancestry = new Ancestry();
+
+    final Parent parent = () -> 0;
+
     @Test
-    public void test_load_file_successfully() throws MalformedURLException {
-        final TransformationContext ctx = TransformationContext.baseCtx(new URL("file:///"));
+    public void test_load_file_successfully() {
+        final TransformationContext ctx = TransformationContext.baseCtx(null);
         final Modl modl = parser.apply("*l=`./src/test/resources/modl/load_test_1.modl`;c=d", ctx.getAncestry());
         assertNotNull(modl);
 

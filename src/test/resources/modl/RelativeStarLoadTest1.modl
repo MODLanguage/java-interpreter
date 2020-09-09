@@ -1,0 +1,6 @@
+*load=`RelativeStarLoadTest2.modl`;
+
+[
+m=a:b:c;
+m=x:y:z
+]

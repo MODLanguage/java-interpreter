@@ -33,6 +33,7 @@ import uk.modl.model.*;
 import uk.modl.parser.errors.StarLoadException;
 import uk.modl.utils.SimpleCache;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -93,15 +94,46 @@ public class StarLoadTransform {
 
                     } else {
                         // Its either not cached or not force-loaded
-                        // Map the filenames to the contents of the files, or Error
-                        final Tuple2<StarLoadExtractor.FileSpec, String> contents = getFileContents(spec);
-                        final Modl parsed = interpreter.parse(ctx, contents._2);
-                        final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(newCtx, parsed);
-                        newCtx = interpreted._1;
+                        final Tuple2<StarLoadExtractor.FileSpec, String> contents;
+                        final TransformationContext interpreterContext;
+                        if (ctx.getUrl()
+                                .isDefined()) {
 
-                        result = result.append(Tuple.of(Vector.of(contents._1.getFilename()), Vector.of(interpreted._2), loadSet.getPair()));
-                        // Add the cache misses to the cache for next time
-                        cache.put(contents._1.getFilename(), parsed);
+                            final Option<URL> originalUrl = ctx.getUrl();
+
+                            // Map the filenames to the contents of the files, or Error
+                            final URL fileToLoad = new URL(originalUrl.get(), spec.getFilename());
+                            contents = getFileContents(spec, ctx.getUrl()
+                                    .get());
+
+                            // Interpret the file with its own URL in the context so that any nested *loads are relative to that file.
+                            interpreterContext = ctx.withUrl(Option.of(fileToLoad));
+
+                            final Modl parsed = interpreter.parse(ctx, contents._2);
+                            final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(interpreterContext, parsed);
+
+                            // Restore the URL of the current file that we're processing.
+                            newCtx = interpreted._1.withUrl(originalUrl);
+
+                            result = result.append(Tuple.of(Vector.of(contents._1.getFilename()), Vector.of(interpreted._2), loadSet.getPair()));
+                            // Add the cache misses to the cache for next time
+                            cache.put(contents._1.getFilename(), parsed);
+                        } else {
+                            // Map the filenames to the contents of the files, or Error
+                            contents = getFileContents(spec);
+
+                            // There is no URL in the current context so we can't provide one when processing this loaded file.
+                            interpreterContext = ctx.withUrl(Option.none());
+
+                            final Modl parsed = interpreter.parse(ctx, contents._2);
+                            final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(interpreterContext, parsed);
+                            newCtx = interpreted._1;
+
+                            result = result.append(Tuple.of(Vector.of(contents._1.getFilename()), Vector.of(interpreted._2), loadSet.getPair()));
+                            // Add the cache misses to the cache for next time
+                            cache.put(contents._1.getFilename(), parsed);
+                        }
+
                     }
                 } catch (final StarLoadException e) {
                     //
@@ -118,6 +150,8 @@ public class StarLoadTransform {
                     } else {
                         throw e;
                     }
+                } catch (final MalformedURLException e) {
+                    throw new RuntimeException(e);
                 }
             }
         }
@@ -149,6 +183,22 @@ public class StarLoadTransform {
             throw new StarLoadException("Could not load resource: " + e.getMessage());
         }
         throw new StarLoadException("Could not load resource: " + spec.getFilename());
+    }
+
+    /**
+     * Map a filename to Either an Error or the file contents as a String
+     *
+     * @param spec StarLoadExtractor.FileSpec
+     * @return Tuple of StarLoadExtractor.FileSpec and String
+     */
+    public Tuple2<StarLoadExtractor.FileSpec, String> getFileContents(final StarLoadExtractor.FileSpec spec, final URL contextUrl) {
+        try {
+            final URL url = new URL(contextUrl, spec.getFilename());
+            return Tuple.of(spec, new Scanner(url.openStream(), StandardCharsets.UTF_8.name()).useDelimiter("\\A")
+                    .next());
+        } catch (final Exception e) {
+            throw new StarLoadException("Could not load resource: " + e.getMessage());
+        }
     }
 
     /**

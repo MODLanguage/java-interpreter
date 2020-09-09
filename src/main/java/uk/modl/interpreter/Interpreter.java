@@ -148,6 +148,18 @@ public class Interpreter {
     /**
      * Interpret a String into a JsonNode object.
      *
+     * @param url URL
+     * @return String
+     * @throws JsonProcessingException on error
+     */
+    public String interpretToJsonString(final URL url) throws IOException {
+        final JsonNode jsonNode = interpretToJsonObject(url);
+        return new ObjectMapper().writeValueAsString(jsonNode);
+    }
+
+    /**
+     * Interpret a String into a JsonNode object.
+     *
      * @param modlString String
      * @return String
      * @throws JsonProcessingException on error
