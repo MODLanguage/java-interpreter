@@ -188,7 +188,8 @@ public class StarLoadTransform {
     /**
      * Map a filename to Either an Error or the file contents as a String
      *
-     * @param spec StarLoadExtractor.FileSpec
+     * @param spec       StarLoadExtractor.FileSpec
+     * @param contextUrl a URL
      * @return Tuple of StarLoadExtractor.FileSpec and String
      */
     public Tuple2<StarLoadExtractor.FileSpec, String> getFileContents(final StarLoadExtractor.FileSpec spec, final URL contextUrl) {

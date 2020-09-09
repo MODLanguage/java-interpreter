@@ -1,3 +1,7 @@
+0.1.14
+===
+- Support for relative URIs in the `*load` instruction.
+
 0.1.13
 ===
 - Raise an error if a `*superclass` doesn't exist when encountered. I.e. there has to be a pre-existing `*class` with that name, unless its a built-in superclass such as map, arr, etc.

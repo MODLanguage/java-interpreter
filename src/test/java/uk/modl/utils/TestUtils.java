@@ -29,12 +29,10 @@ import uk.modl.model.Modl;
 import uk.modl.transforms.JacksonJsonNodeTransform;
 import uk.modl.transforms.TransformationContext;
 
-import java.net.MalformedURLException;
-
 @UtilityClass
 public class TestUtils {
 
-    public void runTest(final String input, final String expected) throws MalformedURLException {
+    public void runTest(final String input, final String expected) {
         final Interpreter interpreter = new Interpreter();
         final TransformationContext ctx = TransformationContext.baseCtx(null);
         final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(ctx, input);
