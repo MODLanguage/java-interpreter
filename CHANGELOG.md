@@ -1,3 +1,7 @@
+0.1.15
+===
+- Bug fix for class expansion to primitive values with wildcarded `*assign` instructions. See CH story 8206.
+
 0.1.14
 ===
 - Support for relative URIs in the `*load` instruction.

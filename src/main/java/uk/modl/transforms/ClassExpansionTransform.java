@@ -520,6 +520,70 @@ public class ClassExpansionTransform {
                                 }
                                 arrayItems = arrayItems.appendAll(pairs);
                                 return arr.with(ctx.getAncestry(), arrayItems);
+                            } else if (maybeClassByNameOrId.isDefined()) {
+                                final Array arr = Array.of(ctx.getAncestry(), parent, Vector.empty());
+
+                                for (int i = 0; i < assignListLength; i++) {
+                                    final StarClassTransform.ClassInstruction classs = maybeClassByNameOrId.get();
+                                    final ArrayItem item = valuesToAssign.get(i);
+                                    final String supertype = SupertypeInference.inferType(ctx, classs, (PairValue) item);
+
+                                    ArrayItem convertedItem;
+
+                                    switch (supertype) {
+                                        case "map":
+                                            throw new RuntimeException("Class '" + classs.getNameOrId() + "' is a map so needs a *assign instruction.");
+                                        case "null":
+                                            throw new RuntimeException("Class '" + classs.getNameOrId() + "' has a *superclass of null.");
+                                        case "arr":
+                                            convertedItem = Array.of(ctx.getAncestry(), arr, Vector.of(item));
+                                            break;
+                                        case "num":
+                                            if (item instanceof NumberPrimitive) {
+                                                convertedItem = item;
+                                            } else if (item instanceof StringPrimitive) {
+                                                convertedItem = (ArrayItem) ((StringPrimitive) item).numericValue();
+                                            } else if (item instanceof TruePrimitive) {
+                                                convertedItem = NumberPrimitive.of(ctx.getAncestry(), arr, "1");
+                                            } else if (item instanceof FalsePrimitive) {
+                                                convertedItem = NumberPrimitive.of(ctx.getAncestry(), arr, "0");
+                                            } else if (item instanceof NullPrimitive) {
+                                                convertedItem = NumberPrimitive.of(ctx.getAncestry(), arr, "0");
+                                            } else {
+                                                throw new RuntimeException("Class '" + classs.getNameOrId() + "' cannot convert '" + item + "' to a numeric value.");
+                                            }
+                                            break;
+                                        case "str":
+                                            if (item instanceof NumberPrimitive) {
+                                                convertedItem = StringPrimitive.of(ctx.getAncestry(), arr, ((NumberPrimitive) item).getValue());
+                                            } else if (item instanceof StringPrimitive) {
+                                                convertedItem = item;
+                                            } else if (item instanceof TruePrimitive) {
+                                                convertedItem = StringPrimitive.of(ctx.getAncestry(), arr, "true");
+                                            } else if (item instanceof FalsePrimitive) {
+                                                convertedItem = StringPrimitive.of(ctx.getAncestry(), arr, "false");
+                                            } else if (item instanceof NullPrimitive) {
+                                                convertedItem = StringPrimitive.of(ctx.getAncestry(), arr, "null");
+                                            } else {
+                                                throw new RuntimeException("Class '" + classs.getNameOrId() + "' cannot convert '" + item + "' to a string value.");
+                                            }
+                                            break;
+                                        case "bool":
+                                            if (item instanceof TruePrimitive) {
+                                                convertedItem = item;
+                                            } else if (item instanceof FalsePrimitive) {
+                                                convertedItem = item;
+                                            } else {
+                                                throw new RuntimeException("Class '" + classs.getNameOrId() + "' cannot convert '" + item + "' to a boolean value.");
+                                            }
+                                            break;
+                                        default:
+                                            throw new RuntimeException("Invalid superclass: " + supertype);
+                                    }
+
+                                    arrayItems = arrayItems.append(convertedItem);
+                                }
+                                return arr.with(ctx.getAncestry(), arrayItems);
                             }
                         }
 
