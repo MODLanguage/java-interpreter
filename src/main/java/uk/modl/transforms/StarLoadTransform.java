@@ -26,6 +26,7 @@ import io.vavr.Tuple3;
 import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.interpreter.Interpreter;
@@ -51,6 +52,20 @@ public class StarLoadTransform {
     private static Vector<StarLoadExtractor.LoadSet> extractFilenamesAndPairs(final Pair p) {
         return new StarLoadExtractor().accept(p)
                 .getLoadSets();
+    }
+
+    /**
+     * Try to create a URL from the *load file name
+     *
+     * @param maybeUrl a string that might be a URL String
+     * @return Maybe a URL
+     */
+    private static Option<URL> toUrl(@NonNull final String maybeUrl) {
+        try {
+            return Option.of(new URL(maybeUrl));
+        } catch (final Exception e) {
+            return Option.none();
+        }
     }
 
     /**
@@ -122,8 +137,9 @@ public class StarLoadTransform {
                             // Map the filenames to the contents of the files, or Error
                             contents = getFileContents(spec);
 
-                            // There is no URL in the current context so we can't provide one when processing this loaded file.
-                            interpreterContext = ctx.withUrl(Option.none());
+                            // Try to create a URL from the file spec so we can use it as a base for relative *loading if needed.
+                            final Option<URL> fileToLoad = toUrl(spec.getFilename());
+                            interpreterContext = ctx.withUrl(fileToLoad);
 
                             final Modl parsed = interpreter.parse(ctx, contents._2);
                             final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(interpreterContext, parsed);

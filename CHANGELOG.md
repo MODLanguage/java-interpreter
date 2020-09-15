@@ -1,3 +1,7 @@
+0.1.16
+===
+- Bug fix for relative `*load` instructions.
+
 0.1.15
 ===
 - Bug fix for class expansion to primitive values with wildcarded `*assign` instructions. See CH story 8206.
