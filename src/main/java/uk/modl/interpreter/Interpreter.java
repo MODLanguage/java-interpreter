@@ -56,11 +56,12 @@ public class Interpreter {
     /**
      * Interpret a String into a Modl object.
      *
-     * @param modlString String
+     * @param modlString          String
+     * @param timeoutMilliseconds the number of seconds the caller is prepared to wait for a result.
      * @return Modl
      */
-    public Modl interpret(final String modlString) {
-        final TransformationContext ctx = TransformationContext.baseCtx(null);
+    public Modl interpret(final String modlString, final long timeoutMilliseconds) {
+        final TransformationContext ctx = TransformationContext.baseCtx(null, timeoutMilliseconds);
         final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
         return interpreted._2;
     }
@@ -68,14 +69,15 @@ public class Interpreter {
     /**
      * Interpret a String into a Modl object.
      *
-     * @param url URL
+     * @param url                 URL
+     * @param timeoutMilliseconds the number of seconds the caller is prepared to wait for a result.
      * @return Modl
      * @throws IOException on error
      */
-    public Modl interpret(final URL url) throws IOException {
+    public Modl interpret(final URL url, final long timeoutMilliseconds) throws IOException {
         final String modlString = IOUtils.toString(url, StandardCharsets.UTF_8);
 
-        final TransformationContext ctx = TransformationContext.baseCtx(url);
+        final TransformationContext ctx = TransformationContext.baseCtx(url, timeoutMilliseconds);
         final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
         return interpreted._2;
     }
@@ -83,12 +85,13 @@ public class Interpreter {
     /**
      * Interpret a String into a Modl object.
      *
-     * @param modlString String
-     * @param url        URL
+     * @param modlString          String
+     * @param url                 URL
+     * @param timeoutMilliseconds the number of seconds the caller is prepared to wait for a result.
      * @return Modl
      */
-    public Modl interpret(final String modlString, final URL url) {
-        final TransformationContext ctx = TransformationContext.baseCtx(url);
+    public Modl interpret(final String modlString, final URL url, final long timeoutMilliseconds) {
+        final TransformationContext ctx = TransformationContext.baseCtx(url, timeoutMilliseconds);
         final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
         return interpreted._2;
     }
@@ -96,11 +99,12 @@ public class Interpreter {
     /**
      * Interpret a String into a JsonNode object.
      *
-     * @param modlString String
+     * @param modlString          String
+     * @param timeoutMilliseconds the number of seconds the caller is prepared to wait for a result.
      * @return JsonNode
      */
-    public JsonNode interpretToJsonObject(final String modlString) {
-        final TransformationContext ctx = TransformationContext.baseCtx(null);
+    public JsonNode interpretToJsonObject(final String modlString, final long timeoutMilliseconds) {
+        final TransformationContext ctx = TransformationContext.baseCtx(null, timeoutMilliseconds);
         final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
         return new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
     }
@@ -108,13 +112,14 @@ public class Interpreter {
     /**
      * Interpret a String into a JsonNode object.
      *
-     * @param url URL
+     * @param url                 URL
+     * @param timeoutMilliseconds the number of seconds the caller is prepared to wait for a result.
      * @return JsonNode
      * @throws IOException on error
      */
-    public JsonNode interpretToJsonObject(final URL url) throws IOException {
+    public JsonNode interpretToJsonObject(final URL url, final long timeoutMilliseconds) throws IOException {
         final String modlString = IOUtils.toString(url, StandardCharsets.UTF_8);
-        final TransformationContext ctx = TransformationContext.baseCtx(url);
+        final TransformationContext ctx = TransformationContext.baseCtx(url, timeoutMilliseconds);
         final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
         return new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
     }
@@ -122,12 +127,13 @@ public class Interpreter {
     /**
      * Interpret a String into a JsonNode object.
      *
-     * @param modlString String
-     * @param url        URL
+     * @param modlString          String
+     * @param url                 URL
+     * @param timeoutMilliseconds the number of seconds the caller is prepared to wait for a result.
      * @return JsonNode
      */
-    public JsonNode interpretToJsonObject(final String modlString, final URL url) {
-        final TransformationContext ctx = TransformationContext.baseCtx(url);
+    public JsonNode interpretToJsonObject(final String modlString, final URL url, final long timeoutMilliseconds) {
+        final TransformationContext ctx = TransformationContext.baseCtx(url, timeoutMilliseconds);
         final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
         return new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
     }
@@ -135,37 +141,42 @@ public class Interpreter {
     /**
      * Interpret a String into a JsonNode object.
      *
-     * @param modlString String
-     * @param url        URL
+     * @param modlString          String
+     * @param url                 URL
+     * @param timeoutMilliseconds the number of seconds the caller is prepared to wait for a result.
      * @return String
      * @throws JsonProcessingException on error
      */
-    public String interpretToJsonString(final String modlString, final URL url) throws JsonProcessingException {
-        final JsonNode jsonNode = interpretToJsonObject(modlString, url);
+    public String interpretToJsonString(final String modlString, final URL url, final long timeoutMilliseconds) throws
+                                                                                                                JsonProcessingException {
+        final JsonNode jsonNode = interpretToJsonObject(modlString, url, timeoutMilliseconds);
         return new ObjectMapper().writeValueAsString(jsonNode);
     }
 
     /**
      * Interpret a String into a JsonNode object.
      *
-     * @param url URL
+     * @param url                 URL
+     * @param timeoutMilliseconds the number of seconds the caller is prepared to wait for a result.
      * @return String
      * @throws JsonProcessingException on error
      */
-    public String interpretToJsonString(final URL url) throws IOException {
-        final JsonNode jsonNode = interpretToJsonObject(url);
+    public String interpretToJsonString(final URL url, final long timeoutMilliseconds) throws IOException {
+        final JsonNode jsonNode = interpretToJsonObject(url, timeoutMilliseconds);
         return new ObjectMapper().writeValueAsString(jsonNode);
     }
 
     /**
      * Interpret a String into a JsonNode object.
      *
-     * @param modlString String
+     * @param modlString          String
+     * @param timeoutMilliseconds the number of seconds the caller is prepared to wait for a result.
      * @return String
      * @throws JsonProcessingException on error
      */
-    public String interpretToPrettyJsonString(final String modlString) throws JsonProcessingException {
-        final JsonNode jsonNode = interpretToJsonObject(modlString, null);
+    public String interpretToPrettyJsonString(final String modlString, final long timeoutMilliseconds) throws
+                                                                                                       JsonProcessingException {
+        final JsonNode jsonNode = interpretToJsonObject(modlString, null, timeoutMilliseconds);
         return new ObjectMapper().writerWithDefaultPrettyPrinter()
                 .writeValueAsString(jsonNode);
     }
@@ -173,13 +184,14 @@ public class Interpreter {
     /**
      * Interpret a String into a JsonNode object.
      *
-     * @param url URL
+     * @param url                 URL
+     * @param timeoutMilliseconds the number of seconds the caller is prepared to wait for a result.
      * @return String
      * @throws JsonProcessingException on error
      */
-    public String interpretToPrettyJsonString(final URL url) throws IOException {
+    public String interpretToPrettyJsonString(final URL url, final long timeoutMilliseconds) throws IOException {
         final String modlString = IOUtils.toString(url, StandardCharsets.UTF_8);
-        final JsonNode jsonNode = interpretToJsonObject(modlString, url);
+        final JsonNode jsonNode = interpretToJsonObject(modlString, url, timeoutMilliseconds);
         return new ObjectMapper().writerWithDefaultPrettyPrinter()
                 .writeValueAsString(jsonNode);
     }
@@ -187,13 +199,15 @@ public class Interpreter {
     /**
      * Interpret a String into a JsonNode object.
      *
-     * @param modlString String
-     * @param url        URL
+     * @param modlString          String
+     * @param url                 URL
+     * @param timeoutMilliseconds the number of seconds the caller is prepared to wait for a result.
      * @return String
      * @throws JsonProcessingException on error
      */
-    public String interpretToPrettyJsonString(final String modlString, final URL url) throws JsonProcessingException {
-        final JsonNode jsonNode = interpretToJsonObject(modlString, url);
+    public String interpretToPrettyJsonString(final String modlString, final URL url, final long timeoutMilliseconds) throws
+                                                                                                                      JsonProcessingException {
+        final JsonNode jsonNode = interpretToJsonObject(modlString, url, timeoutMilliseconds);
         return new ObjectMapper().writerWithDefaultPrettyPrinter()
                 .writeValueAsString(jsonNode);
     }
@@ -222,7 +236,7 @@ public class Interpreter {
      */
     public Modl parse(final TransformationContext ctx, @NonNull final String modlString) {
         try {
-            final Modl modl = parser.apply(modlString, ctx.getAncestry());
+            final Modl modl = parser.apply(modlString, ctx.getAncestry(), ctx.getTimeout());
 
             // Check that the top level has all Pairs if it has any at all.
             final Vector<Structure> filtered = modl.getStructures()

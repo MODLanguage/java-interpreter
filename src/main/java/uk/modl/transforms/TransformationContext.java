@@ -44,6 +44,11 @@ public class TransformationContext {
     public static final boolean STAR_CLASS_IMMUTABLE = false;
 
     /**
+     * The supplied timeout.
+     */
+    long timeout;
+
+    /**
      * The URL of the MODL that is being processed.
      */
     Option<URL> url;
@@ -109,12 +114,13 @@ public class TransformationContext {
     Map<String, StarClassTransform.ClassInstruction> classesByName;
 
     /**
-     * @param uri the URI of the MODL
+     * @param uri                 the URI of the MODL
+     * @param timeoutMilliseconds the number of seconds the caller is prepared to wait for a result.
      * @return TransformationContext
      */
-    public static TransformationContext baseCtx(final URL uri) {
+    public static TransformationContext baseCtx(final URL uri, final long timeoutMilliseconds) {
         final Option<URL> maybeUri = Option.of(uri);
-        return TransformationContext.of(maybeUri, new Ancestry(), VERSION, STAR_LOAD_IMMUTABLE, STAR_CLASS_IMMUTABLE, Vector.empty(), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
+        return TransformationContext.of(timeoutMilliseconds, maybeUri, new Ancestry(), VERSION, STAR_LOAD_IMMUTABLE, STAR_CLASS_IMMUTABLE, Vector.empty(), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
     }
 
     /**

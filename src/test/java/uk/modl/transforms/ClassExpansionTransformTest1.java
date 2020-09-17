@@ -40,7 +40,7 @@ public class ClassExpansionTransformTest1 {
 
     @Test
     public void test() throws MalformedURLException {
-        final TransformationContext ctx = TransformationContext.baseCtx(new URL("file:///"));
+        final TransformationContext ctx = TransformationContext.baseCtx(new URL("file:///"), 10000);
         final ClassExpansionTransform transform = new ClassExpansionTransform();
 
         // Create the class

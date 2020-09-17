@@ -34,7 +34,7 @@ public class TestUtils {
 
     public void runTest(final String input, final String expected) {
         final Interpreter interpreter = new Interpreter();
-        final TransformationContext ctx = TransformationContext.baseCtx(null);
+        final TransformationContext ctx = TransformationContext.baseCtx(null, 10000);
         final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(ctx, input);
         final JsonNode json = new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
         final String result = Util.jsonNodeToString(json);

@@ -23,6 +23,7 @@ package uk.modl.parser;
 import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import uk.modl.ancestry.Ancestry;
 import uk.modl.model.Modl;
 import uk.modl.parser.antlr.MODLLexer;
@@ -33,6 +34,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Class to parse MODL Strings to Modl trees.
@@ -43,12 +46,14 @@ public class Parser {
     /**
      * Parse a MODL String to a Modl object
      *
-     * @param input    the MODL String
-     * @param ancestry Ancestry
+     * @param input               the MODL String
+     * @param ancestry            Ancestry
+     * @param timeoutMilliseconds the number of seconds the caller is prepared to wait for a result.
      * @return Either a Throwable or a Modl object
      */
-    public Modl apply(final String input, final Ancestry ancestry) {
+    public Modl apply(final String input, final Ancestry ancestry, final long timeoutMilliseconds) {
         try {
+            final ExecutorService executorService = Executors.newSingleThreadExecutor();
             // Antlr boilerplate
             final InputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
             final MODLLexer lexer = new MODLLexer(CharStreams.fromStream(stream, StandardCharsets.UTF_8));
@@ -59,11 +64,55 @@ public class Parser {
             lexer.addErrorListener(ThrowingErrorListener.INSTANCE);
             parser.addErrorListener(ThrowingErrorListener.INSTANCE);
 
-            final MODLParser.ModlContext modlCtx = parser.modl();
+            /*
+             * Warning: Nasty threading code follows
+             *
+             * The reason for this is that the MODL grammar can take a very long time to process if deeply nested,
+             * and ANTLR4 cannot be interrupted, hence it is run in a separate thread. We have to use the Thread.stop()
+             * method because otherwise the thread does not terminate and cannot be killed any other way.
+             *
+             * This issue may be resolved by grammar changes in future.
+             *
+             */
 
-            // The String has been parsed by Antlr, now its our turn
-            return new ModlParsedVisitor(modlCtx, ancestry).getModl();
-        } catch (final IOException e) {
+            // This is to capture the executor thread that will process the MODL so we can call its `stop()` method
+            // if there is a timeout.
+            final AtomicReference<Thread> taskThread = new AtomicReference<>();
+
+            // Execute the parser in a Future
+            final Future<MODLParser.ModlContext> future = executorService.submit(() -> {
+                taskThread.set(Thread.currentThread());
+                return parser.modl();
+            });
+
+            final MODLParser.ModlContext modlCtx;
+
+            try {
+                // Get the result
+                modlCtx = future.get(timeoutMilliseconds, TimeUnit.MILLISECONDS);
+            } finally {
+                // Force shutdown and kill the thread.
+                executorService.shutdownNow();
+                try {
+                    taskThread.get()
+                            .stop();// Try to kill the thread.
+                } catch (final Throwable e) {
+                    // Ignore ThreadDeath
+                }
+            }
+
+            if (modlCtx != null) {
+                // The String has been parsed by Antlr, now its our turn
+                return new ModlParsedVisitor(modlCtx, ancestry).getModl();
+            }
+
+            throw new TimeoutException();
+        } catch (final IOException | InterruptedException | TimeoutException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof ParseCancellationException) {
+                throw (ParseCancellationException) e.getCause();
+            }
             throw new RuntimeException(e);
         }
     }

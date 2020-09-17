@@ -34,6 +34,8 @@ import java.util.Arrays;
 
 public class Interpret {
 
+    public static final int TIMEOUT_SECONDS = 10000;
+
     public static void main(final String... args) {
         if (args.length == 0) {
             System.out.println("Usage: java -cp ./build/libs/interpreter-<version>.jar <modl-file-name> [modl-file-name] ...");
@@ -49,7 +51,7 @@ public class Interpret {
 
                         final Interpreter interpreter = new Interpreter();
                         final TransformationContext ctx = TransformationContext.baseCtx(new URL(path.toUri()
-                                .toASCIIString()));
+                                .toASCIIString()), TIMEOUT_SECONDS);
                         final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(ctx, modlString);
                         final JsonNode json = new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
 

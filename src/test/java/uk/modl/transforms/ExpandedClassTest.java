@@ -39,6 +39,8 @@ import static uk.modl.transforms.StarClassTransform.ClassInstruction.*;
 
 public class ExpandedClassTest {
 
+    public static final int TIMEOUT_SECONDS = 10000;
+
     final Ancestry ancestry = new Ancestry();
 
     final Parent parent = () -> 0;
@@ -70,7 +72,7 @@ public class ExpandedClassTest {
         );
         final StarClassTransform.ClassInstruction superclass = of("super", "super", "str", assign2, pairs2);
 
-        final TransformationContext ctx = TransformationContext.baseCtx(new URL("file:///"))
+        final TransformationContext ctx = TransformationContext.baseCtx(new URL("file:///"), TIMEOUT_SECONDS)
                 .addClassInstruction(superclass);
 
         final ExpandedClass expandedClass = ExpandedClass.of(ctx, ci, "str");
@@ -85,7 +87,7 @@ public class ExpandedClassTest {
         final StarClassTransform.ClassInstruction ci = of("test2", null, null, assign, pairs);
 
 
-        final TransformationContext ctx = TransformationContext.baseCtx(new URL("file:///"));
+        final TransformationContext ctx = TransformationContext.baseCtx(new URL("file:///"), TIMEOUT_SECONDS);
 
         final ExpandedClass expandedClass = ExpandedClass.of(ctx, ci, null);
         assertEquals("ClassExpansionTransform.ExpandedClass(id=test2, name=test2, superclass=null, assigns=Vector(), pairs=Vector())", expandedClass.toString());

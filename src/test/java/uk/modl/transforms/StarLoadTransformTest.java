@@ -36,14 +36,16 @@ public class StarLoadTransformTest {
 
     private static final StarLoadTransform starLoadTransform = new StarLoadTransform();
 
+    public static final int TIMEOUT_SECONDS = 10000;
+
     final Ancestry ancestry = new Ancestry();
 
     final Parent parent = () -> 0;
 
     @Test
     public void test_load_file_successfully() {
-        final TransformationContext ctx = TransformationContext.baseCtx(null);
-        final Modl modl = parser.apply("*l=`./src/test/resources/modl/load_test_1.modl`;c=d", ctx.getAncestry());
+        final TransformationContext ctx = TransformationContext.baseCtx(null, TIMEOUT_SECONDS);
+        final Modl modl = parser.apply("*l=`./src/test/resources/modl/load_test_1.modl`;c=d", ctx.getAncestry(), TIMEOUT_SECONDS);
         assertNotNull(modl);
 
         final Tuple2<TransformationContext, Structure> result = starLoadTransform.apply(ctx, modl.getStructures()

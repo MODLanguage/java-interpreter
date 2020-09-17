@@ -33,7 +33,7 @@ public class RelativeStarLoadTest2 {
     @Test
     public void parseOk() throws IOException {
         final Interpreter interpreter = new Interpreter();
-        final String json = interpreter.interpretToJsonString(new URL("http://modules.numprotocol.com/1/rcf.txt"));
+        final String json = interpreter.interpretToJsonString(new URL("http://modules.numprotocol.com/1/rcf.txt"), 10000);
         Assert.assertEquals(EXPECTED, json);
     }
 

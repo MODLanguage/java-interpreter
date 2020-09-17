@@ -46,6 +46,8 @@ import static org.junit.Assert.*;
 @Log4j2
 public class InterpreterBaseTests {
 
+    public static final int TIMEOUT_SECONDS = 10000;
+
     private final List<String> errors = new ArrayList<>();
 
     private final ObjectMapper mapper = new ObjectMapper();
@@ -88,7 +90,7 @@ public class InterpreterBaseTests {
 
     private void checkValidTestInput(final TestInput testInput) {
         try {
-            final TransformationContext ctx = TransformationContext.baseCtx(null);
+            final TransformationContext ctx = TransformationContext.baseCtx(null, TIMEOUT_SECONDS);
             final Tuple2<TransformationContext, Modl> interpreted = new Interpreter().apply(ctx, testInput.input);
             final JacksonJsonNodeTransform jsonTransformer = new JacksonJsonNodeTransform(ctx);
 
@@ -154,7 +156,7 @@ public class InterpreterBaseTests {
 
     private void checkInvalidTestInput(final TestInput testInput) {
         try {
-            final TransformationContext ctx = TransformationContext.baseCtx(null);
+            final TransformationContext ctx = TransformationContext.baseCtx(null, TIMEOUT_SECONDS);
             final Tuple2<TransformationContext, Modl> interpreted = new Interpreter().apply(ctx, testInput.input);
             final JacksonJsonNodeTransform jsonTransformer = new JacksonJsonNodeTransform(ctx);
             if (interpreted._2 != null) {

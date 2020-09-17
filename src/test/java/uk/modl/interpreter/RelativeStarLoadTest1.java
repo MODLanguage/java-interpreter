@@ -52,7 +52,7 @@ public class RelativeStarLoadTest1 {
                 .toUri()
                 .toURL();
         final Interpreter interpreter = new Interpreter();
-        final String json = interpreter.interpretToPrettyJsonString(url);
+        final String json = interpreter.interpretToPrettyJsonString(url, 10000);
         Assert.assertEquals(EXPECTED, json);
     }
 
