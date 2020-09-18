@@ -1,3 +1,7 @@
+0.1.18
+===
+- Fix for relative `*load`.
+
 0.1.17
 ===
 - Add a timeout for large and/or deeply nested MODL.

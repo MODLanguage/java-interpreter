@@ -64,7 +64,13 @@ public class StarLoadTransform {
         try {
             return Option.of(new URL(maybeUrl));
         } catch (final Exception e) {
-            return Option.none();
+            try {
+                return Option.of(Paths.get(maybeUrl)
+                        .toUri()
+                        .toURL());
+            } catch (MalformedURLException malformedURLException) {
+                return Option.none();
+            }
         }
     }
 
