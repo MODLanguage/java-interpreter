@@ -103,20 +103,44 @@ public class StarLoadTransform {
                 final boolean cached = cache.contains(spec.getFilename());
                 try {
 
+                    final Tuple2<StarLoadExtractor.FileSpec, String> contents;
+                    final TransformationContext interpreterContext;
                     if (cached && !spec.isForceLoad()) {
-                        // Its cached and not force-loaded
-                        final Tuple2<StarLoadExtractor.FileSpec, Modl> cachedModl = Tuple.of(spec, cache.get(spec.getFilename()));
+                        if (ctx.getUrl()
+                                .isDefined()) {
+                            final Option<URL> originalUrl = ctx.getUrl();
 
-                        // Re-interpret the cached Modl objects to extract classes, methods etc. for the current context
-                        final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(newCtx, cachedModl._2);
-                        newCtx = interpreted._1;
+                            // Map the filenames to the contents of the files, or Error
+                            final URL fileToLoad = new URL(originalUrl.get(), spec.getFilename());
 
-                        result = result.append(Tuple.of(Vector.of(cachedModl._1.getFilename()), Vector.of(cachedModl._2), loadSet.getPair()));
+                            // Interpret the file with its own URL in the context so that any nested *loads are relative to that file.
+                            interpreterContext = newCtx.withUrl(Option.of(fileToLoad));
+
+                            // Its cached and not force-loaded
+                            final Tuple2<StarLoadExtractor.FileSpec, Modl> cachedModl = Tuple.of(spec, cache.get(spec.getFilename()));
+
+                            // Re-interpret the cached Modl objects to extract classes, methods etc. for the current context
+                            final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(interpreterContext, cachedModl._2);
+                            newCtx = interpreted._1;
+
+                            result = result.append(Tuple.of(Vector.of(cachedModl._1.getFilename()), Vector.of(cachedModl._2), loadSet.getPair()));
+                        } else {
+                            // Try to create a URL from the file spec so we can use it as a base for relative *loading if needed.
+                            final Option<URL> fileToLoad = toUrl(spec.getFilename());
+                            interpreterContext = newCtx.withUrl(fileToLoad);
+
+                            // Its cached and not force-loaded
+                            final Tuple2<StarLoadExtractor.FileSpec, Modl> cachedModl = Tuple.of(spec, cache.get(spec.getFilename()));
+
+                            // Re-interpret the cached Modl objects to extract classes, methods etc. for the current context
+                            final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(interpreterContext, cachedModl._2);
+                            newCtx = interpreted._1;
+
+                            result = result.append(Tuple.of(Vector.of(cachedModl._1.getFilename()), Vector.of(cachedModl._2), loadSet.getPair()));
+                        }
 
                     } else {
                         // Its either not cached or not force-loaded
-                        final Tuple2<StarLoadExtractor.FileSpec, String> contents;
-                        final TransformationContext interpreterContext;
                         if (ctx.getUrl()
                                 .isDefined()) {
 
@@ -128,7 +152,7 @@ public class StarLoadTransform {
                                     .get());
 
                             // Interpret the file with its own URL in the context so that any nested *loads are relative to that file.
-                            interpreterContext = ctx.withUrl(Option.of(fileToLoad));
+                            interpreterContext = newCtx.withUrl(Option.of(fileToLoad));
 
                             final Modl parsed = interpreter.parse(ctx, contents._2);
                             final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(interpreterContext, parsed);
@@ -145,7 +169,7 @@ public class StarLoadTransform {
 
                             // Try to create a URL from the file spec so we can use it as a base for relative *loading if needed.
                             final Option<URL> fileToLoad = toUrl(spec.getFilename());
-                            interpreterContext = ctx.withUrl(fileToLoad);
+                            interpreterContext = newCtx.withUrl(fileToLoad);
 
                             final Modl parsed = interpreter.parse(ctx, contents._2);
                             final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(interpreterContext, parsed);

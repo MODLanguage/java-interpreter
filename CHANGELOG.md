@@ -1,3 +1,7 @@
+0.1.19
+===
+- Fix for relative `*load`.
+
 0.1.18
 ===
 - Fix for relative `*load`.
