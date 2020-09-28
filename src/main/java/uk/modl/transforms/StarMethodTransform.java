@@ -25,6 +25,7 @@ import io.vavr.Tuple2;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import org.apache.commons.lang3.StringUtils;
 import uk.modl.model.*;
 import uk.modl.utils.Util;
 
@@ -34,14 +35,11 @@ public class StarMethodTransform {
     /**
      * Check whether the key represents a *method instruction
      *
-     * @param key the String to check
+     * @param s the Structure to check
      * @return true if the key represents a method instruction
      */
-    public static boolean isMethodInstruction(final String key) {
-        final String lowerCase = key.toLowerCase();
-        return lowerCase
-                .equals("*m") || lowerCase
-                .equals("*method");
+    public static boolean isMethodInstruction(final Structure s) {
+        return (s instanceof Pair) && StringUtils.equalsAnyIgnoreCase(((Pair) s).getKey(), "*m", "*method");
     }
 
     /**
@@ -52,11 +50,9 @@ public class StarMethodTransform {
      * @return the result of function application
      */
     public Tuple2<TransformationContext, Structure> apply(final TransformationContext ctx, final Structure p) {
-        if (p instanceof Pair && isMethodInstruction(((Pair) p).getKey())) {
-            final TransformationContext updatedContext = accept(ctx, (Pair) p);
-            return Tuple.of(updatedContext, null);
-        }
-        return Tuple.of(ctx, p);
+        return (isMethodInstruction(p))
+                ? Tuple.of(accept(ctx, (Pair) p), null)
+                : Tuple.of(ctx, p);
     }
 
     /**
