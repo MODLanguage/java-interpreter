@@ -24,9 +24,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.extern.log4j.Log4j2;
+import lombok.val;
+import lombok.var;
 import uk.modl.model.*;
 import uk.modl.utils.StringEscapeReplacer;
 import uk.modl.utils.Util;
@@ -49,8 +50,8 @@ public class JacksonJsonNodeTransform {
      * @return the result of function application
      */
     public JsonNode apply(final Modl modl) {
-        JsonNode result = null;// In case this object is being re-used
-        final Vector<Structure> filtered = modl.getStructures()
+        var result = (JsonNode) null;// In case this object is being re-used
+        val filtered = modl.getStructures()
                 .filter(Util::shouldAppearInOutput);
 
         switch (filtered.size()) {
@@ -58,14 +59,14 @@ public class JacksonJsonNodeTransform {
                 break;
             case 1:
                 // For a single structure, pull up the next level to the top level.
-                final Structure structure = filtered.get(0);
+                val structure = filtered.get(0);
                 if (structure instanceof Array) {
-                    final ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
+                    val arrayNode = JsonNodeFactory.instance.arrayNode();
                     result = arrayNode;
                     ((Array) structure).getArrayItems()
                             .forEach(arrayItem -> accept(arrayNode, arrayItem));
                 } else {
-                    final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+                    val objectNode = JsonNodeFactory.instance.objectNode();
                     result = objectNode;
                     accept(objectNode, structure);
                 }
@@ -73,11 +74,11 @@ public class JacksonJsonNodeTransform {
             default:
                 // If there are no top level pairs, make the top level an array, otherwise make it a map.
                 if (filtered.count(s -> s instanceof Pair) > 0) {
-                    final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+                    val objectNode = JsonNodeFactory.instance.objectNode();
                     result = objectNode;
                     filtered.forEach(s -> accept(objectNode, s));
                 } else {
-                    final ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode(filtered.size());
+                    val arrayNode = JsonNodeFactory.instance.arrayNode(filtered.size());
                     result = arrayNode;
                     filtered.forEach(s -> accept(arrayNode, (ArrayItem) s));
 
@@ -90,12 +91,12 @@ public class JacksonJsonNodeTransform {
         return p -> {
             if (p instanceof Pair) {
 
-                final Pair pair = (Pair) p;
+                val pair = (Pair) p;
                 if (pair.getKey()
                         .startsWith("_")) {
                     return p;
                 }
-                final ObjectNode newNode = JsonNodeFactory.instance.objectNode();
+                val newNode = JsonNodeFactory.instance.objectNode();
                 node.add(newNode);
                 addPairToObjectNode(newNode).apply(p);
 
@@ -108,14 +109,14 @@ public class JacksonJsonNodeTransform {
         return p -> {
             if (p instanceof PairValue) {
 
-                final PairValue pv = (PairValue) p;
+                val pv = (PairValue) p;
 
                 if (pv instanceof StringPrimitive) {
-                    final Primitive prim = (Primitive) pv;
+                    val prim = (Primitive) pv;
                     node.add(JsonNodeFactory.instance.textNode(prim.toString()));
                 } else if (pv instanceof NumberPrimitive) {
-                    final NumberPrimitive prim = (NumberPrimitive) pv;
-                    final Number n = prim.numericValue();
+                    val prim = (NumberPrimitive) pv;
+                    val n = prim.numericValue();
                     if (n instanceof Double || n instanceof Float) {
                         node.add(JsonNodeFactory.instance.numberNode(n.doubleValue()));
                     } else if (n instanceof Integer || n instanceof Long) {
@@ -137,8 +138,8 @@ public class JacksonJsonNodeTransform {
         return s -> {
             if (s instanceof Array) {
 
-                final Array arr = (Array) s;
-                final ArrayNode newNode = JsonNodeFactory.instance.arrayNode();
+                val arr = (Array) s;
+                val newNode = JsonNodeFactory.instance.arrayNode();
                 node.add(newNode);
                 arr.getArrayItems()
                         .forEach(arrayItem -> accept(newNode, arrayItem));
@@ -153,9 +154,9 @@ public class JacksonJsonNodeTransform {
             if (s instanceof Map) {
 
                 // Add a new Object node and add the map items to it.
-                final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+                val objectNode = JsonNodeFactory.instance.objectNode();
                 node.add(objectNode);
-                final Map map = (Map) s;
+                val map = (Map) s;
                 accept(objectNode, map);
             }
             return s;
@@ -193,7 +194,7 @@ public class JacksonJsonNodeTransform {
                 map.getMapItems()
                         .forEach(mapItem -> {
                             if (mapItem instanceof Pair) {
-                                final Pair p = (Pair) mapItem;
+                                val p = (Pair) mapItem;
                                 accept(node, p);
                             } else if (mapItem instanceof MapConditional) {
                                 accept(node, (MapConditional) mapItem);
@@ -252,12 +253,12 @@ public class JacksonJsonNodeTransform {
     private Function<Object, Object> addPairToObjectNode(final ObjectNode node) {
         return p -> {
             if (p instanceof Pair) {
-                final Pair pair = (Pair) p;
+                val pair = (Pair) p;
                 if (pair.getKey()
                         .startsWith("_")) {
                     return p;
                 }
-                final String key = StringEscapeReplacer.replace(pair.getKey());
+                val key = StringEscapeReplacer.replace(pair.getKey());
 
                 if (pair.getValue() instanceof StringPrimitive) {
                     handleStringPrimitive(node, (Pair) p, key);
@@ -287,13 +288,13 @@ public class JacksonJsonNodeTransform {
     }
 
     private void handleValueItem(final ObjectNode node, final Pair pair, final String key) {
-        final ObjectNode newNode = JsonNodeFactory.instance.objectNode();
+        val newNode = JsonNodeFactory.instance.objectNode();
         node.set(key, newNode);
         accept(newNode, (ValueItem) pair.getValue());
     }
 
     private void handleMapConditional(final ObjectNode node, final Pair pair, final String key) {
-        final Vector<ValueItem> valueItems = ((ValueConditional) pair.getValue()).getResult();
+        val valueItems = ((ValueConditional) pair.getValue()).getResult();
         if (valueItems.size() == 1) {
             accept(node, Pair.of(ctx.getAncestry(), pair, key, valueItems.get(0)));
         } else {
@@ -302,21 +303,21 @@ public class JacksonJsonNodeTransform {
     }
 
     private void handleMap(final ObjectNode node, final Pair pair, final String key) {
-        final ObjectNode newNode = JsonNodeFactory.instance.objectNode();
+        val newNode = JsonNodeFactory.instance.objectNode();
         node.set(key, newNode);
         addMapToObjectNode(newNode).apply(pair.getValue());
     }
 
     private void handleArray(final ObjectNode node, final Pair pair, final String key) {
-        final ArrayNode newNode = JsonNodeFactory.instance.arrayNode();
+        val newNode = JsonNodeFactory.instance.arrayNode();
         node.set(key, newNode);
         ((Array) pair.getValue()).getArrayItems()
                 .forEach(ai -> accept(newNode, ai));
     }
 
     private void handleNumberPrimitive(final ObjectNode node, final Pair p, final String key) {
-        final NumberPrimitive prim = (NumberPrimitive) p.getValue();
-        final Number n = prim.numericValue();
+        val prim = (NumberPrimitive) p.getValue();
+        val n = prim.numericValue();
         if (n instanceof Double) {
             node.set(key, JsonNodeFactory.instance.numberNode(n.doubleValue()));
         } else if (n instanceof Float) {
@@ -329,8 +330,8 @@ public class JacksonJsonNodeTransform {
     }
 
     private void handleStringPrimitive(final ObjectNode node, final Pair p, final String key) {
-        final Primitive prim = (Primitive) p.getValue();
-        final String text = StringEscapeReplacer.replace(prim.toString());
+        val prim = (Primitive) p.getValue();
+        val text = StringEscapeReplacer.replace(prim.toString());
         node.set(key, JsonNodeFactory.instance.textNode(text));
     }
 

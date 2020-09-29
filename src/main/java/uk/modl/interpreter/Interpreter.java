@@ -24,14 +24,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vavr.Tuple2;
-import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.NonNull;
+import lombok.val;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.apache.commons.io.IOUtils;
 import uk.modl.model.Modl;
 import uk.modl.model.Pair;
-import uk.modl.model.Structure;
 import uk.modl.parser.Parser;
 import uk.modl.parser.errors.InterpreterError;
 import uk.modl.transforms.JacksonJsonNodeTransform;
@@ -61,8 +60,8 @@ public class Interpreter {
      * @return Modl
      */
     public Modl interpret(final String modlString, final long timeoutMilliseconds) {
-        final TransformationContext ctx = TransformationContext.baseCtx(null, timeoutMilliseconds);
-        final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
+        val ctx = TransformationContext.baseCtx(null, timeoutMilliseconds);
+        val interpreted = apply(ctx, modlString);
         return interpreted._2;
     }
 
@@ -75,10 +74,10 @@ public class Interpreter {
      * @throws IOException on error
      */
     public Modl interpret(final URL url, final long timeoutMilliseconds) throws IOException {
-        final String modlString = IOUtils.toString(url, StandardCharsets.UTF_8);
+        val modlString = IOUtils.toString(url, StandardCharsets.UTF_8);
 
-        final TransformationContext ctx = TransformationContext.baseCtx(url, timeoutMilliseconds);
-        final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
+        val ctx = TransformationContext.baseCtx(url, timeoutMilliseconds);
+        val interpreted = apply(ctx, modlString);
         return interpreted._2;
     }
 
@@ -91,8 +90,8 @@ public class Interpreter {
      * @return Modl
      */
     public Modl interpret(final String modlString, final URL url, final long timeoutMilliseconds) {
-        final TransformationContext ctx = TransformationContext.baseCtx(url, timeoutMilliseconds);
-        final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
+        val ctx = TransformationContext.baseCtx(url, timeoutMilliseconds);
+        val interpreted = apply(ctx, modlString);
         return interpreted._2;
     }
 
@@ -104,8 +103,8 @@ public class Interpreter {
      * @return JsonNode
      */
     public JsonNode interpretToJsonObject(final String modlString, final long timeoutMilliseconds) {
-        final TransformationContext ctx = TransformationContext.baseCtx(null, timeoutMilliseconds);
-        final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
+        val ctx = TransformationContext.baseCtx(null, timeoutMilliseconds);
+        val interpreted = apply(ctx, modlString);
         return new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
     }
 
@@ -118,9 +117,9 @@ public class Interpreter {
      * @throws IOException on error
      */
     public JsonNode interpretToJsonObject(final URL url, final long timeoutMilliseconds) throws IOException {
-        final String modlString = IOUtils.toString(url, StandardCharsets.UTF_8);
-        final TransformationContext ctx = TransformationContext.baseCtx(url, timeoutMilliseconds);
-        final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
+        val modlString = IOUtils.toString(url, StandardCharsets.UTF_8);
+        val ctx = TransformationContext.baseCtx(url, timeoutMilliseconds);
+        val interpreted = apply(ctx, modlString);
         return new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
     }
 
@@ -133,8 +132,8 @@ public class Interpreter {
      * @return JsonNode
      */
     public JsonNode interpretToJsonObject(final String modlString, final URL url, final long timeoutMilliseconds) {
-        final TransformationContext ctx = TransformationContext.baseCtx(url, timeoutMilliseconds);
-        final Tuple2<TransformationContext, Modl> interpreted = apply(ctx, modlString);
+        val ctx = TransformationContext.baseCtx(url, timeoutMilliseconds);
+        val interpreted = apply(ctx, modlString);
         return new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
     }
 
@@ -149,7 +148,7 @@ public class Interpreter {
      */
     public String interpretToJsonString(final String modlString, final URL url, final long timeoutMilliseconds) throws
                                                                                                                 JsonProcessingException {
-        final JsonNode jsonNode = interpretToJsonObject(modlString, url, timeoutMilliseconds);
+        val jsonNode = interpretToJsonObject(modlString, url, timeoutMilliseconds);
         return new ObjectMapper().writeValueAsString(jsonNode);
     }
 
@@ -162,7 +161,7 @@ public class Interpreter {
      * @throws JsonProcessingException on error
      */
     public String interpretToJsonString(final URL url, final long timeoutMilliseconds) throws IOException {
-        final JsonNode jsonNode = interpretToJsonObject(url, timeoutMilliseconds);
+        val jsonNode = interpretToJsonObject(url, timeoutMilliseconds);
         return new ObjectMapper().writeValueAsString(jsonNode);
     }
 
@@ -176,7 +175,7 @@ public class Interpreter {
      */
     public String interpretToPrettyJsonString(final String modlString, final long timeoutMilliseconds) throws
                                                                                                        JsonProcessingException {
-        final JsonNode jsonNode = interpretToJsonObject(modlString, null, timeoutMilliseconds);
+        val jsonNode = interpretToJsonObject(modlString, null, timeoutMilliseconds);
         return new ObjectMapper().writerWithDefaultPrettyPrinter()
                 .writeValueAsString(jsonNode);
     }
@@ -190,8 +189,8 @@ public class Interpreter {
      * @throws JsonProcessingException on error
      */
     public String interpretToPrettyJsonString(final URL url, final long timeoutMilliseconds) throws IOException {
-        final String modlString = IOUtils.toString(url, StandardCharsets.UTF_8);
-        final JsonNode jsonNode = interpretToJsonObject(modlString, url, timeoutMilliseconds);
+        val modlString = IOUtils.toString(url, StandardCharsets.UTF_8);
+        val jsonNode = interpretToJsonObject(modlString, url, timeoutMilliseconds);
         return new ObjectMapper().writerWithDefaultPrettyPrinter()
                 .writeValueAsString(jsonNode);
     }
@@ -207,7 +206,7 @@ public class Interpreter {
      */
     public String interpretToPrettyJsonString(final String modlString, final URL url, final long timeoutMilliseconds) throws
                                                                                                                       JsonProcessingException {
-        final JsonNode jsonNode = interpretToJsonObject(modlString, url, timeoutMilliseconds);
+        val jsonNode = interpretToJsonObject(modlString, url, timeoutMilliseconds);
         return new ObjectMapper().writerWithDefaultPrettyPrinter()
                 .writeValueAsString(jsonNode);
     }
@@ -236,12 +235,12 @@ public class Interpreter {
      */
     public Modl parse(final TransformationContext ctx, @NonNull final String modlString) {
         try {
-            final Modl modl = parser.apply(modlString, ctx.getAncestry(), ctx.getTimeout());
+            val modl = parser.apply(modlString, ctx.getAncestry(), ctx.getTimeout());
 
             // Check that the top level has all Pairs if it has any at all.
-            final Vector<Structure> filtered = modl.getStructures()
+            val filtered = modl.getStructures()
                     .filter(Util::shouldAppearInOutput);
-            final int numberOfTopLevelPairs = filtered.count(s -> s instanceof Pair);
+            val numberOfTopLevelPairs = filtered.count(s -> s instanceof Pair);
             if (numberOfTopLevelPairs > 0 && numberOfTopLevelPairs < filtered.size()) {
                 throw new InterpreterError("Interpreter Error: Mixed top-level types are not allowed.");
             }

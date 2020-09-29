@@ -20,9 +20,10 @@
 
 package uk.modl.transforms;
 
+import lombok.val;
+import lombok.var;
 import uk.modl.utils.Util;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LiteralsTransform {
@@ -33,12 +34,12 @@ public class LiteralsTransform {
         if (s == null) {
             return null;
         }
-        final Matcher matcher = literalsPattern.matcher(s);
+        val matcher = literalsPattern.matcher(s);
 
         // Gather the match groups into a list of references
-        String result = s;
+        var result = s;
         while (matcher.find()) {
-            final String match = matcher.group();
+            val match = matcher.group();
             result = result.replace(match, Util.unwrapLiteral(match));
         }
         return result;

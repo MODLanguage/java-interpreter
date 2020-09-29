@@ -25,9 +25,7 @@ import io.vavr.Tuple2;
 import io.vavr.Tuple3;
 import io.vavr.collection.Vector;
 import io.vavr.control.Option;
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import uk.modl.extractors.StarLoadExtractor;
 import uk.modl.interpreter.Interpreter;
 import uk.modl.model.*;
@@ -79,11 +77,11 @@ public class StarLoadTransform {
      */
     private Tuple2<TransformationContext, Vector<Tuple3<Vector<String>, Vector<Modl>, Pair>>> convertFilesToModlObjectsAndPairs(final TransformationContext ctx, final Vector<StarLoadExtractor.LoadSet> list) {
 
-        TransformationContext newCtx = ctx;
+        var newCtx = ctx;
 
         Vector<Tuple3<Vector<String>, Vector<Modl>, Pair>> result = Vector.empty();
 
-        for (final StarLoadExtractor.LoadSet loadSet : list) {
+        for (val loadSet : list) {
 
             if (newCtx.isStarLoadImmutable()) {
                 throw new RuntimeException("Cannot load multiple files after *LOAD instruction");
@@ -95,33 +93,33 @@ public class StarLoadTransform {
             }
 
             // Each tuple has a list of filenames
-            final Vector<StarLoadExtractor.FileSpec> filenames = loadSet.getFileSet();
+            val filenames = loadSet.getFileSet();
 
-            for (final StarLoadExtractor.FileSpec spec : filenames) {
+            for (val spec : filenames) {
                 // Interpret each MODL string from each file
-                final Interpreter interpreter = new Interpreter();
-                final boolean cached = cache.contains(spec.getFilename());
+                val interpreter = new Interpreter();
+                val cached = cache.contains(spec.getFilename());
                 try {
                     final TransformationContext interpreterContext;
-                    final Option<URL> originalUrl = ctx.getUrl();
+                    val originalUrl = ctx.getUrl();
                     if (cached && !spec.isForceLoad()) {
                         if (ctx.getUrl()
                                 .isDefined()) {
                             // Map the filenames to the contents of the files, or Error
-                            final URL fileToLoad = new URL(originalUrl.get(), spec.getFilename());
+                            val fileToLoad = new URL(originalUrl.get(), spec.getFilename());
 
                             // Interpret the file with its own URL in the context so that any nested *loads are relative to that file.
                             interpreterContext = newCtx.withUrl(Option.of(fileToLoad));
                         } else {
                             // Try to create a URL from the file spec so we can use it as a base for relative *loading if needed.
-                            final Option<URL> fileToLoad = toUrl(spec.getFilename());
+                            val fileToLoad = toUrl(spec.getFilename());
                             interpreterContext = newCtx.withUrl(fileToLoad);
                         }
                         // Its cached and not force-loaded
-                        final Tuple2<StarLoadExtractor.FileSpec, Modl> cachedModl = Tuple.of(spec, cache.get(spec.getFilename()));
+                        val cachedModl = Tuple.of(spec, cache.get(spec.getFilename()));
 
                         // Re-interpret the cached Modl objects to extract classes, methods etc. for the current context
-                        final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(interpreterContext, cachedModl._2);
+                        val interpreted = interpreter.apply(interpreterContext, cachedModl._2);
                         newCtx = interpreted._1;
                         result = result.append(Tuple.of(Vector.of(cachedModl._1.getFilename()), Vector.of(cachedModl._2), loadSet.getPair()));
                     } else {
@@ -129,7 +127,7 @@ public class StarLoadTransform {
                         final Tuple2<StarLoadExtractor.FileSpec, String> contents;
                         if (originalUrl.isDefined()) {
                             // Map the filenames to the contents of the files, or Error
-                            final URL fileToLoad = new URL(originalUrl.get(), spec.getFilename());
+                            val fileToLoad = new URL(originalUrl.get(), spec.getFilename());
                             contents = getFileContents(spec, ctx.getUrl()
                                     .get());
 
@@ -140,11 +138,11 @@ public class StarLoadTransform {
                             contents = getFileContents(spec);
 
                             // Try to create a URL from the file spec so we can use it as a base for relative *loading if needed.
-                            final Option<URL> fileToLoad = toUrl(spec.getFilename());
+                            val fileToLoad = toUrl(spec.getFilename());
                             interpreterContext = newCtx.withUrl(fileToLoad);
                         }
-                        final Modl parsed = interpreter.parse(ctx, contents._2);
-                        final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(interpreterContext, parsed);
+                        val parsed = interpreter.parse(ctx, contents._2);
+                        val interpreted = interpreter.apply(interpreterContext, parsed);
 
                         // Restore the URL of the current file that we're processing.
                         newCtx = interpreted._1.withUrl(originalUrl);
@@ -158,10 +156,10 @@ public class StarLoadTransform {
                     // If any load returns an error AND we have a cached copy then use the cached copy for up to 7 days.
                     //
                     if (cached) {
-                        final Tuple2<StarLoadExtractor.FileSpec, Modl> cachedModl = Tuple.of(spec, cache.get(spec.getFilename()));
+                        val cachedModl = Tuple.of(spec, cache.get(spec.getFilename()));
 
                         // Re-interpret the cached Modl objects to extract classes, methods etc. for the current context
-                        final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(newCtx, cachedModl._2);
+                        val interpreted = interpreter.apply(newCtx, cachedModl._2);
                         newCtx = interpreted._1;
 
                         result = result.append(Tuple.of(Vector.of(cachedModl._1.getFilename()), Vector.of(cachedModl._2), loadSet.getPair()));
@@ -189,7 +187,7 @@ public class StarLoadTransform {
                     .startsWith("http")) {
 
                 // Load over the net
-                final URL url = new URL(spec.getFilename());
+                val url = new URL(spec.getFilename());
                 return Tuple.of(spec, new Scanner(url.openStream(), StandardCharsets.UTF_8.name()).useDelimiter("\\A")
                         .next());
             } else if (Files.exists(Paths.get(spec.getFilename()))) {
@@ -212,7 +210,7 @@ public class StarLoadTransform {
      */
     public Tuple2<StarLoadExtractor.FileSpec, String> getFileContents(final StarLoadExtractor.FileSpec spec, final URL contextUrl) {
         try {
-            final URL url = new URL(contextUrl, spec.getFilename());
+            val url = new URL(contextUrl, spec.getFilename());
             return Tuple.of(spec, new Scanner(url.openStream(), StandardCharsets.UTF_8.name()).useDelimiter("\\A")
                     .next());
         } catch (final Exception e) {
@@ -229,18 +227,18 @@ public class StarLoadTransform {
      */
     public Tuple2<TransformationContext, Structure> apply(final TransformationContext ctx, final Structure s) {
 
-        TransformationContext newCtx = ctx;
+        var newCtx = ctx;
 
         if (s instanceof Pair) {
-            final Pair rawPair = (Pair) s;
+            val rawPair = (Pair) s;
             if (StarLoadExtractor.isLoadInstruction(rawPair.getKey())) {
-                final Tuple2<TransformationContext, Structure> refsResult = new ReferencesTransform().apply(newCtx, (Structure) rawPair);
+                val refsResult = new ReferencesTransform().apply(newCtx, (Structure) rawPair);
                 newCtx = refsResult._1;
-                final Pair p = (Pair) refsResult._2;
+                val p = (Pair) refsResult._2;
 
                 // Each tuple in this list holds the original Pair with the `*load` statements and the set of Modl objects
                 // loaded using the filename[s] specified in the file list - there can be 1 or several.
-                final Tuple2<TransformationContext, Vector<Tuple3<Vector<String>, Vector<Modl>, Pair>>> result = convertFilesToModlObjectsAndPairs(newCtx, extractFilenamesAndPairs(p));
+                val result = convertFilesToModlObjectsAndPairs(newCtx, extractFilenamesAndPairs(p));
 
                 // Record which files were loaded - for use in a `%*load` reference
                 newCtx = result._1.addFilesLoaded(result._2.flatMap(tuple -> tuple._1));
@@ -262,7 +260,7 @@ public class StarLoadTransform {
 
         public Pair accept(final Pair pair, final TransformationContext ctx) {
             // Find the last matching loaded object (last because the earlier ones might be overridden by later ones)
-            final Option<Tuple3<Vector<String>, Vector<Modl>, Pair>> maybeFoundPair = loadedModlObjects.findLast(tuple3 -> pair.equals(tuple3._3));
+            val maybeFoundPair = loadedModlObjects.findLast(tuple3 -> pair.equals(tuple3._3));
 
             // Create a new Modl object with the updated pair.
             return maybeFoundPair.map(p -> replace(pair, p, ctx))

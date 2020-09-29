@@ -25,8 +25,12 @@ import io.vavr.Tuple2;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import lombok.val;
 import org.apache.commons.lang3.StringUtils;
-import uk.modl.model.*;
+import uk.modl.model.Map;
+import uk.modl.model.Pair;
+import uk.modl.model.StringPrimitive;
+import uk.modl.model.Structure;
 import uk.modl.utils.Util;
 
 @RequiredArgsConstructor
@@ -67,14 +71,14 @@ public class StarMethodTransform {
             String id = null;
             String transform = null;
 
-            for (final MapItem mi : ((Map) pair.getValue()).getMapItems()) {
+            for (val mi : ((Map) pair.getValue()).getMapItems()) {
                 if (mi instanceof Pair) {
-                    final Pair p = (Pair) mi;
+                    val p = (Pair) mi;
                     switch (p.getKey()
                             .toLowerCase()) {
                         case "*i":
                         case "*id": {
-                            final PairValue value = p.getValue();
+                            val value = p.getValue();
                             if (value instanceof StringPrimitive) {
                                 if (Util.isKeywordAllowedInClassesAndMethods(((StringPrimitive) value).getValue())) {
                                     id = value
@@ -90,7 +94,7 @@ public class StarMethodTransform {
                         break;
                         case "*n":
                         case "*name": {
-                            final PairValue value = p.getValue();
+                            val value = p.getValue();
                             if (value instanceof StringPrimitive) {
                                 if (Util.isKeywordAllowedInClassesAndMethods(((StringPrimitive) value).getValue())) {
                                     name = value
@@ -106,7 +110,7 @@ public class StarMethodTransform {
                         break;
                         case "*t":
                         case "*transform": {
-                            final PairValue value = p.getValue();
+                            val value = p.getValue();
                             if (value instanceof StringPrimitive) {
                                 transform = value
                                         .toString();
@@ -122,7 +126,7 @@ public class StarMethodTransform {
                 }
             }
 
-            final MethodInstruction m = MethodInstruction.of(id, name, transform);
+            val m = MethodInstruction.of(id, name, transform);
             return ctx.addMethodInstruction(m);
         } else {
             throw new RuntimeException("Expected a map for " + pair.getKey() + " but found a " + pair.getValue()

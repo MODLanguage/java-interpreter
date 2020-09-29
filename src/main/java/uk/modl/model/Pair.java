@@ -20,10 +20,7 @@
 
 package uk.modl.model;
 
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
+import lombok.*;
 import uk.modl.ancestry.Ancestry;
 import uk.modl.ancestry.Child;
 import uk.modl.ancestry.Parent;
@@ -46,7 +43,7 @@ public class Pair implements Structure, MapItem, ValueItem, ArrayItem, Parent, C
 
     public static Pair of(final Ancestry ancestry, final Parent parent, final String key, final PairValue value) {
         Util.validatePairKey(key);
-        final Pair child = Pair.of(IDSource.nextId(), key, value);
+        val child = Pair.of(IDSource.nextId(), key, value);
         ancestry.add(parent, child);
         return child;
     }
@@ -57,14 +54,14 @@ public class Pair implements Structure, MapItem, ValueItem, ArrayItem, Parent, C
     }
 
     public Pair with(final Ancestry ancestry, final PairValue v) {
-        final Pair child = Pair.of(id, key, v);
+        val child = Pair.of(id, key, v);
         ancestry.replaceChild(this, child);
         return child;
     }
 
     public Pair with(final Ancestry ancestry, final String key, final PairValue value) {
         Util.validatePairKey(key);
-        final Pair child = Pair.of(id, key, value);
+        val child = Pair.of(id, key, value);
         ancestry.replaceChild(this, child);
         return child;
     }

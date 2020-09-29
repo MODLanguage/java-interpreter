@@ -49,7 +49,7 @@ public class StarLoadExtractor {
     }
 
     public StarLoadExtractor accept(final Pair pair) {
-        final String key = pair.getKey();
+        val key = pair.getKey();
 
         if (isLoadInstruction(key)) {
 
@@ -70,10 +70,10 @@ public class StarLoadExtractor {
      */
     public Vector<String> getFilenames(final PairValue pairValue) {
         if (pairValue instanceof Primitive) {
-            final Primitive pv = (Primitive) pairValue;
+            val pv = (Primitive) pairValue;
             return Vector.of(pv.toString());
         } else if (pairValue instanceof Array) {
-            final Array a = (Array) pairValue;
+            val a = (Array) pairValue;
             return Vector.ofAll(a.getArrayItems()
                     .map(Objects::toString));
         }

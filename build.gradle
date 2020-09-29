@@ -15,6 +15,7 @@ plugins {
 
 javadoc {
     options.encoding = 'UTF-8'
+    failOnError=false
 }
 
 apply plugin: 'java'
@@ -26,13 +27,14 @@ apply plugin: 'application'
 mainClassName = "uk.modl.server.ModlServer"
 
 sourceCompatibility = 1.8
+targetCompatibility = 1.8
 compileJava.options.encoding = "UTF-8"
 compileTestJava.options.encoding = "UTF-8"
 
 group = "uk.modl"
 applicationName = "java-interpreter"
 archivesBaseName = "java-interpreter"
-version = "0.1.19"
+version = "0.1.20"
 
 def isSnapshot = version.endsWith("SNAPSHOT")
 

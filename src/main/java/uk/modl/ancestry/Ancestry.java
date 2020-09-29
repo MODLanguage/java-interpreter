@@ -22,6 +22,8 @@ package uk.modl.ancestry;
 
 import io.vavr.collection.Vector;
 import io.vavr.control.Option;
+import lombok.val;
+import lombok.var;
 import uk.modl.model.Array;
 import uk.modl.model.Pair;
 import uk.modl.model.Primitive;
@@ -60,13 +62,13 @@ public class Ancestry {
         ancestors.entrySet()
                 .stream()
                 .map(e -> {
-                    final Child child = e.getKey();
-                    final Parent parent = e.getValue();
+                    val child = e.getKey();
+                    val parent = e.getValue();
 
 
-                    final long childId = child.getId();
-                    final String childHash = Integer.toHexString(System.identityHashCode(child));
-                    String childString = "" + childId + ":" + child.getClass()
+                    val childId = child.getId();
+                    val childHash = Integer.toHexString(System.identityHashCode(child));
+                    var childString = "" + childId + ":" + child.getClass()
                             .getSimpleName() + "\\n" + childHash;
 
                     if (child instanceof Pair) {
@@ -78,9 +80,9 @@ public class Ancestry {
                     }
 
                     if (parent != null) {
-                        final long parentId = parent.getId();
-                        final String parentHash = Integer.toHexString(System.identityHashCode(parent));
-                        String parentString = "" + parentId + ":" + parent.getClass()
+                        val parentId = parent.getId();
+                        val parentHash = Integer.toHexString(System.identityHashCode(parent));
+                        var parentString = "" + parentId + ":" + parent.getClass()
                                 .getSimpleName() + "\\n" + parentHash;
 
                         if (parent instanceof Pair) {
@@ -100,8 +102,8 @@ public class Ancestry {
     }
 
     public Pair findReferencedPair(final TransformationContext ctx, final Child c, final String key) {
-        final String hiddenKey = (key.startsWith("_")) ? key : "_" + key;
-        final String unhiddenKey = (key.startsWith("_")) ? key.substring(1) : key;
+        val hiddenKey = (key.startsWith("_")) ? key : "_" + key;
+        val unhiddenKey = (key.startsWith("_")) ? key.substring(1) : key;
 
         return ctx.getAncestry()
                 .findByKey(c, hiddenKey)
@@ -113,7 +115,7 @@ public class Ancestry {
 
     public void replaceChild(final Child oldChild, final Child newChild) {
         if (oldChild != null && newChild != null) {
-            final Parent parent = ancestors.remove(oldChild);
+            val parent = ancestors.remove(oldChild);
 
             final List<Child> childrenOfOldChild = ancestors.entrySet()
                     .stream()
@@ -122,7 +124,7 @@ public class Ancestry {
                     .collect(Collectors.toList());
 
 
-            for (final Child childOfOldChild : childrenOfOldChild) {
+            for (val childOfOldChild : childrenOfOldChild) {
                 ancestors.remove(childOfOldChild);
                 ancestors.put(childOfOldChild, (Parent) newChild);
             }
@@ -142,7 +144,7 @@ public class Ancestry {
      * @param parent the first node to be removed, along with its children
      */
     private void prune(final Parent parent) {
-        final List<Child> referencesToOldChild = ancestors.entrySet()
+        val referencesToOldChild = ancestors.entrySet()
                 .stream()
                 .filter(entry -> entry.getValue() != null && entry.getValue()
                         .equals(parent))
@@ -156,7 +158,7 @@ public class Ancestry {
 
     public void replaceSubTree(final Child oldChild, final Child newChild) {
         if (oldChild != null && newChild != null) {
-            final Parent parent = ancestors.remove(oldChild);
+            val parent = ancestors.remove(oldChild);
 
             prune((Parent) oldChild);
 
@@ -170,16 +172,17 @@ public class Ancestry {
                     .mkString("/");
         }
 
-        Vector<String> newPath = path;
+        final String element;
         if (parent instanceof Pair) {
-            newPath = newPath.append(((Pair) parent).getKey());
+            element = ((Pair) parent).getKey();
         } else if (parent instanceof Array) {
-            newPath = newPath.append("array");
+            element = "array";
         } else if (parent instanceof uk.modl.model.Map) {
-            newPath = newPath.append("map");
+            element = "map";
         } else {
-            newPath = newPath.append("object");
+            element = "object";
         }
+        val newPath = path.append(element);
         final Parent grandparent = ancestors.get(parent);
         return pathTo(newPath, grandparent);
     }

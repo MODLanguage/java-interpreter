@@ -20,6 +20,9 @@
 
 package uk.modl.utils;
 
+import lombok.val;
+import lombok.var;
+
 class UnicodeEscapeReplacer {
 
     private static final String BACKSLASH_U = "\\u";
@@ -41,11 +44,11 @@ class UnicodeEscapeReplacer {
      */
     static String convertUnicodeSequences(final String str) {
         int start = 0;
-        String result = str;
+        var result = str;
         while (result != null) {
             // We could have a backslash-u escape sequence or a ~u escape sequence
-            final int backslashUIndex = result.indexOf(BACKSLASH_U, start);
-            final int tildeUIndex = result.indexOf(TILDE_U, start);
+            val backslashUIndex = result.indexOf(BACKSLASH_U, start);
+            val tildeUIndex = result.indexOf(TILDE_U, start);
 
             // Filter out cases with no escape sequences.
             int unicodeStrIdx;
@@ -60,7 +63,7 @@ class UnicodeEscapeReplacer {
                 unicodeStrIdx = Math.min(backslashUIndex, tildeUIndex);
             }
 
-            final TryParseResult tryParse = tryParse(result, unicodeStrIdx + 2);
+            val tryParse = tryParse(result, unicodeStrIdx + 2);
 
             // Next time round the loop we start searching after the current escape sequence.
             start = unicodeStrIdx + 1;
@@ -69,7 +72,7 @@ class UnicodeEscapeReplacer {
             if (!escapeSequenceIsEscaped(result, unicodeStrIdx)) {
                 // Get the codepoint value and replace the escape sequence
                 if (tryParse.codePoint > 0) {
-                    final char[] chars = Character.toChars(tryParse.codePoint);
+                    val chars = Character.toChars(tryParse.codePoint);
                     result = replace(result, chars, unicodeStrIdx, tryParse.length + 2);
                 }
             }
@@ -92,9 +95,9 @@ class UnicodeEscapeReplacer {
      * @return a String with the unicode escape sequence replaced by the replacement character
      */
     private static String replace(final String s, final char[] value, final int unicodeStrIdx, final int length) {
-        final String left = s.substring(0, unicodeStrIdx);
-        final int end = Math.min(s.length(), unicodeStrIdx + length);
-        final String right = s.substring(end);
+        val left = s.substring(0, unicodeStrIdx);
+        val end = Math.min(s.length(), unicodeStrIdx + length);
+        val right = s.substring(end);
         return left + String.valueOf(value) + right;
     }
 
@@ -117,10 +120,10 @@ class UnicodeEscapeReplacer {
      * @return true if enough digits are available
      */
     private static boolean hasEnoughDigits(final String s, final int idx, final int n) {
-        int i = 0;
-        char[] chars = s.toCharArray();
+        var i = 0;
+        var chars = s.toCharArray();
         while (i < n && (idx + i) < s.length()) {
-            char c = chars[idx + i];
+            var c = chars[idx + i];
             if (!Character.isDigit(c) && !("abcdefABCDEF".indexOf(c) > -1)) {
                 return false;
             }
@@ -140,7 +143,7 @@ class UnicodeEscapeReplacer {
 
         // Check for a 6-digit unicode value
         if (hasEnoughDigits(str, idx, 6)) {
-            final int value = getPossibleUnicodeValue(str, idx, 6);
+            val value = getPossibleUnicodeValue(str, idx, 6);
             if (isValidRange(value)) {
                 return new TryParseResult(value, 6);
             }
@@ -148,7 +151,7 @@ class UnicodeEscapeReplacer {
 
         // Check for a 5-digit unicode value
         if (hasEnoughDigits(str, idx, 5)) {
-            final int value = getPossibleUnicodeValue(str, idx, 5);
+            val value = getPossibleUnicodeValue(str, idx, 5);
             if (isValidRange(value)) {
                 return new TryParseResult(value, 5);
             }
@@ -156,7 +159,7 @@ class UnicodeEscapeReplacer {
 
         // Check for a 4-digit unicode value
         if (hasEnoughDigits(str, idx, 4)) {
-            final int value = getPossibleUnicodeValue(str, idx, 4);
+            val value = getPossibleUnicodeValue(str, idx, 4);
             if (isValidRange(value)) {
                 return new TryParseResult(value, 4);
             }

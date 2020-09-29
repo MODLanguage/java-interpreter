@@ -27,6 +27,7 @@ import io.vavr.collection.Vector;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.model.*;
 import uk.modl.utils.Util;
@@ -48,11 +49,11 @@ public class StarClassTransform {
     /**
      * Check whether the key represents a *class instruction
      *
-     * @param key the String to check
+     * @param s the Structure to check
      * @return true if the key represents a class instruction
      */
-    public static boolean isClassInstruction(final @NonNull String key) {
-        return StringUtils.equalsAnyIgnoreCase(key, "*c", "*class");
+    public static boolean isClassInstruction(final @NonNull Structure s) {
+        return (s instanceof Pair) && StringUtils.equalsAnyIgnoreCase(((Pair) s).getKey(), "*c", "*class");
     }
 
 
@@ -64,14 +65,9 @@ public class StarClassTransform {
      * @return the result of function application
      */
     public Tuple2<TransformationContext, Structure> apply(final TransformationContext ctx, final @NonNull Structure p) {
-        if (p instanceof Pair) {
-            final Pair pair = (Pair) p;
-            if (isClassInstruction(pair.getKey())) {
-                final TransformationContext updatedContext = accept(ctx, pair);
-                return Tuple.of(updatedContext, null);
-            }
-        }
-        return Tuple.of(ctx, p);
+        return (isClassInstruction(p))
+                ? Tuple.of(accept(ctx, (Pair) p), null)
+                : Tuple.of(ctx, p);
     }
 
     /**
@@ -88,15 +84,15 @@ public class StarClassTransform {
             Vector<ArrayItem> assign = Vector.empty();
             io.vavr.collection.Map<String, Pair> pairs = LinkedHashMap.empty();
 
-            for (final MapItem mi : ((Map) pair.getValue()).getMapItems()) {
+            for (val mi : ((Map) pair.getValue()).getMapItems()) {
                 if (mi instanceof Pair) {
-                    final Pair p = (Pair) mi;
+                    val p = (Pair) mi;
 
                     switch (p.getKey()
                             .toLowerCase()) {
                         case "*i":
                         case "*id": {
-                            final PairValue value = p.getValue();
+                            val value = p.getValue();
                             if (value instanceof StringPrimitive) {
                                 if (Util.isKeywordAllowedInClassesAndMethods(((StringPrimitive) value).getValue())) {
                                     id = value
@@ -112,7 +108,7 @@ public class StarClassTransform {
                         break;
                         case "*n":
                         case "*name": {
-                            final PairValue value = p.getValue();
+                            val value = p.getValue();
                             if (value instanceof StringPrimitive) {
                                 if (Util.isKeywordAllowedInClassesAndMethods(((StringPrimitive) value).getValue())) {
                                     name = value
@@ -128,7 +124,7 @@ public class StarClassTransform {
                         break;
                         case "*s":
                         case "*superclass":
-                            final PairValue value = p.getValue();
+                            val value = p.getValue();
                             if (value instanceof StringPrimitive) {
                                 if (Util.isKeywordAllowedInClassesAndMethods(((StringPrimitive) value).getValue())) {
                                     superclass = value
@@ -149,7 +145,7 @@ public class StarClassTransform {
                             if (p.getValue()
                                     .toString()
                                     .contains("%")) {
-                                final Tuple2<TransformationContext, Structure> result = referencesTransform.apply(ctx, (Structure) p);
+                                val result = referencesTransform.apply(ctx, (Structure) p);
                                 pairs = pairs.put(p.getKey(), (Pair) result._2);
                             } else {
                                 pairs = pairs.put(p.getKey(), p);
@@ -213,13 +209,13 @@ public class StarClassTransform {
 
     private void validateAssign(final Vector<ArrayItem> assigns) {
         int lastLen = 0;
-        for (final ArrayItem assign : assigns) {
-            final Array array = (Array) assign;
-            @NonNull final Vector<ArrayItem> arrayItems = array.getArrayItems();
+        for (val assign : assigns) {
+            val array = (Array) assign;
+            @NonNull val arrayItems = array.getArrayItems();
             if (arrayItems.size() <= lastLen) {
-                final Vector<String> strings = arrayItems.map(ai -> "\"" + ai.toString() + "\"")
+                val strings = arrayItems.map(ai -> "\"" + ai.toString() + "\"")
                         .intersperse(", ");
-                final String arrayStr = strings.foldLeft("[", (l, r) -> l + r) + "]";
+                val arrayStr = strings.foldLeft("[", (l, r) -> l + r) + "]";
                 throw new RuntimeException("Error: Key lists in *assign are not in ascending order of list length: " + arrayStr);
             }
             lastLen = arrayItems.size();

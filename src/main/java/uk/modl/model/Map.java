@@ -21,10 +21,7 @@
 package uk.modl.model;
 
 import io.vavr.collection.Vector;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
+import lombok.*;
 import uk.modl.ancestry.Ancestry;
 import uk.modl.ancestry.Child;
 import uk.modl.ancestry.Parent;
@@ -41,7 +38,7 @@ public class Map implements PairValue, Structure, ValueItem, ArrayItem, Parent, 
     Vector<MapItem> mapItems;
 
     public static Map of(final Ancestry ancestry, final Parent parent, final Vector<MapItem> mapItems) {
-        final Map child = Map.of(IDSource.nextId(), mapItems);
+        val child = Map.of(IDSource.nextId(), mapItems);
         ancestry.add(parent, child);
         return child;
     }
@@ -52,7 +49,7 @@ public class Map implements PairValue, Structure, ValueItem, ArrayItem, Parent, 
     }
 
     public Map with(final Ancestry ancestry, final Vector<MapItem> mapItems) {
-        final Map child = Map.of(id, mapItems);
+        val child = Map.of(id, mapItems);
         ancestry.replaceChild(this, child);
         return child;
     }

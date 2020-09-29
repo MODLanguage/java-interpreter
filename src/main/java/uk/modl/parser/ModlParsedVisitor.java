@@ -26,7 +26,8 @@ import io.vavr.collection.Vector;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
-import org.antlr.v4.runtime.tree.ParseTree;
+import lombok.val;
+import lombok.var;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.ancestry.Ancestry;
 import uk.modl.ancestry.Parent;
@@ -73,16 +74,16 @@ public class ModlParsedVisitor {
 
             modl = Modl.of(ancestry, null, Vector.empty());
 
-            final Vector<Structure> structures = Vector.ofAll(ctx.modl_structure()
+            val structures = Vector.ofAll(ctx.modl_structure()
                     .stream()
                     .map(ctx1 -> visitStructure(ctx1, modl)));
 
             // Look for a *V or *VERSION that isn't in the first position of the file.
-            int i = 0;
-            for (final Structure structure : structures) {
+            var i = 0;
+            for (val structure : structures) {
                 if (i > 0) {
                     if (structure instanceof Pair) {
-                        final Pair first = (Pair) structure;
+                        val first = (Pair) structure;
                         @NonNull final String key = first.getKey();
                         if (key.equals("*V") || key.equals("*VERSION")) {
                             throw new RuntimeException("MODL version should be on the first line if specified.");
@@ -104,12 +105,12 @@ public class ModlParsedVisitor {
 
     public void addImmutableName(final Parent parent, final String name) {
 
-        final String path = ancestry.pathTo(Vector.empty(), parent) + "/" + name;
+        val path = ancestry.pathTo(Vector.empty(), parent) + "/" + name;
 
         // Check the parent scopes
-        final String[] elements = path.split("/");
+        val elements = path.split("/");
         for (int i = 1; i < elements.length; i++) {
-            final String parentPath = String.join("/", Arrays.copyOfRange(elements, 0, i)) + "/" + name;
+            val parentPath = String.join("/", Arrays.copyOfRange(elements, 0, i)) + "/" + name;
 
             if (immutableNames.contains(parentPath)) {
                 throw new RuntimeException("Already defined " + name + " as final.");
@@ -152,15 +153,15 @@ public class ModlParsedVisitor {
     private TopLevelConditional visitTopLevelConditional(final MODLParser.Modl_top_level_conditionalContext ctx, final Parent parent) {
         log.trace("visitTopLevelConditional()");
 
-        final TopLevelConditional tlc = TopLevelConditional.of(ancestry, parent, Vector.empty(), Vector.empty(), Vector.empty());
+        val tlc = TopLevelConditional.of(ancestry, parent, Vector.empty(), Vector.empty(), Vector.empty());
 
-        final Vector<ConditionTest> tests = (ctx.modl_condition_test() != null) ?
+        val tests = (ctx.modl_condition_test() != null) ?
                 Vector.ofAll(ctx.modl_condition_test()
                         .stream()
                         .map(ctx2 -> visitConditionTest(ctx2, tlc))) :
                 null;
 
-        final Vector<TopLevelConditionalReturn> returns = (ctx.modl_top_level_conditional_return() != null) ?
+        val returns = (ctx.modl_top_level_conditional_return() != null) ?
                 Vector.ofAll(ctx.modl_top_level_conditional_return()
                         .stream()
                         .map(ctx1 -> visitTopLevelConditionalReturn(ctx1, tlc))) :
@@ -179,15 +180,15 @@ public class ModlParsedVisitor {
     private MapConditional visitMapConditional(final MODLParser.Modl_map_conditionalContext ctx, final Parent parent) {
         log.trace("visitMapConditional()");
 
-        final MapConditional mc = MapConditional.of(ancestry, parent, Vector.empty(), Vector.empty(), Vector.empty());
+        val mc = MapConditional.of(ancestry, parent, Vector.empty(), Vector.empty(), Vector.empty());
 
-        final Vector<ConditionTest> tests = (ctx.modl_condition_test() != null) ?
+        val tests = (ctx.modl_condition_test() != null) ?
                 Vector.ofAll(ctx.modl_condition_test()
                         .stream()
                         .map(ctx2 -> visitConditionTest(ctx2, mc))) :
                 null;
 
-        final Vector<MapConditionalReturn> returns = (ctx.modl_map_conditional_return() != null) ?
+        val returns = (ctx.modl_map_conditional_return() != null) ?
                 Vector.ofAll(ctx.modl_map_conditional_return()
                         .stream()
                         .map(ctx1 -> visitMapConditionalReturn(ctx1, mc))) :
@@ -205,8 +206,8 @@ public class ModlParsedVisitor {
      */
     private MapConditionalReturn visitMapConditionalReturn(final MODLParser.Modl_map_conditional_returnContext ctx, final Parent parent) {
         log.trace("visitMapConditionalReturn()");
-        final MapConditionalReturn mcr = MapConditionalReturn.of(ancestry, parent, Vector.empty());
-        final Vector<MapItem> items = Vector.ofAll(ctx.modl_map_item()
+        val mcr = MapConditionalReturn.of(ancestry, parent, Vector.empty());
+        val items = Vector.ofAll(ctx.modl_map_item()
                 .stream()
                 .map(ctx1 -> visitMapItem(ctx1, mcr)));
         return mcr.with(ancestry, items);
@@ -222,8 +223,8 @@ public class ModlParsedVisitor {
     private TopLevelConditionalReturn visitTopLevelConditionalReturn(final MODLParser.Modl_top_level_conditional_returnContext ctx, final Parent parent) {
         log.trace("visitTopLevelConditionalReturn()");
 
-        final TopLevelConditionalReturn tlcr = TopLevelConditionalReturn.of(ancestry, parent, Vector.empty());
-        final Vector<Structure> structures = (ctx.modl_structure() != null) ?
+        val tlcr = TopLevelConditionalReturn.of(ancestry, parent, Vector.empty());
+        val structures = (ctx.modl_structure() != null) ?
                 Vector.ofAll(ctx.modl_structure()
                         .stream()
                         .map(ctx1 -> visitStructure(ctx1, tlcr))) :
@@ -242,20 +243,20 @@ public class ModlParsedVisitor {
     private ConditionTest visitConditionTest(final MODLParser.Modl_condition_testContext ctx, final Parent parent) {
         log.trace("visitConditionTest()");
 
-        final ConditionTest ct = ConditionTest.of(ancestry, parent, Vector.empty());
+        val ct = ConditionTest.of(ancestry, parent, Vector.empty());
 
         Vector<Tuple2<ConditionOrConditionGroupInterface, String>> subConditionList = Vector.empty();
 
         Tuple2<ConditionOrConditionGroupInterface, String> lastSubCondition = null;
         boolean shouldNegate = false;
-        for (final ParseTree child : ctx.children) {
+        for (val child : ctx.children) {
             if (child instanceof MODLParser.Modl_condition_groupContext) {
-                final ConditionGroup conditionGroup = visitConditionGroup((MODLParser.Modl_condition_groupContext) child, shouldNegate, ct);
+                val conditionGroup = visitConditionGroup((MODLParser.Modl_condition_groupContext) child, shouldNegate, ct);
                 lastSubCondition = Tuple.of(conditionGroup, null);
 
                 shouldNegate = false;
             } else if (child instanceof MODLParser.Modl_conditionContext) {
-                final Condition condition = visitCondition((MODLParser.Modl_conditionContext) child, shouldNegate, ct);
+                val condition = visitCondition((MODLParser.Modl_conditionContext) child, shouldNegate, ct);
                 lastSubCondition = Tuple.of(condition, null);
 
                 shouldNegate = false;
@@ -288,8 +289,8 @@ public class ModlParsedVisitor {
      */
     private ConditionGroup visitConditionGroup(final MODLParser.Modl_condition_groupContext ctx, final boolean shouldNegate, final Parent parent) {
         log.trace("visitConditionGroup()");
-        final ConditionGroup cg = ConditionGroup.of(ancestry, parent, Vector.empty(), false);
-        final Vector<Tuple2<ConditionTest, String>> subConditionList = handleConditionGroup(ctx, cg);
+        val cg = ConditionGroup.of(ancestry, parent, Vector.empty(), false);
+        val subConditionList = handleConditionGroup(ctx, cg);
         return cg.with(ancestry, subConditionList, shouldNegate);
     }
 
@@ -305,9 +306,9 @@ public class ModlParsedVisitor {
         Vector<Tuple2<ConditionTest, String>> subConditionList = Vector.empty();
 
         String lastOperator = null;
-        for (final ParseTree child : ctx.children) {
+        for (val child : ctx.children) {
             if (child instanceof MODLParser.Modl_condition_testContext) {
-                final ConditionTest conditionGroup = visitConditionTest((MODLParser.Modl_condition_testContext) child, parent);
+                val conditionGroup = visitConditionTest((MODLParser.Modl_condition_testContext) child, parent);
                 subConditionList = subConditionList.append(Tuple.of(conditionGroup, lastOperator));
 
                 lastOperator = null;
@@ -327,16 +328,16 @@ public class ModlParsedVisitor {
      */
     private Condition visitCondition(final MODLParser.Modl_conditionContext ctx, final boolean shouldNegate, final Parent parent) {
         log.trace("visitCondition()");
-        final Condition c = Condition.of(ancestry, parent, NullPrimitive.instance, null, Vector.empty(), false);
+        val c = Condition.of(ancestry, parent, NullPrimitive.instance, null, Vector.empty(), false);
 
         inConditional++;
-        final Operator op = (ctx.modl_operator() != null) ? visitOperator(ctx.modl_operator()) : null;
+        val op = (ctx.modl_operator() != null) ? visitOperator(ctx.modl_operator()) : null;
 
         final Vector<ValueItem> values = (ctx.modl_value() != null) ? Vector.ofAll(ctx.modl_value()
                 .stream()
                 .map(ctx1 -> visitValue(ctx1, c))) : Vector.empty();
 
-        final String lhs = (ctx.STRING() != null) ? ctx.STRING()
+        val lhs = (ctx.STRING() != null) ? ctx.STRING()
                 .getText() : null;
 
         // A crude check for quoted values on the LHS
@@ -359,10 +360,10 @@ public class ModlParsedVisitor {
     private Operator visitOperator(final MODLParser.Modl_operatorContext ctx) {
         log.trace("visitOperator()");
 
-        final boolean equals = ctx.EQUALS() != null;
-        final boolean negate = ctx.EXCLAM() != null;
-        final boolean gthan = ctx.GTHAN() != null;
-        final boolean lthan = ctx.LTHAN() != null;
+        val equals = ctx.EQUALS() != null;
+        val negate = ctx.EXCLAM() != null;
+        val gthan = ctx.GTHAN() != null;
+        val lthan = ctx.LTHAN() != null;
 
         if (equals) {
             if (gthan) {
@@ -395,11 +396,11 @@ public class ModlParsedVisitor {
     private Array visitArray(final MODLParser.Modl_arrayContext ctx, final Parent parent) {
         log.trace("visitArray()");
 
-        final Array arr = Array.of(ancestry, parent, Vector.empty());
+        val arr = Array.of(ancestry, parent, Vector.empty());
         Vector<ArrayItem> items = Vector.empty();
-        String prev = "";
+        var prev = "";
 
-        for (ParseTree child : ctx.children) {
+        for (var child : ctx.children) {
             if (child instanceof MODLParser.Modl_array_itemContext) {
                 items = items.append(visitArrayItem((MODLParser.Modl_array_itemContext) child, arr));
             }
@@ -414,7 +415,6 @@ public class ModlParsedVisitor {
 
         }
 
-
         return arr.with(ancestry, items);
     }
 
@@ -428,11 +428,11 @@ public class ModlParsedVisitor {
     private Array visitNbArray(final MODLParser.Modl_nb_arrayContext ctx, final Parent parent) {
         log.trace("visitNbArray()");
 
-        final Array arr = Array.of(ancestry, parent, Vector.empty());
+        val arr = Array.of(ancestry, parent, Vector.empty());
         Vector<ArrayItem> items = Vector.empty();
-        String prev = "";
+        var prev = "";
 
-        for (ParseTree child : ctx.children) {
+        for (var child : ctx.children) {
             if (child instanceof MODLParser.Modl_array_itemContext) {
                 items = items.append(visitArrayItem((MODLParser.Modl_array_itemContext) child, arr));
             }
@@ -491,15 +491,15 @@ public class ModlParsedVisitor {
      */
     private ArrayConditional visitArrayConditional(final MODLParser.Modl_array_conditionalContext ctx, final Parent parent) {
         log.trace("visitArrayConditional()");
-        final ArrayConditional ac = ArrayConditional.of(ancestry, parent, Vector.empty(), Vector.empty(), Vector.empty());
+        val ac = ArrayConditional.of(ancestry, parent, Vector.empty(), Vector.empty(), Vector.empty());
 
-        final Vector<ConditionTest> tests = (ctx.modl_condition_test() != null) ?
+        val tests = (ctx.modl_condition_test() != null) ?
                 Vector.ofAll((ctx.modl_condition_test()
                         .stream()
                         .map(ctx1 -> visitConditionTest(ctx1, ac)))) :
                 null;
 
-        final Vector<ArrayConditionalReturn> returns = (ctx.modl_array_conditional_return() != null) ?
+        val returns = (ctx.modl_array_conditional_return() != null) ?
                 Vector.ofAll((ctx.modl_array_conditional_return()
                         .stream()
                         .map(ctx1 -> visitArrayConditionalReturn(ctx1, ac)))) :
@@ -517,9 +517,9 @@ public class ModlParsedVisitor {
      */
     private ArrayConditionalReturn visitArrayConditionalReturn(final MODLParser.Modl_array_conditional_returnContext ctx, final Parent parent) {
         log.trace("visitMapConditionalReturn()");
-        final ArrayConditionalReturn acr = ArrayConditionalReturn.of(ancestry, parent, Vector.empty());
+        val acr = ArrayConditionalReturn.of(ancestry, parent, Vector.empty());
 
-        final Vector<ArrayItem> items = Vector.ofAll(ctx.modl_array_item()
+        val items = Vector.ofAll(ctx.modl_array_item()
                 .stream()
                 .map(ctx1 -> visitArrayItem(ctx1, acr)));
         return acr.with(ancestry, items);
@@ -535,9 +535,9 @@ public class ModlParsedVisitor {
     private Map visitMap(final MODLParser.Modl_mapContext ctx, final Parent parent) {
         log.trace("visitMap()");
 
-        final Map map = Map.of(ancestry, parent, Vector.empty());
+        val map = Map.of(ancestry, parent, Vector.empty());
 
-        final Vector<MapItem> items = Vector.ofAll(ctx.modl_map_item()
+        val items = Vector.ofAll(ctx.modl_map_item()
                 .stream()
                 .map(ctx1 -> visitMapItem(ctx1, map)));
 
@@ -572,7 +572,7 @@ public class ModlParsedVisitor {
         log.trace("visitPair()");
 
 
-        final String key = Util.unquote((ctx.QUOTED() != null) ? ctx.QUOTED()
+        val key = Util.unquote((ctx.QUOTED() != null) ? ctx.QUOTED()
                 .getText() : (ctx.STRING() != null) ? ctx.STRING()
                 .getText() : null);
 
@@ -580,7 +580,7 @@ public class ModlParsedVisitor {
             throw new RuntimeException("Invalid key - spaces and % characters are not allowed: " + key);
         }
 
-        final Pair p = Pair.of(ancestry, parent, key, NullPrimitive.instance);
+        val p = Pair.of(ancestry, parent, key, NullPrimitive.instance);
         final PairValue value;
         if (ctx.modl_array() != null) {
             value = visitArray(ctx.modl_array(), p);
@@ -597,7 +597,7 @@ public class ModlParsedVisitor {
                 .equals("*V")) {
             try {
                 assert value != null;
-                final int version = value.numericValue()
+                val version = value.numericValue()
                         .intValue();
 
                 if (version <= 0) {
@@ -642,14 +642,14 @@ public class ModlParsedVisitor {
      */
     private ValueConditional visitValueConditional(final MODLParser.Modl_value_conditionalContext ctx, final Parent parent) {
         log.trace("visitValueConditional()");
-        final ValueConditional vc = ValueConditional.of(ancestry, parent, Vector.empty(), Vector.empty(), Vector.empty());
-        final Vector<ConditionTest> tests = (ctx.modl_condition_test() != null) ?
+        val vc = ValueConditional.of(ancestry, parent, Vector.empty(), Vector.empty(), Vector.empty());
+        val tests = (ctx.modl_condition_test() != null) ?
                 Vector.ofAll(ctx.modl_condition_test()
                         .stream()
                         .map(ctx1 -> visitConditionTest(ctx1, vc))) :
                 null;
 
-        final Vector<ValueConditionalReturn> returns = (ctx.modl_value_conditional_return() != null) ?
+        val returns = (ctx.modl_value_conditional_return() != null) ?
                 Vector.ofAll(ctx.modl_value_conditional_return()
                         .stream()
                         .map(ctx1 -> visitValueConditionReturn(ctx1, vc))) :
@@ -668,9 +668,9 @@ public class ModlParsedVisitor {
     private ValueConditionalReturn visitValueConditionReturn(final MODLParser.Modl_value_conditional_returnContext ctx, final Parent parent) {
         log.trace("visitValueConditionalReturn()");
 
-        final ValueConditionalReturn vcr = ValueConditionalReturn.of(ancestry, parent, Vector.empty());
+        val vcr = ValueConditionalReturn.of(ancestry, parent, Vector.empty());
 
-        final Vector<ValueItem> items = Vector.ofAll(ctx.modl_value_item()
+        val items = Vector.ofAll(ctx.modl_value_item()
                 .stream()
                 .map(ctx1 -> visitValueItem(ctx1, vcr)));
 

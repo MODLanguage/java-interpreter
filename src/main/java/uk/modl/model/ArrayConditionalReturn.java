@@ -21,10 +21,7 @@
 package uk.modl.model;
 
 import io.vavr.collection.Vector;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
+import lombok.*;
 import uk.modl.ancestry.Ancestry;
 import uk.modl.ancestry.Child;
 import uk.modl.ancestry.Parent;
@@ -41,13 +38,13 @@ public class ArrayConditionalReturn implements Parent, Child {
     Vector<ArrayItem> items;
 
     public static ArrayConditionalReturn of(final Ancestry ancestry, final Parent parent, final Vector<ArrayItem> items) {
-        final ArrayConditionalReturn child = ArrayConditionalReturn.of(IDSource.nextId(), items);
+        val child = ArrayConditionalReturn.of(IDSource.nextId(), items);
         ancestry.add(parent, child);
         return child;
     }
 
     public ArrayConditionalReturn with(final Ancestry ancestry, final Vector<ArrayItem> items) {
-        final ArrayConditionalReturn child = ArrayConditionalReturn.of(id, items);
+        val child = ArrayConditionalReturn.of(id, items);
         ancestry.replaceChild(this, child);
         return child;
     }

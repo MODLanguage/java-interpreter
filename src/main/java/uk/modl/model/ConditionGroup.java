@@ -22,10 +22,7 @@ package uk.modl.model;
 
 import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
+import lombok.*;
 import uk.modl.ancestry.Ancestry;
 import uk.modl.ancestry.Child;
 import uk.modl.ancestry.Parent;
@@ -45,13 +42,13 @@ public class ConditionGroup implements ConditionOrConditionGroupInterface, Paren
     boolean shouldNegate;
 
     public static ConditionGroup of(final Ancestry ancestry, final Parent parent, final Vector<Tuple2<ConditionTest, String>> subConditionList, final boolean shouldNegate) {
-        final ConditionGroup child = ConditionGroup.of(IDSource.nextId(), subConditionList, shouldNegate);
+        val child = ConditionGroup.of(IDSource.nextId(), subConditionList, shouldNegate);
         ancestry.add(parent, child);
         return child;
     }
 
     public ConditionGroup with(final Ancestry ancestry, final Vector<Tuple2<ConditionTest, String>> subConditionList, final boolean shouldNegate) {
-        final ConditionGroup child = ConditionGroup.of(id, subConditionList, shouldNegate);
+        val child = ConditionGroup.of(id, subConditionList, shouldNegate);
         ancestry.replaceChild(this, child);
         return child;
     }

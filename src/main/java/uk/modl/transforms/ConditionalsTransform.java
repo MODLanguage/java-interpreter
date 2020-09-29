@@ -26,6 +26,8 @@ import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
+import lombok.var;
 import uk.modl.model.*;
 import uk.modl.utils.Util;
 
@@ -50,11 +52,11 @@ public class ConditionalsTransform {
                     .get(0))) {
                 Vector<Structure> vector = Vector.empty();
 
-                TransformationContext newCtx = ctx;
-                for (final Structure structure : tlc.getReturns()
+                var newCtx = ctx;
+                for (val structure : tlc.getReturns()
                         .get(0)
                         .getStructures()) {
-                    final Tuple2<TransformationContext, Structure> refsResult = referencesTransform.apply(newCtx, structure);
+                    val refsResult = referencesTransform.apply(newCtx, structure);
                     newCtx = refsResult._1;
 
                     vector = vector.append(refsResult._2);
@@ -66,11 +68,11 @@ public class ConditionalsTransform {
                         .size() > 1) {
                     Vector<Structure> vector = Vector.empty();
 
-                    TransformationContext newCtx = ctx;
-                    for (final Structure structure : tlc.getReturns()
+                    var newCtx = ctx;
+                    for (val structure : tlc.getReturns()
                             .get(1)
                             .getStructures()) {
-                        final Tuple2<TransformationContext, Structure> refsResult = referencesTransform.apply(newCtx, structure);
+                        val refsResult = referencesTransform.apply(newCtx, structure);
                         newCtx = refsResult._1;
 
                         vector = vector.append(refsResult._2);
@@ -81,20 +83,20 @@ public class ConditionalsTransform {
             }
         } else {
             int i = 0;
-            TransformationContext newCtx = ctx;
+            var newCtx = ctx;
             Vector<Structure> structures = Vector.empty();
 
-            for (final ConditionTest test : tlc.getTests()) {
+            for (val test : tlc.getTests()) {
                 if (evaluate(ctx, test)) {
 
-                    @NonNull final Vector<Structure> vector = tlc.getReturns()
+                    @NonNull val vector = tlc.getReturns()
                             .get(i)
                             .getStructures();
 
-                    for (final Structure structure : vector) {
-                        final Tuple2<TransformationContext, Structure> result = handleNestedTopLevelConditionals(newCtx, structure);
+                    for (val structure : vector) {
+                        val result = handleNestedTopLevelConditionals(newCtx, structure);
                         newCtx = result._1;
-                        final Tuple2<TransformationContext, Structure> refsResult = referencesTransform.apply(newCtx, result._2);
+                        val refsResult = referencesTransform.apply(newCtx, result._2);
                         newCtx = refsResult._1;
                         structures = structures.append(refsResult._2);
                     }
@@ -110,11 +112,11 @@ public class ConditionalsTransform {
     }
 
     private Tuple2<TransformationContext, Structure> getToplevelConditionalResult(final TransformationContext ctx, final TopLevelConditional tlc, final @NonNull Vector<Structure> vector) {
-        TransformationContext newCtx = ctx;
+        var newCtx = ctx;
         Vector<Structure> structures = Vector.empty();
 
-        for (final Structure structure : vector) {
-            final Tuple2<TransformationContext, Structure> result = handleNestedTopLevelConditionals(newCtx, structure);
+        for (val structure : vector) {
+            val result = handleNestedTopLevelConditionals(newCtx, structure);
             newCtx = result._1;
             structures = structures.append(result._2);
         }
@@ -126,9 +128,9 @@ public class ConditionalsTransform {
 
     private TransformationContext conditionalFileLoading(final TransformationContext ctx, final Vector<Structure> structures) {
 
-        TransformationContext newCtx = ctx;
-        for (final Structure structure : structures) {
-            final Tuple2<TransformationContext, Structure> loadResult = starLoadTransform.apply(newCtx, structure);
+        var newCtx = ctx;
+        for (val structure : structures) {
+            val loadResult = starLoadTransform.apply(newCtx, structure);
             newCtx = loadResult._1;
         }
 
@@ -141,12 +143,12 @@ public class ConditionalsTransform {
             return apply(ctx, (TopLevelConditional) structure);
         }
         if (structure instanceof Pair) {
-            final Pair p = (Pair) structure;
-            @NonNull final PairValue value = p.getValue();
+            val p = (Pair) structure;
+            @NonNull val value = p.getValue();
 
             if (value instanceof ValueConditional) {
-                final ValueConditional result = apply(ctx, (ValueConditional) value);
-                final Pair resultPair = p.with(ctx.getAncestry(), result);
+                val result = apply(ctx, (ValueConditional) value);
+                val resultPair = p.with(ctx.getAncestry(), result);
                 return Tuple.of(ctx, resultPair);
             }
         }
@@ -176,10 +178,10 @@ public class ConditionalsTransform {
     }
 
     private boolean evaluate(final Vector<Tuple2<Boolean, String>> partial) {
-        boolean first = true;
-        boolean result = false;
-        String lastOp = null;
-        for (Tuple2<Boolean, String> partialItem : partial) {
+        var first = true;
+        var result = false;
+        var lastOp = (String) null;
+        for (var partialItem : partial) {
             if (first) {
                 first = false;
                 result = partialItem._1;
@@ -201,12 +203,12 @@ public class ConditionalsTransform {
     }
 
     private boolean evaluate(final TransformationContext ctx, final Condition c) {
-        final Operator op = c.getOp();
-        final boolean shouldNegate = c.isShouldNegate();
+        val op = c.getOp();
+        val shouldNegate = c.isShouldNegate();
 
-        final Primitive lhs = c.getLhs();
+        val lhs = c.getLhs();
 
-        @NonNull final Vector<ValueItem> values = c.getValues();
+        @NonNull val values = c.getValues();
 
         if (isSingleValueConditional(op, lhs)) {
             return handleSingleValueConditional(ctx, c, shouldNegate, values);
@@ -224,7 +226,7 @@ public class ConditionalsTransform {
             return shouldNegate != Util.lessThanOrEqualToAll(lhs, values);
         }
 
-        final int count = countMatches(c, lhs);
+        val count = countMatches(c, lhs);
         if (op instanceof EqualsOperator) {
             return shouldNegate != (count > 0);
         }
@@ -241,20 +243,20 @@ public class ConditionalsTransform {
     private boolean handleSingleValueConditional(final TransformationContext ctx, final Condition c, final boolean shouldNegate, final @NonNull Vector<ValueItem> values) {
         // Is the RHS true?
         return shouldNegate != values.map(v -> {
-            final Option<Boolean> simpleBoolean = maybeBoolean(v);
+            val simpleBoolean = maybeBoolean(v);
             if (simpleBoolean.isDefined()) {
                 return simpleBoolean.get();
             }
 
-            final String key = v.toString();
+            val key = v.toString();
 
             if (v instanceof StringPrimitive) {
-                final Pair pair = findReferencedPair(ctx, c, key);
+                val pair = findReferencedPair(ctx, c, key);
 
                 if (pair != null) {
 
-                    @NonNull final PairValue pairValue = pair.getValue();
-                    final Option<Boolean> simpleBoolean2 = maybeBoolean(pairValue);
+                    @NonNull val pairValue = pair.getValue();
+                    val simpleBoolean2 = maybeBoolean(pairValue);
                     if (simpleBoolean2.isDefined()) {
                         return simpleBoolean2.get();
                     }
@@ -272,7 +274,7 @@ public class ConditionalsTransform {
     private Boolean checkValueConditionalResult(final ValueConditional pairValue) {
         return pairValue.getResult()
                 .map(vcResult -> {
-                    final Option<Boolean> simpleBoolean3 = maybeBoolean(vcResult);
+                    val simpleBoolean3 = maybeBoolean(vcResult);
                     if (simpleBoolean3.isDefined()) {
                         return simpleBoolean3.get();
                     }
@@ -303,7 +305,7 @@ public class ConditionalsTransform {
                         return v.toString()
                                 .equals(lhs.toString());
                     } else {
-                        final String regexStr = v.toString()
+                        val regexStr = v.toString()
                                 .replaceAll("\\*", ".*");
                         return c.getLhs()
                                 .toString()
@@ -323,16 +325,16 @@ public class ConditionalsTransform {
             }
         } else {
             int i = 0;
-            for (final ConditionTest test : vc.getTests()) {
+            for (val test : vc.getTests()) {
                 if (evaluate(ctx, test)) {
 
                     Vector<ValueItem> items = Vector.empty();
 
-                    for (final ValueItem vi : vc.getReturns()
+                    for (val vi : vc.getReturns()
                             .get(i)
                             .getItems()
                             .map(nested -> handleNestedValueConditionals(ctx, nested))) {
-                        final ValueItem refsResult = referencesTransform.apply(ctx, vi);
+                        val refsResult = referencesTransform.apply(ctx, vi);
 
                         items = items.append(refsResult);
                     }
@@ -352,11 +354,11 @@ public class ConditionalsTransform {
 
         Vector<ValueItem> items = Vector.empty();
 
-        for (final ValueItem vi : vc.getReturns()
+        for (val vi : vc.getReturns()
                 .get(1)
                 .getItems()
                 .map(nested -> handleNestedValueConditionals(ctx, nested))) {
-            final ValueItem refsResult = referencesTransform.apply(ctx, vi);
+            val refsResult = referencesTransform.apply(ctx, vi);
 
             items = items.append(refsResult);
         }
@@ -371,11 +373,11 @@ public class ConditionalsTransform {
 
         Vector<ValueItem> items = Vector.empty();
 
-        for (final ValueItem vi : vc.getReturns()
+        for (val vi : vc.getReturns()
                 .get(0)
                 .getItems()
                 .map(nested -> handleNestedValueConditionals(ctx, nested))) {
-            final ValueItem refsResult = referencesTransform.apply(ctx, vi);
+            val refsResult = referencesTransform.apply(ctx, vi);
 
             items = items.append(refsResult);
         }
@@ -415,11 +417,11 @@ public class ConditionalsTransform {
                 }
                 Vector<ArrayItem> items = Vector.empty();
 
-                for (final ArrayItem ai : ac.getReturns()
+                for (val ai : ac.getReturns()
                         .get(0)
                         .getItems()
                         .map(nested -> handleNestedArrayConditionals(ctx, nested))) {
-                    final ValueItem refsResult = referencesTransform.apply(ctx, (ValueItem) ai);
+                    val refsResult = referencesTransform.apply(ctx, (ValueItem) ai);
 
                     items = items.append((ArrayItem) refsResult);
                 }
@@ -433,11 +435,11 @@ public class ConditionalsTransform {
 
                 Vector<ArrayItem> items = Vector.empty();
 
-                for (final ArrayItem ai : ac.getReturns()
+                for (val ai : ac.getReturns()
                         .get(1)
                         .getItems()
                         .map(nested -> handleNestedArrayConditionals(ctx, nested))) {
-                    final ValueItem refsResult = referencesTransform.apply(ctx, (ValueItem) ai);
+                    val refsResult = referencesTransform.apply(ctx, (ValueItem) ai);
 
                     items = items.append((ArrayItem) refsResult);
                 }
@@ -446,15 +448,15 @@ public class ConditionalsTransform {
             }
         } else {
             int i = 0;
-            for (final ConditionTest test : ac.getTests()) {
+            for (val test : ac.getTests()) {
                 if (evaluate(ctx, test)) {
                     Vector<ArrayItem> items = Vector.empty();
 
-                    for (final ArrayItem ai : ac.getReturns()
+                    for (val ai : ac.getReturns()
                             .get(i)
                             .getItems()
                             .map(nested -> handleNestedArrayConditionals(ctx, nested))) {
-                        final ValueItem refsResult = referencesTransform.apply(ctx, (ValueItem) ai);
+                        val refsResult = referencesTransform.apply(ctx, (ValueItem) ai);
 
                         items = items.append((ArrayItem) refsResult);
                     }
@@ -478,11 +480,11 @@ public class ConditionalsTransform {
                 }
                 Vector<MapItem> items = Vector.empty();
 
-                for (final MapItem mi : mc.getReturns()
+                for (val mi : mc.getReturns()
                         .get(0)
                         .getItems()
                         .map(nested -> handleNestedMapConditionals(ctx, nested))) {
-                    final ValueItem refsResult = referencesTransform.apply(ctx, (ValueItem) mi);
+                    val refsResult = referencesTransform.apply(ctx, (ValueItem) mi);
 
                     items = items.append((MapItem) refsResult);
                 }
@@ -494,11 +496,11 @@ public class ConditionalsTransform {
                 }
                 Vector<MapItem> items = Vector.empty();
 
-                for (final MapItem mi : mc.getReturns()
+                for (val mi : mc.getReturns()
                         .get(1)
                         .getItems()
                         .map(nested -> handleNestedMapConditionals(ctx, nested))) {
-                    final ValueItem refsResult = referencesTransform.apply(ctx, (ValueItem) mi);
+                    val refsResult = referencesTransform.apply(ctx, (ValueItem) mi);
 
                     items = items.append((MapItem) refsResult);
                 }
@@ -506,16 +508,16 @@ public class ConditionalsTransform {
             }
         } else {
             int i = 0;
-            for (final ConditionTest test : mc.getTests()) {
+            for (val test : mc.getTests()) {
                 if (evaluate(ctx, test)) {
 
                     Vector<MapItem> items = Vector.empty();
 
-                    for (final MapItem mi : mc.getReturns()
+                    for (val mi : mc.getReturns()
                             .get(i)
                             .getItems()
                             .map(nested -> handleNestedMapConditionals(ctx, nested))) {
-                        final ValueItem refsResult = referencesTransform.apply(ctx, (ValueItem) mi);
+                        val refsResult = referencesTransform.apply(ctx, (ValueItem) mi);
 
                         items = items.append((MapItem) refsResult);
                     }

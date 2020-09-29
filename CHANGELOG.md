@@ -1,3 +1,7 @@
+0.1.20
+===
+- Code declutter.
+
 0.1.19
 ===
 - Fix for relative `*load`.

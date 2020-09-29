@@ -26,6 +26,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vavr.collection.Vector;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import lombok.val;
+import lombok.var;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
 import uk.modl.extractors.StarLoadExtractor;
@@ -93,14 +95,14 @@ public class Util {
      */
     public boolean shouldAppearInOutput(final Structure s) {
         if (s instanceof Pair) {
-            final Pair p = (Pair) s;
+            val p = (Pair) s;
             return !p.getKey()
                     .startsWith("_") && !p.getKey()
                     .startsWith("*") && !p.getKey()
                     .equals("?");
         }
         if (s instanceof TopLevelConditional) {
-            final TopLevelConditional tlc = (TopLevelConditional) s;
+            val tlc = (TopLevelConditional) s;
             return !tlc.getResult()
                     .isEmpty();
         }
@@ -146,13 +148,13 @@ public class Util {
      * @return the updated String
      */
     public String replacer(final String spec, final String s) {
-        final Matcher matcher = replacerPattern.matcher(spec);
+        val matcher = replacerPattern.matcher(spec);
 
         if (matcher.find()) {
-            final String text = (matcher.group(1) != null) ? matcher.group(1) : matcher.group(3);
-            final String rep = (matcher.group(2) != null) ? matcher.group(2) : matcher.group(4);
-            final String newText = Util.unquote(rep);
-            final String oldtext = Util.unquote(text);
+            val text = (matcher.group(1) != null) ? matcher.group(1) : matcher.group(3);
+            val rep = (matcher.group(2) != null) ? matcher.group(2) : matcher.group(4);
+            val newText = Util.unquote(rep);
+            val oldtext = Util.unquote(text);
             return s.replace(oldtext, newText);
         }
         throw new RuntimeException("Invalid method: " + spec);
@@ -166,11 +168,11 @@ public class Util {
      * @return the updated String
      */
     public String trimmer(final String spec, final String s) {
-        final Matcher matcher = trimmerPattern.matcher(spec);
+        val matcher = trimmerPattern.matcher(spec);
 
         if (matcher.find()) {
-            final String text = getMatcherGroup(matcher);
-            final int i = s.indexOf(text);
+            val text = getMatcherGroup(matcher);
+            val i = s.indexOf(text);
             if (i > -1) {
                 return s.substring(0, i);
             }
@@ -186,7 +188,7 @@ public class Util {
 
     public boolean greaterThanAll(final ValueItem lhs, final Vector<ValueItem> values) {
         return !values.find(v -> {
-            final double v2 = toDouble(v.toString());
+            val v2 = toDouble(v.toString());
             return toDouble(lhs.toString()) <= v2;
         })
                 .isDefined();
@@ -202,7 +204,7 @@ public class Util {
 
     public boolean greaterThanOrEqualToAll(final ValueItem lhs, final Vector<ValueItem> values) {
         return !values.find(v -> {
-            final double v2 = toDouble(v.toString());
+            val v2 = toDouble(v.toString());
             return toDouble(lhs.toString()) < v2;
         })
                 .isDefined();
@@ -210,7 +212,7 @@ public class Util {
 
     public boolean lessThanAll(final ValueItem lhs, final Vector<ValueItem> values) {
         return !values.find(v -> {
-            final double v2 = toDouble(v.toString());
+            val v2 = toDouble(v.toString());
             return toDouble(lhs.toString()) >= v2;
         })
                 .isDefined();
@@ -218,7 +220,7 @@ public class Util {
 
     public boolean lessThanOrEqualToAll(final ValueItem lhs, final Vector<ValueItem> values) {
         return !values.find(v -> {
-            final double v2 = toDouble(v.toString());
+            val v2 = toDouble(v.toString());
             return toDouble(lhs.toString()) > v2;
         })
                 .isDefined();
@@ -226,7 +228,7 @@ public class Util {
 
     public boolean truthy(final PairValue value) {
         if (value != null) {
-            final String s = value.toString();
+            val s = value.toString();
             return !s.equalsIgnoreCase("null") && !s.equalsIgnoreCase("000") && !s.equalsIgnoreCase("00") && !s.equalsIgnoreCase("false");
         }
         return false;
@@ -234,7 +236,7 @@ public class Util {
 
     public String handleMethodsAndTrailingPathComponents(final String[] refList, String
             valueStr) {
-        for (final String pathComponent : refList) {
+        for (val pathComponent : refList) {
             valueStr = handlePathComponent(valueStr, pathComponent);
         }
         return valueStr;
@@ -242,8 +244,8 @@ public class Util {
 
     private String handlePathComponent(String valueStr, final String pathComponent) {
 
-        final String unquoted = Util.unquote(valueStr);
-        final String finalValueStr = valueStr;
+        val unquoted = Util.unquote(valueStr);
+        val finalValueStr = valueStr;
         return Match(pathComponent).of(
                 Case($(isIn("p", "punydecode")), () -> replacePunycode(unquoted)),
                 Case($(isIn("u", "upcase")), (Supplier<String>) unquoted::toUpperCase),
@@ -291,7 +293,7 @@ public class Util {
     }
 
     public Vector<String> toMethodList(final String chainedMethods) {
-        final Matcher matcher = METHODS_PATTERN.matcher(chainedMethods);
+        val matcher = METHODS_PATTERN.matcher(chainedMethods);
         Vector<String> methods = Vector.empty();
         while (matcher.find()) {
             methods = methods.append(matcher.group(0));
@@ -306,7 +308,7 @@ public class Util {
      * @return the normalized String
      */
     public StarLoadExtractor.FileSpec normalize(@NonNull final String text) {
-        String normalized = text;
+        var normalized = text;
 
         if (isGraved(normalized)) {
             // Remove graves
@@ -357,9 +359,9 @@ public class Util {
     }
 
     public void validatePairKey(final String newKey) {
-        final String k = maybeStripLeadingSpecialCharacter(newKey);// Strip any leading underscore or asterisk
+        val k = maybeStripLeadingSpecialCharacter(newKey);// Strip any leading underscore or asterisk
 
-        final int badCharIndex = StringUtils.indexOfAny(k, Util.INVALID_CHARS);
+        val badCharIndex = StringUtils.indexOfAny(k, Util.INVALID_CHARS);
         if (badCharIndex > -1) {
             throw new RuntimeException("Invalid key - \"" +
                     k.charAt(badCharIndex) +

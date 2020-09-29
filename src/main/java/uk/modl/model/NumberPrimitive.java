@@ -20,10 +20,7 @@
 
 package uk.modl.model;
 
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
+import lombok.*;
 import org.apache.commons.lang3.math.NumberUtils;
 import uk.modl.ancestry.Ancestry;
 import uk.modl.ancestry.Child;
@@ -41,7 +38,7 @@ public class NumberPrimitive implements Primitive, Child {
     String value;
 
     public static NumberPrimitive of(final Ancestry ancestry, final Parent parent, final String value) {
-        final NumberPrimitive child = NumberPrimitive.of(IDSource.nextId(), value);
+        val child = NumberPrimitive.of(IDSource.nextId(), value);
         ancestry.add(parent, child);
         return child;
     }

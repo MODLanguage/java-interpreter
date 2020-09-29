@@ -24,6 +24,8 @@ import io.vavr.Function2;
 import io.vavr.collection.List;
 import io.vavr.collection.Vector;
 import io.vavr.control.Option;
+import lombok.val;
+import lombok.var;
 import uk.modl.model.Array;
 import uk.modl.model.Map;
 import uk.modl.model.*;
@@ -40,7 +42,7 @@ public class SupertypeInference {
     private static final int MAX_RECURSION_DEPTH = 50;
 
     public static String inferType(final TransformationContext ctx, final StarClassTransform.ClassInstruction ci, final PairValue pv) {
-        String tc = topClass(ctx, ci, 0);
+        var tc = topClass(ctx, ci, 0);
         if (tc == null) {
             if (hasAssignStatement(ctx, ci)) {
                 tc = allAssignmentKeysAreClasses(ctx, ci) ? "arr" : "map";
@@ -79,16 +81,16 @@ public class SupertypeInference {
 
     private static boolean allAssignmentKeysAreClasses(final TransformationContext ctx, final StarClassTransform.ClassInstruction ci) {
         // Count the keys that don't map to classes - if we have any then the result is false
-        final List<String> allInheritedAssignKeys = allInheritedAssignKeys(ctx, ci, 0);
-        boolean allHaveAssigns = allAssignClassesHaveAssigns(ctx, allInheritedAssignKeys);
+        val allInheritedAssignKeys = allInheritedAssignKeys(ctx, ci, 0);
+        var allHaveAssigns = allAssignClassesHaveAssigns(ctx, allInheritedAssignKeys);
 
-        final boolean allAssignKeysAreClasses = allInheritedAssignKeys.map(ctx::getClassByNameOrId)
+        val allAssignKeysAreClasses = allInheritedAssignKeys.map(ctx::getClassByNameOrId)
                 .count(Objects::isNull) == 0;
         return allHaveAssigns && allAssignKeysAreClasses;
     }
 
     private static boolean allAssignClassesHaveAssigns(final TransformationContext ctx, final List<String> allInheritedAssignKeys) {
-        final int expected = allInheritedAssignKeys.size();
+        val expected = allInheritedAssignKeys.size();
 
         return expected == allInheritedAssignKeys.count(key -> {
             final Option<StarClassTransform.ClassInstruction> maybeClass = ctx.getClassByNameOrId(key);
@@ -110,7 +112,7 @@ public class SupertypeInference {
         }
 
         // List the assign keys for the current ClassInstruction
-        final List<String> assignKeys = ci.getAssign()
+        val assignKeys = ci.getAssign()
                 .map(x -> ((Array) x).getArrayItems()
                         .map(Object::toString))
                 .foldLeft(List.empty(), (Function2<List<String>, Vector<String>, List<String>>) List::appendAll);

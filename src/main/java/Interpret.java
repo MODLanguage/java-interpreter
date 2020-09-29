@@ -18,17 +18,14 @@
  *
  */
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vavr.Tuple2;
+import lombok.val;
 import uk.modl.interpreter.Interpreter;
-import uk.modl.model.Modl;
 import uk.modl.transforms.JacksonJsonNodeTransform;
 import uk.modl.transforms.TransformationContext;
 
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
@@ -45,18 +42,18 @@ public class Interpret {
                 .mapToInt(filename -> {
                     System.out.println("Processing file: " + filename);
                     try {
-                        final Path path = Paths.get(filename);
-                        final String modlString = String.join("\n", Files.readAllLines(path));
+                        val path = Paths.get(filename);
+                        val modlString = String.join("\n", Files.readAllLines(path));
 
 
-                        final Interpreter interpreter = new Interpreter();
-                        final TransformationContext ctx = TransformationContext.baseCtx(new URL(path.toUri()
+                        val interpreter = new Interpreter();
+                        val ctx = TransformationContext.baseCtx(new URL(path.toUri()
                                 .toASCIIString()), TIMEOUT_SECONDS);
-                        final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(ctx, modlString);
-                        final JsonNode json = new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
+                        val interpreted = interpreter.apply(ctx, modlString);
+                        val json = new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
 
 
-                        final String result = new ObjectMapper().writerWithDefaultPrettyPrinter()
+                        val result = new ObjectMapper().writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(json);
 
                         System.out.println(result);

@@ -24,6 +24,7 @@ import io.vavr.collection.*;
 import io.vavr.control.Option;
 import lombok.Value;
 import lombok.With;
+import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import uk.modl.ancestry.Ancestry;
 import uk.modl.model.ArrayItem;
@@ -119,7 +120,7 @@ public class TransformationContext {
      * @return TransformationContext
      */
     public static TransformationContext baseCtx(final URL uri, final long timeoutMilliseconds) {
-        final Option<URL> maybeUri = Option.of(uri);
+        val maybeUri = Option.of(uri);
         return TransformationContext.of(timeoutMilliseconds, maybeUri, new Ancestry(), VERSION, STAR_LOAD_IMMUTABLE, STAR_CLASS_IMMUTABLE, Vector.empty(), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
     }
 
@@ -148,10 +149,10 @@ public class TransformationContext {
             throw new RuntimeException("Duplicate method name or id: " + mi.getName());
         }
 
-        final Set<StarMethodTransform.MethodInstruction> updatedMethods = methods.add(mi);
-        final Map<String, StarMethodTransform.MethodInstruction> updatedMethodsById = methodsById.put(mi.getId(), mi);
+        val updatedMethods = methods.add(mi);
+        val updatedMethodsById = methodsById.put(mi.getId(), mi);
 
-        final Map<String, StarMethodTransform.MethodInstruction> updatedMethodsByName = (StringUtils.isNotEmpty(mi.getName())) ? methodsByName.put(mi.getName(), mi) : methodsByName;
+        val updatedMethodsByName = (StringUtils.isNotEmpty(mi.getName())) ? methodsByName.put(mi.getName(), mi) : methodsByName;
 
         return this.withMethods(updatedMethods)
                 .withMethodsById(updatedMethodsById)
@@ -180,10 +181,10 @@ public class TransformationContext {
             throw new RuntimeException("Class name or id already defined - cannot redefine: " + ci.getId() + ", " + ci.getName());
         }
 
-        final Set<StarClassTransform.ClassInstruction> updatedClasses = classes.add(ci);
-        final Map<String, StarClassTransform.ClassInstruction> updatedClassesById = classesById.put(ci.getId(), ci);
+        val updatedClasses = classes.add(ci);
+        val updatedClassesById = classesById.put(ci.getId(), ci);
 
-        final Map<String, StarClassTransform.ClassInstruction> updatedClassesByName = (StringUtils.isNotEmpty(ci.getName())) ? classesByName.put(ci.getName(), ci) : classesByName;
+        val updatedClassesByName = (StringUtils.isNotEmpty(ci.getName())) ? classesByName.put(ci.getName(), ci) : classesByName;
 
         return this.withClasses(updatedClasses)
                 .withClassesById(updatedClassesById)

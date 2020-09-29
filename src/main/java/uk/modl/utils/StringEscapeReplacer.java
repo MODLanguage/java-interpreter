@@ -20,6 +20,9 @@
 
 package uk.modl.utils;
 
+import lombok.val;
+import lombok.var;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -89,9 +92,9 @@ public class StringEscapeReplacer {
     }
 
     public static String replace(final String stringToTransform) {
-        String result = UnicodeEscapeReplacer.convertUnicodeSequences(stringToTransform);
+        var result = UnicodeEscapeReplacer.convertUnicodeSequences(stringToTransform);
 
-        for (final Map.Entry<String, String> replacement : replacements.entrySet()) {
+        for (val replacement : replacements.entrySet()) {
             result = result.replace(replacement.getKey(), replacement.getValue());
         }
         return result;

@@ -21,10 +21,7 @@
 package uk.modl.model;
 
 import io.vavr.collection.Vector;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
+import lombok.*;
 import uk.modl.ancestry.Ancestry;
 import uk.modl.ancestry.Child;
 import uk.modl.ancestry.Parent;
@@ -50,13 +47,13 @@ public class Condition implements ConditionOrConditionGroupInterface, Parent, Ch
     boolean shouldNegate;
 
     public static Condition of(final Ancestry ancestry, final Parent parent, final Primitive lhs, final Operator op, final Vector<ValueItem> values, final boolean shouldNegate) {
-        final Condition child = Condition.of(IDSource.nextId(), lhs, op, values, shouldNegate);
+        val child = Condition.of(IDSource.nextId(), lhs, op, values, shouldNegate);
         ancestry.add(parent, child);
         return child;
     }
 
     public Condition with(final Ancestry ancestry, final Primitive lhs, final Operator op, final Vector<ValueItem> values, final boolean shouldNegate) {
-        final Condition child = Condition.of(id, lhs, op, values, shouldNegate);
+        val child = Condition.of(id, lhs, op, values, shouldNegate);
         ancestry.replaceChild(this, child);
         return child;
     }

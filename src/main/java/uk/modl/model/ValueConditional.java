@@ -21,10 +21,7 @@
 package uk.modl.model;
 
 import io.vavr.collection.Vector;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
+import lombok.*;
 import uk.modl.ancestry.Ancestry;
 import uk.modl.ancestry.Child;
 import uk.modl.ancestry.Parent;
@@ -49,7 +46,7 @@ public class ValueConditional implements ValueItem, Parent, Child {
     Vector<ValueItem> result;
 
     public static ValueConditional of(final Ancestry ancestry, final Parent parent, final Vector<ConditionTest> tests, final Vector<ValueConditionalReturn> returns, final Vector<ValueItem> result) {
-        final ValueConditional child = ValueConditional.of(IDSource.nextId(), tests, returns, result);
+        val child = ValueConditional.of(IDSource.nextId(), tests, returns, result);
         ancestry.add(parent, child);
         return child;
     }
@@ -60,13 +57,13 @@ public class ValueConditional implements ValueItem, Parent, Child {
     }
 
     public ValueConditional with(final Ancestry ancestry, final Vector<ConditionTest> tests, final Vector<ValueConditionalReturn> returns) {
-        final ValueConditional child = ValueConditional.of(id, tests, returns, result);
+        val child = ValueConditional.of(id, tests, returns, result);
         ancestry.replaceChild(this, child);
         return child;
     }
 
     public ValueConditional with(final Ancestry ancestry, final Vector<ValueItem> result) {
-        final ValueConditional child = ValueConditional.of(id, tests, returns, result);
+        val child = ValueConditional.of(id, tests, returns, result);
         ancestry.replaceChild(this, child);
         return child;
     }

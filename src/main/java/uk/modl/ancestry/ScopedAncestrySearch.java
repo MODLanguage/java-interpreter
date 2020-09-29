@@ -21,9 +21,12 @@
 package uk.modl.ancestry;
 
 import io.vavr.control.Option;
-import uk.modl.model.*;
+import lombok.val;
+import uk.modl.model.Array;
+import uk.modl.model.Modl;
+import uk.modl.model.Pair;
+import uk.modl.model.Structure;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -39,10 +42,10 @@ public class ScopedAncestrySearch {
     }
 
     public Option<Pair> findByKey(final Child child, final String key) {
-        final Parent parent = ancestors.get(child);
+        val parent = ancestors.get(child);
 
         if (parent != null) {
-            final Option<Pair> result = findByKey(0, parent, child, key);
+            val result = findByKey(0, parent, child, key);
             if (result.isDefined() && !result.get()
                     .equals(child)) {
                 return result;
@@ -54,16 +57,16 @@ public class ScopedAncestrySearch {
     }
 
     private Option<Pair> checkRootModlObjects(final Child child, final String key, final Parent parent) {
-        final List<Child> roots = ancestors.entrySet()
+        val roots = ancestors.entrySet()
                 .stream()
                 .filter(entry -> entry.getValue() == null)
                 .map(java.util.Map.Entry::getKey)
                 .collect(Collectors.toList());
 
         Pair found = null;
-        for (final Child root : roots) {
+        for (val root : roots) {
             if (root instanceof Modl) {
-                final Modl modl = (Modl) root;
+                val modl = (Modl) root;
 
                 found = findByKeyInModl(child, key, parent, found, modl);
             }
@@ -72,7 +75,7 @@ public class ScopedAncestrySearch {
     }
 
     private Pair findByKeyInModl(final Child child, final String key, final Parent parent, Pair found, final Modl modl) {
-        for (final Structure s : modl.getStructures()) {
+        for (val s : modl.getStructures()) {
             if (sameAsParentOrChild(child, parent, s)) {
                 break;
             }
@@ -117,7 +120,7 @@ public class ScopedAncestrySearch {
 
     private Option<Pair> lookHigherUpTheTree(final int depth, final Parent parent, final Child child, final String key) {
         //noinspection SuspiciousMethodCalls
-        final Parent grandParent = ancestors.get(parent);
+        val grandParent = ancestors.get(parent);
 
         if (grandParent != null) {
             return findByKey(depth + 1, grandParent, (Child) parent, key);
@@ -133,7 +136,7 @@ public class ScopedAncestrySearch {
 
     private Option<Pair> findByKeyInModl(final Modl modl, final String key) {
         Pair found = null;
-        for (final Structure s : modl.getStructures()) {
+        for (val s : modl.getStructures()) {
             if (pairWithMatchingKey(key, s)) {
                 found = (Pair) s;
             }
@@ -143,7 +146,7 @@ public class ScopedAncestrySearch {
 
     private Option<Pair> findByKeyInMap(final Parent parent, final uk.modl.model.Map map, final String key) {
         Pair found = null;
-        for (final MapItem mapItem : map.getMapItems()) {
+        for (val mapItem : map.getMapItems()) {
             if (mapItem.equals(parent)) {
                 break;
             }
@@ -156,7 +159,7 @@ public class ScopedAncestrySearch {
 
     private Option<Pair> findByKeyInArray(final Parent parent, final Array array, final String key) {
         Pair found = null;
-        for (final ArrayItem arrayItem : array.getArrayItems()) {
+        for (val arrayItem : array.getArrayItems()) {
             if (arrayItem.equals(parent)) {
                 break;
             }

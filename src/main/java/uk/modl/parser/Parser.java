@@ -21,6 +21,7 @@
 package uk.modl.parser;
 
 import lombok.extern.log4j.Log4j2;
+import lombok.val;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
@@ -32,9 +33,11 @@ import uk.modl.parser.errors.ThrowingErrorListener;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -53,12 +56,12 @@ public class Parser {
      */
     public Modl apply(final String input, final Ancestry ancestry, final long timeoutMilliseconds) {
         try {
-            final ExecutorService executorService = Executors.newSingleThreadExecutor();
+            val executorService = Executors.newSingleThreadExecutor();
             // Antlr boilerplate
-            final InputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
-            final MODLLexer lexer = new MODLLexer(CharStreams.fromStream(stream, StandardCharsets.UTF_8));
-            final CommonTokenStream tokens = new CommonTokenStream(lexer);
-            final MODLParser parser = new MODLParser(tokens);
+            val stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
+            val lexer = new MODLLexer(CharStreams.fromStream(stream, StandardCharsets.UTF_8));
+            val tokens = new CommonTokenStream(lexer);
+            val parser = new MODLParser(tokens);
             parser.setBuildParseTree(true);
 
             lexer.addErrorListener(ThrowingErrorListener.INSTANCE);
@@ -80,7 +83,7 @@ public class Parser {
             final AtomicReference<Thread> taskThread = new AtomicReference<>();
 
             // Execute the parser in a Future
-            final Future<MODLParser.ModlContext> future = executorService.submit(() -> {
+            val future = executorService.submit(() -> {
                 taskThread.set(Thread.currentThread());
                 return parser.modl();
             });

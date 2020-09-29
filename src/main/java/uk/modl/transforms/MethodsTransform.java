@@ -20,9 +20,8 @@
 
 package uk.modl.transforms;
 
-import io.vavr.collection.Vector;
-import io.vavr.control.Option;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import uk.modl.utils.Util;
 
 @RequiredArgsConstructor
@@ -45,12 +44,12 @@ public class MethodsTransform {
     }
 
     private String runMethods(final TransformationContext ctx, final String method, final String s) {
-        final Option<StarMethodTransform.MethodInstruction> maybeMethod = ctx.getMethodByNameOrId(method);
+        val maybeMethod = ctx.getMethodByNameOrId(method);
 
         return maybeMethod.map(mi -> {
-            final Vector<String> methods = Util.toMethodList(mi.getTransform());
+            val methods = Util.toMethodList(mi.getTransform());
 
-            final String[] refList = methods.toJavaArray(String[]::new);
+            val refList = methods.toJavaArray(String[]::new);
 
             return Util.handleMethodsAndTrailingPathComponents(refList, s);
         })

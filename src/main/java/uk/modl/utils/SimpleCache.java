@@ -20,6 +20,8 @@
 
 package uk.modl.utils;
 
+import lombok.val;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,7 +67,7 @@ public class SimpleCache<K, V> {
      * @param value The value of class V
      */
     public void put(K key, V value) {
-        final CacheEntry<V> entry = new CacheEntry<>(value, SEVEN_DAYS + System.currentTimeMillis());
+        val entry = new CacheEntry<>(value, SEVEN_DAYS + System.currentTimeMillis());
         cache.put(key, entry);
     }
 
@@ -76,7 +78,7 @@ public class SimpleCache<K, V> {
      * @return null if the item is not present or has expired, otherwise the value of class V
      */
     public V get(K key) {
-        final CacheEntry<V> entry = cache.get(key);
+        val entry = cache.get(key);
         if (entry == null || entry.expiry < System.currentTimeMillis()) {
 
             // Remove the expired item
