@@ -514,7 +514,7 @@ public class InterpreterVisitor {
         val structureWithExpandedClasses = starClassTransform.apply(newCtx, p);
         val structureWithAppliedMethods = starMethodTransform.apply(structureWithExpandedClasses._1, structureWithExpandedClasses._2);
         val contextAndStructure = referencesTransform.apply(structureWithAppliedMethods._1, structureWithAppliedMethods._2);
-        val structure = percentStarInstructionTransform.apply(contextAndStructure._1, p, contextAndStructure._2);
+        val structure = contextAndStructure._2;
 
         newCtx = contextAndStructure._1;
 
@@ -747,7 +747,11 @@ public class InterpreterVisitor {
 
             val finalNewCtx = newCtx;
 
-            val resultStructures = visitedStructures.map(structure -> classExpansionTransform.apply(finalNewCtx, structure));
+            final Vector<Structure> resultStructures = visitedStructures.map(structure -> {
+                val expanded = classExpansionTransform.apply(finalNewCtx, structure);
+                return percentStarInstructionTransform.apply(finalNewCtx, null, expanded);
+            });
+
 
             val updatedModl = modl.with(ctx.getAncestry(), resultStructures.filter(Objects::nonNull));
 

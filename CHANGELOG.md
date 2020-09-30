@@ -1,6 +1,7 @@
 0.1.20
 ===
 - Code declutter.
+- Fix class expansion problem.
 
 0.1.19
 ===

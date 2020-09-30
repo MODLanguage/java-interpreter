@@ -71,7 +71,29 @@ public class ClassExpansionTransform {
     }
 
     private Structure processPair(final TransformationContext ctx, final Pair pair) {
-        return expandToClass(ctx, pair);
+        if (pair.getKey()
+                .startsWith("*")) {
+            return pair;
+        }
+        val structure = expandToClass(ctx, pair);
+        if (structure == pair) {
+            val value = pair.getValue();
+            if (value instanceof Array) {
+                val array = processArray(ctx, (Array) value);
+                return pair.with(ctx.getAncestry(), array);
+            } else if (value instanceof Map) {
+                val map = processMap(ctx, (Map) value);
+                return pair.with(ctx.getAncestry(), map);
+            } else if (value instanceof Pair) {
+                val pair2 = processPair(ctx, (Pair) value);
+                if (pair2 == value) {
+                    return pair;
+                } else {
+                    return pair.with(ctx.getAncestry(), (PairValue) pair2);
+                }
+            }
+        }
+        return structure;
     }
 
     private Structure expandToClass(final TransformationContext ctx, final Pair pair) {
