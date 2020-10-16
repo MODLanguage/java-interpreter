@@ -192,7 +192,7 @@ public class InterpreterBaseTests {
 
             }
             fail("Expected error");
-        } catch (final Throwable e) {
+        } catch (final Exception e) {
             if (!testInput.expected_output.equals(e.getMessage())) {
                 errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : " + e.getMessage() + "\n");
             }

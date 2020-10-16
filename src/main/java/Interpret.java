@@ -58,7 +58,7 @@ public class Interpret {
 
                         System.out.println(result);
 
-                    } catch (final Throwable e) {
+                    } catch (final Exception e) {
                         System.err.println(e.getMessage());
                         return 1;
                     }

@@ -24,7 +24,6 @@ import lombok.extern.log4j.Log4j2;
 import lombok.val;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 import uk.modl.ancestry.Ancestry;
 import uk.modl.model.Modl;
 import uk.modl.parser.antlr.MODLLexer;
@@ -34,9 +33,6 @@ import uk.modl.parser.errors.ThrowingErrorListener;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -56,7 +52,6 @@ public class Parser {
      */
     public Modl apply(final String input, final Ancestry ancestry, final long timeoutMilliseconds) {
         try {
-            val executorService = Executors.newSingleThreadExecutor();
             // Antlr boilerplate
             val stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
             val lexer = new MODLLexer(CharStreams.fromStream(stream, StandardCharsets.UTF_8));
@@ -68,54 +63,63 @@ public class Parser {
             parser.addErrorListener(ThrowingErrorListener.INSTANCE);
 
             /*
+             * --------------------------------------------------------------------------------------------------------------
              * Warning: Nasty threading code follows
              *
              * The reason for this is that the MODL grammar can take a very long time to process if deeply nested,
              * and ANTLR4 cannot be interrupted, hence it is run in a separate thread. We have to use the Thread.stop()
              * method because otherwise the thread does not terminate and cannot be killed any other way.
              *
-             * This issue may be resolved by grammar changes in future.
-             *
+             * This issue _might_ be resolved by grammar changes in future.
+             * --------------------------------------------------------------------------------------------------------------
              */
 
             // This is to capture the executor thread that will process the MODL so we can call its `stop()` method
             // if there is a timeout.
             final AtomicReference<Thread> taskThread = new AtomicReference<>();
-
-            // Execute the parser in a Future
-            val future = executorService.submit(() -> {
-                taskThread.set(Thread.currentThread());
-                return parser.modl();
-            });
-
-            final MODLParser.ModlContext modlCtx;
+            final AtomicReference<Exception> taskException = new AtomicReference<>();
+            final AtomicReference<MODLParser.ModlContext> modlCtx = new AtomicReference<>();
 
             try {
-                // Get the result
-                modlCtx = future.get(timeoutMilliseconds, TimeUnit.MILLISECONDS);
-            } finally {
-                // Force shutdown and kill the thread.
-                executorService.shutdownNow();
-                try {
-                    taskThread.get()
-                            .stop();// Try to kill the thread.
-                } catch (final Throwable e) {
-                    // Ignore ThreadDeath
+                // Execute the parser in a Thread
+                // (Using a Thread rather than an Executor Service so we can handle any ThreadDeath exceptions that might occur)
+                final long start = System.currentTimeMillis();
+                new Thread(() -> {
+                    try {
+                        taskThread.set(Thread.currentThread());
+                        modlCtx.set(parser.modl());
+                    } catch (final Exception e) {
+                        taskException.set(e);
+                    }
+                }).start();
+
+                // Wait for timeout, or exception, or result
+                long now = System.currentTimeMillis();
+                while (taskException.get() == null && modlCtx.get() == null && (now - start) < timeoutMilliseconds) {
+                    // Get the result
+                    Thread.sleep(10);// Yes, its bad but there are reasons why this is necessary.
+                    now = System.currentTimeMillis();
                 }
+            } finally {
+                // Kill the thread.
+                taskThread.get()
+                        .stop();
             }
 
-            if (modlCtx != null) {
+            final Exception threadEx = taskException.get();
+            if (threadEx != null) {
+                if (threadEx instanceof RuntimeException) {
+                    throw (RuntimeException) threadEx;
+                }
+                throw new RuntimeException(threadEx);
+            }
+            if (modlCtx.get() != null) {
                 // The String has been parsed by Antlr, now its our turn
-                return new ModlParsedVisitor(modlCtx, ancestry).getModl();
+                return new ModlParsedVisitor(modlCtx.get(), ancestry).getModl();
             }
 
             throw new TimeoutException();
         } catch (final IOException | InterruptedException | TimeoutException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof ParseCancellationException) {
-                throw (ParseCancellationException) e.getCause();
-            }
             throw new RuntimeException(e);
         }
     }
