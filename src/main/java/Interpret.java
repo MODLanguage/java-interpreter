@@ -40,7 +40,6 @@ public class Interpret {
 
         final int sum = Arrays.stream(args)
                 .mapToInt(filename -> {
-                    System.out.println("Processing file: " + filename);
                     try {
                         val path = Paths.get(filename);
                         val modlString = String.join("\n", Files.readAllLines(path));
@@ -62,7 +61,6 @@ public class Interpret {
                         System.err.println(e.getMessage());
                         return 1;
                     }
-                    System.out.println("Finished file: " + filename);
                     System.out.println();
                     return 0;
                 })
