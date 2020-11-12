@@ -94,8 +94,15 @@ public class StringEscapeReplacer {
     public static String replace(final String stringToTransform) {
         var result = UnicodeEscapeReplacer.convertUnicodeSequences(stringToTransform);
 
-        for (val replacement : replacements.entrySet()) {
-            result = result.replace(replacement.getKey(), replacement.getValue());
+        for (int i = 0; i < result.length(); i++) {
+            for (val replacement : replacements.entrySet()) {
+                final String key = replacement.getKey();
+                if (result.startsWith(key, i)) {
+                    final String value = replacement.getValue();
+                    result = result.substring(0, i) + value + result.substring(i + key.length());
+                    break;// we only do one replacement at each position
+                }
+            }
         }
         return result;
     }
