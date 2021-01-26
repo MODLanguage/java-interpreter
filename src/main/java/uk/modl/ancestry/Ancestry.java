@@ -62,6 +62,7 @@ public class Ancestry {
    * Dump the tree as a graphviz list of nodes - needs embedding in "digraph g
    * {...}"
    */
+  @java.lang.SuppressWarnings("java:S106")
   public void dump() {
     ancestors.entrySet().stream().map(e -> {
       val child = e.getKey();
@@ -98,7 +99,7 @@ public class Ancestry {
         return "missing[label=\"missing\"]\n\"" + childHash + LABEL_PREFIX + childString + LABEL_SUFFIX + childHash
             + "\" -> missing";
       }
-    }).forEach(System.out::println);
+    }).forEach(System.out::println);// This method is for debugging only so uses stdout.
   }
 
   public Pair findReferencedPair(final TransformationContext ctx, final Child c, final String key) {

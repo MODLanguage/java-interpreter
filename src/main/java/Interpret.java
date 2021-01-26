@@ -18,54 +18,50 @@
  *
  */
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.val;
-import uk.modl.interpreter.Interpreter;
-import uk.modl.transforms.JacksonJsonNodeTransform;
-import uk.modl.transforms.TransformationContext;
-
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.val;
+import lombok.extern.log4j.Log4j2;
+import uk.modl.interpreter.Interpreter;
+import uk.modl.transforms.JacksonJsonNodeTransform;
+import uk.modl.transforms.TransformationContext;
+
+@Log4j2
 public class Interpret {
 
-    public static final int TIMEOUT_SECONDS = 10000;
+  public static final int TIMEOUT_SECONDS = 10000;
 
-    public static void main(final String... args) {
-        if (args.length == 0) {
-            System.out.println("Usage: java -cp ./build/libs/interpreter-<version>.jar <modl-file-name> [modl-file-name] ...");
-        }
-
-        final int sum = Arrays.stream(args)
-                .mapToInt(filename -> {
-                    try {
-                        val path = Paths.get(filename);
-                        val modlString = String.join("\n", Files.readAllLines(path));
-
-
-                        val interpreter = new Interpreter();
-                        val ctx = TransformationContext.baseCtx(new URL(path.toUri()
-                                .toASCIIString()), TIMEOUT_SECONDS);
-                        val interpreted = interpreter.apply(ctx, modlString);
-                        val json = new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
-
-
-                        val result = new ObjectMapper().writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(json);
-
-                        System.out.println(result);
-
-                    } catch (final Exception e) {
-                        System.err.println(e.getMessage());
-                        return 1;
-                    }
-                    System.out.println();
-                    return 0;
-                })
-                .sum();
-        System.exit(sum);
+  public static void main(final String... args) {
+    if (args.length == 0) {
+      log.info("Usage: java -cp ./build/libs/interpreter-<version>.jar <modl-file-name> [modl-file-name] ...");
     }
+
+    final int sum = Arrays.stream(args).mapToInt(filename -> {
+      try {
+        val path = Paths.get(filename);
+        val modlString = String.join("\n", Files.readAllLines(path));
+
+        val interpreter = new Interpreter();
+        val ctx = TransformationContext.baseCtx(new URL(path.toUri().toASCIIString()), TIMEOUT_SECONDS);
+        val interpreted = interpreter.apply(ctx, modlString);
+        val json = new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
+
+        val result = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(json);
+
+        log.info(result);
+
+      } catch (final Exception e) {
+        log.error(e.getMessage());
+        return 1;
+      }
+      return 0;
+    }).sum();
+    System.exit(sum);
+  }
 
 }
