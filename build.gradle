@@ -11,6 +11,12 @@ plugins {
     id 'maven-publish'
     id 'signing'
     id 'idea'
+    id "org.sonarqube" version "3.0"
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
 }
 
 javadoc {
@@ -23,6 +29,8 @@ apply plugin: 'java-library'
 apply plugin: 'antlr'
 apply plugin: 'maven-publish'
 apply plugin: 'application'
+apply plugin: 'application'
+apply plugin: 'jacoco'
 
 mainClassName = "uk.modl.server.ModlServer"
 
@@ -37,14 +45,6 @@ archivesBaseName = "java-interpreter"
 version = "0.1.23"
 
 def isSnapshot = version.endsWith("SNAPSHOT")
-
-repositories {
-    mavenCentral()
-}
-
-wrapper {
-    gradleVersion = '5.1'
-}
 
 dependencies {
 // https://mvnrepository.com/artifact/io.vavr/vavr
@@ -374,3 +374,10 @@ task customFatJar(type: Jar) {
     with jar
 }
 
+// ====== JACOCO TEST COVERAGE ======
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+}
+test.finalizedBy jacocoTestReport
