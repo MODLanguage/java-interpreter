@@ -20,45 +20,67 @@
 
 package uk.modl.transforms;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import org.junit.Before;
+import org.junit.Test;
+
 import io.vavr.Tuple2;
 import io.vavr.collection.Vector;
-import org.junit.Test;
 import uk.modl.ancestry.Ancestry;
 import uk.modl.ancestry.Parent;
-import uk.modl.model.*;
+import uk.modl.model.Array;
+import uk.modl.model.Modl;
+import uk.modl.model.Pair;
+import uk.modl.model.StringPrimitive;
+import uk.modl.model.Structure;
 import uk.modl.parser.Parser;
-
-import static org.junit.Assert.*;
+import uk.modl.parser.errors.DuplicateFileLoadException;
 
 public class StarLoadTransformTest {
 
-    private static final Parser parser = new Parser();
+  private static final Parser parser = new Parser();
 
-    private static final StarLoadTransform starLoadTransform = new StarLoadTransform();
+  private StarLoadTransform starLoadTransform = null;
 
-    public static final int TIMEOUT_SECONDS = 10000;
+  public static final int TIMEOUT_SECONDS = 10000;
 
-    final Ancestry ancestry = new Ancestry();
+  final Ancestry ancestry = new Ancestry();
 
-    final Parent parent = () -> 0;
+  final Parent parent = () -> 0;
 
-    @Test
-    public void test_load_file_successfully() {
-        final TransformationContext ctx = TransformationContext.baseCtx(null, TIMEOUT_SECONDS);
-        final Modl modl = parser.apply("*l=`./src/test/resources/modl/load_test_1.modl`;c=d", ctx.getAncestry(), TIMEOUT_SECONDS);
-        assertNotNull(modl);
+  @Before
+  public void before() {
+    starLoadTransform = new StarLoadTransform();
+  }
 
-        final Tuple2<TransformationContext, Structure> result = starLoadTransform.apply(ctx, modl.getStructures()
-                .get(0));
-        assertNotNull(result);
+  @Test
+  public void test_load_file_successfully() {
+    final TransformationContext ctx = TransformationContext.baseCtx(null, TIMEOUT_SECONDS);
+    final Modl modl = parser.apply("*l=`./src/test/resources/modl/load_test_1.modl`;c=d", ctx.getAncestry(),
+        TIMEOUT_SECONDS);
+    assertNotNull(modl);
 
-        final Pair expected = Pair.of(ancestry, parent, "*l", Array.of(ancestry, parent, Vector.of(Pair.of(ancestry, parent, "a", StringPrimitive.of(ancestry, parent, "b")))));
-        final Pair resultPair = (Pair) result._2;
+    final Tuple2<TransformationContext, Structure> result = starLoadTransform.apply(ctx, modl.getStructures().get(0));
+    assertNotNull(result);
 
-        assertEquals(expected.getKey(), resultPair.getKey());
-        assertEquals(expected.getValue()
-                .toString(), resultPair.getValue()
-                .toString());
-    }
+    final Pair expected = Pair.of(ancestry, parent, "*l", Array.of(ancestry, parent,
+        Vector.of(Pair.of(ancestry, parent, "a", StringPrimitive.of(ancestry, parent, "b")))));
+    final Pair resultPair = (Pair) result._2;
+
+    assertEquals(expected.getKey(), resultPair.getKey());
+    assertEquals(expected.getValue().toString(), resultPair.getValue().toString());
+  }
+
+  @Test(expected = DuplicateFileLoadException.class)
+  public void test_recursion_prevention() {
+    final TransformationContext ctx = TransformationContext.baseCtx(null, TIMEOUT_SECONDS);
+    final Modl modl = parser.apply("*l=`./src/test/resources/modl/load_test_2.modl`;c=d", ctx.getAncestry(),
+        TIMEOUT_SECONDS);
+
+    starLoadTransform.apply(ctx, modl.getStructures().get(0));
+
+  }
 
 }

@@ -20,16 +20,22 @@
 
 package uk.modl.transforms;
 
-import io.vavr.collection.*;
+import java.net.URL;
+
+import org.apache.commons.lang3.StringUtils;
+
+import io.vavr.collection.LinkedHashMap;
+import io.vavr.collection.LinkedHashSet;
+import io.vavr.collection.Map;
+import io.vavr.collection.Set;
+import io.vavr.collection.Vector;
 import io.vavr.control.Option;
 import lombok.Value;
 import lombok.With;
 import lombok.val;
-import org.apache.commons.lang3.StringUtils;
 import uk.modl.ancestry.Ancestry;
 import uk.modl.model.ArrayItem;
-
-import java.net.URL;
+import uk.modl.parser.errors.DuplicateFileLoadException;
 
 /**
  * Stores context needed by other parts of the interpreter
@@ -38,183 +44,189 @@ import java.net.URL;
 @With
 public class TransformationContext {
 
-    public static final int VERSION = 1;
+  public static final int VERSION = 1;
 
-    public static final boolean STAR_LOAD_IMMUTABLE = false;
+  public static final boolean STAR_LOAD_IMMUTABLE = false;
 
-    public static final boolean STAR_CLASS_IMMUTABLE = false;
+  public static final boolean STAR_CLASS_IMMUTABLE = false;
 
-    /**
-     * The supplied timeout.
-     */
-    long timeout;
+  /**
+   * The supplied timeout.
+   */
+  long timeout;
 
-    /**
-     * The URL of the MODL that is being processed.
-     */
-    Option<URL> url;
+  /**
+   * The URL of the MODL that is being processed.
+   */
+  Option<URL> url;
 
-    /**
-     * This is a mutable object to keep track of child->parent relations.
-     */
-    Ancestry ancestry;
+  /**
+   * This is a mutable object to keep track of child->parent relations.
+   */
+  Ancestry ancestry;
 
-    /**
-     * Interpreter version
-     */
-    int version;
+  /**
+   * Interpreter version
+   */
+  int version;
 
-    /**
-     * StarLoadImmutable
-     */
-    boolean starLoadImmutable;
+  /**
+   * StarLoadImmutable
+   */
+  boolean starLoadImmutable;
 
-    /**
-     * StarClassImmutable
-     */
-    boolean starClassImmutable;
+  /**
+   * StarClassImmutable
+   */
+  boolean starClassImmutable;
 
-    /**
-     * The Modl Object Index
-     */
-    Vector<ArrayItem> objectIndex;
+  /**
+   * The Modl Object Index
+   */
+  Vector<ArrayItem> objectIndex;
 
-    /**
-     * Files loaded by a *load instruction
-     */
-    Vector<String> filesLoaded;
+  /**
+   * Files loaded by a *load instruction
+   */
+  Vector<String> filesLoaded;
 
-    /**
-     * Methods defined by a *method instruction
-     */
-    Set<StarMethodTransform.MethodInstruction> methods;
+  /**
+   * Methods defined by a *method instruction
+   */
+  Set<StarMethodTransform.MethodInstruction> methods;
 
-    /**
-     * Methods indexed by *id
-     */
-    Map<String, StarMethodTransform.MethodInstruction> methodsById;
+  /**
+   * Methods indexed by *id
+   */
+  Map<String, StarMethodTransform.MethodInstruction> methodsById;
 
-    /**
-     * Methods indexed by *name
-     */
-    Map<String, StarMethodTransform.MethodInstruction> methodsByName;
+  /**
+   * Methods indexed by *name
+   */
+  Map<String, StarMethodTransform.MethodInstruction> methodsByName;
 
-    /**
-     * Classes defined by a *class instruction
-     */
-    Set<StarClassTransform.ClassInstruction> classes;
+  /**
+   * Classes defined by a *class instruction
+   */
+  Set<StarClassTransform.ClassInstruction> classes;
 
-    /**
-     * Classes indexed by *id
-     */
-    Map<String, StarClassTransform.ClassInstruction> classesById;
+  /**
+   * Classes indexed by *id
+   */
+  Map<String, StarClassTransform.ClassInstruction> classesById;
 
-    /**
-     * Classes indexed by *name
-     */
-    Map<String, StarClassTransform.ClassInstruction> classesByName;
+  /**
+   * Classes indexed by *name
+   */
+  Map<String, StarClassTransform.ClassInstruction> classesByName;
 
-    /**
-     * @param uri                 the URI of the MODL
-     * @param timeoutMilliseconds the number of seconds the caller is prepared to wait for a result.
-     * @return TransformationContext
-     */
-    public static TransformationContext baseCtx(final URL uri, final long timeoutMilliseconds) {
-        val maybeUri = Option.of(uri);
-        return TransformationContext.of(timeoutMilliseconds, maybeUri, new Ancestry(), VERSION, STAR_LOAD_IMMUTABLE, STAR_CLASS_IMMUTABLE, Vector.empty(), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
+  /**
+   * @param uri                 the URI of the MODL
+   * @param timeoutMilliseconds the number of seconds the caller is prepared to
+   *                            wait for a result.
+   * @return TransformationContext
+   */
+  public static TransformationContext baseCtx(final URL uri, final long timeoutMilliseconds) {
+    val maybeUri = Option.of(uri);
+    return TransformationContext.of(timeoutMilliseconds, maybeUri, new Ancestry(), VERSION, STAR_LOAD_IMMUTABLE,
+        STAR_CLASS_IMMUTABLE, Vector.empty(), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(),
+        LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
+  }
+
+  /**
+   * Add files loaded by a *load instruction
+   *
+   * @param filenames a List of String filenames
+   * @return TransformationContext
+   */
+  public TransformationContext addFilesLoaded(final Vector<String> filenames) {
+    filenames.forEach(file -> {
+      if (filesLoaded.contains(file)) {
+        throw new DuplicateFileLoadException(file);
+      }
+    });
+    return this.withFilesLoaded(filenames.prependAll(filesLoaded));
+  }
+
+  /**
+   * Add a Method defined by a *method instruction
+   *
+   * @param mi a StarMethodTransform.MethodInstruction
+   * @return TransformationContext
+   */
+  public TransformationContext addMethodInstruction(final StarMethodTransform.MethodInstruction mi) {
+    if (isDuplicateId(mi)) {
+      throw new RuntimeException("Duplicate method name or id: " + mi.getId());
     }
 
-    /**
-     * Add files loaded by a *load instruction
-     *
-     * @param filenames a List of String filenames
-     * @return TransformationContext
-     */
-    public TransformationContext addFilesLoaded(final Vector<String> filenames) {
-        return this.withFilesLoaded(filenames.appendAll(filesLoaded));
+    if (isDuplicateName(mi)) {
+      throw new RuntimeException("Duplicate method name or id: " + mi.getName());
     }
 
-    /**
-     * Add a Method defined by a *method instruction
-     *
-     * @param mi a StarMethodTransform.MethodInstruction
-     * @return TransformationContext
-     */
-    public TransformationContext addMethodInstruction(final StarMethodTransform.MethodInstruction mi) {
-        if (isDuplicateId(mi)) {
-            throw new RuntimeException("Duplicate method name or id: " + mi.getId());
-        }
+    val updatedMethods = methods.add(mi);
+    val updatedMethodsById = methodsById.put(mi.getId(), mi);
 
-        if (isDuplicateName(mi)) {
-            throw new RuntimeException("Duplicate method name or id: " + mi.getName());
-        }
+    val updatedMethodsByName = (StringUtils.isNotEmpty(mi.getName())) ? methodsByName.put(mi.getName(), mi)
+        : methodsByName;
 
-        val updatedMethods = methods.add(mi);
-        val updatedMethodsById = methodsById.put(mi.getId(), mi);
+    return this.withMethods(updatedMethods).withMethodsById(updatedMethodsById).withMethodsByName(updatedMethodsByName);
+  }
 
-        val updatedMethodsByName = (StringUtils.isNotEmpty(mi.getName())) ? methodsByName.put(mi.getName(), mi) : methodsByName;
+  private boolean isDuplicateName(final StarMethodTransform.MethodInstruction mi) {
+    return methodsById.containsKey(mi.getName()) || methodsByName.containsKey(mi.getName());
+  }
 
-        return this.withMethods(updatedMethods)
-                .withMethodsById(updatedMethodsById)
-                .withMethodsByName(updatedMethodsByName);
+  private boolean isDuplicateId(final StarMethodTransform.MethodInstruction mi) {
+    return methodsById.containsKey(mi.getId()) || methodsByName.containsKey(mi.getId());
+  }
+
+  /**
+   * Add a class defined by a *class instruction
+   *
+   * @param ci a StarClassTransform.ClassInstruction
+   * @return TransformationContext
+   */
+  public TransformationContext addClassInstruction(final StarClassTransform.ClassInstruction ci) {
+    if (starClassImmutable) {
+      throw new RuntimeException("Already defined *class as final.");
+    }
+    if (isAlreadyDefined(ci)) {
+      throw new RuntimeException(
+          "Class name or id already defined - cannot redefine: " + ci.getId() + ", " + ci.getName());
     }
 
-    private boolean isDuplicateName(final StarMethodTransform.MethodInstruction mi) {
-        return methodsById.containsKey(mi.getName()) || methodsByName.containsKey(mi.getName());
-    }
+    val updatedClasses = classes.add(ci);
+    val updatedClassesById = classesById.put(ci.getId(), ci);
 
-    private boolean isDuplicateId(final StarMethodTransform.MethodInstruction mi) {
-        return methodsById.containsKey(mi.getId()) || methodsByName.containsKey(mi.getId());
-    }
+    val updatedClassesByName = (StringUtils.isNotEmpty(ci.getName())) ? classesByName.put(ci.getName(), ci)
+        : classesByName;
 
-    /**
-     * Add a class defined by a *class instruction
-     *
-     * @param ci a StarClassTransform.ClassInstruction
-     * @return TransformationContext
-     */
-    public TransformationContext addClassInstruction(final StarClassTransform.ClassInstruction ci) {
-        if (starClassImmutable) {
-            throw new RuntimeException("Already defined *class as final.");
-        }
-        if (isAlreadyDefined(ci)) {
-            throw new RuntimeException("Class name or id already defined - cannot redefine: " + ci.getId() + ", " + ci.getName());
-        }
+    return this.withClasses(updatedClasses).withClassesById(updatedClassesById).withClassesByName(updatedClassesByName);
+  }
 
-        val updatedClasses = classes.add(ci);
-        val updatedClassesById = classesById.put(ci.getId(), ci);
+  private boolean isAlreadyDefined(final StarClassTransform.ClassInstruction ci) {
+    return classesById.containsKey(ci.getId()) || classesByName.containsKey(ci.getId())
+        || classesById.containsKey(ci.getName()) || classesByName.containsKey(ci.getName());
+  }
 
-        val updatedClassesByName = (StringUtils.isNotEmpty(ci.getName())) ? classesByName.put(ci.getName(), ci) : classesByName;
+  /**
+   * Get a ClassInstruction by name or id if we have one.
+   *
+   * @param idOrName the id or name String
+   * @return an Option of a StarClassTransform.ClassInstruction
+   */
+  public Option<StarClassTransform.ClassInstruction> getClassByNameOrId(final String idOrName) {
+    return classesById.get(idOrName).orElse(() -> classesByName.get(idOrName));
+  }
 
-        return this.withClasses(updatedClasses)
-                .withClassesById(updatedClassesById)
-                .withClassesByName(updatedClassesByName);
-    }
-
-    private boolean isAlreadyDefined(final StarClassTransform.ClassInstruction ci) {
-        return classesById.containsKey(ci.getId()) || classesByName.containsKey(ci.getId()) || classesById.containsKey(ci.getName()) || classesByName.containsKey(ci.getName());
-    }
-
-    /**
-     * Get a ClassInstruction by name or id if we have one.
-     *
-     * @param idOrName the id or name String
-     * @return an Option of a StarClassTransform.ClassInstruction
-     */
-    public Option<StarClassTransform.ClassInstruction> getClassByNameOrId(final String idOrName) {
-        return classesById.get(idOrName)
-                .orElse(() -> classesByName.get(idOrName));
-    }
-
-    /**
-     * Get a MethodInstruction by name or id if we have one.
-     *
-     * @param idOrName the id or name String
-     * @return an Option of a StarClassTransform.ClassInstruction
-     */
-    public Option<StarMethodTransform.MethodInstruction> getMethodByNameOrId(final String idOrName) {
-        return methodsById.get(idOrName)
-                .orElse(() -> methodsByName.get(idOrName));
-    }
+  /**
+   * Get a MethodInstruction by name or id if we have one.
+   *
+   * @param idOrName the id or name String
+   * @return an Option of a StarClassTransform.ClassInstruction
+   */
+  public Option<StarMethodTransform.MethodInstruction> getMethodByNameOrId(final String idOrName) {
+    return methodsById.get(idOrName).orElse(() -> methodsByName.get(idOrName));
+  }
 
 }

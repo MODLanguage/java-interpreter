@@ -1,3 +1,11 @@
+0.1.21 to 0.1.24
+===
+- Prevent logging of a `ThreadDeath` error
+- Use a logger rather than `System.out`s in the command line version.
+- Fix `StringEscapeReplacer`
+- Add SonarQube and Jacoco
+- Prevent loading duplicate files with `*load`.
+
 0.1.20
 ===
 - Code declutter.

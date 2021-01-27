@@ -40,6 +40,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.var;
 import uk.modl.extractors.StarLoadExtractor;
+import uk.modl.extractors.StarLoadExtractor.FileSpec;
+import uk.modl.extractors.StarLoadExtractor.LoadSet;
 import uk.modl.interpreter.Interpreter;
 import uk.modl.model.Array;
 import uk.modl.model.ArrayItem;
@@ -264,16 +266,18 @@ public class StarLoadTransform {
         newCtx = refsResult._1;
         val p = (Pair) refsResult._2;
 
+        // Record which files were loaded - for use in a `%*load` reference
+        final Vector<LoadSet> loadSets = extractFilenamesAndPairs(p);
+        final Vector<String> filenames = loadSets.flatMap(set -> set.getFileSet().map(FileSpec::getFilename));
+        newCtx = newCtx.addFilesLoaded(filenames);
+
         // Each tuple in this list holds the original Pair with the `*load` statements
         // and the set of Modl objects
         // loaded using the filename[s] specified in the file list - there can be 1 or
         // several.
-        val result = convertFilesToModlObjectsAndPairs(newCtx, extractFilenamesAndPairs(p));
+        val result = convertFilesToModlObjectsAndPairs(newCtx, loadSets);
 
-        // Record which files were loaded - for use in a `%*load` reference
-        newCtx = result._1.addFilesLoaded(result._2.flatMap(tuple -> tuple._1));
-
-        return Tuple.of(newCtx, new StarLoadMutator(result._2).accept(p, ctx));
+        return Tuple.of(result._1, new StarLoadMutator(result._2).accept(p, ctx));
       }
     }
     return Tuple.of(newCtx, s);
