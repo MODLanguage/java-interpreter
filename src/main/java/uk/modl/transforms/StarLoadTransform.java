@@ -160,7 +160,7 @@ public class StarLoadTransform {
                 .apply(interpreterContext.withNestingLevel(interpreterContext.getNestingLevel() + 1), parsed);
 
             // Restore the URL of the current file that we're processing.
-            newCtx = interpreted._1.withUrl(originalUrl);
+            newCtx = interpreted._1.withUrl(originalUrl).withNestingLevel(interpreted._1.getNestingLevel() - 1);
             result = result
                 .append(Tuple.of(Vector.of(contents._1.getFilename()), Vector.of(interpreted._2), loadSet.getPair()));
             // Add the cache misses to the cache for next time

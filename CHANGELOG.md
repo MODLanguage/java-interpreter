@@ -1,3 +1,7 @@
+0.1.25
+===
+- Fix recursive load detection problem.
+
 0.1.21 to 0.1.24
 ===
 - Prevent logging of a `ThreadDeath` error
