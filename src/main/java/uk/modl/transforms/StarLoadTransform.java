@@ -131,8 +131,8 @@ public class StarLoadTransform {
 
             // Re-interpret the cached Modl objects to extract classes, methods etc. for the
             // current context
-            val interpreted = interpreter.apply(interpreterContext, cachedModl._2);
-            newCtx = interpreted._1;
+            val interpreted = interpreter.apply(interpreterContext.addNestingLevel(spec.getFilename()), cachedModl._2);
+            newCtx = interpreted._1.withStarLoadNestingNode(interpreted._1.getStarLoadNestingNode().getParent());
             result = result
                 .append(Tuple.of(Vector.of(cachedModl._1.getFilename()), Vector.of(cachedModl._2), loadSet.getPair()));
           } else {
@@ -156,11 +156,11 @@ public class StarLoadTransform {
               interpreterContext = newCtx.withUrl(fileToLoad);
             }
             val parsed = interpreter.parse(ctx, contents._2);
-            val interpreted = interpreter
-                .apply(interpreterContext.withNestingLevel(interpreterContext.getNestingLevel() + 1), parsed);
+            val interpreted = interpreter.apply(interpreterContext.addNestingLevel(spec.getFilename()), parsed);
 
             // Restore the URL of the current file that we're processing.
-            newCtx = interpreted._1.withUrl(originalUrl).withNestingLevel(interpreted._1.getNestingLevel() - 1);
+            newCtx = interpreted._1.withUrl(originalUrl)
+                .withStarLoadNestingNode(interpreted._1.getStarLoadNestingNode().getParent());
             result = result
                 .append(Tuple.of(Vector.of(contents._1.getFilename()), Vector.of(interpreted._2), loadSet.getPair()));
             // Add the cache misses to the cache for next time

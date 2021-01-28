@@ -1,0 +1,2 @@
+*load=`recurse_b.modl`;
+a=b

@@ -1,3 +1,7 @@
+0.1.26
+===
+- Fix recursive load bug.
+
 0.1.25
 ===
 - Fix recursive load detection problem.

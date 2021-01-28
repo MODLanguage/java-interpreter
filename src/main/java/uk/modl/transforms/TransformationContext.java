@@ -21,6 +21,7 @@
 package uk.modl.transforms;
 
 import java.net.URL;
+import java.util.ArrayList;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,6 +37,7 @@ import lombok.val;
 import uk.modl.ancestry.Ancestry;
 import uk.modl.model.ArrayItem;
 import uk.modl.parser.errors.RecursiveFileLoadException;
+import uk.modl.utils.Tree;
 
 /**
  * Stores context needed by other parts of the interpreter
@@ -88,7 +90,7 @@ public class TransformationContext {
   /**
    * Files loaded by a *load instruction stored by nesting level.
    */
-  Map<Integer, Vector<String>> filesLoaded;
+  Tree<String> filesLoaded;
 
   /**
    * Methods defined by a *method instruction
@@ -121,9 +123,9 @@ public class TransformationContext {
   Map<String, StarClassTransform.ClassInstruction> classesByName;
 
   /**
-   * The current *load nesting level
+   * The positiokn in the *load tree.
    */
-  int nestingLevel;
+  Tree.Node<String> starLoadNestingNode;
 
   /**
    * @param uri                 the URI of the MODL
@@ -133,10 +135,11 @@ public class TransformationContext {
    */
   public static TransformationContext baseCtx(final URL uri, final long timeoutMilliseconds) {
     val maybeUri = Option.of(uri);
+    final Tree<String> filesLoadedTree = new Tree<>("");
     return TransformationContext.of(timeoutMilliseconds, maybeUri, new Ancestry(), INTERPRETER_VERSION,
-        STAR_LOAD_IMMUTABLE, STAR_CLASS_IMMUTABLE, Vector.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(),
+        STAR_LOAD_IMMUTABLE, STAR_CLASS_IMMUTABLE, Vector.empty(), filesLoadedTree, LinkedHashSet.empty(),
         LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(),
-        LinkedHashMap.empty(), 0);
+        LinkedHashMap.empty(), filesLoadedTree.getRoot());
   }
 
   /**
@@ -149,23 +152,21 @@ public class TransformationContext {
    */
   public TransformationContext addFilesLoaded(final Vector<String> filenames) {
 
-    checkRecursiveLoad(nestingLevel - 1, filenames);
-
-    final Vector<String> filesForNestingLevel = filesLoaded.get(nestingLevel).getOrElse(Vector.empty());
-    final Vector<String> updatedFilesForNestingLevel = filesForNestingLevel.appendAll(filenames);
-    return this.withFilesLoaded(filesLoaded.put(nestingLevel, updatedFilesForNestingLevel));
+    checkRecursiveLoad(starLoadNestingNode, filenames);
+    return this;
   }
 
-  private void checkRecursiveLoad(final int level, final Vector<String> filenames) {
-    if (level >= 0) {
-      final Vector<String> filesForNestingLevel = filesLoaded.get(level).getOrElse(Vector.empty());
+  private void checkRecursiveLoad(final Tree.Node<String> parentNode, final Vector<String> filenames) {
+    if (parentNode != null) {
 
-      filesForNestingLevel.forEach(files -> filenames.forEach(file -> {
-        if (files.contains(file)) {
-          throw new RecursiveFileLoadException(file);
+      final String nodeData = parentNode.getNodeData();
+      filenames.forEach(file -> {
+        if (nodeData.equals(file)) {
+          throw new RecursiveFileLoadException("Recursive file load detected for: " + file);
         }
-      }));
+      });
 
+      checkRecursiveLoad(parentNode.getParent(), filenames);
     }
   }
 
@@ -174,7 +175,13 @@ public class TransformationContext {
    * @return Vector of String filenames for all the files loaded up to now.
    */
   public Vector<String> getAllFilesLoaded() {
-    return filesLoaded.values().fold(Vector.empty(), (l, r) -> l.appendAll(r));
+    return Vector.ofAll(filesLoaded.getAllNodes());
+  }
+
+  public TransformationContext addNestingLevel(final String filename) {
+    final Tree.Node<String> node = new Tree.Node<>(filename, starLoadNestingNode, new ArrayList<>());
+    starLoadNestingNode.addChild(node);
+    return this.withStarLoadNestingNode(node);
   }
 
   /**

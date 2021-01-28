@@ -18,32 +18,27 @@
  *
  */
 
-package uk.modl.utils;
+package uk.modl.interpreter;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import java.net.MalformedURLException;
 
-import org.junit.Assert;
+import org.junit.Test;
 
-import io.vavr.Tuple2;
-import lombok.experimental.UtilityClass;
-import uk.modl.interpreter.Interpreter;
-import uk.modl.model.Modl;
-import uk.modl.transforms.JacksonJsonNodeTransform;
-import uk.modl.transforms.TransformationContext;
+import uk.modl.utils.TestUtils;
 
-@UtilityClass
-public class TestUtils {
+public class RecursiveLoadTest1 {
 
-  public void runTest(final String input, final String expected) {
-    final Interpreter interpreter = new Interpreter();
-    final TransformationContext ctx = TransformationContext.baseCtx(null, 10000);
-    final Tuple2<TransformationContext, Modl> interpreted = interpreter.apply(ctx, input);
-    final JsonNode json = new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
-    final String result = Util.jsonNodeToString(json);
-    System.out.println("Actual:");
-    System.out.println(result);
+  final String INPUT_1 = "*load=`./src/test/resources/modl/recurse.modl`;x=y";
 
-    Assert.assertEquals(expected, result);
+  final String EXPECT_1 = "{\"x\":\"y\"}";
+
+  @Test
+  public void parseOk() throws MalformedURLException {
+    System.out.println("Input:");
+    System.out.println(INPUT_1);
+    System.out.println("Expecting:");
+    System.out.println(EXPECT_1);
+    TestUtils.runTest(INPUT_1, EXPECT_1);
   }
 
 }
