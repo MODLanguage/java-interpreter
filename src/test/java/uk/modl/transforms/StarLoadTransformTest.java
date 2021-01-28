@@ -105,4 +105,23 @@ public class StarLoadTransformTest {
 
   }
 
+  @Test
+  public void test_that_loading_the_same_file_twice_is_accepted_2() {
+    final TransformationContext ctx = TransformationContext.baseCtx(null, TIMEOUT_SECONDS);
+    final Modl modl = parser.apply(
+        "*l=`./src/test/resources/modl/load_test_1.modl`;*l=`./src/test/resources/modl/load_test_1.modl`;c=d",
+        ctx.getAncestry(), TIMEOUT_SECONDS);
+
+    final Tuple2<TransformationContext, Structure> result = starLoadTransform.apply(ctx, modl.getStructures().get(0));
+    assertNotNull(result);
+
+    final Array expected = Array.of(ancestry, parent,
+        Vector.of(Pair.of(ancestry, parent, "a", StringPrimitive.of(ancestry, parent, "b"))));
+
+    final Pair resultPair = (Pair) result._2;
+
+    assertEquals(expected.toString(), resultPair.getValue().toString());
+
+  }
+
 }
