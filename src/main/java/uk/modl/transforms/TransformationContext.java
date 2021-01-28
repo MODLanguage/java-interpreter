@@ -35,7 +35,7 @@ import lombok.With;
 import lombok.val;
 import uk.modl.ancestry.Ancestry;
 import uk.modl.model.ArrayItem;
-import uk.modl.parser.errors.DuplicateFileLoadException;
+import uk.modl.parser.errors.RecursiveFileLoadException;
 
 /**
  * Stores context needed by other parts of the interpreter
@@ -44,7 +44,7 @@ import uk.modl.parser.errors.DuplicateFileLoadException;
 @With
 public class TransformationContext {
 
-  public static final int VERSION = 1;
+  public static final int INTERPRETER_VERSION = 1;
 
   public static final boolean STAR_LOAD_IMMUTABLE = false;
 
@@ -86,9 +86,9 @@ public class TransformationContext {
   Vector<ArrayItem> objectIndex;
 
   /**
-   * Files loaded by a *load instruction
+   * Files loaded by a *load instruction stored by nesting level.
    */
-  Vector<String> filesLoaded;
+  Map<Integer, Vector<String>> filesLoaded;
 
   /**
    * Methods defined by a *method instruction
@@ -121,6 +121,11 @@ public class TransformationContext {
   Map<String, StarClassTransform.ClassInstruction> classesByName;
 
   /**
+   * The current *load nesting level
+   */
+  int nestingLevel;
+
+  /**
    * @param uri                 the URI of the MODL
    * @param timeoutMilliseconds the number of seconds the caller is prepared to
    *                            wait for a result.
@@ -128,9 +133,10 @@ public class TransformationContext {
    */
   public static TransformationContext baseCtx(final URL uri, final long timeoutMilliseconds) {
     val maybeUri = Option.of(uri);
-    return TransformationContext.of(timeoutMilliseconds, maybeUri, new Ancestry(), VERSION, STAR_LOAD_IMMUTABLE,
-        STAR_CLASS_IMMUTABLE, Vector.empty(), Vector.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(),
-        LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(), LinkedHashMap.empty());
+    return TransformationContext.of(timeoutMilliseconds, maybeUri, new Ancestry(), INTERPRETER_VERSION,
+        STAR_LOAD_IMMUTABLE, STAR_CLASS_IMMUTABLE, Vector.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(),
+        LinkedHashMap.empty(), LinkedHashMap.empty(), LinkedHashSet.empty(), LinkedHashMap.empty(),
+        LinkedHashMap.empty(), 0);
   }
 
   /**
@@ -138,14 +144,37 @@ public class TransformationContext {
    *
    * @param filenames a List of String filenames
    * @return TransformationContext
+   * @throws RecursiveFileLoadException if a file has already been loaded at a
+   *                                    higher nesting level.
    */
   public TransformationContext addFilesLoaded(final Vector<String> filenames) {
-    filenames.forEach(file -> {
-      if (filesLoaded.contains(file)) {
-        throw new DuplicateFileLoadException(file);
-      }
-    });
-    return this.withFilesLoaded(filenames.prependAll(filesLoaded));
+
+    checkRecursiveLoad(nestingLevel - 1, filenames);
+
+    final Vector<String> filesForNestingLevel = filesLoaded.get(nestingLevel).getOrElse(Vector.empty());
+    final Vector<String> updatedFilesForNestingLevel = filesForNestingLevel.appendAll(filenames);
+    return this.withFilesLoaded(filesLoaded.put(nestingLevel, updatedFilesForNestingLevel));
+  }
+
+  private void checkRecursiveLoad(final int level, final Vector<String> filenames) {
+    if (level >= 0) {
+      final Vector<String> filesForNestingLevel = filesLoaded.get(level).getOrElse(Vector.empty());
+
+      filesForNestingLevel.forEach(files -> filenames.forEach(file -> {
+        if (files.contains(file)) {
+          throw new RecursiveFileLoadException(file);
+        }
+      }));
+
+    }
+  }
+
+  /**
+   * 
+   * @return Vector of String filenames for all the files loaded up to now.
+   */
+  public Vector<String> getAllFilesLoaded() {
+    return filesLoaded.values().fold(Vector.empty(), (l, r) -> l.appendAll(r));
   }
 
   /**

@@ -156,7 +156,8 @@ public class StarLoadTransform {
               interpreterContext = newCtx.withUrl(fileToLoad);
             }
             val parsed = interpreter.parse(ctx, contents._2);
-            val interpreted = interpreter.apply(interpreterContext, parsed);
+            val interpreted = interpreter
+                .apply(interpreterContext.withNestingLevel(interpreterContext.getNestingLevel() + 1), parsed);
 
             // Restore the URL of the current file that we're processing.
             newCtx = interpreted._1.withUrl(originalUrl);

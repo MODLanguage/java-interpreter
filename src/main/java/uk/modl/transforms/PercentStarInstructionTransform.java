@@ -24,7 +24,15 @@ import io.vavr.collection.Vector;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import uk.modl.ancestry.Parent;
-import uk.modl.model.*;
+import uk.modl.model.Array;
+import uk.modl.model.ArrayItem;
+import uk.modl.model.Map;
+import uk.modl.model.MapItem;
+import uk.modl.model.NullPrimitive;
+import uk.modl.model.Pair;
+import uk.modl.model.PairValue;
+import uk.modl.model.StringPrimitive;
+import uk.modl.model.Structure;
 
 @RequiredArgsConstructor
 public class PercentStarInstructionTransform {
@@ -51,7 +59,7 @@ public class PercentStarInstructionTransform {
         val arr = Array.of(ctx.getAncestry(), parent, Vector.empty());
 
         if (isStarLoad(ir)) {
-            return arr.with(ctx.getAncestry(), ctx.getFilesLoaded()
+            return arr.with(ctx.getAncestry(), ctx.getAllFilesLoaded()
                     .map(f -> toStringPrimitive(ctx, arr, f)));
         } else if (isStarClass(ir)) {
             return arr.with(ctx.getAncestry(), ctx.getClasses()

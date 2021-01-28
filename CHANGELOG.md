@@ -4,7 +4,7 @@
 - Use a logger rather than `System.out`s in the command line version.
 - Fix `StringEscapeReplacer`
 - Add SonarQube and Jacoco
-- Prevent loading duplicate files with `*load`.
+- Prevent recursive file loading with `*load`.
 
 0.1.20
 ===

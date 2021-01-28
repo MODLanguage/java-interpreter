@@ -36,7 +36,7 @@ import uk.modl.model.Pair;
 import uk.modl.model.StringPrimitive;
 import uk.modl.model.Structure;
 import uk.modl.parser.Parser;
-import uk.modl.parser.errors.DuplicateFileLoadException;
+import uk.modl.parser.errors.RecursiveFileLoadException;
 
 public class StarLoadTransformTest {
 
@@ -73,13 +73,35 @@ public class StarLoadTransformTest {
     assertEquals(expected.getValue().toString(), resultPair.getValue().toString());
   }
 
-  @Test(expected = DuplicateFileLoadException.class)
+  @Test(expected = RecursiveFileLoadException.class)
   public void test_recursion_prevention() {
     final TransformationContext ctx = TransformationContext.baseCtx(null, TIMEOUT_SECONDS);
     final Modl modl = parser.apply("*l=`./src/test/resources/modl/load_test_2.modl`;c=d", ctx.getAncestry(),
         TIMEOUT_SECONDS);
 
     starLoadTransform.apply(ctx, modl.getStructures().get(0));
+
+  }
+
+  @Test
+  public void test_that_loading_the_same_file_twice_is_accepted() {
+    final TransformationContext ctx = TransformationContext.baseCtx(null, TIMEOUT_SECONDS);
+    final Modl modl = parser.apply("*l=`./src/test/resources/modl/load_test_3.modl`;c=d", ctx.getAncestry(),
+        TIMEOUT_SECONDS);
+
+    final Tuple2<TransformationContext, Structure> result = starLoadTransform.apply(ctx, modl.getStructures().get(0));
+    assertNotNull(result);
+
+    final Array expected = Array.of(ancestry, parent,
+        Vector.of(
+            Pair.of(ancestry, parent, "*load",
+                Array.of(ancestry, parent,
+                    Vector.of(Pair.of(ancestry, parent, "a", StringPrimitive.of(ancestry, parent, "b"))))),
+            Pair.of(ancestry, parent, "a", StringPrimitive.of(ancestry, parent, "b"))));
+
+    final Pair resultPair = (Pair) result._2;
+
+    assertEquals(expected.toString(), resultPair.getValue().toString());
 
   }
 
