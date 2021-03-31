@@ -20,91 +20,93 @@
 
 package uk.modl.utils;
 
-import lombok.val;
-import lombok.var;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class StringEscapeReplacer {
 
-    private static final Map<String, String> replacements = new LinkedHashMap<>();
+  private static final Map<String, String> replacements = new LinkedHashMap<>();
 
-    /*
-      Synchronized since two quick successive requests in the java-interpreter-server can clash.
-     */
-    static {
-        replacements.put("\\%", "%");
-        replacements.put("~%", "%");
-        replacements.put("~\\", "\\");
-        replacements.put("\\\\", "\\");
-        replacements.put("~~", "~");
-        replacements.put("\\~", "~");
+  /*
+   * Synchronized since two quick successive requests in the
+   * java-interpreter-server can clash.
+   */
+  static {
+    replacements.put("\\%", "%");
+    replacements.put("~%", "%");
+    replacements.put("~\\", "\\");
+    replacements.put("\\\\", "\\");
+    replacements.put("~~", "~");
+    replacements.put("\\~", "~");
 
-        replacements.put("~(", "(");
-        replacements.put("\\(", "(");
-        replacements.put("~)", ")");
-        replacements.put("\\)", ")");
+    replacements.put("~(", "(");
+    replacements.put("\\(", "(");
+    replacements.put("~)", ")");
+    replacements.put("\\)", ")");
 
-        replacements.put("~[", "[");
-        replacements.put("\\[", "[");
-        replacements.put("~]", "]");
-        replacements.put("\\]", "]");
+    replacements.put("~[", "[");
+    replacements.put("\\[", "[");
+    replacements.put("~]", "]");
+    replacements.put("\\]", "]");
 
-        replacements.put("~{", "{");
-        replacements.put("\\{", "{");
-        replacements.put("~}", "}");
-        replacements.put("\\}", "}");
+    replacements.put("~{", "{");
+    replacements.put("\\{", "{");
+    replacements.put("~}", "}");
+    replacements.put("\\}", "}");
 
-        replacements.put("~;", ";");
-        replacements.put("\\;", ";");
-        replacements.put("~:", ":");
-        replacements.put("\\:", ":");
+    replacements.put("~;", ";");
+    replacements.put("\\;", ";");
+    replacements.put("~:", ":");
+    replacements.put("\\:", ":");
 
-        replacements.put("~`", "`");
-        replacements.put("\\`", "`");
-        replacements.put("~\"", "\"");
-        replacements.put("\\\"", "\"");
+    replacements.put("~`", "`");
+    replacements.put("\\`", "`");
+    replacements.put("~\"", "\"");
+    replacements.put("\\\"", "\"");
 
-        replacements.put("~=", "=");
-        replacements.put("\\=", "=");
-        replacements.put("~/", "/");
-        replacements.put("\\/", "/");
+    replacements.put("~=", "=");
+    replacements.put("\\=", "=");
+    replacements.put("~/", "/");
+    replacements.put("\\/", "/");
 
-        replacements.put("<", "<");
-        replacements.put("\\<", "<");
-        replacements.put("~>", ">");
-        replacements.put("\\>", ">");
+    replacements.put("<", "<");
+    replacements.put("\\<", "<");
+    replacements.put("~>", ">");
+    replacements.put("\\>", ">");
 
-        replacements.put("~&", "&");
-        replacements.put("\\&", "&");
+    replacements.put("~&", "&");
+    replacements.put("\\&", "&");
 
-        replacements.put("!", "!");
-        replacements.put("\\!", "!");
-        replacements.put("~|", "|");
-        replacements.put("\\|", "|");
+    replacements.put("!", "!");
+    replacements.put("\\!", "!");
+    replacements.put("~|", "|");
+    replacements.put("\\|", "|");
 
-        replacements.put("\\t", "\t");
-        replacements.put("\\n", "\n");
-        replacements.put("\\b", "\b");
-        replacements.put("\\f", "\f");
-        replacements.put("\\r", "\r");
-    }
+    replacements.put("\\t", "\t");
+    replacements.put("\\n", "\n");
+    replacements.put("\\b", "\b");
+    replacements.put("\\f", "\f");
+    replacements.put("\\r", "\r");
+  }
 
-    public static String replace(final String stringToTransform) {
-        var result = UnicodeEscapeReplacer.convertUnicodeSequences(stringToTransform);
+  public static String replace(final String stringToTransform) {
+    String result = UnicodeEscapeReplacer.convertUnicodeSequences(stringToTransform);
 
-        for (int i = 0; i < result.length(); i++) {
-            for (val replacement : replacements.entrySet()) {
-                final String key = replacement.getKey();
-                if (result.startsWith(key, i)) {
-                    final String value = replacement.getValue();
-                    result = result.substring(0, i) + value + result.substring(i + key.length());
-                    break;// we only do one replacement at each position
-                }
-            }
+    for (int i = 0; i < result.length(); i++) {
+      for (final Entry<String, String> replacement : replacements.entrySet()) {
+        final String key = replacement.getKey();
+        if (result.startsWith(key, i)) {
+          final String value = replacement.getValue();
+          result = result.substring(0, i) + value + result.substring(i + key.length());
+          break;// we only do one replacement at each position
         }
-        return result;
+      }
     }
+    return result;
+  }
 
 }

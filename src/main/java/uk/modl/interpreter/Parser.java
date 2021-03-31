@@ -32,17 +32,7 @@ public class Parser {
     parser.addErrorListener(ThrowingErrorListener.INSTANCE);
 
     final ModlContext context = parser.modl();
-    return visitModl(context);
-  }
-
-  /**
-   * TODO:
-   * 
-   * @param context
-   * @return
-   */
-  private Modl visitModl(ModlContext context) {
-    return null;
+    return ModlParsedVisitor.visitModl(context);
   }
 
 }

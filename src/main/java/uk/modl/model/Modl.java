@@ -7,5 +7,5 @@ import lombok.Value;
 @Value
 public class Modl {
   @NonNull
-  List<ModlStructure> s;
+  List<ModlStructure> structures;
 }

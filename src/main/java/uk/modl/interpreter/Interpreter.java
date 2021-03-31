@@ -21,7 +21,6 @@
 package uk.modl.interpreter;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 
 import lombok.NonNull;
 import uk.modl.model.Modl;
@@ -41,7 +40,7 @@ public class Interpreter {
    */
   public String interpretToJsonString(@NonNull final String s) {
     final JsonNode jsonObject = this.interpretToJsonObject(s);
-    return jsonObject.toString();// TODO: make JSON string
+    return JsonToString.convert(jsonObject);
   }
 
   /**
@@ -52,7 +51,7 @@ public class Interpreter {
    */
   public String interpretToPrettyJsonString(@NonNull final String s) {
     final JsonNode jsonObject = this.interpretToJsonObject(s);
-    return jsonObject.toString();// TODO - pretty-print
+    return JsonToString.convert(jsonObject, 2);
   }
 
   /**
@@ -63,17 +62,7 @@ public class Interpreter {
    */
   public JsonNode interpretToJsonObject(@NonNull final String s) {
     final Modl modl = this.interpret(s);
-    return modlToJson(modl);
-  }
-
-  /**
-   * TODO:
-   * 
-   * @param modl
-   * @return
-   */
-  private JsonNode modlToJson(@NonNull final Modl modl) {
-    return new TextNode(modl.toString());
+    return ModlToJson.convert(modl);
   }
 
   /**
@@ -82,7 +71,7 @@ public class Interpreter {
    * @param s
    * @returns
    */
-  private Modl interpret(@NonNull final String s) {
+  public Modl interpret(@NonNull final String s) {
     return new Parser().parse(s);
   }
 

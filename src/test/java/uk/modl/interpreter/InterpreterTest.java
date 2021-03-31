@@ -20,66 +20,53 @@
 
 package uk.modl.interpreter;
 
+import java.net.MalformedURLException;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+
 import org.junit.Assert;
 import org.junit.Test;
-import uk.modl.model.Modl;
-import uk.modl.transforms.TransformationContext;
-import uk.modl.utils.TestUtils;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import uk.modl.model.Modl;
 
 public class InterpreterTest {
 
-    public static final String EXPECTED = "{\"delta\":{\"test1\":\"test2\",\"y\":\"yankee\",\"x\":\"xray\",\"w\":\"whisky\",\"v\":\"victor\"},\"e\":1,\"f\":2.2,\"g\":null,\"h\":true,\"j\":false}";
+  @Test(expected = RuntimeException.class)
+  public void parseBad() throws MalformedURLException {
+    new Interpreter().interpretToJsonString("xxx");
+  }
 
-    public static final String INPUT = "*c(*i=a;*n=alpha;*s=map;v=victor);*c(*i=b;*n=bravo;*s=a;w=whisky);*c(*i=c;*n=charlie;*s=b;x=xray);*c(*i=d;*n=delta;*s=c;y=yankee);d(test1=test2);e=1;f=2.2;g=000;h=01;j=00";
+  @Test
+  public void testInterpreterConvenienceMethods_1() throws MalformedURLException {
+    final Interpreter interpreter = new Interpreter();
+    final Modl modl = interpreter.interpret("a=b");
+    Assert.assertNotNull(modl);
+    Assert.assertEquals(1, modl.getStructures().size());
+  }
 
-    public static final int TIMEOUT_SECONDS = 10000;
+  @Test
+  public void testInterpreterConvenienceMethods_2() throws MalformedURLException {
+    final Interpreter interpreter = new Interpreter();
+    final JsonNode jsonNode = interpreter.interpretToJsonObject("a=b");
+    Assert.assertNotNull(jsonNode);
+    Assert.assertEquals("{\"a\":\"b\"}", jsonNode.toString());
+  }
 
-    @Test
-    public void parseOk() throws MalformedURLException {
-        TestUtils.runTest(INPUT, EXPECTED);
-    }
+  @Test
+  public void testInterpreterConvenienceMethods_3() throws JsonProcessingException, MalformedURLException {
+    final Interpreter interpreter = new Interpreter();
+    final String json = interpreter.interpretToJsonString("a=b");
+    Assert.assertNotNull(json);
+    Assert.assertEquals("{\"a\":\"b\"}", json);
+  }
 
-    @Test(expected = RuntimeException.class)
-    public void parseBad() throws MalformedURLException {
-        new Interpreter().apply(TransformationContext.baseCtx(new URL("file:///"), TIMEOUT_SECONDS), "xxx");
-    }
-
-    @Test
-    public void testInterpreterConvenienceMethods_1() throws MalformedURLException {
-        final Interpreter interpreter = new Interpreter();
-        final Modl modl = interpreter.interpret("a=b", new URL("file:///"), TIMEOUT_SECONDS);
-        Assert.assertNotNull(modl);
-        Assert.assertEquals(1, modl.getStructures()
-                .size());
-    }
-
-    @Test
-    public void testInterpreterConvenienceMethods_2() throws MalformedURLException {
-        final Interpreter interpreter = new Interpreter();
-        final JsonNode jsonNode = interpreter.interpretToJsonObject("a=b", new URL("file:///"), TIMEOUT_SECONDS);
-        Assert.assertNotNull(jsonNode);
-        Assert.assertEquals("{\"a\":\"b\"}", jsonNode.toString());
-    }
-
-    @Test
-    public void testInterpreterConvenienceMethods_3() throws JsonProcessingException, MalformedURLException {
-        final Interpreter interpreter = new Interpreter();
-        final String json = interpreter.interpretToJsonString("a=b", new URL("file:///"), TIMEOUT_SECONDS);
-        Assert.assertNotNull(json);
-        Assert.assertEquals("{\"a\":\"b\"}", json);
-    }
-
-    @Test
-    public void testInterpreterConvenienceMethods_4() throws JsonProcessingException, MalformedURLException {
-        final Interpreter interpreter = new Interpreter();
-        final String json = interpreter.interpretToPrettyJsonString("a=b", new URL("file:///"), TIMEOUT_SECONDS);
-        Assert.assertNotNull(json);
-        Assert.assertEquals("{\n  \"a\" : \"b\"\n}", json);
-    }
+  @Test
+  public void testInterpreterConvenienceMethods_4() throws JsonProcessingException, MalformedURLException {
+    final Interpreter interpreter = new Interpreter();
+    final String json = interpreter.interpretToPrettyJsonString("a=b");
+    Assert.assertNotNull(json);
+    Assert.assertEquals("{\n  \"a\" : \"b\"\n}", json);
+  }
 
 }
