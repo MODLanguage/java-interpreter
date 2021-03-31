@@ -51,7 +51,7 @@ public class Interpreter {
    */
   public String interpretToPrettyJsonString(@NonNull final String s) {
     final JsonNode jsonObject = this.interpretToJsonObject(s);
-    return JsonToString.convert(jsonObject, 2);
+    return JsonToString.convertPretty(jsonObject);
   }
 
   /**

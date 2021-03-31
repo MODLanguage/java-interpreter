@@ -4,7 +4,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 @Value
-public class ModlPair implements ModlStructure {
+public class ModlPair implements ModlStructure, ModlValue {
   @NonNull
   String key;
 

@@ -20,10 +20,9 @@
 
 package uk.modl.interpreter;
 
-import java.net.MalformedURLException;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,13 +31,15 @@ import uk.modl.model.Modl;
 
 public class InterpreterTest {
 
+  private static final ObjectMapper mapper = new ObjectMapper();
+
   @Test(expected = RuntimeException.class)
-  public void parseBad() throws MalformedURLException {
-    new Interpreter().interpretToJsonString("xxx");
+  public void parseBad() {
+    new Interpreter().interpretToJsonString("x;xx");
   }
 
   @Test
-  public void testInterpreterConvenienceMethods_1() throws MalformedURLException {
+  public void testInterpreterConvenienceMethods_1()  {
     final Interpreter interpreter = new Interpreter();
     final Modl modl = interpreter.interpret("a=b");
     Assert.assertNotNull(modl);
@@ -46,15 +47,15 @@ public class InterpreterTest {
   }
 
   @Test
-  public void testInterpreterConvenienceMethods_2() throws MalformedURLException {
+  public void testInterpreterConvenienceMethods_2() throws JsonProcessingException {
     final Interpreter interpreter = new Interpreter();
     final JsonNode jsonNode = interpreter.interpretToJsonObject("a=b");
     Assert.assertNotNull(jsonNode);
-    Assert.assertEquals("{\"a\":\"b\"}", jsonNode.toString());
+    Assert.assertEquals("{\"a\":\"b\"}", mapper.writeValueAsString(jsonNode));
   }
 
   @Test
-  public void testInterpreterConvenienceMethods_3() throws JsonProcessingException, MalformedURLException {
+  public void testInterpreterConvenienceMethods_3() throws JsonProcessingException {
     final Interpreter interpreter = new Interpreter();
     final String json = interpreter.interpretToJsonString("a=b");
     Assert.assertNotNull(json);
@@ -62,7 +63,7 @@ public class InterpreterTest {
   }
 
   @Test
-  public void testInterpreterConvenienceMethods_4() throws JsonProcessingException, MalformedURLException {
+  public void testInterpreterConvenienceMethods_4() throws JsonProcessingException {
     final Interpreter interpreter = new Interpreter();
     final String json = interpreter.interpretToPrettyJsonString("a=b");
     Assert.assertNotNull(json);
