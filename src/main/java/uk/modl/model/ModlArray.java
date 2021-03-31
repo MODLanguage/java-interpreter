@@ -5,7 +5,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 @Value
-public class Modl {
+public class ModlArray implements ModlValue, ModlStructure {
   @NonNull
-  List<ModlStructure> s;
+  List<ModlValue> items;
 }
