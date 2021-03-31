@@ -107,7 +107,7 @@ public class InterpreterBaseTests {
   }
 
   @Test
-  public void testErrorTest() {
+  public void testExtraTests() {
     // Go through grammar_test/error_tests.json making sure all tests raise an error
     // of some kind
     final List<TestInput> list = load.apply("../grammar/tests/extra_tests.json");
@@ -115,58 +115,18 @@ public class InterpreterBaseTests {
     final int startFromTestNumber = 0;// Use this to skip tests manually to make it easier for debugging a specific
                                       // test.
     for (final TestInput testInput : list) {
-      if (testNumber >= startFromTestNumber) {
-        checkInvalidTestInput(testInput);
+      if (testNumber >= startFromTestNumber && !testInput.input.equals("DELETED")) {
+        checkValidTestInput(testInput);
       }
       testNumber++;
     }
+
     if (errors.size() > 0) {
       log.info("--------------- Errors ----------------");
       for (final String error : errors) {
         log.error(error);
       }
       fail("Errors found.");
-    }
-  }
-
-  private void checkInvalidTestInput(final TestInput testInput) {
-    try {
-      final Modl interpreted = new Interpreter().interpret(testInput.input);
-      if (interpreted != null) {
-        final JsonNode jsonResult = ModlToJson.convert(interpreted);
-
-        final String output = mapper.writeValueAsString(jsonResult);
-        if (output != null) {
-
-          final String expected = testInput.expected_output.replace(" ", "").replace("\n", "").replace("\r", "");
-          final String actual = output.replace(" ", "").replace("\n", "").replace("\r", "");
-
-          if (!expected.equals(actual)) {
-            log.info("Running test number: " + testInput.id);
-            log.info("Input : " + testInput.input);
-            log.info("Minimised : " + testInput.minimised_modl);
-            log.info("Expected : " + testInput.expected_output);
-
-            errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : "
-                + output + "\n");
-          } else {
-            log.info("Test: " + testInput.id + " - no errors\n");
-          }
-
-        } else {
-          errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : null\n");
-        }
-
-      } else {
-        log.error("Test: " + testInput.id + " - no result\n");
-
-      }
-      fail("Expected error");
-    } catch (final Exception e) {
-      if (!testInput.expected_output.equals(e.getMessage())) {
-        errors.add("Test: " + testInput.id + "\nExpected: " + testInput.expected_output + "\n" + "Actual  : "
-            + e.getMessage() + "\n");
-      }
     }
   }
 

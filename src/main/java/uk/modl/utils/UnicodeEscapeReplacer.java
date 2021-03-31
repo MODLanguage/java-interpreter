@@ -125,7 +125,7 @@ class UnicodeEscapeReplacer {
     char[] chars = s.toCharArray();
     while (i < n && (idx + i) < s.length()) {
       final char c = chars[idx + i];
-      if (!Character.isDigit(c) && "abcdefABCDEF".indexOf(c) >= -1) {
+      if (!Character.isDigit(c) && "abcdefABCDEF".indexOf(c) <= -1) {
         return false;
       }
       i++;
