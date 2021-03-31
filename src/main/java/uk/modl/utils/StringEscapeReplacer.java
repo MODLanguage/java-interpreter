@@ -36,61 +36,36 @@ public class StringEscapeReplacer {
    * java-interpreter-server can clash.
    */
   static {
-    replacements.put("\\%", "%");
-    replacements.put("~%", "%");
-    replacements.put("~\\", "\\");
-    replacements.put("\\\\", "\\");
-    replacements.put("~~", "~");
-    replacements.put("\\~", "~");
-
-    replacements.put("~(", "(");
-    replacements.put("\\(", "(");
-    replacements.put("~)", ")");
-    replacements.put("\\)", ")");
-
-    replacements.put("~[", "[");
-    replacements.put("\\[", "[");
-    replacements.put("~]", "]");
-    replacements.put("\\]", "]");
-
-    replacements.put("~{", "{");
-    replacements.put("\\{", "{");
-    replacements.put("~}", "}");
-    replacements.put("\\}", "}");
-
-    replacements.put("~;", ";");
-    replacements.put("\\;", ";");
-    replacements.put("~:", ":");
-    replacements.put("\\:", ":");
-
-    replacements.put("~`", "`");
-    replacements.put("\\`", "`");
-    replacements.put("~\"", "\"");
-    replacements.put("\\\"", "\"");
-
-    replacements.put("~=", "=");
-    replacements.put("\\=", "=");
-    replacements.put("~/", "/");
-    replacements.put("\\/", "/");
-
-    replacements.put("<", "<");
-    replacements.put("\\<", "<");
-    replacements.put("~>", ">");
-    replacements.put("\\>", ">");
-
-    replacements.put("~&", "&");
-    replacements.put("\\&", "&");
-
-    replacements.put("!", "!");
-    replacements.put("\\!", "!");
-    replacements.put("~|", "|");
-    replacements.put("\\|", "|");
-
     replacements.put("\\t", "\t");
     replacements.put("\\n", "\n");
     replacements.put("\\b", "\b");
     replacements.put("\\f", "\f");
     replacements.put("\\r", "\r");
+    replacements.put("~t", "\t");
+    replacements.put("~n", "\n");
+    replacements.put("~b", "\b");
+    replacements.put("~f", "\f");
+    replacements.put("~r", "\r");
+    replacements.put("~\\", "\\");
+    replacements.put("\\\\", "\\");
+    replacements.put("~~", "~");
+    replacements.put("\\~", "~");
+    replacements.put("~(", "(");
+    replacements.put("\\(", "(");
+    replacements.put("~)", ")");
+    replacements.put("\\)", ")");
+    replacements.put("~[", "[");
+    replacements.put("\\[", "[");
+    replacements.put("~]", "]");
+    replacements.put("\\]", "]");
+    replacements.put("~;", ";");
+    replacements.put("\\;", ";");
+    replacements.put("~`", "`");
+    replacements.put("\\`", "`");
+    replacements.put("~\"", "\"");
+    replacements.put("\\\"", "\"");
+    replacements.put("~=", "=");
+    replacements.put("\\=", "=");
   }
 
   public static String replace(final String stringToTransform) {

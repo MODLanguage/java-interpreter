@@ -10,14 +10,5 @@ out
 .classpath
 .project
 bin/
-/gen/MODLLexer.interp
-/grammar/gen/MODLLexer.interp
-/gen/MODLLexer.java
-/grammar/gen/MODLLexer.java
-/gen/MODLLexer.tokens
-/grammar/gen/MODLLexer.tokens
 .vscode
-src/test/java/uk/modl/interpreter/ScratchTest_2.java
-src/test/java/uk/modl/interpreter/ScratchTest_1.java
-test2.modl
-test.modl
+src/test/java/uk/modl/interpreter/ScratchTest.java

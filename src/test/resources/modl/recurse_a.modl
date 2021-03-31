@@ -1,3 +1,0 @@
-*load=`recurse_b.modl`;
-*load=`recurse_c.modl`;
-a=b

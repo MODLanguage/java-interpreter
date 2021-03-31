@@ -136,6 +136,11 @@ public class ModlParsedVisitor {
       if (Integer.toString(intValue).equals(text)) {
         return new ModlInteger(intValue);
       }
+    } catch (final NumberFormatException ex) {
+      // Can be ignored.
+    }
+
+    try {
       final float floatValue = Float.parseFloat(text);
       if (Float.toString(floatValue).equals(text)) {
         return new ModlFloat(floatValue);
