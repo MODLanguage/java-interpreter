@@ -1,6 +1,7 @@
 package uk.modl.model;
 
-import io.vavr.collection.List;
+import java.util.List;
+
 import lombok.NonNull;
 import lombok.Value;
 

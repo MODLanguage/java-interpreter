@@ -6,8 +6,8 @@ import lombok.Value;
 @Value
 public class ModlPair implements ModlStructure {
   @NonNull
-  ModlText key;
+  String key;
 
   @NonNull
-  ModlValue value;
+  ModlStructure value;
 }
