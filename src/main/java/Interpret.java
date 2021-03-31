@@ -18,18 +18,13 @@
  *
  */
 
-import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.val;
 import lombok.extern.log4j.Log4j2;
 import uk.modl.interpreter.Interpreter;
-import uk.modl.transforms.JacksonJsonNodeTransform;
-import uk.modl.transforms.TransformationContext;
 
 @Log4j2
 public class Interpret {
@@ -43,15 +38,11 @@ public class Interpret {
 
     final int sum = Arrays.stream(args).mapToInt(filename -> {
       try {
-        val path = Paths.get(filename);
-        val modlString = String.join("\n", Files.readAllLines(path));
+        final Path path = Paths.get(filename);
+        final String modlString = String.join("\n", Files.readAllLines(path));
 
-        val interpreter = new Interpreter();
-        val ctx = TransformationContext.baseCtx(new URL(path.toUri().toASCIIString()), TIMEOUT_SECONDS);
-        val interpreted = interpreter.apply(ctx, modlString);
-        val json = new JacksonJsonNodeTransform(ctx).apply(interpreted._2);
-
-        val result = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(json);
+        final Interpreter interpreter = new Interpreter();
+        final String result = interpreter.interpretToPrettyJsonString(modlString);
 
         log.info(result);
 

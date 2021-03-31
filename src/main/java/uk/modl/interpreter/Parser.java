@@ -49,7 +49,7 @@ public class Parser {
 
 @Log4j2
 class ThrowingErrorListener implements ANTLRErrorListener {
-  public static ThrowingErrorListener INSTANCE = new ThrowingErrorListener();
+  public static final ThrowingErrorListener INSTANCE = new ThrowingErrorListener();
 
   @Override
   public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine,
