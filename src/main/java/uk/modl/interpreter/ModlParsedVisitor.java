@@ -30,10 +30,19 @@ import uk.modl.parser.antlr.MODLParser.Modl_primitiveContext;
 import uk.modl.parser.antlr.MODLParser.Modl_structureContext;
 import uk.modl.parser.antlr.MODLParser.Modl_valueContext;
 
+/**
+ * Class to convert an ANTLR4 parse tree to a Modl object.
+ */
 @Log4j2
 @UtilityClass
 public class ModlParsedVisitor {
 
+  /**
+   * Convert a ModlContext to a Modl object.
+   * 
+   * @param ctx ModlContext
+   * @return Modl
+   */
   public static final Modl visitModl(@NonNull final ModlContext ctx) {
     // Check for a single primitive value at the root.
     final List<ParseTree> children = ctx.children.stream().filter(ModlParsedVisitor::nonTerminal)
@@ -50,10 +59,16 @@ public class ModlParsedVisitor {
     if (structures != null && !structures.isEmpty()) {
       return new Modl(structures);
     }
-    return new Modl(new ArrayList<>());
 
+    return new Modl(new ArrayList<>());
   }
 
+  /**
+   * Convert a ParseTree to a ModlStructure
+   * 
+   * @param ctx ParseTree
+   * @return ModlStructure
+   */
   private static ModlStructure visitModlStructure(@NonNull final ParseTree ctx) {
     if (ctx instanceof Modl_mapContext) {
       return visitModlMap((Modl_mapContext) ctx);
@@ -73,6 +88,12 @@ public class ModlParsedVisitor {
     return new ModlMap(new ArrayList<>());
   }
 
+  /**
+   * Convert a Modl_pairContext to a ModlPair
+   * 
+   * @param ctx Modl_pairContext
+   * @return ModlPair
+   */
   private static ModlPair visitModlPair(@NonNull final Modl_pairContext ctx) {
     if (ctx.children == null) {
       final String message = "No children: " + ctx.getClass().getName();
@@ -90,6 +111,12 @@ public class ModlParsedVisitor {
     return new ModlPair(key, pairValue);
   }
 
+  /**
+   * Convert a Modl_arrayContext to a ModlArray
+   * 
+   * @param ctx Modl_arrayContext
+   * @return ModlArray
+   */
   private static ModlArray visitModlArray(@NonNull final Modl_arrayContext ctx) {
     final List<ModlValue> children = ctx.children.stream().filter(ModlParsedVisitor::nonTerminal)
         .map(ModlParsedVisitor::visitChild).map(ModlValue.class::cast).collect(Collectors.toList());
@@ -100,6 +127,12 @@ public class ModlParsedVisitor {
     return new ModlArray(new ArrayList<>());
   }
 
+  /**
+   * Convert a Modl_mapContext to a ModlMap
+   * 
+   * @param ctx Modl_mapContext
+   * @return ModlMap
+   */
   private static ModlMap visitModlMap(@NonNull final Modl_mapContext ctx) {
     final List<ModlPair> children = ctx.children.stream().filter(ModlParsedVisitor::nonTerminal)
         .map(ModlParsedVisitor::visitChild).map(ModlPair.class::cast).collect(Collectors.toList());
@@ -110,6 +143,12 @@ public class ModlParsedVisitor {
     return new ModlMap(new ArrayList<>());
   }
 
+  /**
+   * Convert a Modl_valueContext to a ModlStructure
+   * 
+   * @param ctx Modl_valueContext
+   * @return ModlStructure
+   */
   private static ModlStructure visitModlValue(@NonNull final Modl_valueContext ctx) {
     if (ctx.children != null && !ctx.children.isEmpty()) {
       return visitChild(ctx.children.get(0));
@@ -119,6 +158,12 @@ public class ModlParsedVisitor {
     return new ModlString(message);
   }
 
+  /**
+   * Convert a Modl_primitiveContext to a ModlPrimitive
+   * 
+   * @param ctx Modl_primitiveContext
+   * @return ModlPrimitive
+   */
   private static ModlPrimitive visitModlPrimitive(@NonNull final Modl_primitiveContext ctx) {
     final String text = ctx.getText();
 
@@ -151,10 +196,22 @@ public class ModlParsedVisitor {
     return new ModlString(text);
   }
 
+  /**
+   * Check for a non-terminal node
+   * 
+   * @param tree ParseTree
+   * @return true if the ParseTree is non-terminal
+   */
   private static boolean nonTerminal(@NonNull final ParseTree tree) {
     return !(tree instanceof TerminalNode);
   }
 
+  /**
+   * Convert a ParseTree to a ModlStructure
+   * 
+   * @param ctx ParseTree
+   * @return ModlStructure
+   */
   private static ModlStructure visitChild(@NonNull final ParseTree ctx) {
     if (ctx instanceof Modl_mapContext) {
       return visitModlMap((Modl_mapContext) ctx);
@@ -184,9 +241,9 @@ public class ModlParsedVisitor {
   }
 
   /**
-   * Validates key
+   * Validates a ModlPair key
    * 
-   * @param k
+   * @param k the pair key String
    */
   private void validateKey(@NonNull final String k) {
     if (k.contains("%")) {

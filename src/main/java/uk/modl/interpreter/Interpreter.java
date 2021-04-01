@@ -35,8 +35,8 @@ public class Interpreter {
   /**
    * Interprets to json string
    * 
-   * @param s
-   * @returns
+   * @param s String
+   * @return String
    */
   public String interpretToJsonString(@NonNull final String s) {
     final JsonNode jsonObject = this.interpretToJsonObject(s);
@@ -46,8 +46,8 @@ public class Interpreter {
   /**
    * Interprets to pretty json string
    * 
-   * @param s
-   * @returns
+   * @param s String
+   * @return String
    */
   public String interpretToPrettyJsonString(@NonNull final String s) {
     final JsonNode jsonObject = this.interpretToJsonObject(s);
@@ -57,8 +57,8 @@ public class Interpreter {
   /**
    * Interprets to json object
    * 
-   * @param s
-   * @returns to json object
+   * @param s String
+   * @return JsonNode
    */
   public JsonNode interpretToJsonObject(@NonNull final String s) {
     final Modl modl = this.interpret(s);
@@ -68,8 +68,8 @@ public class Interpreter {
   /**
    * Interprets to Modl object
    * 
-   * @param s
-   * @returns
+   * @param s String
+   * @return Modl
    */
   public Modl interpret(@NonNull final String s) {
     return new Parser().parse(s);

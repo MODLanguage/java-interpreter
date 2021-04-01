@@ -19,8 +19,17 @@ import uk.modl.model.Modl;
 import uk.modl.parser.antlr.MODLLexer;
 import uk.modl.parser.antlr.MODLParser;
 
+/**
+ * Class to invoke the ANTLR4 Parser for MODL
+ */
 public class Parser {
 
+  /**
+   * Parse a String to a Modl object
+   * 
+   * @param s String
+   * @return Modl
+   */
   public Modl parse(@NonNull final String s) {
     final CodePointCharStream inputStream = CharStreams.fromString(s);
     final MODLLexer lexer = new MODLLexer(inputStream);
@@ -35,6 +44,11 @@ public class Parser {
 
 }
 
+/**
+ * Class to catch and handle exceptions.
+ * 
+ * @see org.antlr.v4.runtime.ANTLRErrorListener
+ */
 @Log4j2
 class ThrowingErrorListener implements ANTLRErrorListener {
   public static final ThrowingErrorListener INSTANCE = new ThrowingErrorListener();

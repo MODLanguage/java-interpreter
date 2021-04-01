@@ -1,3 +1,7 @@
+0.2.0
+===
+- Update to latest MODL grammar - greatly simplified to be more like JSON
+
 0.1.26
 ===
 - Fix recursive load bug.
