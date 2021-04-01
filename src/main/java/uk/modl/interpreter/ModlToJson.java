@@ -1,5 +1,7 @@
 package uk.modl.interpreter;
 
+import java.util.List;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
@@ -23,20 +25,24 @@ import uk.modl.model.ModlPrimitive;
 import uk.modl.model.ModlQuoted;
 import uk.modl.model.ModlString;
 import uk.modl.model.ModlStructure;
+import uk.modl.model.ModlValue;
 import uk.modl.utils.StringEscapeReplacer;
 
 @UtilityClass
 public class ModlToJson {
 
   public static final JsonNode convert(@NonNull final Modl modl) {
-    if (modl.getStructures().size() == 1 && modl.getStructures().get(0) instanceof ModlArray) {
-      return arrayToJson((ModlArray) modl.getStructures().get(0));
-    } else if (modl.getStructures().size() == 1 && modl.getStructures().get(0) instanceof ModlPrimitive) {
-      return toJson(modl.getStructures().get(0));
+
+    final List<ModlStructure> structures = modl.getStructures();
+
+    if (structures.size() == 1 && structures.get(0) instanceof ModlArray) {
+      return arrayToJson((ModlArray) structures.get(0));
+    } else if (structures.size() == 1 && structures.get(0) instanceof ModlPrimitive) {
+      return toJson((ModlValue) structures.get(0));
     } else {
       final ObjectNode result = new ObjectNode(JsonNodeFactory.instance);
 
-      modl.getStructures().forEach(structure -> {
+      structures.forEach(structure -> {
         if (structure instanceof ModlPair) {
           pairToJson((ModlPair) structure, result);
         }
@@ -58,7 +64,7 @@ public class ModlToJson {
    * @param x
    * @returns json
    */
-  private JsonNode toJson(@NonNull final ModlStructure x) {
+  private JsonNode toJson(@NonNull final ModlValue x) {
     if (x instanceof ModlArray) {
       return arrayToJson((ModlArray) x);
     }
@@ -107,7 +113,7 @@ public class ModlToJson {
    */
   private JsonNode pairToJson(final ModlPair p, final ObjectNode result) {
     final String key = StringEscapeReplacer.replace(unquote(p.getKey()));
-    result.set(key, toJson(p.getValue()));
+    result.set(key, toJson((ModlValue) p.getValue()));
     return result;
   }
 
@@ -131,29 +137,7 @@ public class ModlToJson {
    */
   private JsonNode arrayToJson(final ModlArray a) {
     final ArrayNode result = new ArrayNode(JsonNodeFactory.instance);
-    a.getItems().forEach(x -> {
-      if (x instanceof ModlArray) {
-        result.add(arrayToJson((ModlArray) x));
-      } else if (x instanceof ModlMap) {
-        result.add(mapToJson((ModlMap) x, new ObjectNode(JsonNodeFactory.instance)));
-      } else if (x instanceof ModlPair) {
-        result.add(pairToJson((ModlPair) x, new ObjectNode(JsonNodeFactory.instance)));
-      } else if (x instanceof ModlQuoted) {
-        result.add(StringEscapeReplacer.replace(unquote(((ModlQuoted) x).getValue())));
-      } else if (x instanceof ModlInteger) {
-        result.add(new IntNode(((ModlInteger)x).getValue()));
-      } else if (x instanceof ModlFloat) {
-        result.add(new FloatNode(((ModlFloat)x).getValue()));
-      } else if (x instanceof ModlString) {
-        result.add(StringEscapeReplacer.replace(unquote(((ModlString) x).getValue())));
-      } else if (x == ModlBoolNull.MODL_FALSE) {
-        result.add(BooleanNode.FALSE);
-      } else if (x == ModlBoolNull.MODL_TRUE) {
-        result.add(BooleanNode.TRUE);
-      } else if (x == ModlBoolNull.MODL_NULL) {
-        result.add(NullNode.instance);
-      }
-    });
+    a.getItems().forEach(x -> result.add(toJson(x)));
     return result;
   }
 

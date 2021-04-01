@@ -66,7 +66,7 @@ public class Interpreter {
   }
 
   /**
-   * Interprets interpreter
+   * Interprets to Modl object
    * 
    * @param s
    * @returns

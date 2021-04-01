@@ -18,7 +18,6 @@ import lombok.extern.log4j.Log4j2;
 import uk.modl.model.Modl;
 import uk.modl.parser.antlr.MODLLexer;
 import uk.modl.parser.antlr.MODLParser;
-import uk.modl.parser.antlr.MODLParser.ModlContext;
 
 public class Parser {
 
@@ -31,8 +30,7 @@ public class Parser {
     lexer.addErrorListener(ThrowingErrorListener.INSTANCE);
     parser.addErrorListener(ThrowingErrorListener.INSTANCE);
 
-    final ModlContext context = parser.modl();
-    return ModlParsedVisitor.visitModl(context);
+    return ModlParsedVisitor.visitModl(parser.modl());
   }
 
 }

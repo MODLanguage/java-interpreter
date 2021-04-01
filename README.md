@@ -21,7 +21,7 @@ c=Hello World
 Run the interpreter using the command:
 
 ```shell script
-java -cp ./build/libs/interpreter-<version>.jar test.modl
+java -jar ./build/libs/interpreter-<version>.jar test.modl
 ```
 
 The result should be:
@@ -74,7 +74,7 @@ Use this method to generate an object using the core model within the library, i
 
 # Other Interpreters
 
-We have a version of the interpreter in [Ruby](https://github.com/MODLanguage/ruby-interpreter), and we are planning a JavaScript version.
+We have a version of the interpreter in [Ruby](https://github.com/MODLanguage/ruby-interpreter), and a [JavaScript](https://www.npmjs.com/package/modl-interpreter) version.
 # Contributing
 
 Bugs and New feature requests should be raised as GitHub issues, and the community is welcome to fork the repository and submit pull requests.

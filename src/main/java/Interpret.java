@@ -19,29 +19,28 @@
  */
 
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 
 import lombok.extern.log4j.Log4j2;
 import uk.modl.interpreter.Interpreter;
 
 @Log4j2
 public class Interpret {
-
-  public static final int TIMEOUT_SECONDS = 10000;
+  private static final Interpreter interpreter = new Interpreter();
 
   public static void main(final String... args) {
     if (args.length == 0) {
-      log.info("Usage: java -cp ./build/libs/interpreter-<version>.jar <modl-file-name> [modl-file-name] ...");
+      log.info("Usage: java -jar ./build/libs/interpreter-<version>.jar <modl-file-name> [modl-file-name] ...");
     }
 
     final int sum = Arrays.stream(args).mapToInt(filename -> {
       try {
-        final Path path = Paths.get(filename);
-        final String modlString = String.join("\n", Files.readAllLines(path));
+        final List<String> allLines = Files.readAllLines(Paths.get(filename));
 
-        final Interpreter interpreter = new Interpreter();
+        final String modlString = String.join("\n", allLines);
+
         final String result = interpreter.interpretToPrettyJsonString(modlString);
 
         log.info(result);
