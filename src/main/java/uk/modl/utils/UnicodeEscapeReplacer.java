@@ -143,7 +143,7 @@ class UnicodeEscapeReplacer {
   private static TryParseResult tryParse(final String str, final int idx) {
 
     // Check for a 6-digit unicode value
-    if (hasEnoughDigits(str, idx, 6)) {
+    if (hasEnoughDigits(str, idx, 6) && !str.substring(idx, idx + 2).equals("00")) {
       final int value = getPossibleUnicodeValue(str, idx, 6);
       if (isValidRange(value)) {
         return new TryParseResult(value, 6);
@@ -151,7 +151,7 @@ class UnicodeEscapeReplacer {
     }
 
     // Check for a 5-digit unicode value
-    if (hasEnoughDigits(str, idx, 5)) {
+    if (hasEnoughDigits(str, idx, 5) && !str.substring(idx, idx + 2).equals("00")) {
       final int value = getPossibleUnicodeValue(str, idx, 5);
       if (isValidRange(value)) {
         return new TryParseResult(value, 5);
