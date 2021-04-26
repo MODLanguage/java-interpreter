@@ -1,3 +1,7 @@
+0.2.2
+===
+- Update to latest MODL grammar - removes `00`, `01`, and `000`, as `false`, `true`, and `null`.
+
 0.2.0
 ===
 - Update to latest MODL grammar - greatly simplified to be more like JSON

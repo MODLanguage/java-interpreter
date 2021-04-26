@@ -62,7 +62,7 @@ compileTestJava.options.encoding = "UTF-8"
 group = "uk.modl"
 applicationName = "java-interpreter"
 archivesBaseName = "java-interpreter"
-version = "0.2.1"
+version = "0.2.2"
 
 def isSnapshot = version.endsWith("SNAPSHOT")
 

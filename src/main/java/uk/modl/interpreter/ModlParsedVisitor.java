@@ -167,13 +167,13 @@ public class ModlParsedVisitor {
   private static ModlPrimitive visitModlPrimitive(@NonNull final Modl_primitiveContext ctx) {
     final String text = ctx.getText();
 
-    if (text == null || text.equals("null") || text.equals("000")) {
+    if (text == null || text.equals("null")) {
       return ModlBoolNull.MODL_NULL;
     }
-    if (text.equals("false") || text.equals("00")) {
+    if (text.equals("false")) {
       return ModlBoolNull.MODL_FALSE;
     }
-    if (text.equals("true") || text.equals("01")) {
+    if (text.equals("true")) {
       return ModlBoolNull.MODL_TRUE;
     }
     try {

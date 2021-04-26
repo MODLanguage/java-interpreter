@@ -12,6 +12,9 @@ RSBRAC=11
 NUMBER=12
 QUOTED=13
 STRING=14
+'null'=2
+'true'=3
+'false'=4
 '='=5
 ';'=6
 ','=7
