@@ -32,8 +32,8 @@ public class MODLParser extends Parser {
 
 	private static String[] makeLiteralNames() {
 		return new String[] {
-			null, null, null, null, null, "'='", "';'", "','", "'('", "')'", "'['", 
-			"']'"
+			null, null, "'null'", "'true'", "'false'", "'='", "';'", "','", "'('", 
+			"')'", "'['", "']'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
