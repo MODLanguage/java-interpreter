@@ -1,9 +1,16 @@
+1.0.0
+===
+
+- Rewrite to match the TypeScript version.
+
 0.2.2
 ===
+
 - Update to latest MODL grammar - removes `00`, `01`, and `000`, as `false`, `true`, and `null`.
 
 0.2.0
 ===
+
 - Update to latest MODL grammar - greatly simplified to be more like JSON
 
 0.1.26
@@ -116,4 +123,3 @@
 0.1.0
 ===
 - Complete rewrite
-
