@@ -1,5 +1,5 @@
 # Minimal Object Description Language (MODL) Interpreter
-This Java interpreter is based on the [MODL ANTLR4 Grammar](https://github.com/MODLanguage/grammar-antlr4) and the [MODL Specification](http://www.modl.uk).
+This Java interpreter is based on the [MODL Specification](http://www.modl.uk).
 
 There are several ways the interpreter can be used:
 
@@ -42,33 +42,25 @@ The `Interpreter` class has several convenience methods, each returning a slight
 ### JSON String Result
 Convert a MODL String to a JSON String:
 ```java
-        final Interpreter interpreter = new Interpreter();
-
-        final String json = interpreter.interpretToJsonString("a=b");
+        final String json = Interpreter.interpretToJsonString("a=b");
 ```
 Use this method to generate a compact `JSON` String.
 ### Pretty JSON String Result
 Convert a MODL String to a pretty-printed JSON String:
 ```java
-        final Interpreter interpreter = new Interpreter();
-
-        final String json = interpreter.interpretToPrettyJsonString("a=b");
+        final String json = Interpreter.interpretToPrettyJsonString("a=b");
 ```
 Use this method to generate a `JSON` String for easy reading.
 ### Jackson Core JsonNode Result
 Convert a MODL String to a `JsonNode`:
 ```java
-        final Interpreter interpreter = new Interpreter();
-
-        final JsonNode jsonNode = interpreter.interpretToJsonObject("a=b");
+        final JsonNode jsonNode = Interpreter.interpretToJsonObject("a=b");
 ```
 Use this method to generate non-proprietary object for further processing.
 ### Modl Object Result
 Convert a MODL String to a `Modl` object:
 ```java
-        final Interpreter interpreter = new Interpreter();
-
-        final Modl modl = interpreter.interpret("a=b");
+        final Modl modl = Interpreter.interpret("a=b");
 ```
 Use this method to generate an object using the core model within the library, i.e. those in the `uk.modl.model` package.
 

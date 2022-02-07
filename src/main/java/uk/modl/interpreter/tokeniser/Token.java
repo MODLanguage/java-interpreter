@@ -22,6 +22,9 @@ package uk.modl.interpreter.tokeniser;
 
 import lombok.Value;
 
+/**
+ * A parsed MODL grammar token.
+ */
 @Value
 public class Token {
     TokenType type;

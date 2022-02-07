@@ -21,7 +21,7 @@
 package uk.modl.interpreter.model;
 
 /**
- * An object to match the ANTLR4 MODL grammar
+ * a MODL grammar object.
  */
 public enum ModlBoolNull implements ModlPrimitive {
     MODL_TRUE, MODL_FALSE, MODL_NULL

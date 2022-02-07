@@ -29,6 +29,7 @@ import java.util.List;
 
 import io.vavr.control.Either;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import uk.modl.interpreter.model.Modl;
 import uk.modl.interpreter.model.ModlArray;
 import uk.modl.interpreter.model.ModlBoolNull;
@@ -46,13 +47,30 @@ import uk.modl.interpreter.tokeniser.TokenStream;
 import uk.modl.interpreter.tokeniser.TokenType;
 import uk.modl.interpreter.tokeniser.Tokeniser;
 
+
+/**
+ * Parse a MODL String into a Modl object.
+ */
+@UtilityClass
 public class Parser {
+    /**
+     * Parse a MODL String into a Modl object.
+     *
+     * @param s a MODL String
+     * @return a Modl object
+     */
     public Modl parseModl(@NonNull final String s) {
         final LinkedList<Token> tokens = Tokeniser.tokenise(s);
         final Either<ModlPrimitive, List<ModlStructure>> parsed = parse(new TokenStream(tokens));
         return new Modl(parsed);
     }
 
+    /**
+     * Internal parser.
+     *
+     * @param s a MODL String
+     * @return Either a ModlPrimitive or a List of ModlStructures
+     */
     private Either<ModlPrimitive, List<ModlStructure>> parse(@NonNull final TokenStream s) {
         final ModlPrimitive rootPrimitive = parsePrimitive(s);
         if (rootPrimitive != null) {
@@ -61,6 +79,12 @@ public class Parser {
         return Right(parseStructures(s));
     }
 
+    /**
+     * Extract a ModlPrimitive from a TokenStream.
+     *
+     * @param s a TokenStream
+     * @return a ModlPrimitive
+     */
     private ModlPrimitive parsePrimitive(@NonNull final TokenStream s) {
         ModlPrimitive result;
         final Token tok = s.next();
@@ -126,6 +150,12 @@ public class Parser {
         return result;
     }
 
+    /**
+     * Extract a List of ModlStructures from a TokenStream.
+     *
+     * @param s a TokenStream
+     * @return a List of ModlStructures
+     */
     private List<ModlStructure> parseStructures(@NonNull final TokenStream s) {
         final List<ModlStructure> result = new ArrayList<>();
         while (!s.isEmpty()) {
@@ -140,6 +170,12 @@ public class Parser {
         return result;
     }
 
+    /**
+     * Extract a ModlMap from a TokenStream.
+     *
+     * @param s a TokenStream
+     * @return a ModlMap
+     */
     private ModlMap parseModlMap(@NonNull final TokenStream s) {
         final Token firstToken = s.next();
         // Its a map
@@ -176,6 +212,12 @@ public class Parser {
         return new ModlMap(mapEntries);
     }
 
+    /**
+     * Extract a ModlArray from a TokenStream.
+     *
+     * @param s a TokenStream
+     * @return A ModlArray
+     */
     private ModlArray parseModlArray(@NonNull final TokenStream s) {
         final Token firstToken = s.next();
         // Its an array
@@ -212,6 +254,12 @@ public class Parser {
         return new ModlArray(arrayEntries);
     }
 
+    /**
+     * Extract a ModlValue from a TokenStream.
+     *
+     * @param s a TokenStream
+     * @return a ModlValue
+     */
     private ModlValue parseModlValue(@NonNull final TokenStream s) {
         final Token firstToken = s.next();
 
@@ -268,6 +316,12 @@ public class Parser {
         throw new ParserException(String.format("Unexpected token: '%s'", firstToken));
     }
 
+    /**
+     * Extract a ModlPair from a TokenStream.
+     *
+     * @param s a TokenStream
+     * @return a ModlPair as a ModlValue
+     */
     private ModlValue parsePairValue(@NonNull final TokenStream s) {
         final Token firstToken = s.next();
 

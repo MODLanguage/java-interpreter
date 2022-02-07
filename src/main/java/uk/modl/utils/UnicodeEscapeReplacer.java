@@ -35,8 +35,7 @@ class UnicodeEscapeReplacer {
     private static final Pattern reg = Pattern.compile("[~\\\\]u[0-9a-fA-F]{4}");
 
     /**
-     * Convert explicit unicode escape sequences to unicode characters. (recursive
-     * implementation)
+     * Convert explicit unicode escape sequences to unicode characters. (iterative implementation)
      *
      * @param str a String possible containing escape sequences.
      * @return the string with escape sequences converted to unicode characters.
@@ -69,6 +68,7 @@ class UnicodeEscapeReplacer {
                 // Point to the next character after the current escape sequence
                 start = m.start() + UNICODE_SEQ_LEN;
             } else {
+                // Be sure to copy over the last part of the string as well.
                 result.append(str.substring(start));
                 break;
             }

@@ -25,11 +25,19 @@ import java.util.LinkedList;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * A Simple stream of Tokens that supports peeking and pushback.
+ */
 @RequiredArgsConstructor
 public class TokenStream {
     @NonNull
     private final LinkedList<Token> tokens;
 
+    /**
+     * Consume the next Token if there is one.
+     *
+     * @return a Token or null
+     */
     public Token next() {
         if (tokens.isEmpty()) {
             return null;
@@ -37,6 +45,11 @@ public class TokenStream {
         return tokens.remove(0);
     }
 
+    /**
+     * Get the next Token if there is one without consuming it.
+     *
+     * @return a Token or null
+     */
     public Token peek() {
         if (tokens.isEmpty()) {
             return null;
@@ -44,10 +57,20 @@ public class TokenStream {
         return tokens.get(0);
     }
 
+    /**
+     * Return an unconsumed Token.
+     *
+     * @param t a Token - this should be the most recent token returned from next()
+     */
     public void pushback(@NonNull final Token t) {
         tokens.add(0, t);
     }
 
+    /**
+     * Check whether there are any more tokens.
+     *
+     * @return true if the stream is empty
+     */
     public boolean isEmpty() {
         return tokens.isEmpty();
     }

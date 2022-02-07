@@ -85,7 +85,7 @@ public class InterpreterBaseTests {
 
     private void checkValidTestInput(final TestInput testInput) {
         try {
-            final Modl interpreted = new Interpreter().interpret(testInput.input);
+            final Modl interpreted = Interpreter.interpret(testInput.input);
 
             if (interpreted != null) {
                 final JsonNode jsonResult = ModlToJson.convert(interpreted);

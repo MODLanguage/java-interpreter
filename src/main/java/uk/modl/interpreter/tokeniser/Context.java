@@ -25,7 +25,10 @@ import java.util.regex.Pattern;
 
 import lombok.NonNull;
 
-public class Context {
+/**
+ * Holds the current parsing context for an execution of the parser.
+ */
+class Context {
     private static final String WS = " \t\r\n";
     private static final String nonStringTokens = "[]();\"=`";
     private static final Pattern INTEGER_REGEX = Pattern.compile("^-?(?:0|[1-9]\\d*)$");
@@ -34,6 +37,11 @@ public class Context {
     private final LinkedList<Token> tokens = new LinkedList<>();
     private int tokStart = 0;
 
+    /**
+     * Constructor.
+     *
+     * @param s a MODL String
+     */
     Context(@NonNull final String s) {
         this.s = s;
     }

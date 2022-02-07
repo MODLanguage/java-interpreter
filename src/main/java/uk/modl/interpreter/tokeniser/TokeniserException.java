@@ -22,7 +22,16 @@ package uk.modl.interpreter.tokeniser;
 
 import lombok.NonNull;
 
+
+/**
+ * Used to report tokenisation exceptions.
+ */
 public class TokeniserException extends RuntimeException {
+    /**
+     * Constructor
+     *
+     * @param s a message String
+     */
     public TokeniserException(@NonNull final String s) {
         super(s);
     }

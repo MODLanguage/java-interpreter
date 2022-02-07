@@ -32,11 +32,6 @@ import uk.modl.interpreter.Interpreter;
 @Log4j2
 public class Interpret {
     /**
-     * The Interpreter
-     */
-    private static final Interpreter interpreter = new Interpreter();
-
-    /**
      * Program entry point
      *
      * @param args an array of file names containing MODL strings.
@@ -60,7 +55,7 @@ public class Interpret {
                         final String modlString = String.join("\n", allLines);
 
                         // Interpret to formatted JSON
-                        final String result = interpreter.interpretToPrettyJsonString(modlString);
+                        final String result = Interpreter.interpretToPrettyJsonString(modlString);
 
                         // Log the result.
                         log.info(result);

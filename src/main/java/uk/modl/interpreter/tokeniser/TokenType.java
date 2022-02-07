@@ -20,6 +20,9 @@
 
 package uk.modl.interpreter.tokeniser;
 
+/**
+ * The set of token types.
+ */
 public enum TokenType {
     LPAREN,
     RPAREN,

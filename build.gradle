@@ -17,6 +17,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+//file:noinspection SpellCheckingInspection
 
 buildscript {
 
@@ -63,6 +64,7 @@ group = "uk.modl"
 applicationName = "java-interpreter"
 archivesBaseName = "java-interpreter"
 version = "1.0.0"
+mainClassName = "uk.modl.interpreter.Interpret"
 
 def isSnapshot = version.endsWith("SNAPSHOT")
 
@@ -82,7 +84,7 @@ dependencies {
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.1'
 
     // https://mvnrepository.com/artifact/io.vavr/vavr
-    implementation 'io.vavr:vavr:0.10.4'
+    compile 'io.vavr:vavr:0.10.4'
 
 }
 

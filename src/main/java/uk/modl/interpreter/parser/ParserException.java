@@ -20,7 +20,15 @@
 
 package uk.modl.interpreter.parser;
 
+/**
+ * Used to report parsing exceptions.
+ */
 public class ParserException extends RuntimeException {
+    /**
+     * Constructor
+     *
+     * @param s String
+     */
     public ParserException(String s) {
         super(s);
     }

@@ -33,13 +33,12 @@ public class InterpreterTest {
 
     @Test(expected = RuntimeException.class)
     public void parseBad() {
-        new Interpreter().interpretToJsonString("x;xx");
+        Interpreter.interpretToJsonString("x;xx");
     }
 
     @Test
     public void testInterpreterConvenienceMethods_1() {
-        final Interpreter interpreter = new Interpreter();
-        final Modl modl = interpreter.interpret("a=b");
+        final Modl modl = Interpreter.interpret("a=b");
         Assert.assertNotNull(modl);
         Assert.assertEquals(1, modl.getStructures()
                 .get()
@@ -48,26 +47,57 @@ public class InterpreterTest {
 
     @Test
     public void testInterpreterConvenienceMethods_2() throws JsonProcessingException {
-        final Interpreter interpreter = new Interpreter();
-        final JsonNode jsonNode = interpreter.interpretToJsonObject("a=b");
+        final JsonNode jsonNode = Interpreter.interpretToJsonObject("a=b");
         Assert.assertNotNull(jsonNode);
         Assert.assertEquals("{\"a\":\"b\"}", mapper.writeValueAsString(jsonNode));
     }
 
     @Test
     public void testInterpreterConvenienceMethods_3() {
-        final Interpreter interpreter = new Interpreter();
-        final String json = interpreter.interpretToJsonString("a=b");
+        final String json = Interpreter.interpretToJsonString("a=b");
         Assert.assertNotNull(json);
         Assert.assertEquals("{\"a\":\"b\"}", json);
     }
 
     @Test
     public void testInterpreterConvenienceMethods_4() {
-        final Interpreter interpreter = new Interpreter();
-        final String json = interpreter.interpretToPrettyJsonString("a=b");
+        final String json = Interpreter.interpretToPrettyJsonString("a=b");
         Assert.assertNotNull(json);
         Assert.assertEquals("{\n  \"a\" : \"b\"\n}", json);
+    }
+
+    @Test
+    public void testParseLongModl() {
+        final String json = Interpreter.interpretToPrettyJsonString("@n=1;@p=1;o(n=Go-Vac Cleaning Solutions;"
+                + "s=Cleaning Company;c[t(v=+447460 390527);fb=Go-vac-Cleaning-Solutions-108934108269782/;"
+                + "in=govaccleaningsolutions;li=company/go-vac-cleaning-solutions;a(al[104 Candleford Court;"
+                + "Buckingham];pz=MK18 1GD;co=GB)])");
+        Assert.assertNotNull(json);
+        Assert.assertEquals("{\n"
+                + "  \"@n\" : 1,\n"
+                + "  \"@p\" : 1,\n"
+                + "  \"o\" : {\n"
+                + "    \"n\" : \"Go-Vac Cleaning Solutions\",\n"
+                + "    \"s\" : \"Cleaning Company\",\n"
+                + "    \"c\" : [ {\n"
+                + "      \"t\" : {\n"
+                + "        \"v\" : \"+447460 390527\"\n"
+                + "      }\n"
+                + "    }, {\n"
+                + "      \"fb\" : \"Go-vac-Cleaning-Solutions-108934108269782/\"\n"
+                + "    }, {\n"
+                + "      \"in\" : \"govaccleaningsolutions\"\n"
+                + "    }, {\n"
+                + "      \"li\" : \"company/go-vac-cleaning-solutions\"\n"
+                + "    }, {\n"
+                + "      \"a\" : {\n"
+                + "        \"al\" : [ \"104 Candleford Court\", \"Buckingham\" ],\n"
+                + "        \"pz\" : \"MK18 1GD\",\n"
+                + "        \"co\" : \"GB\"\n"
+                + "      }\n"
+                + "    } ]\n"
+                + "  }\n"
+                + "}", json);
     }
 
 }

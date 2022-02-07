@@ -23,8 +23,19 @@ package uk.modl.interpreter.tokeniser;
 import java.util.LinkedList;
 
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
+/**
+ * Class to convert a MODL string into a list of MODL grammar tokens.
+ */
+@UtilityClass
 public class Tokeniser {
+    /**
+     * Convert a MODL String to a list of MODL grammar tokens.
+     *
+     * @param s a MODL String
+     * @return a LinkedList of Tokens
+     */
     public static LinkedList<Token> tokenise(@NonNull final String s) {
         return new Context(s).parse();
     }
