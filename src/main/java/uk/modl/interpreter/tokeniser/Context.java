@@ -116,13 +116,20 @@ public class Context {
      */
     private boolean next() {
         // Skip white spaces.
-        char ws = this.s.charAt(this.tokStart);
-        while (WS.indexOf(ws) > -1) {
+        while (this.tokStart < s.length()) {
+            char ws = this.s.charAt(this.tokStart);
+            if (WS.indexOf(ws) < 0) {
+                break;
+            }
             this.tokStart++;
-            ws = this.s.charAt(this.tokStart);
         }
 
         TokenType tokType;
+
+        if (this.tokStart >= this.s.length()) {
+            // Nothing left to parse.
+            return false;
+        }
 
         int tokEnd;
         switch (this.s.charAt(this.tokStart)) {
@@ -176,7 +183,7 @@ public class Context {
             this.tokens.add(new Token(TokenType.INTEGER, number, this.tokStart, tokEnd));
         } else if (FLOAT_REGEX.matcher(tokValue)
                 .matches()) {
-            final double number = Double.parseDouble(tokValue);
+            final float number = Float.parseFloat(tokValue);
             this.tokens.add(new Token(TokenType.FLOAT, number, this.tokStart, tokEnd));
         } else if (tokValue.equals("null")) {
             this.tokens.add(new Token(TokenType.NULL, null, this.tokStart, tokEnd));

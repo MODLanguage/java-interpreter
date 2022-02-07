@@ -289,7 +289,8 @@ public class Parser {
                 throw new ParserException(String.format("Unexpected token: '%s'", firstToken));
             }
 
-            if (peek != null) {
+            if (peek == null || peek.getType() == TokenType.STRUCT_SEP || peek.getType() == TokenType.RPAREN
+                    || peek.getType() == TokenType.RBRACKET) {
                 // Its simply a string or quoted string
                 if (firstToken.getType() == TokenType.STRING) {
                     return new ModlString((String) firstToken.getValue());

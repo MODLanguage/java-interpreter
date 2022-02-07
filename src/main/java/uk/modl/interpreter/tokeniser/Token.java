@@ -23,8 +23,7 @@ package uk.modl.interpreter.tokeniser;
 import lombok.Value;
 
 @Value
-public
-class Token {
+public class Token {
     TokenType type;
     Object value;
     int from, to;

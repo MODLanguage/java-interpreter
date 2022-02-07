@@ -46,8 +46,8 @@ class UnicodeEscapeReplacer {
         int start = 0;
         StringBuilder result = new StringBuilder();
         m = reg.matcher(str);
-        if (m.find()) {
-            do {
+        do {
+            if (m.find()) {
                 if (m.start() > 0 && (str.charAt(m.start() - 1) == '\\' || str.charAt(m.start() - 1) == '~')) {
                     // Its escaped so copy over as-is, without the leading slash
                     if (start < m.start() - 1) {
@@ -56,8 +56,6 @@ class UnicodeEscapeReplacer {
                     }
                     // Copy from after the slash
                     result.append(str, m.start(), m.start() + UNICODE_SEQ_LEN);
-
-                    // Point to the next character after the current escape sequence
                 } else {
                     if (start < m.start()) {
                         // Copy up to the current escape sequence
@@ -65,16 +63,16 @@ class UnicodeEscapeReplacer {
                     }
 
                     // Append the converted character
-                    final int c = Integer.parseInt(str.substring(m.start() + 2, 4), HEX);
+                    final int c = Integer.parseInt(str.substring(m.start() + 2, m.start() + 6), HEX);
                     result.append(Character.toChars(c));
-
-                    // Point to the next character after the current escape sequence
                 }
+                // Point to the next character after the current escape sequence
                 start = m.start() + UNICODE_SEQ_LEN;
-            } while (m.find());
-        } else {
-            result.append(str.substring(start));
-        }
+            } else {
+                result.append(str.substring(start));
+                break;
+            }
+        } while (true);
 
         return result.toString();
     }
